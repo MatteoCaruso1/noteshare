@@ -12,6 +12,11 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        // Jazz-specific variants
+        jazz: "border-jazz-gold/30 bg-jazz-gold/10 text-jazz-gold hover:bg-jazz-gold/20",
+        "jazz-solid": "border-transparent bg-jazz-gold text-jazz-midnight hover:bg-jazz-amber",
+        accent: "border-accent/30 bg-accent/10 text-accent hover:bg-accent/20",
+        muted: "border-border bg-muted text-muted-foreground hover:bg-muted/80",
       },
     },
     defaultVariants: {
