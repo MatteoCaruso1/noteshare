@@ -105,6 +105,50 @@ export type Database = {
           },
         ]
       }
+      moderation_flags: {
+        Row: {
+          confidence: number
+          created_at: string
+          id: string
+          reason: string
+          resolved_at: string | null
+          resolved_by_user_id: string | null
+          status: Database["public"]["Enums"]["moderation_status"]
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          reason: string
+          resolved_at?: string | null
+          resolved_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"]
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          reason?: string
+          resolved_at?: string | null
+          resolved_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["moderation_status"]
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_flags_resolved_by_user_id_fkey"
+            columns: ["resolved_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_follows: {
         Row: {
           created_at: string
@@ -272,6 +316,7 @@ export type Database = {
           is_ai: boolean
           location: string | null
           name: string
+          persona_profile: string | null
           updated_at: string
           user_id: string | null
           username: string
@@ -287,6 +332,7 @@ export type Database = {
           is_ai?: boolean
           location?: string | null
           name: string
+          persona_profile?: string | null
           updated_at?: string
           user_id?: string | null
           username: string
@@ -302,6 +348,7 @@ export type Database = {
           is_ai?: boolean
           location?: string | null
           name?: string
+          persona_profile?: string | null
           updated_at?: string
           user_id?: string | null
           username?: string
@@ -353,6 +400,7 @@ export type Database = {
     }
     Enums: {
       jazz_reaction: "🎷" | "🎺" | "🎹" | "🥁" | "🎼"
+      moderation_status: "pending" | "approved" | "removed"
       post_type:
         | "discussion"
         | "performance_clip"
@@ -489,6 +537,7 @@ export const Constants = {
   public: {
     Enums: {
       jazz_reaction: ["🎷", "🎺", "🎹", "🥁", "🎼"],
+      moderation_status: ["pending", "approved", "removed"],
       post_type: [
         "discussion",
         "performance_clip",
