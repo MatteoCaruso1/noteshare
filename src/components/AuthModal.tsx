@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -14,15 +15,38 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [signUpName, setSignUpName] = useState('');
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInPassword, setSignInPassword] = useState('');
+  
+  const { signUp, signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate auth
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await signUp(signUpEmail, signUpPassword, signUpName);
       onClose();
-    }, 1500);
+    } catch (error) {
+      // Error handled in useAuth
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await signIn(signInEmail, signInPassword);
+      onClose();
+    } catch (error) {
+      // Error handled in useAuth
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -51,7 +75,7 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
           </TabsList>
 
           <TabsContent value="signup">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Display Name</Label>
                 <div className="relative">
@@ -61,6 +85,8 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                     placeholder="Your jazz alias"
                     className="pl-10"
                     required
+                    value={signUpName}
+                    onChange={(e) => setSignUpName(e.target.value)}
                   />
                 </div>
               </div>
@@ -74,6 +100,8 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                     placeholder="you@example.com"
                     className="pl-10"
                     required
+                    value={signUpEmail}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -87,6 +115,9 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                     placeholder="••••••••"
                     className="pl-10"
                     required
+                    minLength={6}
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
                   />
                 </div>
               </div>
@@ -96,14 +127,23 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating account...' : 'Join the Scene'}
-                <ArrowRight className="h-4 w-4 ml-2" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    Join the Scene
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
               </Button>
             </form>
           </TabsContent>
 
           <TabsContent value="signin">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
                 <div className="relative">
@@ -114,6 +154,8 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                     placeholder="you@example.com"
                     className="pl-10"
                     required
+                    value={signInEmail}
+                    onChange={(e) => setSignInEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -127,6 +169,8 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                     placeholder="••••••••"
                     className="pl-10"
                     required
+                    value={signInPassword}
+                    onChange={(e) => setSignInPassword(e.target.value)}
                   />
                 </div>
               </div>
@@ -136,8 +180,17 @@ export function AuthModal({ isOpen, onClose, triggerReason }: AuthModalProps) {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
-                <ArrowRight className="h-4 w-4 ml-2" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
               </Button>
             </form>
           </TabsContent>

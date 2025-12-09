@@ -1,7 +1,9 @@
-import { Search, Menu, Bell } from 'lucide-react';
+import { Search, Menu, Bell, LogOut, User, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   onAuthClick: () => void;
@@ -9,13 +11,14 @@ interface HeaderProps {
 
 export function Header({ onAuthClick }: HeaderProps) {
   const [searchFocused, setSearchFocused] = useState(false);
+  const { user, profile, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <a href="/" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-jazz-gold to-jazz-amber shadow-lg group-hover:shadow-glow transition-shadow">
               <span className="text-xl">🎷</span>
             </div>
@@ -27,7 +30,7 @@ export function Header({ onAuthClick }: HeaderProps) {
                 The scene lives here
               </p>
             </div>
-          </a>
+          </Link>
         </div>
 
         {/* Search */}
@@ -44,12 +47,35 @@ export function Header({ onAuthClick }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="hidden sm:flex text-muted-foreground hover:text-foreground">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="jazz" onClick={onAuthClick} className="hidden sm:flex">
-            Sign In
-          </Button>
+          <Link to="/admin">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" title="Analytics">
+              <BarChart3 className="h-5 w-5" />
+            </Button>
+          </Link>
+          
+          {user ? (
+            <>
+              <Button variant="ghost" size="icon" className="hidden sm:flex text-muted-foreground hover:text-foreground">
+                <Bell className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-jazz-gold/30 to-jazz-amber/30 flex items-center justify-center text-sm border border-jazz-gold/20 overflow-hidden">
+                  {profile?.avatar ? (
+                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
+                </div>
+                <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button variant="jazz" onClick={onAuthClick} className="hidden sm:flex">
+              Sign In
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="sm:hidden">
             <Menu className="h-5 w-5" />
           </Button>
