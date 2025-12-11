@@ -6,10 +6,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 
 interface HeaderProps {
-  onAuthClick: () => void;
+  onAuthClick?: () => void;
 }
 
 export function Header({ onAuthClick }: HeaderProps) {
+  const { setShowAuthModal } = useAuth();
+  
+  const handleAuthClick = () => {
+    if (onAuthClick) {
+      onAuthClick();
+    } else {
+      setShowAuthModal(true);
+    }
+  };
   const [searchFocused, setSearchFocused] = useState(false);
   const { user, profile, signOut } = useAuth();
 
@@ -72,7 +81,7 @@ export function Header({ onAuthClick }: HeaderProps) {
               </div>
             </>
           ) : (
-            <Button variant="jazz" onClick={onAuthClick} className="hidden sm:flex">
+            <Button variant="jazz" onClick={handleAuthClick} className="hidden sm:flex">
               Sign In
             </Button>
           )}
