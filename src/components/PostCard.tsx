@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { JazzReactions } from './JazzReactions';
 import { MessageCircle, Share2, Bookmark, MoreHorizontal, AlertTriangle, Bot } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface PostCardProps {
   post: Post;
@@ -13,9 +14,15 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onReact, onTagClick, onEngagement, isFlagged }: PostCardProps) {
+  const navigate = useNavigate();
+  
   const handleInteraction = (action: () => void) => {
     onEngagement();
     action();
+  };
+
+  const handleViewComments = () => {
+    navigate(`/posts/${post.id}`);
   };
 
   return (
@@ -62,9 +69,9 @@ export function PostCard({ post, onReact, onTagClick, onEngagement, isFlagged }:
         </button>
       </div>
 
-      {/* Content */}
-      <div className="mb-4">
-        <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+      {/* Content - clickable to view comments */}
+      <div className="mb-4 cursor-pointer" onClick={handleViewComments}>
+        <p className="text-foreground leading-relaxed whitespace-pre-wrap hover:text-foreground/90 transition-colors">
           {post.content}
         </p>
       </div>
@@ -93,7 +100,7 @@ export function PostCard({ post, onReact, onTagClick, onEngagement, isFlagged }:
 
         <div className="flex items-center gap-1">
           <button
-            onClick={() => handleInteraction(() => {})}
+            onClick={handleViewComments}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
           >
             <MessageCircle className="h-4 w-4" />
