@@ -275,63 +275,72 @@ const INSTRUMENT_TAGS = ['sax', 'trumpet', 'piano', 'bass', 'drums', 'guitar', '
 const CONTENT_TAGS = ['clip', 'tutorial', 'release', 'tab', 'lead-sheet', 'movie', 'documentary', 'transcription', 'gear', 'live-performance'];
 const ERA_TAGS = ['1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
 
-// Sample post content templates by type
+// Sample post content templates by type - aim for 150-240 characters each
 const POST_TEMPLATES = {
   discussion: [
-    "Hot take: {artist1} is more influential than {artist2}. The way they approached {concept} changed everything.",
-    "What's your favorite {era} album? I keep coming back to {album} - the {instrument} work is incredible.",
-    "Anyone else think {artist} is underrated? Their {album} doesn't get nearly enough love.",
-    "Debate time: Is {style} still relevant in {year}? I think modern players like {artist} prove it is.",
-    "Just realized {artist}'s solo on {tune} uses {concept}. Mind blown.",
-    "Unpopular opinion: {album} is overrated. Change my mind.",
-    "What's the best way to learn {concept}? Been stuck on this for months.",
-    "The {venue} scene in the {era} was incredible. So much talent in one place.",
-    "Who's carrying the torch for {style} today? I need recommendations.",
-    "Listening to {artist} always reminds me why I play {instrument}."
+    "Hot take: {artist1} is more influential than {artist2}. The way they approached {concept} completely changed how we think about improvisation. Would love to hear other perspectives on this.",
+    "What's your favorite {era} album? I keep coming back to {album} - the {instrument} work is incredible, and the way the rhythm section locks in on every track is absolutely masterful.",
+    "Anyone else think {artist} is criminally underrated? Their work on {album} doesn't get nearly enough love. That opening track alone is worth the price of admission.",
+    "Debate time: Is {style} still relevant in {year}? I think modern players like {artist} are proving it absolutely is, but with fresh ideas that push the boundaries forward.",
+    "Just realized {artist}'s solo on {tune} uses {concept} in a way I'd never noticed before. After 10 years of listening, still finding new layers in this music. Mind completely blown.",
+    "Unpopular opinion: {album} is overrated. Yes, it's historically important, but the production hasn't aged well and there are better recordings from that same era. Change my mind.",
+    "What's the best way to learn {concept}? Been stuck on this for months and feeling frustrated. Would love to hear how others worked through this challenge in their own practice.",
+    "The {venue} scene in the {era} was incredible. So much talent concentrated in one place, and the cross-pollination between different groups created something truly magical.",
+    "Who's carrying the torch for {style} today? I need recommendations for contemporary artists who are keeping this tradition alive while adding their own voice to it.",
+    "Listening to {artist} always reminds me why I started playing {instrument} in the first place. There's something about their phrasing that speaks directly to the soul.",
+    "Been transcribing {artist}'s solo on {tune} and discovered they use {concept} in the most unexpected places. This is why transcription is essential for any serious player.",
+    "The interplay between {artist1} and {artist2} on {album} is peak jazz. They're having a real musical conversation, not just trading licks. This is what collective improvisation should sound like.",
+    "Why don't more people talk about {artist}'s {era} recordings? Before they became famous for {album}, they were doing incredibly experimental things that predicted fusion by a decade.",
+    "Just finished reading a biography of {artist} and learned that {tune} was recorded in a single take at 3am. The spontaneity you hear isn't an accident, it's the magic of jazz.",
+    "The way {artist} navigates the changes on {tune} should be required study for every {instrument} player. Not just the notes, but the rhythmic conception and dynamics."
   ],
   performance_clip: [
-    "Finally got through {tune} at {bpm} BPM! Took me {weeks} weeks. Here's a clip.",
-    "Working on my {concept} over {tune}. Feedback welcome!",
-    "Late night shed session. {tune} in all 12 keys.",
-    "My take on {artist}'s solo from {tune}. Still working on the {section} section.",
-    "First time performing {tune} at a jam session. Nerves were real.",
-    "Transcribed and learned {artist}'s solo on {tune}. Here's my version."
+    "Finally got through {tune} at {bpm} BPM after {weeks} weeks of dedicated practice! The bridge used to kill me but focusing on {concept} really unlocked it. Here's a clip, feedback welcome!",
+    "Working on incorporating more {concept} into my playing over {tune}. It's a slow process but starting to feel more natural. Would love any suggestions or critiques from the community!",
+    "Late night practice session, running {tune} through all 12 keys. My weaker keys still need work but the exercise is really helping my ears and muscle memory. Check the clip.",
+    "My humble attempt at {artist}'s legendary solo from {tune}. Still working on nailing the {section} section but getting closer. The articulation is harder than it sounds!",
+    "First time performing {tune} at a jam session last night. Nerves were very real but the rhythm section carried me through. Sharing the video because growth requires vulnerability.",
+    "Transcribed {artist}'s solo on {tune} note for note, then spent a month internalizing it. Here's my version - not copying, but absorbing the language. That's how you learn this music.",
+    "Experimenting with some {style} vocabulary over {tune}. Trying to blend the traditional changes with some more modern {concept} ideas. Let me know if it's working or if I'm overcomplicating it.",
+    "Recording from our regular Thursday night session at the local club. We took {tune} at a burning tempo and somehow made it through alive. The energy when jazz is live is irreplaceable."
   ],
   tutorial: [
-    "Quick breakdown of {concept}. This changed my playing when I finally understood it.",
-    "How I learned {tune} in {weeks} weeks. Step by step process.",
-    "The secret to {artist}'s sound on {instrument}: it's all about {concept}.",
-    "Beginner's guide to {style}. Start with these 5 {concept}s.",
-    "Common mistakes when learning {tune}. I made all of them.",
-    "Why {concept} is essential for any {instrument} player."
+    "Quick breakdown of {concept} that completely transformed my playing when I finally internalized it. Took me years to figure this out, sharing so others don't have to struggle as long.",
+    "How I learned {tune} in {weeks} weeks using a structured approach: slow practice, isolated sections, gradual tempo increases. Step by step process that actually works for complex tunes.",
+    "The secret to {artist}'s distinctive sound on {instrument} isn't some mystery - it's all about their approach to {concept}. Here's a detailed breakdown with examples from their recordings.",
+    "Beginner's guide to {style}: forget everything you think you know and start with these five fundamental {concept}s. Build from here and the rest will follow naturally.",
+    "Common mistakes when learning {tune} - I made every single one of them and it set me back months. Sharing so you can avoid my painful learning curve and get to making music faster.",
+    "Why mastering {concept} is absolutely essential for any serious {instrument} player. It's the foundation everything else builds on, and most people skip it to learn flashy licks instead.",
+    "Breaking down the first 8 bars of {artist}'s solo on {tune}. Every note choice is intentional and teaches something about {concept}. This is how I approach transcription study.",
+    "The practice routine that finally helped me internalize {concept} after years of struggling. It's not sexy or complicated, but consistency with these fundamentals changed everything."
   ],
   release: [
-    "Just dropped my new album '{album}'! {description}. Link in bio.",
-    "New single out now: '{tune}' - inspired by {artist} and {style}.",
-    "Excited to share my transcription of {artist}'s {tune}. PDF coming soon.",
-    "Album announcement: Recording next month with {musicians}.",
-    "Just pressed this to vinyl! Limited run of my {style} project."
+    "Just dropped my new album '{album}'! {description}. Every track features original compositions inspired by the {style} tradition but with a modern sensibility. Link in bio, would love your thoughts.",
+    "New single out now: '{tune}' - a deep dive into what happens when you blend {artist}'s harmonic sensibility with {style} grooves. Took months to get the arrangement right. Streaming everywhere.",
+    "Excited to share my complete transcription of {artist}'s {tune} solo. Every note, every articulation, every rhythmic nuance. PDF coming soon to help the community grow together.",
+    "Album announcement: Heading into the studio next month to record with an incredible lineup of {venue} musicians. We've been working on these arrangements for a year. Can't wait to share.",
+    "Just pressed a limited vinyl run of my {style} project! Analog warmth was essential for this sound. Only 200 copies made. Details in comments for anyone interested in a physical copy."
   ],
   tab: [
-    "Full transcription of {artist}'s solo on {tune}. PDF in comments.",
-    "Lead sheet for {tune} with chord changes and melody. Great for {style} practice.",
-    "Transcribed every note of {artist}'s {album}. {pages} pages total.",
-    "My changes for {tune}. Some substitutions that work well.",
-    "Bass line transcription for {tune}. {artist}'s walking is a masterclass."
+    "Full transcription of {artist}'s iconic solo on {tune}. Every note, every bend, every rhythmic detail captured accurately. PDF link in comments - use it for study, not just imitation.",
+    "Lead sheet for {tune} with the real chord changes and melody as actually recorded, not the simplified Real Book version. Great for serious {style} practice and understanding the original intent.",
+    "Transcribed every single note of {artist}'s work on {album}. {pages} pages total, representing months of focused listening. This is a masterclass in {concept} and worth deep study.",
+    "My reharmonization of {tune} with substitutions that I've tested extensively at jam sessions. These changes work and create interesting conversation with traditional players who know the original.",
+    "Walking bass line transcription for {tune} - {artist}'s approach is an absolute masterclass in note choice, voice leading, and making the bass sing. Essential study for any bassist."
   ],
   lead_sheet: [
-    "Clean lead sheet for {tune}. Correct changes, no errors.",
-    "My arrangement of {tune} for {ensemble}. Free PDF.",
-    "Finally found the right changes for {tune}. The bridge was tricky.",
-    "Lead sheet with {artist}'s chord voicings for {tune}.",
-    "Simplified version of {tune} for beginners. Same vibe, easier changes."
+    "Clean lead sheet for {tune} with the actually correct changes - I spent hours comparing recordings and fakebooks to get this right. No errors, ready for performance or study.",
+    "My arrangement of {tune} for {ensemble}. Tried to capture the spirit of the original while making it playable by smaller groups. Free PDF for anyone who wants it.",
+    "Finally cracked the correct changes for {tune} after comparing multiple recordings. The bridge was trickier than any fakebook suggested - the real harmony is much more interesting.",
+    "Lead sheet featuring {artist}'s actual chord voicings for {tune} - not just the changes but how they specifically voice them. This is where the magic happens in piano accompaniment.",
+    "Simplified version of {tune} for beginners who want to access this repertoire. Same essential vibe, easier changes, good stepping stone to the full arrangement later on."
   ],
   media_recommendation: [
-    "Just watched {documentary}. Essential viewing for any jazz fan.",
-    "If you haven't heard {album} by {artist}, stop everything and listen.",
-    "The jazz scenes in {movie} are surprisingly accurate.",
-    "This podcast episode about {artist} is incredible. Link in comments.",
-    "Found a rare live recording of {artist} from {year}. Audio quality is rough but the playing..."
+    "Just watched {documentary} for the third time and noticed details I'd missed before. Essential viewing for any jazz fan who wants to understand what drove these artists. Highly recommended.",
+    "If you haven't heard {album} by {artist}, stop whatever you're doing and listen immediately. It's one of those records that reveals new layers every single time you return to it.",
+    "The jazz scenes in {movie} are surprisingly accurate and capture something essential about the music and the lifestyle. Great introduction for friends who are curious about the culture.",
+    "This podcast episode about {artist} completely changed my understanding of their creative process. The stories from sidemen who worked with them are absolutely invaluable. Link in comments.",
+    "Found a rare live recording of {artist} from {year}. Audio quality is rough but the playing is absolutely transcendent - you can hear them taking risks they never would in a studio setting."
   ]
 };
 
@@ -388,21 +397,21 @@ function generateTags(postType: string): string[] {
 }
 
 const COMMENT_TEMPLATES = [
-  "Great post! {artist} is definitely underrated.",
-  "This is exactly what I needed to hear today.",
-  "Have you tried approaching it from a {concept} perspective?",
-  "Classic! The {instrument} work on this is incredible.",
-  "I disagree - I think {artist} is the real pioneer here.",
-  "Thanks for sharing! This helps a lot.",
-  "Been working on this tune for months. Any tips?",
-  "The way you explained {concept} makes so much sense.",
-  "This is why I love this community. Real knowledge being shared.",
-  "Adding this to my practice list immediately.",
-  "Where can I find the full transcription?",
-  "Beautiful playing! Your tone is getting better.",
-  "I remember learning this - took me forever!",
-  "The {era} recordings of this are still the best.",
-  "What mouthpiece/gear are you using here?"
+  "Great post! {artist} is definitely underrated in discussions about {concept}. Their influence on modern players is more significant than most realize.",
+  "This is exactly what I needed to hear today. Been struggling with my own approach to {concept} and this gives me new ideas to explore in the practice room.",
+  "Have you tried approaching it from a {concept} perspective? That's what helped me finally break through when I was stuck on similar material.",
+  "Classic! The {instrument} work on this is incredible. You can really hear how {artist} influenced this - that same sense of space and timing.",
+  "I disagree respectfully - I think {artist} is the real pioneer here. They did this years earlier, but because of label politics their recordings weren't as widely distributed.",
+  "Thanks for sharing this! The way you break things down helps a lot. Going to incorporate some of these ideas into my practice routine this week.",
+  "Been working on this tune for months and still hitting walls. Any tips on the bridge section? The chord movement there always throws me off.",
+  "The way you explained {concept} makes so much sense now. I'd heard other people try to describe it but this finally clicked for me. Appreciate the clarity.",
+  "This is why I love this community - real knowledge being shared by people who actually put in the work. No gatekeeping, just genuine help.",
+  "Adding this to my practice list immediately. I've been neglecting {concept} and this is a good reminder of why it matters for the music.",
+  "Where can I find the full transcription? Would love to dig deeper into the note choices - there's some intervals in there I can't figure out by ear.",
+  "Beautiful playing! Your tone has improved so much since your earlier posts. Whatever you've been working on is clearly paying off. Keep going!",
+  "I remember learning this - took me forever! The key for me was slowing it way down and really listening to what {artist} does with dynamics.",
+  "The {era} recordings of this are still the best in my opinion. Something about the room sound and the playing that later versions never quite captured.",
+  "What mouthpiece and gear setup are you using here? That tone is exactly what I'm looking for and I'm curious about your signal chain."
 ];
 
 function generateCommentContent(): string {
@@ -499,7 +508,7 @@ serve(async (req) => {
     for (let i = 0; i < 300; i++) {
       const author = randomChoice(allProfiles);
       const postType = randomChoice(POST_TYPES) as string;
-      const createdAt = new Date(now - randomInt(0, 30 * 24 * 60 * 60 * 1000)); // Random time in last 30 days
+      const createdAt = new Date(now - randomInt(0, 3 * 24 * 60 * 60 * 1000)); // Random time in last 3 days
       
       posts.push({
         author_id: author.id,
