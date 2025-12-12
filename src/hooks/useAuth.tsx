@@ -11,7 +11,9 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -109,6 +111,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success('Welcome back!');
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -118,8 +134,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success('Signed out');
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth?reset=true`,
+    });
+
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
+
+    toast.success('Check your email for the password reset link');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signInWithGoogle, signOut, resetPassword, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
