@@ -12,7 +12,7 @@ export function WelcomeHero() {
       </div>
       <h1 className="text-3xl font-semibold mb-2">Noteshare</h1>
       <p className="text-lg text-muted-foreground mb-8 max-w-md">
-        Your private practice journal. Capture, organize, and reflect on your musical journey.
+        Your practice journal. Capture, organize, and share your musical journey with those who matter.
       </p>
       <Button
         size="lg"
