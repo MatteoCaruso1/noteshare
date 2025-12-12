@@ -1,27 +1,38 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play } from 'lucide-react';
-
 interface HeroSectionProps {
   onEnterFeed: () => void;
 }
-
-export function HeroSection({ onEnterFeed }: HeroSectionProps) {
-  return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-hero">
+export function HeroSection({
+  onEnterFeed
+}: HeroSectionProps) {
+  return <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-hero">
       {/* Noise overlay */}
       <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none" />
       
       {/* Gradient orbs */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-jazz-gold/10 rounded-full blur-[128px] animate-pulse" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-[128px] animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-[128px] animate-pulse" style={{
+      animationDelay: '1s'
+    }} />
       
       {/* Floating musical notes decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <span className="absolute top-[15%] left-[10%] text-6xl opacity-10 float" style={{ animationDelay: '0s' }}>🎷</span>
-        <span className="absolute top-[25%] right-[15%] text-5xl opacity-10 float" style={{ animationDelay: '0.5s' }}>🎺</span>
-        <span className="absolute bottom-[30%] left-[20%] text-4xl opacity-10 float" style={{ animationDelay: '1s' }}>🎹</span>
-        <span className="absolute bottom-[20%] right-[25%] text-5xl opacity-10 float" style={{ animationDelay: '1.5s' }}>🥁</span>
-        <span className="absolute top-[40%] left-[5%] text-3xl opacity-10 float" style={{ animationDelay: '2s' }}>🎼</span>
+        <span className="absolute top-[15%] left-[10%] text-6xl opacity-10 float" style={{
+        animationDelay: '0s'
+      }}>🎷</span>
+        <span className="absolute top-[25%] right-[15%] text-5xl opacity-10 float" style={{
+        animationDelay: '0.5s'
+      }}>🎺</span>
+        <span className="absolute bottom-[30%] left-[20%] text-4xl opacity-10 float" style={{
+        animationDelay: '1s'
+      }}>🎹</span>
+        <span className="absolute bottom-[20%] right-[25%] text-5xl opacity-10 float" style={{
+        animationDelay: '1.5s'
+      }}>🥁</span>
+        <span className="absolute top-[40%] left-[5%] text-3xl opacity-10 float" style={{
+        animationDelay: '2s'
+      }}>🎼</span>
       </div>
 
       <div className="container relative z-10 px-4 text-center">
@@ -40,9 +51,7 @@ export function HeroSection({ onEnterFeed }: HeroSectionProps) {
           </h1>
 
           {/* Tagline */}
-          <p className="text-xl sm:text-2xl text-muted-foreground mb-4 font-display italic">
-            "If jazz is dead, nobody told us."
-          </p>
+          
           <p className="text-lg text-muted-foreground/80 mb-10 max-w-2xl mx-auto">
             Share clips, discuss legends, post tutorials, and connect with the underground jazz community. 
             The music lives here.
@@ -50,23 +59,11 @@ export function HeroSection({ onEnterFeed }: HeroSectionProps) {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              variant="hero"
-              size="xl"
-              onClick={onEnterFeed}
-              className="group"
-            >
+            <Button variant="hero" size="xl" onClick={onEnterFeed} className="group">
               Dive into the Scene
               <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
-              variant="hero-outline"
-              size="xl"
-              className="group"
-            >
-              <Play className="h-5 w-5 mr-2" />
-              Watch the Vibe
-            </Button>
+            
           </div>
 
           {/* Stats */}
@@ -89,6 +86,5 @@ export function HeroSection({ onEnterFeed }: HeroSectionProps) {
 
       {/* Bottom gradient fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
-    </section>
-  );
+    </section>;
 }
