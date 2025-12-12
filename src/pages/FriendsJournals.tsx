@@ -44,7 +44,7 @@ const FriendsJournals = () => {
             <Heart className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-foreground">
-                A space to share and celebrate practice progress, mistakes, ideas, and the journey we're on together — <span className="text-primary font-medium">not for virality, but for your inner circle.</span>
+                A space to share and celebrate practice progress, mistakes, ideas, and the journey we're on together.
               </p>
             </div>
           </div>
