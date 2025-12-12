@@ -1,4 +1,5 @@
 import { useActiveSession, useEndSession } from '@/hooks/useSessions';
+import { useCreateNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Clock, Square } from 'lucide-react';
@@ -6,9 +7,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 export function GlobalSessionBanner() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { data: activeSession } = useActiveSession();
   const endSession = useEndSession();
+  const createNote = useCreateNote();
   const navigate = useNavigate();
   const location = useLocation();
   const [elapsed, setElapsed] = useState('0:00');
@@ -37,13 +39,26 @@ export function GlobalSessionBanner() {
     return () => clearInterval(interval);
   }, [activeSession]);
 
-  if (!user || !activeSession) return null;
+  if (!user || !profile || !activeSession) return null;
 
   // Don't show on auth page
   if (location.pathname === '/auth') return null;
 
   const handleEndSession = async () => {
     await endSession.mutateAsync({ sessionId: activeSession.id });
+    // Create an empty note for the session (same behavior as Practice page)
+    createNote.mutate(
+      {
+        authorId: profile.id,
+        sessionId: activeSession.id,
+        visibility: 'private',
+      },
+      {
+        onSuccess: () => {
+          navigate('/');
+        },
+      }
+    );
   };
 
   return (
@@ -65,7 +80,7 @@ export function GlobalSessionBanner() {
             variant="secondary"
             className="h-7 text-xs gap-1"
             onClick={handleEndSession}
-            disabled={endSession.isPending}
+            disabled={endSession.isPending || createNote.isPending}
           >
             <Square className="w-3 h-3" />
             End
