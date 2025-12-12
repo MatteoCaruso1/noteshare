@@ -39,7 +39,7 @@ export interface Note {
   image_files: string[];
   video_files: string[];
   tags: string[];
-  visibility: 'private' | 'collaborators' | 'followers' | 'public';
+  visibility: 'private' | 'collaborators' | 'followers' | 'public' | 'friends';
   created_at: string;
   updated_at: string;
 }
@@ -108,6 +108,20 @@ export interface Goal {
   visibility: 'public' | 'private';
   created_at: string;
   updated_at: string;
+}
+
+export interface Friendship {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FriendshipWithProfile extends Friendship {
+  requester?: Profile;
+  addressee?: Profile;
 }
 
 export interface AudioFileWithName {

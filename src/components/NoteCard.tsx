@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Mic, User, Disc3, Lock, Globe, Clock, FileText, Trash2 } from 'lucide-react';
+import { Mic, User, Disc3, Lock, Globe, Clock, FileText, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -28,7 +28,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
   const handleVisibilityChange = (value: string) => {
     updateVisibility.mutate({
       noteId: note.id,
-      visibility: value as 'private' | 'public',
+      visibility: value as 'private' | 'friends' | 'public',
     });
   };
 
@@ -36,6 +36,19 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this note?')) {
       deleteNote.mutate(note.id);
+    }
+  };
+
+  const getVisibilityIcon = () => {
+    switch (note.visibility) {
+      case 'private':
+        return <Lock className="w-3 h-3 text-muted-foreground" />;
+      case 'friends':
+        return <Users className="w-3 h-3 text-primary" />;
+      case 'public':
+        return <Globe className="w-3 h-3 text-muted-foreground" />;
+      default:
+        return <Lock className="w-3 h-3 text-muted-foreground" />;
     }
   };
 
@@ -67,11 +80,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium">{note.author?.name}</p>
-            {note.visibility === 'private' ? (
-              <Lock className="w-3 h-3 text-muted-foreground" />
-            ) : (
-              <Globe className="w-3 h-3 text-muted-foreground" />
-            )}
+            {getVisibilityIcon()}
           </div>
           <p className="text-xs text-muted-foreground">
             {format(new Date(note.created_at), 'MMM d, yyyy · h:mm a')}
@@ -95,6 +104,11 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
                 <SelectItem value="private">
                   <div className="flex items-center gap-1">
                     <Lock className="w-3 h-3" /> Private
+                  </div>
+                </SelectItem>
+                <SelectItem value="friends">
+                  <div className="flex items-center gap-1">
+                    <Users className="w-3 h-3" /> Friends
                   </div>
                 </SelectItem>
                 <SelectItem value="public">
