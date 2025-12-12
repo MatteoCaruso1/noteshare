@@ -3,10 +3,12 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, User, Disc3, Lock, Globe, Clock, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Mic, User, Disc3, Lock, Globe, Clock, FileText, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
+import { useDeleteNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NoteCardProps {
@@ -18,6 +20,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
+  const deleteNote = useDeleteNote();
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
@@ -27,6 +30,13 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       noteId: note.id,
       visibility: value as 'private' | 'public',
     });
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      deleteNote.mutate(note.id);
+    }
   };
 
   return (
@@ -68,31 +78,41 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           </p>
         </div>
 
-        {/* Visibility Toggle for Owner */}
+        {/* Visibility Toggle and Delete for Owner */}
         {isOwner && (
-          <Select
-            value={note.visibility}
-            onValueChange={handleVisibilityChange}
-          >
-            <SelectTrigger
-              className="w-28 h-8 text-xs"
-              onClick={(e) => e.stopPropagation()}
+          <div className="flex items-center gap-1">
+            <Select
+              value={note.visibility}
+              onValueChange={handleVisibilityChange}
             >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent onClick={(e) => e.stopPropagation()}>
-              <SelectItem value="private">
-                <div className="flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> Private
-                </div>
-              </SelectItem>
-              <SelectItem value="public">
-                <div className="flex items-center gap-1">
-                  <Globe className="w-3 h-3" /> Public
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+              <SelectTrigger
+                className="w-28 h-8 text-xs"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent onClick={(e) => e.stopPropagation()}>
+                <SelectItem value="private">
+                  <div className="flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Private
+                  </div>
+                </SelectItem>
+                <SelectItem value="public">
+                  <div className="flex items-center gap-1">
+                    <Globe className="w-3 h-3" /> Public
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         )}
       </div>
 
