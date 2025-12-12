@@ -396,31 +396,86 @@ function generateTags(postType: string): string[] {
   return [...new Set(tags)].slice(0, 5);
 }
 
-const COMMENT_TEMPLATES = [
-  "Great post! {artist} is definitely underrated in discussions about {concept}. Their influence on modern players is more significant than most realize.",
-  "This is exactly what I needed to hear today. Been struggling with my own approach to {concept} and this gives me new ideas to explore in the practice room.",
-  "Have you tried approaching it from a {concept} perspective? That's what helped me finally break through when I was stuck on similar material.",
-  "Classic! The {instrument} work on this is incredible. You can really hear how {artist} influenced this - that same sense of space and timing.",
-  "I disagree respectfully - I think {artist} is the real pioneer here. They did this years earlier, but because of label politics their recordings weren't as widely distributed.",
-  "Thanks for sharing this! The way you break things down helps a lot. Going to incorporate some of these ideas into my practice routine this week.",
-  "Been working on this tune for months and still hitting walls. Any tips on the bridge section? The chord movement there always throws me off.",
-  "The way you explained {concept} makes so much sense now. I'd heard other people try to describe it but this finally clicked for me. Appreciate the clarity.",
-  "This is why I love this community - real knowledge being shared by people who actually put in the work. No gatekeeping, just genuine help.",
-  "Adding this to my practice list immediately. I've been neglecting {concept} and this is a good reminder of why it matters for the music.",
-  "Where can I find the full transcription? Would love to dig deeper into the note choices - there's some intervals in there I can't figure out by ear.",
-  "Beautiful playing! Your tone has improved so much since your earlier posts. Whatever you've been working on is clearly paying off. Keep going!",
-  "I remember learning this - took me forever! The key for me was slowing it way down and really listening to what {artist} does with dynamics.",
-  "The {era} recordings of this are still the best in my opinion. Something about the room sound and the playing that later versions never quite captured.",
-  "What mouthpiece and gear setup are you using here? That tone is exactly what I'm looking for and I'm curious about your signal chain."
-];
+// Generate AI-powered contextual comment using Lovable AI gateway
+async function generateAIComment(
+  postContent: string, 
+  postTags: string[], 
+  commenterProfile: { name: string; persona_profile: string } | null
+): Promise<string> {
+  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+  
+  if (!lovableApiKey) {
+    console.log("No LOVABLE_API_KEY, using fallback comment");
+    return getFallbackComment();
+  }
 
-function generateCommentContent(): string {
-  let content = randomChoice(COMMENT_TEMPLATES);
-  content = content.replace(/{artist}/g, randomChoice(ARTISTS));
-  content = content.replace(/{concept}/g, randomChoice(CONCEPTS));
-  content = content.replace(/{instrument}/g, randomChoice(INSTRUMENT_TAGS));
-  content = content.replace(/{era}/g, randomChoice(ERA_TAGS));
-  return content;
+  const personaContext = commenterProfile?.persona_profile 
+    ? `You are: ${commenterProfile.name}. ${commenterProfile.persona_profile}`
+    : "You are a jazz enthusiast with deep knowledge of the music.";
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-5",
+        messages: [
+          {
+            role: "system",
+            content: `You are an AI jazz persona in the "Jazz is Dead" community. ${personaContext}
+
+Write a comment responding to this post. Your comment should:
+- Be 1-3 short paragraphs (150-300 characters total)
+- Reference specific details from the post
+- Sound like a real jazz musician or fan, not a generic assistant
+- Vary sentence length and structure naturally
+- Occasionally reference specific artists, tunes, albums, or jazz concepts
+- Sometimes ask follow-up questions to keep the conversation going
+- Never sound robotic, repetitive, or use generic phrases like "Great post!"
+- Don't use hashtags or emojis`
+          },
+          {
+            role: "user",
+            content: `Post content: "${postContent}"
+Post tags: ${postTags.join(", ")}
+
+Write a natural, persona-driven comment responding to this specific post.`
+          }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("AI API error:", response.status);
+      return getFallbackComment();
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (content && content.length > 50) {
+      return content.trim();
+    }
+    
+    return getFallbackComment();
+  } catch (error) {
+    console.error("Error generating AI comment:", error);
+    return getFallbackComment();
+  }
+}
+
+function getFallbackComment(): string {
+  const fallbacks = [
+    `The harmonic approach here reminds me of what ${randomChoice(ARTISTS)} was doing in the ${randomChoice(ERA_TAGS)}. There's a similar sense of space and intention in the phrasing that really lets the ideas breathe.`,
+    `I've been working on something similar in my practice lately. The way ${randomChoice(CONCEPTS)} interacts with the underlying harmony is tricky, but posts like this help me hear new possibilities.`,
+    `This is the kind of content that keeps me coming back to this community. Real insight from people who are doing the work, not just surface-level takes.`,
+    `Interesting perspective. I'd push back a bit on the ${randomChoice(CONCEPTS)} angle - have you considered how ${randomChoice(ARTISTS)} approached this differently in their later recordings?`,
+    `Been thinking about this exact thing. The ${randomChoice(INSTRUMENT_TAGS)} players from that era had such a distinct sound that's hard to replicate today, even with better gear.`,
+  ];
+  return randomChoice(fallbacks);
 }
 
 serve(async (req) => {
@@ -532,12 +587,54 @@ serve(async (req) => {
     }
     console.log(`Created ${createdPosts?.length || 0} posts`);
 
-    // 4. Create comments (2-10 per post)
-    console.log("Creating comments...");
+    // 4. Create comments (2-5 per post) using AI generation
+    console.log("Creating AI-generated comments...");
     const comments = [];
     
-    for (const post of createdPosts || []) {
-      const numComments = randomInt(2, 10);
+    // Get AI profiles with persona info for contextual comments
+    const { data: aiProfilesWithPersona } = await supabase
+      .from('profiles')
+      .select('id, name, persona_profile')
+      .eq('is_ai', true);
+    
+    const aiProfileMap = new Map(
+      (aiProfilesWithPersona || []).map(p => [p.id, { name: p.name, persona_profile: p.persona_profile }])
+    );
+
+    // Limit to first 50 posts for AI comments to avoid timeout, rest get fallback
+    const postsForAI = (createdPosts || []).slice(0, 50);
+    const postsForFallback = (createdPosts || []).slice(50);
+    
+    // Generate AI comments for first 50 posts
+    for (const post of postsForAI) {
+      const numComments = randomInt(2, 5);
+      const postCreatedAt = new Date(post.created_at);
+      
+      for (let j = 0; j < numComments; j++) {
+        const commenter = randomChoice(allProfiles);
+        const commentTime = new Date(postCreatedAt.getTime() + randomInt(1, 48) * 60 * 60 * 1000);
+        const commenterPersona = aiProfileMap.get(commenter.id) || null;
+        
+        // Generate AI comment
+        const content = await generateAIComment(post.content, post.tags, commenterPersona);
+        
+        comments.push({
+          post_id: post.id,
+          author_id: commenter.id,
+          content,
+          created_at: commentTime.toISOString(),
+        });
+      }
+      
+      // Log progress every 10 posts
+      if (postsForAI.indexOf(post) % 10 === 0) {
+        console.log(`Generated comments for ${postsForAI.indexOf(post) + 1}/${postsForAI.length} posts`);
+      }
+    }
+    
+    // Use fallback comments for remaining posts
+    for (const post of postsForFallback) {
+      const numComments = randomInt(2, 5);
       const postCreatedAt = new Date(post.created_at);
       
       for (let j = 0; j < numComments; j++) {
@@ -547,7 +644,7 @@ serve(async (req) => {
         comments.push({
           post_id: post.id,
           author_id: commenter.id,
-          content: generateCommentContent(),
+          content: getFallbackComment(),
           created_at: commentTime.toISOString(),
         });
       }
@@ -561,7 +658,7 @@ serve(async (req) => {
         console.error("Error creating comments batch:", commentsError);
       }
     }
-    console.log(`Created ${comments.length} comments`);
+    console.log(`Created ${comments.length} comments (${postsForAI.length * 3} AI-generated)`);
 
     // Update comment counts on posts
     for (const post of createdPosts || []) {
