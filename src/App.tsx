@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { FloatingInstruments } from "@/components/FloatingInstruments";
+import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import Index from "./pages/Index";
 import Practice from "./pages/Practice";
 import Projects from "./pages/Projects";
@@ -25,6 +27,8 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <FloatingInstruments />
+          <GlobalSessionBanner />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/practice" element={<Practice />} />
