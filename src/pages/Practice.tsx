@@ -106,39 +106,44 @@ const Practice = () => {
   };
 
   const handleSaveNoteAndEndSession = () => {
-    // Save note if there's content
-    if (noteText || audioFiles.length > 0 || imageFiles.length > 0) {
-      createNote.mutate(
-        {
-          authorId: profile.id,
-          textContent: noteText,
-          audioFiles: audioFiles.map(a => a.url),
-          imageFiles,
-          tags,
-          sessionId: activeSession?.id,
-          projectId: selectedProjectId || undefined,
-          visibility,
-        },
+    const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
+    
+    // End session first, then create note if there's content
+    if (activeSession) {
+      endSession.mutate(
+        { sessionId: activeSession.id },
         {
           onSuccess: () => {
-            setNoteText('');
-            setAudioFiles([]);
-            setImageFiles([]);
-            setTags([]);
-            setSelectedProjectId('');
-            setVisibility('private');
-            // End session after note is saved
-            if (activeSession) {
-              endSession.mutate({ sessionId: activeSession.id });
+            if (hasContent) {
+              createNote.mutate(
+                {
+                  authorId: profile.id,
+                  textContent: noteText,
+                  audioFiles: audioFiles.map(a => a.url),
+                  imageFiles,
+                  tags,
+                  sessionId: activeSession.id,
+                  projectId: selectedProjectId || undefined,
+                  visibility,
+                },
+                {
+                  onSuccess: () => {
+                    setNoteText('');
+                    setAudioFiles([]);
+                    setImageFiles([]);
+                    setTags([]);
+                    setSelectedProjectId('');
+                    setVisibility('private');
+                    navigate('/');
+                  },
+                }
+              );
+            } else {
+              navigate('/');
             }
           },
         }
       );
-    } else {
-      // No content, just end session
-      if (activeSession) {
-        endSession.mutate({ sessionId: activeSession.id });
-      }
     }
   };
 
