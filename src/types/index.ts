@@ -1,90 +1,103 @@
-export type JazzReaction = '🎷' | '🎺' | '🎹' | '🥁' | '🎼';
+// Noteshare Types
 
-export type PostType = 
-  | 'discussion' 
-  | 'performance_clip' 
-  | 'tutorial' 
-  | 'release' 
-  | 'tab' 
-  | 'lead_sheet' 
-  | 'media_recommendation';
-
-export interface User {
+export interface Profile {
   id: string;
+  user_id: string | null;
   name: string;
   username: string;
-  avatar: string;
-  bio?: string;
-  isAI: boolean;
-  aiPersonality?: string;
-  followers: number;
-  following: number;
-  createdAt: Date;
+  avatar: string | null;
+  bio: string | null;
+  location: string | null;
+  instruments: string[];
+  genres: string[];
+  skill_level: string | null;
+  open_to_collaborate: boolean;
+  followers_count: number;
+  following_count: number;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface MediaItem {
-  type: 'image' | 'video' | 'audio' | 'link' | 'youtube' | 'transcription' | 'lead_sheet';
-  url: string;
-  description?: string;
-  thumbnail?: string;
-  title?: string;
-}
-
-export interface Post {
+export interface PracticeSession {
   id: string;
-  authorId: string;
-  author: User;
-  content: string;
-  media?: MediaItem[];
+  user_id: string;
+  started_at: string;
+  ended_at: string | null;
+  goals: string | null;
+  notes_summary: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Note {
+  id: string;
+  author_id: string;
+  session_id: string | null;
+  project_id: string | null;
+  text_content: string | null;
+  audio_files: string[];
+  image_files: string[];
+  video_files: string[];
   tags: string[];
-  postType: PostType;
-  reactions: Record<JazzReaction, number>;
-  userReaction?: JazzReaction;
-  commentCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  visibility: 'private' | 'collaborators' | 'followers' | 'public';
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Comment {
+export interface NoteWithAuthor extends Note {
+  author: Profile;
+}
+
+export interface Project {
   id: string;
-  postId: string;
-  authorId: string;
-  author: User;
+  owner_id: string;
+  title: string;
+  description: string | null;
+  cover_image: string | null;
+  tags: string[];
+  collaborator_ids: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NoteComment {
+  id: string;
+  note_id: string;
+  author_id: string;
   content: string;
-  link?: string;
-  reactions: Record<JazzReaction, number>;
-  userReaction?: JazzReaction;
-  parentId?: string;
-  createdAt: Date;
+  created_at: string;
 }
 
-export interface Page {
+export interface PromoPost {
   id: string;
-  name: string;
-  slug: string;
-  description: string;
-  headerImage?: string;
-  type: 'artist' | 'instrument' | 'era' | 'style' | 'scene';
-  followers: number;
-  postCount: number;
+  author_id: string;
+  promo_type: 'gig' | 'release' | 'event';
+  title: string;
+  description: string | null;
+  event_date: string | null;
+  image: string | null;
+  links: string[];
+  created_at: string;
 }
 
-export type FeedTab = 'for-you' | 'latest' | 'trending' | 'near-you';
+export interface Follower {
+  id: string;
+  follower_id: string;
+  following_id: string;
+  approved: boolean;
+  created_at: string;
+}
 
-export const JAZZ_REACTIONS: JazzReaction[] = ['🎷', '🎺', '🎹', '🥁', '🎼'];
-
-export const STYLE_TAGS = [
-  'bebop', 'hard-bop', 'cool-jazz', 'fusion', 'free-jazz', 'swing', 'contemporary', 'modal', 'latin-jazz'
+export const INSTRUMENTS = [
+  'Piano', 'Guitar', 'Bass', 'Drums', 'Saxophone', 'Trumpet', 'Violin', 
+  'Cello', 'Flute', 'Clarinet', 'Trombone', 'Voice', 'Synthesizer', 'Other'
 ];
 
-export const INSTRUMENT_TAGS = [
-  'sax', 'trumpet', 'piano', 'bass', 'drums', 'guitar', 'vocals', 'trombone', 'vibraphone'
+export const GENRES = [
+  'Jazz', 'Classical', 'Rock', 'Pop', 'R&B', 'Hip-Hop', 'Electronic',
+  'Folk', 'Country', 'Blues', 'Metal', 'Indie', 'World', 'Other'
 ];
 
-export const CONTENT_TAGS = [
-  'clip', 'tutorial', 'release', 'tab', 'lead-sheet', 'movie', 'documentary', 'tv-show', 'transcription', 'gear', 'live-performance'
-];
-
-export const ERA_TAGS = [
-  '1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'
+export const SKILL_LEVELS = [
+  'Beginner', 'Intermediate', 'Advanced', 'Professional'
 ];
