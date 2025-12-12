@@ -180,6 +180,14 @@ export default {
   					opacity: '1',
   					transform: 'scale(1)'
   				}
+  			},
+  			floatDown: {
+  				'0%': {
+  					transform: 'translateY(-5vh) rotate(0deg)'
+  				},
+  				'100%': {
+  					transform: 'translateY(105vh) rotate(360deg)'
+  				}
   			}
   		},
   		animation: {
@@ -189,7 +197,8 @@ export default {
   			pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
   			slideUp: 'slideUp 0.3s ease-out',
   			slideDown: 'slideDown 0.3s ease-out',
-  			scaleIn: 'scaleIn 0.2s ease-out'
+  			scaleIn: 'scaleIn 0.2s ease-out',
+  			'float-down': 'floatDown 30s linear infinite'
   		},
 		backgroundImage: {
 			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

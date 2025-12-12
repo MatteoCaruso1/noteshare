@@ -3,7 +3,6 @@ import { useActiveSession } from '@/hooks/useSessions';
 import { useNotes } from '@/hooks/useNotes';
 import { BottomNav } from '@/components/BottomNav';
 import { Timeline } from '@/components/Timeline';
-import { ActiveSessionBanner } from '@/components/ActiveSessionBanner';
 import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
@@ -30,16 +29,13 @@ const Index = () => {
   const journalTitle = `${firstName}'s Practice Journal`;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={`min-h-screen bg-background pb-20 ${activeSession ? 'pt-10' : ''}`}>
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border" style={{ top: activeSession ? '40px' : '0' }}>
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-xl font-semibold">{journalTitle}</h1>
         </div>
       </header>
-
-      {/* Active Session Banner */}
-      {activeSession && <ActiveSessionBanner session={activeSession} />}
 
       {/* Main Content */}
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
