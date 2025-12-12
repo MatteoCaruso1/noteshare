@@ -56,8 +56,13 @@ export interface Project {
   cover_image: string | null;
   tags: string[];
   collaborator_ids: string[];
+  show_on_feed: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProjectWithOwner extends Project {
+  owner: Profile;
 }
 
 export interface NoteComment {
@@ -77,7 +82,13 @@ export interface PromoPost {
   event_date: string | null;
   image: string | null;
   links: string[];
+  show_on_feed: boolean;
+  is_paid_opportunity: boolean;
   created_at: string;
+}
+
+export interface PromoPostWithAuthor extends PromoPost {
+  author: Profile;
 }
 
 export interface Follower {

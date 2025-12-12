@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { usePromoPosts, useCreatePromoPost } from '@/hooks/usePromoPosts';
+import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost } from '@/hooks/usePromoPosts';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,14 +10,18 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar, Music2, Disc3, PartyPopper, User, ExternalLink } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Plus, Calendar, Music2, Disc3, PartyPopper, User, ExternalLink, DollarSign, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 const Gigs = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const { data: promoPosts, isLoading } = usePromoPosts();
+  const { data: myPosts, isLoading: myLoading } = useMyPromoPosts(profile?.id);
+  const { data: friendsPosts, isLoading: friendsLoading } = useFriendsPromoPosts();
+  const { data: paidGigs, isLoading: paidLoading } = usePaidGigs();
   const createPromoPost = useCreatePromoPost();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -26,6 +30,8 @@ const Gigs = () => {
   const [description, setDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [link, setLink] = useState('');
+  const [showOnFeed, setShowOnFeed] = useState(false);
+  const [isPaidOpportunity, setIsPaidOpportunity] = useState(false);
 
   if (!user) {
     navigate('/auth');
@@ -43,6 +49,8 @@ const Gigs = () => {
         description,
         eventDate: eventDate || undefined,
         links: link ? [link] : [],
+        showOnFeed,
+        isPaidOpportunity,
       },
       {
         onSuccess: () => {
@@ -50,32 +58,43 @@ const Gigs = () => {
           setDescription('');
           setEventDate('');
           setLink('');
+          setShowOnFeed(false);
+          setIsPaidOpportunity(false);
           setIsDialogOpen(false);
         },
       }
     );
   };
 
-  const gigs = promoPosts?.filter((p: any) => p.promo_type === 'gig') || [];
-  const releases = promoPosts?.filter((p: any) => p.promo_type === 'release') || [];
-  const events = promoPosts?.filter((p: any) => p.promo_type === 'event') || [];
+  // Filter friends posts to exclude own posts
+  const filteredFriendsPosts = friendsPosts?.filter(
+    (p: any) => p.author_id !== profile?.id
+  ) || [];
 
-  const PromoCard = ({ post }: { post: any }) => (
+  const PromoCard = ({ post, showAuthor = true }: { post: any; showAuthor?: boolean }) => (
     <Card className="p-4 bg-card border-border">
       <div className="flex items-start gap-3">
-        <Avatar className="w-10 h-10">
-          <AvatarImage src={post.author?.avatar || ''} />
-          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-        </Avatar>
+        {showAuthor && (
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={post.author?.avatar || ''} />
+            <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+          </Avatar>
+        )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm">{post.author?.name}</span>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            {showAuthor && <span className="font-medium text-sm">{post.author?.name}</span>}
             <Badge variant="outline" className="text-xs">
               {post.promo_type === 'gig' && <Music2 className="w-3 h-3 mr-1" />}
               {post.promo_type === 'release' && <Disc3 className="w-3 h-3 mr-1" />}
               {post.promo_type === 'event' && <PartyPopper className="w-3 h-3 mr-1" />}
               {post.promo_type}
             </Badge>
+            {post.is_paid_opportunity && (
+              <Badge className="text-xs bg-green-600">
+                <DollarSign className="w-3 h-3 mr-1" />
+                Paid
+              </Badge>
+            )}
           </div>
           <h3 className="font-semibold">{post.title}</h3>
           {post.event_date && (
@@ -103,6 +122,13 @@ const Gigs = () => {
     </Card>
   );
 
+  const EmptyState = ({ message }: { message: string }) => (
+    <div className="text-center py-12 text-muted-foreground">
+      <Music2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+      <p>{message}</p>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -121,7 +147,7 @@ const Gigs = () => {
                   <DialogTitle>Share an Update</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {(['gig', 'release', 'event'] as const).map((type) => (
                       <Button
                         key={type}
@@ -157,6 +183,37 @@ const Gigs = () => {
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
                   />
+                  
+                  {/* Show on Feed Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <Label htmlFor="show-feed-gig" className="text-sm">Show on home feed</Label>
+                    <Switch
+                      id="show-feed-gig"
+                      checked={showOnFeed}
+                      onCheckedChange={setShowOnFeed}
+                    />
+                  </div>
+
+                  {/* Paid Opportunity Toggle (only for gigs) */}
+                  {promoType === 'gig' && (
+                    <div className="flex items-center justify-between py-2 border-t border-border pt-4">
+                      <div>
+                        <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
+                          <Briefcase className="w-4 h-4" />
+                          Paid Opportunity
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Mark this as a paid booking for artists to apply
+                        </p>
+                      </div>
+                      <Switch
+                        id="paid-opportunity"
+                        checked={isPaidOpportunity}
+                        onCheckedChange={setIsPaidOpportunity}
+                      />
+                    </div>
+                  )}
+
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"
                     onClick={handleCreate}
@@ -172,41 +229,49 @@ const Gigs = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6">
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs defaultValue="my" className="w-full">
           <TabsList className="w-full mb-4">
-            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-            <TabsTrigger value="gigs" className="flex-1">Gigs</TabsTrigger>
-            <TabsTrigger value="releases" className="flex-1">Releases</TabsTrigger>
-            <TabsTrigger value="events" className="flex-1">Events</TabsTrigger>
+            <TabsTrigger value="my" className="flex-1">My Gigs</TabsTrigger>
+            <TabsTrigger value="friends" className="flex-1">Friend's Gigs</TabsTrigger>
+            <TabsTrigger value="paid" className="flex-1">Paid Gigs</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="space-y-4">
-            {isLoading ? (
+          <TabsContent value="my" className="space-y-4">
+            {myLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
-            ) : promoPosts && promoPosts.length > 0 ? (
-              promoPosts.map((post: any) => <PromoCard key={post.id} post={post} />)
+            ) : myPosts && myPosts.length > 0 ? (
+              myPosts.map((post: any) => <PromoCard key={post.id} post={post} showAuthor={false} />)
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No posts yet. Share your gigs, releases, or events!</p>
+              <EmptyState message="No posts yet. Share your gigs, releases, or events!" />
+            )}
+          </TabsContent>
+
+          <TabsContent value="friends" className="space-y-4">
+            {friendsLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+            ) : filteredFriendsPosts.length > 0 ? (
+              filteredFriendsPosts.map((post: any) => <PromoCard key={post.id} post={post} />)
+            ) : (
+              <EmptyState message="Connect with friends to see their gigs and releases" />
+            )}
+          </TabsContent>
+
+          <TabsContent value="paid" className="space-y-4">
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2 text-green-400 font-medium mb-1">
+                <Briefcase className="w-4 h-4" />
+                Paid Opportunities
               </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="gigs" className="space-y-4">
-            {gigs.length > 0 ? gigs.map((post: any) => <PromoCard key={post.id} post={post} />) : (
-              <p className="text-center py-12 text-muted-foreground">No gigs posted yet</p>
-            )}
-          </TabsContent>
-
-          <TabsContent value="releases" className="space-y-4">
-            {releases.length > 0 ? releases.map((post: any) => <PromoCard key={post.id} post={post} />) : (
-              <p className="text-center py-12 text-muted-foreground">No releases posted yet</p>
-            )}
-          </TabsContent>
-
-          <TabsContent value="events" className="space-y-4">
-            {events.length > 0 ? events.map((post: any) => <PromoCard key={post.id} post={post} />) : (
-              <p className="text-center py-12 text-muted-foreground">No events posted yet</p>
+              <p className="text-sm text-muted-foreground">
+                Browse paid gig opportunities posted by venues and businesses
+              </p>
+            </div>
+            {paidLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+            ) : paidGigs && paidGigs.length > 0 ? (
+              paidGigs.map((post: any) => <PromoCard key={post.id} post={post} />)
+            ) : (
+              <EmptyState message="No paid opportunities available right now" />
             )}
           </TabsContent>
         </Tabs>

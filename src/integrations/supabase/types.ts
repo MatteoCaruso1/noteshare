@@ -303,6 +303,7 @@ export type Database = {
           description: string | null
           id: string
           owner_id: string
+          show_on_feed: boolean
           tags: string[] | null
           title: string
           updated_at: string
@@ -314,6 +315,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id: string
+          show_on_feed?: boolean
           tags?: string[] | null
           title: string
           updated_at?: string
@@ -325,6 +327,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id?: string
+          show_on_feed?: boolean
           tags?: string[] | null
           title?: string
           updated_at?: string
@@ -347,8 +350,10 @@ export type Database = {
           event_date: string | null
           id: string
           image: string | null
+          is_paid_opportunity: boolean
           links: string[] | null
           promo_type: Database["public"]["Enums"]["promo_type"]
+          show_on_feed: boolean
           title: string
         }
         Insert: {
@@ -358,8 +363,10 @@ export type Database = {
           event_date?: string | null
           id?: string
           image?: string | null
+          is_paid_opportunity?: boolean
           links?: string[] | null
           promo_type: Database["public"]["Enums"]["promo_type"]
+          show_on_feed?: boolean
           title: string
         }
         Update: {
@@ -369,8 +376,10 @@ export type Database = {
           event_date?: string | null
           id?: string
           image?: string | null
+          is_paid_opportunity?: boolean
           links?: string[] | null
           promo_type?: Database["public"]["Enums"]["promo_type"]
+          show_on_feed?: boolean
           title?: string
         }
         Relationships: [

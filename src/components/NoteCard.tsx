@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, User, Folder, Lock, Globe, Clock, FileText } from 'lucide-react';
+import { Mic, User, Disc3, Lock, Globe, Clock, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -105,7 +105,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
             navigate(`/projects/${note.project_id}`);
           }}
         >
-          <Folder className="w-4 h-4 text-accent" />
+          <Disc3 className="w-4 h-4 text-accent" />
           <span className="text-sm text-accent">Linked to project</span>
         </div>
       )}
