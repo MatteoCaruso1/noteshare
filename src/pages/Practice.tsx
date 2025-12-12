@@ -105,29 +105,41 @@ const Practice = () => {
     setTags(tags.filter(t => t !== tag));
   };
 
-  const handleSaveNote = () => {
-    createNote.mutate(
-      {
-        authorId: profile.id,
-        textContent: noteText,
-        audioFiles: audioFiles.map(a => a.url),
-        imageFiles,
-        tags,
-        sessionId: activeSession?.id,
-        projectId: selectedProjectId || undefined,
-        visibility,
-      },
-      {
-        onSuccess: () => {
-          setNoteText('');
-          setAudioFiles([]);
-          setImageFiles([]);
-          setTags([]);
-          setSelectedProjectId('');
-          setVisibility('private');
+  const handleSaveNoteAndEndSession = () => {
+    // Save note if there's content
+    if (noteText || audioFiles.length > 0 || imageFiles.length > 0) {
+      createNote.mutate(
+        {
+          authorId: profile.id,
+          textContent: noteText,
+          audioFiles: audioFiles.map(a => a.url),
+          imageFiles,
+          tags,
+          sessionId: activeSession?.id,
+          projectId: selectedProjectId || undefined,
+          visibility,
         },
+        {
+          onSuccess: () => {
+            setNoteText('');
+            setAudioFiles([]);
+            setImageFiles([]);
+            setTags([]);
+            setSelectedProjectId('');
+            setVisibility('private');
+            // End session after note is saved
+            if (activeSession) {
+              endSession.mutate({ sessionId: activeSession.id });
+            }
+          },
+        }
+      );
+    } else {
+      // No content, just end session
+      if (activeSession) {
+        endSession.mutate({ sessionId: activeSession.id });
       }
-    );
+    }
   };
 
   const sessionDuration = activeSession
@@ -166,14 +178,6 @@ const Practice = () => {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleEndSession}
-                  disabled={endSession.isPending}
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  End Session
-                </Button>
               </div>
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">Session goals</p>
@@ -392,14 +396,14 @@ const Practice = () => {
               )}
             </div>
 
-            {/* Save Button */}
+            {/* Save and End Session Button */}
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
-              onClick={handleSaveNote}
-              disabled={createNote.isPending || uploading || !hasContent}
+              onClick={handleSaveNoteAndEndSession}
+              disabled={createNote.isPending || uploading || endSession.isPending}
             >
-              <Send className="w-4 h-4 mr-2" />
-              Save Note
+              <Square className="w-4 h-4 mr-2" />
+              Save Note and End Session
             </Button>
           </Card>
         )}
