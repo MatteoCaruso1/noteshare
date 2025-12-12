@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Music, Folder, Calendar, User } from 'lucide-react';
+import { Home, Music, Disc3, Calendar, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function BottomNav() {
@@ -8,7 +8,7 @@ export function BottomNav() {
   const links = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/practice', icon: Music, label: 'Practice' },
-    { to: '/projects', icon: Folder, label: 'Projects' },
+    { to: '/projects', icon: Disc3, label: 'Projects' },
     { to: '/gigs', icon: Calendar, label: 'Gigs' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
