@@ -18,6 +18,28 @@ export function useProjects() {
   });
 }
 
+export function useFriendsProjects() {
+  return useQuery({
+    queryKey: ['friends-projects'],
+    queryFn: async () => {
+      // Get projects from users that we have mutual follows with
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          profiles!projects_owner_id_fkey (*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data.map((project: any) => ({
+        ...project,
+        owner: project.profiles,
+      }));
+    },
+  });
+}
+
 export function useProject(projectId: string) {
   return useQuery({
     queryKey: ['project', projectId],
@@ -45,12 +67,14 @@ export function useCreateProject() {
       description,
       coverImage,
       tags = [],
+      showOnFeed = false,
     }: {
       ownerId: string;
       title: string;
       description?: string;
       coverImage?: string;
       tags?: string[];
+      showOnFeed?: boolean;
     }) => {
       const { data, error } = await supabase
         .from('projects')
@@ -60,6 +84,7 @@ export function useCreateProject() {
           description,
           cover_image: coverImage,
           tags,
+          show_on_feed: showOnFeed,
         })
         .select()
         .single();
@@ -69,6 +94,7 @@ export function useCreateProject() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
       toast.success('Project created!');
     },
     onError: (error) => {
@@ -88,18 +114,21 @@ export function useUpdateProject() {
       description,
       coverImage,
       tags,
+      showOnFeed,
     }: {
       projectId: string;
       title?: string;
       description?: string;
       coverImage?: string;
       tags?: string[];
+      showOnFeed?: boolean;
     }) => {
       const updates: any = { updated_at: new Date().toISOString() };
       if (title !== undefined) updates.title = title;
       if (description !== undefined) updates.description = description;
       if (coverImage !== undefined) updates.cover_image = coverImage;
       if (tags !== undefined) updates.tags = tags;
+      if (showOnFeed !== undefined) updates.show_on_feed = showOnFeed;
 
       const { data, error } = await supabase
         .from('projects')
@@ -113,6 +142,7 @@ export function useUpdateProject() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
       toast.success('Project updated!');
     },
     onError: (error) => {
@@ -136,6 +166,7 @@ export function useDeleteProject() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
       toast.success('Project deleted');
     },
     onError: (error) => {

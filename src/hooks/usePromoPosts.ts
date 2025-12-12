@@ -21,6 +21,64 @@ export function usePromoPosts() {
   });
 }
 
+export function useMyPromoPosts(authorId: string | undefined) {
+  return useQuery({
+    queryKey: ['my-promo-posts', authorId],
+    queryFn: async () => {
+      if (!authorId) return [];
+      const { data, error } = await supabase
+        .from('promo_posts')
+        .select(`*, profiles!promo_posts_author_id_fkey (*)`)
+        .eq('author_id', authorId)
+        .order('event_date', { ascending: true });
+
+      if (error) throw error;
+      return data.map((post: any) => ({
+        ...post,
+        author: post.profiles,
+      }));
+    },
+    enabled: !!authorId,
+  });
+}
+
+export function useFriendsPromoPosts() {
+  return useQuery({
+    queryKey: ['friends-promo-posts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('promo_posts')
+        .select(`*, profiles!promo_posts_author_id_fkey (*)`)
+        .order('event_date', { ascending: true });
+
+      if (error) throw error;
+      return data.map((post: any) => ({
+        ...post,
+        author: post.profiles,
+      }));
+    },
+  });
+}
+
+export function usePaidGigs() {
+  return useQuery({
+    queryKey: ['paid-gigs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('promo_posts')
+        .select(`*, profiles!promo_posts_author_id_fkey (*)`)
+        .eq('is_paid_opportunity', true)
+        .order('event_date', { ascending: true });
+
+      if (error) throw error;
+      return data.map((post: any) => ({
+        ...post,
+        author: post.profiles,
+      }));
+    },
+  });
+}
+
 export function useCreatePromoPost() {
   const queryClient = useQueryClient();
 
@@ -33,6 +91,8 @@ export function useCreatePromoPost() {
       eventDate,
       image,
       links = [],
+      showOnFeed = false,
+      isPaidOpportunity = false,
     }: {
       authorId: string;
       promoType: 'gig' | 'release' | 'event';
@@ -41,6 +101,8 @@ export function useCreatePromoPost() {
       eventDate?: string;
       image?: string;
       links?: string[];
+      showOnFeed?: boolean;
+      isPaidOpportunity?: boolean;
     }) => {
       const { data, error } = await supabase
         .from('promo_posts')
@@ -52,6 +114,8 @@ export function useCreatePromoPost() {
           event_date: eventDate,
           image,
           links,
+          show_on_feed: showOnFeed,
+          is_paid_opportunity: isPaidOpportunity,
         })
         .select()
         .single();
@@ -61,6 +125,9 @@ export function useCreatePromoPost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['my-promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['paid-gigs'] });
       toast.success('Posted!');
     },
     onError: (error) => {
@@ -84,6 +151,9 @@ export function useDeletePromoPost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['my-promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['paid-gigs'] });
       toast.success('Post deleted');
     },
     onError: (error) => {
