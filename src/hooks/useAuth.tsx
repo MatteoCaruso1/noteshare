@@ -2,28 +2,17 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-interface Profile {
-  id: string;
-  name: string;
-  username: string;
-  avatar: string | null;
-  bio: string | null;
-  is_ai: boolean;
-  followers_count: number;
-  following_count: number;
-}
+import { Profile } from '@/types';
 
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  showAuthModal: boolean;
-  setShowAuthModal: (show: boolean) => void;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,10 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -46,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -72,7 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       console.error('Error fetching profile:', error);
     } else if (data) {
-      setProfile(data);
+      setProfile(data as Profile);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchProfile(user.id);
     }
   };
 
@@ -83,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/`,
         data: {
           name,
           username,
@@ -95,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
 
-    toast.success('Welcome to Jazz is Dead!');
+    toast.success('Welcome to Noteshare!');
   };
 
   const signIn = async (email: string, password: string) => {
@@ -122,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, session, loading, showAuthModal, setShowAuthModal, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
