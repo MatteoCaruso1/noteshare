@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Music, Folder, Users, User } from 'lucide-react';
+import { Home, Music, Folder, Calendar, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function BottomNav() {
@@ -9,12 +9,12 @@ export function BottomNav() {
     { to: '/', icon: Home, label: 'Home' },
     { to: '/practice', icon: Music, label: 'Practice' },
     { to: '/projects', icon: Folder, label: 'Projects' },
-    { to: '/discover', icon: Users, label: 'Discover' },
+    { to: '/gigs', icon: Calendar, label: 'Gigs' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border safe-area-pb">
       <div className="container max-w-2xl mx-auto px-4">
         <div className="flex items-center justify-around py-2">
           {links.map(({ to, icon: Icon, label }) => {
@@ -24,7 +24,7 @@ export function BottomNav() {
                 key={to}
                 to={to}
                 className={cn(
-                  'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors',
+                  'flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 )}
               >

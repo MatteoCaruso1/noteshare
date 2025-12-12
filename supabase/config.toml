@@ -28,15 +28,3 @@ enable_anonymous_sign_ins = false
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
-
-[functions.seed-content]
-verify_jwt = false
-
-[functions.simulate-activity]
-verify_jwt = false
-
-[functions.moderate-content]
-verify_jwt = false
-
-[functions.analytics]
-verify_jwt = false

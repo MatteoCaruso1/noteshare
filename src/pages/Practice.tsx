@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
+import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { BottomNav } from '@/components/BottomNav';
 import { AudioRecorder } from '@/components/AudioRecorder';
@@ -10,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Play, Square, Clock, Mic, Image, Video, X, Send } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Play, Square, Clock, Mic, Image, X, Send, Folder } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -18,10 +20,11 @@ const Practice = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { data: activeSession } = useActiveSession();
+  const { data: projects } = useProjects();
   const startSession = useStartSession();
   const endSession = useEndSession();
   const createNote = useCreateNote();
-  const { uploadAudio, uploadImage, uploadVideo, uploading } = useMediaUpload();
+  const { uploadAudio, uploadImage, uploading } = useMediaUpload();
 
   const [goals, setGoals] = useState('');
   const [noteText, setNoteText] = useState('');
@@ -29,6 +32,7 @@ const Practice = () => {
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   if (!user || !profile) {
     navigate('/auth');
@@ -83,6 +87,7 @@ const Practice = () => {
         imageFiles,
         tags,
         sessionId: activeSession?.id,
+        projectId: selectedProjectId || undefined,
       },
       {
         onSuccess: () => {
@@ -90,6 +95,7 @@ const Practice = () => {
           setAudioFiles([]);
           setImageFiles([]);
           setTags([]);
+          setSelectedProjectId('');
         },
       }
     );
@@ -101,7 +107,6 @@ const Practice = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-xl font-semibold">Practice</h1>
@@ -170,6 +175,28 @@ const Practice = () => {
         {/* Quick Note Creation */}
         <Card className="p-6 bg-card border-border">
           <h2 className="text-lg font-semibold mb-4">Capture a Note</h2>
+
+          {/* Project Selection */}
+          {projects && projects.length > 0 && (
+            <div className="mb-4">
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <Folder className="w-4 h-4 text-muted-foreground" />
+                    <SelectValue placeholder="Link to a project (optional)" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No project</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Text Content */}
           <Textarea
