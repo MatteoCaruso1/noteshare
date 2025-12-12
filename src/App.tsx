@@ -12,6 +12,7 @@ import NoteDetail from "./pages/NoteDetail";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import Gigs from "./pages/Gigs";
+import FriendsJournals from "./pages/FriendsJournals";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/discover" element={<Discover />} />
             <Route path="/gigs" element={<Gigs />} />
+            <Route path="/friends" element={<FriendsJournals />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

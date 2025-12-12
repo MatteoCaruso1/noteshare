@@ -11,7 +11,7 @@ export function useUpdateNoteVisibility() {
       visibility,
     }: {
       noteId: string;
-      visibility: 'private' | 'collaborators' | 'followers' | 'public';
+      visibility: 'private' | 'collaborators' | 'followers' | 'public' | 'friends';
     }) => {
       const { data, error } = await supabase
         .from('notes')
@@ -25,6 +25,7 @@ export function useUpdateNoteVisibility() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
       toast.success('Visibility updated');
     },
     onError: (error) => {
