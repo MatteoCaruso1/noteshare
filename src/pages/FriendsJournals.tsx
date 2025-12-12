@@ -4,6 +4,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { UserSearch } from '@/components/UserSearch';
 import { FriendsFeed } from '@/components/FriendsFeed';
 import { PendingFriendRequests } from '@/components/PendingFriendRequests';
+import { DirectMessages } from '@/components/DirectMessages';
 import { useFriends } from '@/hooks/useFriendships';
 import { Heart, Users } from 'lucide-react';
 
@@ -48,6 +49,9 @@ const FriendsJournals = () => {
             </div>
           </div>
         </div>
+
+        {/* Direct Messages */}
+        <DirectMessages />
 
         {/* Pending Friend Requests */}
         <PendingFriendRequests />

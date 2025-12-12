@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { INSTRUMENTS, GENRES, SKILL_LEVELS } from '@/types';
+import { INSTRUMENTS, GENRES } from '@/types';
 import { LogOut, User, Settings, Camera } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
@@ -26,7 +26,6 @@ const Profile = () => {
   const [bio, setBio] = useState(profile?.bio || '');
   const [instruments, setInstruments] = useState<string[]>(profile?.instruments || []);
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
-  const [skillLevel, setSkillLevel] = useState(profile?.skill_level || '');
   const [openToCollaborate, setOpenToCollaborate] = useState(profile?.open_to_collaborate || false);
   const [saving, setSaving] = useState(false);
 
@@ -48,7 +47,6 @@ const Profile = () => {
         bio,
         instruments,
         genres,
-        skill_level: skillLevel,
         open_to_collaborate: openToCollaborate,
       })
       .eq('id', profile.id);
@@ -207,24 +205,8 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* Skill Level & Collaboration */}
-        <Card className="p-4 bg-card border-border space-y-4">
-          <div>
-            <h3 className="font-medium mb-3">Skill Level</h3>
-            <div className="flex flex-wrap gap-2">
-              {SKILL_LEVELS.map((level) => (
-                <Badge
-                  key={level}
-                  variant={skillLevel === level ? 'default' : 'secondary'}
-                  className={editing ? 'cursor-pointer' : ''}
-                  onClick={editing ? () => setSkillLevel(level) : undefined}
-                >
-                  {level}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
+        {/* Collaboration */}
+        <Card className="p-4 bg-card border-border">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium">Open to Collaborate</h3>

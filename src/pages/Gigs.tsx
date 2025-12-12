@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { Plus, Calendar, Music2, Disc3, PartyPopper, User, ExternalLink, DollarSign, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -32,6 +33,7 @@ const Gigs = () => {
   const [link, setLink] = useState('');
   const [showOnFeed, setShowOnFeed] = useState(false);
   const [isPaidOpportunity, setIsPaidOpportunity] = useState(false);
+  const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
 
   if (!user) {
     navigate('/auth');
@@ -51,6 +53,7 @@ const Gigs = () => {
         links: link ? [link] : [],
         showOnFeed,
         isPaidOpportunity,
+        collaboratorIds,
       },
       {
         onSuccess: () => {
@@ -60,6 +63,7 @@ const Gigs = () => {
           setLink('');
           setShowOnFeed(false);
           setIsPaidOpportunity(false);
+          setCollaboratorIds([]);
           setIsDialogOpen(false);
         },
       }
@@ -213,6 +217,15 @@ const Gigs = () => {
                       />
                     </div>
                   )}
+
+                  {/* Collaborator Picker */}
+                  <div className="border-t border-border pt-4">
+                    <CollaboratorPicker
+                      selectedIds={collaboratorIds}
+                      onSelect={setCollaboratorIds}
+                      label="Tag Collaborators"
+                    />
+                  </div>
 
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"

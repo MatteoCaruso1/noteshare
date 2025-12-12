@@ -68,6 +68,7 @@ export function useCreateProject() {
       coverImage,
       tags = [],
       showOnFeed = false,
+      collaboratorIds = [],
     }: {
       ownerId: string;
       title: string;
@@ -75,6 +76,7 @@ export function useCreateProject() {
       coverImage?: string;
       tags?: string[];
       showOnFeed?: boolean;
+      collaboratorIds?: string[];
     }) => {
       const { data, error } = await supabase
         .from('projects')
@@ -85,6 +87,7 @@ export function useCreateProject() {
           cover_image: coverImage,
           tags,
           show_on_feed: showOnFeed,
+          collaborator_ids: collaboratorIds,
         })
         .select()
         .single();

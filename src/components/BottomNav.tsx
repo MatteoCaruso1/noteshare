@@ -8,9 +8,9 @@ export function BottomNav() {
   const links = [
     { to: '/', icon: Home, label: 'My Journal' },
     { to: '/practice', icon: Music, label: 'Practice' },
-    { to: '/friends', icon: Users, label: 'Friends' },
     { to: '/projects', icon: Disc3, label: 'Projects' },
     { to: '/gigs', icon: Calendar, label: 'Gigs' },
+    { to: '/friends', icon: Users, label: 'Friends' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
