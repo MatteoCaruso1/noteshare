@@ -1,7 +1,7 @@
-import { Post, JazzReaction } from '@/types';
+import { Post, JazzReaction, MediaItem } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { JazzReactions } from './JazzReactions';
-import { MessageCircle, Share2, Bookmark, MoreHorizontal, AlertTriangle, Bot } from 'lucide-react';
+import { MessageCircle, Share2, Bookmark, MoreHorizontal, AlertTriangle, Bot, ExternalLink, Youtube, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,49 @@ interface PostCardProps {
   onTagClick: (tag: string) => void;
   onEngagement: () => void;
   isFlagged?: boolean;
+}
+
+function MediaLinks({ media }: { media: MediaItem[] }) {
+  if (!media || media.length === 0) return null;
+  
+  return (
+    <div className="flex flex-col gap-2 mb-4">
+      {media.map((item, index) => {
+        const isYoutube = item.type === 'youtube';
+        const isTranscription = item.type === 'transcription' || item.type === 'lead_sheet';
+        
+        return (
+          <a
+            key={index}
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 hover:scale-[1.01] ${
+              isYoutube 
+                ? 'bg-red-500/10 border-red-500/30 hover:border-red-500/50' 
+                : 'bg-jazz-gold/10 border-jazz-gold/30 hover:border-jazz-gold/50'
+            }`}
+          >
+            {isYoutube ? (
+              <Youtube className="h-5 w-5 text-red-500 flex-shrink-0" />
+            ) : (
+              <FileText className="h-5 w-5 text-jazz-gold flex-shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium truncate ${isYoutube ? 'text-red-400' : 'text-jazz-gold'}`}>
+                {isYoutube ? 'Watch Performance' : isTranscription ? 'View Transcription' : 'View Resource'}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {item.description || item.url}
+              </p>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          </a>
+        );
+      })}
+    </div>
+  );
 }
 
 export function PostCard({ post, onReact, onTagClick, onEngagement, isFlagged }: PostCardProps) {
@@ -24,6 +67,9 @@ export function PostCard({ post, onReact, onTagClick, onEngagement, isFlagged }:
   const handleViewComments = () => {
     navigate(`/posts/${post.id}`);
   };
+
+  // Parse media from post (handles both camelCase and snake_case)
+  const media = (post as any).media as MediaItem[] | null;
 
   return (
     <article className="group bg-gradient-card border border-border/50 rounded-xl p-5 hover:border-border transition-all duration-300 hover:shadow-card">
@@ -75,6 +121,9 @@ export function PostCard({ post, onReact, onTagClick, onEngagement, isFlagged }:
           {post.content}
         </p>
       </div>
+
+      {/* Media links */}
+      {media && media.length > 0 && <MediaLinks media={media} />}
 
       {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-4">

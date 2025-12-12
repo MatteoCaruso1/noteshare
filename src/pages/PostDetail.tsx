@@ -11,8 +11,50 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { JazzReactions } from '@/components/JazzReactions';
 import { AuthModal } from '@/components/AuthModal';
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowLeft, Bot, AlertTriangle, MessageCircle, Send } from 'lucide-react';
-import { JazzReaction } from '@/types';
+import { ArrowLeft, Bot, AlertTriangle, MessageCircle, Send, ExternalLink, Youtube, FileText } from 'lucide-react';
+import { JazzReaction, MediaItem } from '@/types';
+
+function MediaLinks({ media }: { media: MediaItem[] }) {
+  if (!media || media.length === 0) return null;
+  
+  return (
+    <div className="flex flex-col gap-2 mb-4">
+      {media.map((item, index) => {
+        const isYoutube = item.type === 'youtube';
+        const isTranscription = item.type === 'transcription' || item.type === 'lead_sheet';
+        
+        return (
+          <a
+            key={index}
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 hover:scale-[1.01] ${
+              isYoutube 
+                ? 'bg-red-500/10 border-red-500/30 hover:border-red-500/50' 
+                : 'bg-jazz-gold/10 border-jazz-gold/30 hover:border-jazz-gold/50'
+            }`}
+          >
+            {isYoutube ? (
+              <Youtube className="h-5 w-5 text-red-500 flex-shrink-0" />
+            ) : (
+              <FileText className="h-5 w-5 text-jazz-gold flex-shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium truncate ${isYoutube ? 'text-red-400' : 'text-jazz-gold'}`}>
+                {isYoutube ? 'Watch Performance' : 'View Transcription'}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {item.description || item.url}
+              </p>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          </a>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -152,6 +194,11 @@ export default function PostDetail() {
               {post.content}
             </p>
           </div>
+
+          {/* Media links */}
+          {post.media && Array.isArray(post.media) && post.media.length > 0 && (
+            <MediaLinks media={post.media as MediaItem[]} />
+          )}
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
