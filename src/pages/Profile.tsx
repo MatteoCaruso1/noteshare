@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES, SKILL_LEVELS } from '@/types';
 import { LogOut, User, Settings, Camera } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { PracticeStats } from '@/components/PracticeStats';
 
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -94,7 +95,7 @@ const Profile = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold">Profile</h1>
+            <h1 className="text-xl font-semibold">Profile & Stats</h1>
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="w-5 h-5" />
             </Button>
@@ -264,6 +265,14 @@ const Profile = () => {
             >
               Save Changes
             </Button>
+          </div>
+        )}
+
+        {/* Practice Stats */}
+        {!editing && profile && (
+          <div className="pt-4">
+            <h2 className="text-lg font-semibold mb-4">Your Practice Stats</h2>
+            <PracticeStats profileId={profile.id} />
           </div>
         )}
       </main>

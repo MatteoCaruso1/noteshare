@@ -10,7 +10,7 @@ export function BottomNav() {
     { to: '/practice', icon: Music, label: 'Practice' },
     { to: '/projects', icon: Disc3, label: 'Projects' },
     { to: '/gigs', icon: Calendar, label: 'Gigs' },
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/profile', icon: User, label: 'Profile & Stats' },
   ];
 
   return (
