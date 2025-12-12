@@ -12,9 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Square, Clock, Mic, Image, X, Send, Folder } from 'lucide-react';
+import { Play, Square, Clock, Mic, Image, X, Send, Folder, Lock, Globe, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { AudioFileWithName } from '@/types';
 
 const Practice = () => {
   const { user, profile } = useAuth();
@@ -28,11 +29,13 @@ const Practice = () => {
 
   const [goals, setGoals] = useState('');
   const [noteText, setNoteText] = useState('');
-  const [audioFiles, setAudioFiles] = useState<string[]>([]);
+  const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [visibility, setVisibility] = useState<'private' | 'public'>('private');
+  const [currentAudioName, setCurrentAudioName] = useState('');
 
   if (!user || !profile) {
     navigate('/auth');
@@ -53,7 +56,9 @@ const Practice = () => {
   const handleAudioRecorded = async (blob: Blob) => {
     const url = await uploadAudio(blob, profile.id);
     if (url) {
-      setAudioFiles([...audioFiles, url]);
+      const name = currentAudioName.trim() || `Recording ${audioFiles.length + 1}`;
+      setAudioFiles([...audioFiles, { url, name }]);
+      setCurrentAudioName('');
     }
   };
 
@@ -83,11 +88,12 @@ const Practice = () => {
       {
         authorId: profile.id,
         textContent: noteText,
-        audioFiles,
+        audioFiles: audioFiles.map(a => a.url),
         imageFiles,
         tags,
         sessionId: activeSession?.id,
         projectId: selectedProjectId || undefined,
+        visibility,
       },
       {
         onSuccess: () => {
@@ -96,6 +102,7 @@ const Practice = () => {
           setImageFiles([]);
           setTags([]);
           setSelectedProjectId('');
+          setVisibility('private');
         },
       }
     );
@@ -104,6 +111,8 @@ const Practice = () => {
   const sessionDuration = activeSession
     ? formatDistanceToNow(new Date(activeSession.started_at), { addSuffix: false })
     : null;
+
+  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -172,141 +181,174 @@ const Practice = () => {
           )}
         </Card>
 
-        {/* Quick Note Creation */}
-        <Card className="p-6 bg-card border-border">
-          <h2 className="text-lg font-semibold mb-4">Capture a Note</h2>
+        {/* Note Capture - Only shown when session is active */}
+        {activeSession && (
+          <Card className="p-6 bg-card border-border">
+            <h2 className="text-lg font-semibold mb-4">Capture Session Notes</h2>
 
-          {/* Project Selection */}
-          {projects && projects.length > 0 && (
-            <div className="mb-4">
-              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                <SelectTrigger>
-                  <div className="flex items-center gap-2">
-                    <Folder className="w-4 h-4 text-muted-foreground" />
-                    <SelectValue placeholder="Link to a project (optional)" />
-                  </div>
+            {/* Visibility Toggle */}
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-muted-foreground">Visibility</span>
+              <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'public')}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No project</SelectItem>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.title}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="private">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-3 h-3" /> Private
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="public">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3 h-3" /> Public
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          )}
 
-          {/* Text Content */}
-          <Textarea
-            placeholder="What did you practice? Any insights or breakthroughs?"
-            value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            className="resize-none mb-4"
-            rows={4}
-          />
-
-          {/* Audio Recording */}
-          <div className="mb-4">
-            <AudioRecorder onRecorded={handleAudioRecorded} />
-          </div>
-
-          {/* Uploaded Audio Files */}
-          {audioFiles.length > 0 && (
-            <div className="mb-4 space-y-2">
-              {audioFiles.map((url, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
-                  <Mic className="w-4 h-4 text-primary" />
-                  <audio src={url} controls className="flex-1 h-8" />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Image Upload */}
-          <div className="flex gap-2 mb-4">
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors">
-                <Image className="w-4 h-4" />
-                <span className="text-sm">Add Image</span>
+            {/* Project Selection */}
+            {projects && projects.length > 0 && (
+              <div className="mb-4">
+                <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                  <SelectTrigger>
+                    <div className="flex items-center gap-2">
+                      <Folder className="w-4 h-4 text-muted-foreground" />
+                      <SelectValue placeholder="Link to a project (optional)" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No project</SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </label>
-          </div>
+            )}
 
-          {/* Uploaded Images */}
-          {imageFiles.length > 0 && (
-            <div className="mb-4 flex flex-wrap gap-2">
-              {imageFiles.map((url, i) => (
-                <div key={i} className="relative">
-                  <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2 w-6 h-6"
-                    onClick={() => setImageFiles(imageFiles.filter((_, idx) => idx !== i))}
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
+            {/* Text Content */}
+            <Textarea
+              placeholder="What did you practice? Any insights or breakthroughs?"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              className="resize-none mb-4"
+              rows={4}
+            />
 
-          {/* Tags */}
-          <div className="mb-4">
-            <div className="flex gap-2 mb-2">
-              <Input
-                placeholder="Add tag (e.g., scales, chord voicings)"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1"
-              />
-              <Button variant="outline" onClick={handleAddTag}>
-                Add
-              </Button>
+            {/* Audio Recording with Name */}
+            <div className="mb-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Name this recording (optional)"
+                  value={currentAudioName}
+                  onChange={(e) => setCurrentAudioName(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+              <AudioRecorder onRecorded={handleAudioRecorded} />
             </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="cursor-pointer"
-                    onClick={() => handleRemoveTag(tag)}
-                  >
-                    {tag}
-                    <X className="w-3 h-3 ml-1" />
-                  </Badge>
+
+            {/* Uploaded Audio Files */}
+            {audioFiles.length > 0 && (
+              <div className="mb-4 space-y-2">
+                {audioFiles.map((audio, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
+                    <Mic className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-sm font-medium min-w-0 truncate">{audio.name}</span>
+                    <audio src={audio.url} controls className="flex-1 h-8" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Save Button */}
-          <Button
-            className="w-full bg-gradient-primary text-primary-foreground"
-            onClick={handleSaveNote}
-            disabled={createNote.isPending || uploading || (!noteText && audioFiles.length === 0 && imageFiles.length === 0)}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Save Note
-          </Button>
-        </Card>
+            {/* Image Upload */}
+            <div className="flex gap-2 mb-4">
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors">
+                  <Image className="w-4 h-4" />
+                  <span className="text-sm">Add Image</span>
+                </div>
+              </label>
+            </div>
+
+            {/* Uploaded Images */}
+            {imageFiles.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {imageFiles.map((url, i) => (
+                  <div key={i} className="relative">
+                    <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 w-6 h-6"
+                      onClick={() => setImageFiles(imageFiles.filter((_, idx) => idx !== i))}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Tags */}
+            <div className="mb-4">
+              <div className="flex gap-2 mb-2">
+                <Input
+                  placeholder="Add tag (e.g., scales, chord voicings)"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                  className="flex-1"
+                />
+                <Button variant="outline" onClick={handleAddTag}>
+                  Add
+                </Button>
+              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => handleRemoveTag(tag)}
+                    >
+                      {tag}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Save Button */}
+            <Button
+              className="w-full bg-gradient-primary text-primary-foreground"
+              onClick={handleSaveNote}
+              disabled={createNote.isPending || uploading || !hasContent}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Save Note
+            </Button>
+          </Card>
+        )}
       </main>
 
       <BottomNav />
