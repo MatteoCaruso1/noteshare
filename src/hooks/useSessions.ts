@@ -103,29 +103,3 @@ export function useEndSession() {
   });
 }
 
-export function useUpdateSessionGoals() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ sessionId, goals }: { sessionId: string; goals: string }) => {
-      const { data, error } = await supabase
-        .from('practice_sessions')
-        .update({ goals })
-        .eq('id', sessionId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as PracticeSession;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['active-session'] });
-      toast.success('Session goals updated');
-    },
-    onError: (error) => {
-      console.error('Error updating session goals:', error);
-      toast.error('Failed to update session goals');
-    },
-  });
-}

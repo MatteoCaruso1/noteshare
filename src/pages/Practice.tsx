@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useActiveSession, useStartSession, useEndSession, useUpdateSessionGoals } from '@/hooks/useSessions';
+import { useActiveSession, useStartSession, useEndSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Square, Clock, Mic, Image, X, Send, Folder, Lock, Globe, Plus } from 'lucide-react';
+import { Play, Square, Clock, Mic, Image, X, Folder, Lock, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { AudioFileWithName } from '@/types';
@@ -24,11 +24,9 @@ const Practice = () => {
   const { data: projects } = useProjects();
   const startSession = useStartSession();
   const endSession = useEndSession();
-  const updateSessionGoals = useUpdateSessionGoals();
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
-  const [goals, setGoals] = useState('');
   const [noteText, setNoteText] = useState('');
   const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
@@ -37,15 +35,6 @@ const Practice = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'public'>('private');
   const [currentAudioName, setCurrentAudioName] = useState('');
-  const [sessionGoalsDraft, setSessionGoalsDraft] = useState('');
-
-  useEffect(() => {
-    if (activeSession) {
-      setSessionGoalsDraft(activeSession.goals || '');
-    } else {
-      setSessionGoalsDraft('');
-    }
-  }, [activeSession]);
 
   if (!user || !profile) {
     navigate('/auth');
@@ -53,8 +42,7 @@ const Practice = () => {
   }
 
   const handleStartSession = () => {
-    startSession.mutate({ userId: profile.id, goals });
-    setGoals('');
+    startSession.mutate({ userId: profile.id });
   };
 
   const handleEndSession = () => {
@@ -106,41 +94,35 @@ const Practice = () => {
   };
 
   const handleSaveNoteAndEndSession = () => {
-    const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
-    
-    // End session first, then create note if there's content
     if (activeSession) {
       endSession.mutate(
         { sessionId: activeSession.id },
         {
           onSuccess: () => {
-            if (hasContent) {
-              createNote.mutate(
-                {
-                  authorId: profile.id,
-                  textContent: noteText,
-                  audioFiles: audioFiles.map(a => a.url),
-                  imageFiles,
-                  tags,
-                  sessionId: activeSession.id,
-                  projectId: selectedProjectId || undefined,
-                  visibility,
+            // Always create a note for the session (even if empty)
+            createNote.mutate(
+              {
+                authorId: profile.id,
+                textContent: noteText || undefined,
+                audioFiles: audioFiles.map(a => a.url),
+                imageFiles,
+                tags,
+                sessionId: activeSession.id,
+                projectId: selectedProjectId || undefined,
+                visibility,
+              },
+              {
+                onSuccess: () => {
+                  setNoteText('');
+                  setAudioFiles([]);
+                  setImageFiles([]);
+                  setTags([]);
+                  setSelectedProjectId('');
+                  setVisibility('private');
+                  navigate('/');
                 },
-                {
-                  onSuccess: () => {
-                    setNoteText('');
-                    setAudioFiles([]);
-                    setImageFiles([]);
-                    setTags([]);
-                    setSelectedProjectId('');
-                    setVisibility('private');
-                    navigate('/');
-                  },
-                }
-              );
-            } else {
-              navigate('/');
-            }
+              }
+            );
           },
         }
       );
@@ -150,14 +132,6 @@ const Practice = () => {
   const sessionDuration = activeSession
     ? formatDistanceToNow(new Date(activeSession.started_at), { addSuffix: false })
     : null;
-
-  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
-
-  const handleUpdateSessionGoals = () => {
-    if (activeSession) {
-      updateSessionGoals.mutate({ sessionId: activeSession.id, goals: sessionGoalsDraft });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -171,37 +145,15 @@ const Practice = () => {
         {/* Session Control */}
         <Card className="p-6 bg-card border-border">
           {activeSession ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-green-500 recording-pulse" />
-                  <div>
-                    <p className="font-medium">Session Active</p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {sessionDuration}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Session goals</p>
-                <Textarea
-                  placeholder="What are you focusing on this session?"
-                  value={sessionGoalsDraft}
-                  onChange={(e) => setSessionGoalsDraft(e.target.value)}
-                  className="resize-none"
-                  rows={2}
-                />
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleUpdateSessionGoals}
-                    disabled={updateSessionGoals.isPending}
-                  >
-                    Save goals
-                  </Button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-500 recording-pulse" />
+                <div>
+                  <p className="font-medium">Session Active</p>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {sessionDuration}
+                  </p>
                 </div>
               </div>
             </div>
@@ -213,13 +165,6 @@ const Practice = () => {
                   Track your practice time and capture notes as you go
                 </p>
               </div>
-              <Textarea
-                placeholder="What do you want to work on today? (optional)"
-                value={goals}
-                onChange={(e) => setGoals(e.target.value)}
-                className="resize-none"
-                rows={2}
-              />
               <Button
                 className="w-full bg-gradient-primary text-primary-foreground"
                 onClick={handleStartSession}
