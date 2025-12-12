@@ -211,7 +211,7 @@ const Practice = () => {
             {/* Project Selection */}
             {projects && projects.length > 0 && (
               <div className="mb-4">
-                <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+              <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
                   <SelectTrigger>
                     <div className="flex items-center gap-2">
                       <Folder className="w-4 h-4 text-muted-foreground" />
@@ -219,7 +219,7 @@ const Practice = () => {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No project</SelectItem>
+                    <SelectItem value="none">No project</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.title}
