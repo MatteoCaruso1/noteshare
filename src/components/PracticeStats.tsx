@@ -84,10 +84,11 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Progress</h3>
+        <h3 className="font-semibold">Progress</h3>
         </div>
         
         {/* Line Chart */}
+        <p className="text-sm text-muted-foreground mb-2">Minutes practiced per week</p>
         <div className="h-40 mb-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={stats.weeklyMinutesOverTime}>
