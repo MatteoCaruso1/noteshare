@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useActiveSession, useStartSession, useEndSession } from '@/hooks/useSessions';
+import { useActiveSession, useStartSession, useEndSession, useUpdateSessionGoals } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -24,8 +24,9 @@ const Practice = () => {
   const { data: projects } = useProjects();
   const startSession = useStartSession();
   const endSession = useEndSession();
+  const updateSessionGoals = useUpdateSessionGoals();
   const createNote = useCreateNote();
-  const { uploadAudio, uploadImage, uploading } = useMediaUpload();
+  const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
   const [goals, setGoals] = useState('');
   const [noteText, setNoteText] = useState('');
@@ -36,6 +37,15 @@ const Practice = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'public'>('private');
   const [currentAudioName, setCurrentAudioName] = useState('');
+  const [sessionGoalsDraft, setSessionGoalsDraft] = useState('');
+
+  useEffect(() => {
+    if (activeSession) {
+      setSessionGoalsDraft(activeSession.goals || '');
+    } else {
+      setSessionGoalsDraft('');
+    }
+  }, [activeSession]);
 
   if (!user || !profile) {
     navigate('/auth');
@@ -68,6 +78,18 @@ const Practice = () => {
       const url = await uploadImage(file, profile.id);
       if (url) {
         setImageFiles([...imageFiles, url]);
+      }
+    }
+  };
+
+  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = await uploadFile(file, profile.id, 'audio');
+      if (url) {
+        const name = currentAudioName.trim() || file.name || `Recording ${audioFiles.length + 1}`;
+        setAudioFiles([...audioFiles, { url, name }]);
+        setCurrentAudioName('');
       }
     }
   };
@@ -114,6 +136,12 @@ const Practice = () => {
 
   const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
 
+  const handleUpdateSessionGoals = () => {
+    if (activeSession) {
+      updateSessionGoals.mutate({ sessionId: activeSession.id, goals: sessionGoalsDraft });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -147,12 +175,26 @@ const Practice = () => {
                   End Session
                 </Button>
               </div>
-              {activeSession.goals && (
-                <div className="p-3 bg-secondary/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Session goals:</p>
-                  <p className="text-sm">{activeSession.goals}</p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Session goals</p>
+                <Textarea
+                  placeholder="What are you focusing on this session?"
+                  value={sessionGoalsDraft}
+                  onChange={(e) => setSessionGoalsDraft(e.target.value)}
+                  className="resize-none"
+                  rows={2}
+                />
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleUpdateSessionGoals}
+                    disabled={updateSessionGoals.isPending}
+                  >
+                    Save goals
+                  </Button>
                 </div>
-              )}
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -248,6 +290,18 @@ const Practice = () => {
                   onChange={(e) => setCurrentAudioName(e.target.value)}
                   className="flex-1"
                 />
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleAudioFileUpload}
+                    className="hidden"
+                  />
+                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors">
+                    <Mic className="w-4 h-4" />
+                    <span className="text-sm">Upload Audio</span>
+                  </div>
+                </label>
               </div>
               <AudioRecorder onRecorded={handleAudioRecorded} />
             </div>
