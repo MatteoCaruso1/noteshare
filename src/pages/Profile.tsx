@@ -11,13 +11,17 @@ import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES, SKILL_LEVELS } from '@/types';
-import { LogOut, User, Settings } from 'lucide-react';
+import { LogOut, User, Settings, Camera } from 'lucide-react';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
 
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { uploadImage } = useMediaUpload();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile?.name || '');
+  const [username, setUsername] = useState(profile?.username || '');
+  const [avatar, setAvatar] = useState(profile?.avatar || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [instruments, setInstruments] = useState<string[]>(profile?.instruments || []);
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
@@ -38,6 +42,8 @@ const Profile = () => {
       .from('profiles')
       .update({
         name,
+        username,
+        avatar,
         bio,
         instruments,
         genres,
@@ -72,6 +78,16 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    const url = await uploadImage(file, profile.id);
+    if (url) {
+      setAvatar(url);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -89,23 +105,47 @@ const Profile = () => {
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Header */}
         <div className="flex items-center gap-4">
-          <Avatar className="w-20 h-20">
-            <AvatarImage src={profile?.avatar || ''} />
-            <AvatarFallback>
-              <User className="w-8 h-8" />
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="w-20 h-20">
+              <AvatarImage src={avatar || ''} />
+              <AvatarFallback>
+                <User className="w-8 h-8" />
+              </AvatarFallback>
+            </Avatar>
+            {editing && (
+              <label className="absolute bottom-0 right-0 bg-background/80 rounded-full p-1 cursor-pointer border border-border">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+                <Camera className="w-4 h-4 text-muted-foreground" />
+              </label>
+            )}
+          </div>
           <div className="flex-1">
             {editing ? (
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="text-lg font-semibold"
-              />
+              <div className="space-y-2">
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="text-lg font-semibold"
+                  placeholder="Full name"
+                />
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="text-sm"
+                  placeholder="Handle (e.g., matteo_caruso)"
+                />
+              </div>
             ) : (
-              <h2 className="text-xl font-semibold">{profile?.name}</h2>
+              <>
+                <h2 className="text-xl font-semibold">{profile?.name}</h2>
+                <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+              </>
             )}
-            <p className="text-sm text-muted-foreground">@{profile?.username}</p>
           </div>
           {!editing && (
             <Button variant="outline" size="sm" onClick={() => setEditing(true)}>

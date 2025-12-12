@@ -6,7 +6,7 @@ export function BottomNav() {
   const location = useLocation();
 
   const links = [
-    { to: '/', icon: Home, label: 'Home' },
+    { to: '/', icon: Home, label: 'My Journal' },
     { to: '/practice', icon: Music, label: 'Practice' },
     { to: '/projects', icon: Disc3, label: 'Projects' },
     { to: '/gigs', icon: Calendar, label: 'Gigs' },

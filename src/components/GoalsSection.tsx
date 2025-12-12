@@ -122,7 +122,7 @@ function GoalItem({ type, label, goal, profileId, onSave, isPending }: GoalItemP
             {goal.target_date && (
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                {new Date(goal.target_date).toLocaleDateString()}
+                Target completion: {new Date(goal.target_date).toLocaleDateString()}
               </span>
             )}
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditing(true)}>
@@ -172,6 +172,7 @@ function GoalItem({ type, label, goal, profileId, onSave, isPending }: GoalItemP
             value={targetDate}
             onChange={(e) => setTargetDate(e.target.value)}
             className="flex-1 h-8 text-sm"
+            aria-label="Target completion date"
           />
         </div>
         <Button size="sm" variant="ghost" onClick={handleCancel} disabled={isPending}>
