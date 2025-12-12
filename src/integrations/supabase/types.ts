@@ -53,6 +53,47 @@ export type Database = {
           },
         ]
       }
+      goals: {
+        Row: {
+          content: string
+          created_at: string
+          goal_type: string
+          id: string
+          target_date: string | null
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          goal_type: string
+          id?: string
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          goal_type?: string
+          id?: string
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       note_comments: {
         Row: {
           author_id: string

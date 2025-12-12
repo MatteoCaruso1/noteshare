@@ -88,6 +88,22 @@ export interface Follower {
   created_at: string;
 }
 
+export interface Goal {
+  id: string;
+  user_id: string;
+  goal_type: 'near-term' | 'long-term';
+  content: string;
+  target_date: string | null;
+  visibility: 'public' | 'private';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AudioFileWithName {
+  url: string;
+  name: string;
+}
+
 export const INSTRUMENTS = [
   'Piano', 'Guitar', 'Bass', 'Drums', 'Saxophone', 'Trumpet', 'Violin', 
   'Cello', 'Flute', 'Clarinet', 'Trombone', 'Voice', 'Synthesizer', 'Other'
