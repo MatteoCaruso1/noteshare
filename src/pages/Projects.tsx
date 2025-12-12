@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { Plus, Disc3, Calendar, Upload, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -29,6 +30,7 @@ const Projects = () => {
   const [showOnFeed, setShowOnFeed] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
@@ -76,6 +78,7 @@ const Projects = () => {
         description: newDescription,
         coverImage: coverImage || undefined,
         showOnFeed,
+        collaboratorIds,
       },
       {
         onSuccess: () => {
@@ -83,6 +86,7 @@ const Projects = () => {
           setNewDescription('');
           setCoverImage(null);
           setShowOnFeed(false);
+          setCollaboratorIds([]);
           setIsDialogOpen(false);
         },
       }
@@ -217,6 +221,15 @@ const Projects = () => {
                       id="show-feed"
                       checked={showOnFeed}
                       onCheckedChange={setShowOnFeed}
+                    />
+                  </div>
+
+                  {/* Collaborator Picker */}
+                  <div className="border-t border-border pt-4">
+                    <CollaboratorPicker
+                      selectedIds={collaboratorIds}
+                      onSelect={setCollaboratorIds}
+                      label="Tag Collaborators"
                     />
                   </div>
 

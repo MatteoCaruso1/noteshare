@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followers: {
         Row: {
           approved: boolean | null
@@ -387,6 +429,7 @@ export type Database = {
       promo_posts: {
         Row: {
           author_id: string
+          collaborator_ids: string[] | null
           created_at: string
           description: string | null
           event_date: string | null
@@ -400,6 +443,7 @@ export type Database = {
         }
         Insert: {
           author_id: string
+          collaborator_ids?: string[] | null
           created_at?: string
           description?: string | null
           event_date?: string | null
@@ -413,6 +457,7 @@ export type Database = {
         }
         Update: {
           author_id?: string
+          collaborator_ids?: string[] | null
           created_at?: string
           description?: string | null
           event_date?: string | null

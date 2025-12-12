@@ -93,6 +93,7 @@ export function useCreatePromoPost() {
       links = [],
       showOnFeed = false,
       isPaidOpportunity = false,
+      collaboratorIds = [],
     }: {
       authorId: string;
       promoType: 'gig' | 'release' | 'event';
@@ -103,6 +104,7 @@ export function useCreatePromoPost() {
       links?: string[];
       showOnFeed?: boolean;
       isPaidOpportunity?: boolean;
+      collaboratorIds?: string[];
     }) => {
       const { data, error } = await supabase
         .from('promo_posts')
@@ -116,6 +118,7 @@ export function useCreatePromoPost() {
           links,
           show_on_feed: showOnFeed,
           is_paid_opportunity: isPaidOpportunity,
+          collaborator_ids: collaboratorIds,
         })
         .select()
         .single();
