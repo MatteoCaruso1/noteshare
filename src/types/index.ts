@@ -22,17 +22,20 @@ export interface User {
   createdAt: Date;
 }
 
+export interface MediaItem {
+  type: 'image' | 'video' | 'audio' | 'link' | 'youtube' | 'transcription' | 'lead_sheet';
+  url: string;
+  description?: string;
+  thumbnail?: string;
+  title?: string;
+}
+
 export interface Post {
   id: string;
   authorId: string;
   author: User;
   content: string;
-  media?: {
-    type: 'image' | 'video' | 'audio' | 'link';
-    url: string;
-    thumbnail?: string;
-    title?: string;
-  }[];
+  media?: MediaItem[];
   tags: string[];
   postType: PostType;
   reactions: Record<JazzReaction, number>;

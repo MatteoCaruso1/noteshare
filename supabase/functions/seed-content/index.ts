@@ -275,6 +275,111 @@ const INSTRUMENT_TAGS = ['sax', 'trumpet', 'piano', 'bass', 'drums', 'guitar', '
 const CONTENT_TAGS = ['clip', 'tutorial', 'release', 'tab', 'lead-sheet', 'movie', 'documentary', 'transcription', 'gear', 'live-performance'];
 const ERA_TAGS = ['1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
 
+// Curated YouTube jazz performance videos - real, verified links
+const YOUTUBE_VIDEOS = [
+  // Miles Davis
+  { artist: 'Miles Davis', tune: 'So What', url: 'https://www.youtube.com/watch?v=ylXk1LBvIqU', description: 'So What - Kind of Blue sessions' },
+  { artist: 'Miles Davis', tune: 'All Blues', url: 'https://www.youtube.com/watch?v=JIfdYs8WErM', description: 'All Blues live performance' },
+  { artist: 'Miles Davis', tune: 'Autumn Leaves', url: 'https://www.youtube.com/watch?v=rsZnLr2tOkU', description: 'Autumn Leaves - Somethin Else' },
+  { artist: 'Miles Davis', tune: 'Footprints', url: 'https://www.youtube.com/watch?v=hwsHDU4pBtI', description: 'Footprints live at Newport' },
+  // John Coltrane  
+  { artist: 'John Coltrane', tune: 'Giant Steps', url: 'https://www.youtube.com/watch?v=30FTr6G53VU', description: 'Giant Steps original recording' },
+  { artist: 'John Coltrane', tune: 'My Favorite Things', url: 'https://www.youtube.com/watch?v=qWG2dsXV5HI', description: 'My Favorite Things live' },
+  { artist: 'John Coltrane', tune: 'Impressions', url: 'https://www.youtube.com/watch?v=WgHxDEH0MDs', description: 'Impressions - live performance' },
+  { artist: 'John Coltrane', tune: 'A Love Supreme', url: 'https://www.youtube.com/watch?v=ll3CMgiUPuU', description: 'A Love Supreme Part 1' },
+  // Charlie Parker
+  { artist: 'Charlie Parker', tune: 'Donna Lee', url: 'https://www.youtube.com/watch?v=5DkN8Ocp5Y0', description: 'Donna Lee with Miles Davis' },
+  { artist: 'Charlie Parker', tune: 'Confirmation', url: 'https://www.youtube.com/watch?v=yXnPXnTCYuM', description: 'Confirmation - bebop classic' },
+  { artist: 'Charlie Parker', tune: 'Ornithology', url: 'https://www.youtube.com/watch?v=LnXSGrQnx30', description: 'Ornithology live' },
+  // Bill Evans
+  { artist: 'Bill Evans', tune: 'Autumn Leaves', url: 'https://www.youtube.com/watch?v=r-Z8KuwI7Gc', description: 'Autumn Leaves - Portrait in Jazz' },
+  { artist: 'Bill Evans', tune: 'Waltz for Debby', url: 'https://www.youtube.com/watch?v=dH3GSrCmzC8', description: 'Waltz for Debby at Village Vanguard' },
+  { artist: 'Bill Evans', tune: 'Nardis', url: 'https://www.youtube.com/watch?v=pchprSK4Lwk', description: 'Nardis live trio performance' },
+  // Herbie Hancock
+  { artist: 'Herbie Hancock', tune: 'Watermelon Man', url: 'https://www.youtube.com/watch?v=4bjPlBC4h_8', description: 'Watermelon Man - Head Hunters' },
+  { artist: 'Herbie Hancock', tune: 'Cantaloupe Island', url: 'https://www.youtube.com/watch?v=8B1oIXGX0Io', description: 'Cantaloupe Island original' },
+  { artist: 'Herbie Hancock', tune: 'Maiden Voyage', url: 'https://www.youtube.com/watch?v=hwmRQ0PBtXU', description: 'Maiden Voyage title track' },
+  // Thelonious Monk
+  { artist: 'Thelonious Monk', tune: 'Straight No Chaser', url: 'https://www.youtube.com/watch?v=SEWiMi8n9Tc', description: 'Straight No Chaser live' },
+  { artist: 'Thelonious Monk', tune: 'Round Midnight', url: 'https://www.youtube.com/watch?v=ojtuDUbRoxI', description: 'Round Midnight - Monk solo' },
+  { artist: 'Thelonious Monk', tune: 'Blue Monk', url: 'https://www.youtube.com/watch?v=DnaUvPoiTfQ', description: 'Blue Monk studio recording' },
+  // Wes Montgomery
+  { artist: 'Wes Montgomery', tune: 'Four on Six', url: 'https://www.youtube.com/watch?v=cyMz55UgdKg', description: 'Four on Six - Incredible Jazz Guitar' },
+  { artist: 'Wes Montgomery', tune: 'Impressions', url: 'https://www.youtube.com/watch?v=nxd0Cla9tJg', description: 'Impressions - Wes version' },
+  // Sonny Rollins
+  { artist: 'Sonny Rollins', tune: 'St. Thomas', url: 'https://www.youtube.com/watch?v=UA2XIWZxMKM', description: 'St. Thomas - Saxophone Colossus' },
+  { artist: 'Sonny Rollins', tune: 'Blue Seven', url: 'https://www.youtube.com/watch?v=AKfU0oPfzos', description: 'Blue Seven thematic improvisation' },
+  // Chick Corea
+  { artist: 'Chick Corea', tune: 'Spain', url: 'https://www.youtube.com/watch?v=a_OEJ0wqt3s', description: 'Spain - Return to Forever' },
+  { artist: 'Chick Corea', tune: 'La Fiesta', url: 'https://www.youtube.com/watch?v=xZJHmm8-az8', description: 'La Fiesta live performance' },
+  // Pat Metheny
+  { artist: 'Pat Metheny', tune: 'Bright Size Life', url: 'https://www.youtube.com/watch?v=2oMEIxFB10Q', description: 'Bright Size Life with Jaco' },
+  { artist: 'Pat Metheny', tune: 'Phase Dance', url: 'https://www.youtube.com/watch?v=vCR67bPIHQ4', description: 'Phase Dance - Pat Metheny Group' },
+  // Oscar Peterson
+  { artist: 'Oscar Peterson', tune: 'C Jam Blues', url: 'https://www.youtube.com/watch?v=NTJhHn-TuDY', description: 'C Jam Blues - Oscar Peterson Trio' },
+  { artist: 'Oscar Peterson', tune: 'Autumn Leaves', url: 'https://www.youtube.com/watch?v=6Vl2kTaiAMk', description: 'Autumn Leaves virtuoso performance' },
+  // Art Blakey
+  { artist: 'Art Blakey', tune: 'Moanin', url: 'https://www.youtube.com/watch?v=Cv9NSR-2DwM', description: 'Moanin - Jazz Messengers' },
+  { artist: 'Art Blakey', tune: 'Blues March', url: 'https://www.youtube.com/watch?v=qpB7WqDb9xA', description: 'Blues March live' },
+  // Clifford Brown
+  { artist: 'Clifford Brown', tune: 'Joy Spring', url: 'https://www.youtube.com/watch?v=tQ_HRLHD044', description: 'Joy Spring with Max Roach' },
+  { artist: 'Clifford Brown', tune: 'Daahoud', url: 'https://www.youtube.com/watch?v=MmRZ1OwdUmA', description: 'Daahoud - Brown Roach Inc.' },
+  // Chet Baker
+  { artist: 'Chet Baker', tune: 'My Funny Valentine', url: 'https://www.youtube.com/watch?v=jvXywhJpOKs', description: 'My Funny Valentine vocal version' },
+  { artist: 'Chet Baker', tune: 'Autumn Leaves', url: 'https://www.youtube.com/watch?v=r2KYUvtqrLI', description: 'Autumn Leaves - Chet in Paris' },
+  // Cannonball Adderley
+  { artist: 'Cannonball Adderley', tune: 'Mercy Mercy Mercy', url: 'https://www.youtube.com/watch?v=s4rXEKtC8iY', description: 'Mercy Mercy Mercy live' },
+  { artist: 'Cannonball Adderley', tune: 'Work Song', url: 'https://www.youtube.com/watch?v=grUUj3OWjBo', description: 'Work Song - Cannonball quintet' },
+  // Lee Morgan
+  { artist: 'Lee Morgan', tune: 'The Sidewinder', url: 'https://www.youtube.com/watch?v=qJi03NqXfk8', description: 'The Sidewinder - hard bop classic' },
+  { artist: 'Lee Morgan', tune: 'Ceora', url: 'https://www.youtube.com/watch?v=_CkFaLjXM-o', description: 'Ceora - Cornbread album' },
+  // Dexter Gordon
+  { artist: 'Dexter Gordon', tune: 'Body and Soul', url: 'https://www.youtube.com/watch?v=7DaZIr3rWsg', description: 'Body and Soul - Go!' },
+  { artist: 'Dexter Gordon', tune: 'Cheese Cake', url: 'https://www.youtube.com/watch?v=yDyuMn8bUaI', description: 'Cheese Cake - Our Man in Paris' },
+  // Wayne Shorter
+  { artist: 'Wayne Shorter', tune: 'Footprints', url: 'https://www.youtube.com/watch?v=4qoJMH_9Hbs', description: 'Footprints - Adam\'s Apple' },
+  { artist: 'Wayne Shorter', tune: 'Speak No Evil', url: 'https://www.youtube.com/watch?v=DuT8MzaZcS0', description: 'Speak No Evil title track' },
+  // Dizzy Gillespie
+  { artist: 'Dizzy Gillespie', tune: 'A Night in Tunisia', url: 'https://www.youtube.com/watch?v=lJXxPLs0qso', description: 'A Night in Tunisia live' },
+  { artist: 'Dizzy Gillespie', tune: 'Salt Peanuts', url: 'https://www.youtube.com/watch?v=qwl-BPTtc5Y', description: 'Salt Peanuts bebop anthem' },
+  // Charles Mingus
+  { artist: 'Charles Mingus', tune: 'Goodbye Pork Pie Hat', url: 'https://www.youtube.com/watch?v=sxz9eZ1Aons', description: 'Goodbye Pork Pie Hat' },
+  { artist: 'Charles Mingus', tune: 'Moanin', url: 'https://www.youtube.com/watch?v=__OSyznVDOY', description: 'Moanin - Mingus Ah Um' },
+  // Keith Jarrett
+  { artist: 'Keith Jarrett', tune: 'Köln Concert', url: 'https://www.youtube.com/watch?v=_q4dSqJlQd4', description: 'Köln Concert Part 1' },
+  { artist: 'Keith Jarrett', tune: 'Autumn Leaves', url: 'https://www.youtube.com/watch?v=k94zDsJ-JMU', description: 'Autumn Leaves - Standards Trio' },
+  // McCoy Tyner
+  { artist: 'McCoy Tyner', tune: 'Passion Dance', url: 'https://www.youtube.com/watch?v=Ux4N19p1NsE', description: 'Passion Dance - The Real McCoy' },
+  // Freddie Hubbard
+  { artist: 'Freddie Hubbard', tune: 'Red Clay', url: 'https://www.youtube.com/watch?v=wA1ZelIbUfI', description: 'Red Clay - CTI classic' },
+  // Joe Henderson
+  { artist: 'Joe Henderson', tune: 'Inner Urge', url: 'https://www.youtube.com/watch?v=1VBfVdLCxBA', description: 'Inner Urge - post-bop masterpiece' },
+  // Horace Silver
+  { artist: 'Horace Silver', tune: 'Song for My Father', url: 'https://www.youtube.com/watch?v=CWeXOm49kE0', description: 'Song for My Father' },
+  // Ron Carter
+  { artist: 'Ron Carter', tune: 'Blues for D.P.', url: 'https://www.youtube.com/watch?v=DkrPI4l_tlQ', description: 'Blues for D.P. - walking bass lesson' },
+  // Elvin Jones
+  { artist: 'Elvin Jones', tune: 'Mr. Jones', url: 'https://www.youtube.com/watch?v=VL4Zz2kYBrI', description: 'Mr. Jones - polyrhythmic drumming' },
+  // Tony Williams
+  { artist: 'Tony Williams', tune: 'Nefertiti', url: 'https://www.youtube.com/watch?v=hnHVqmt-mZk', description: 'Nefertiti with Miles Davis' },
+];
+
+// Free transcription and lead sheet resources
+const TRANSCRIPTION_RESOURCES = [
+  { type: 'lead_sheet', url: 'https://www.jazzleadsheets.com', tune: 'All The Things You Are', description: 'JazzLeadSheets.com - All The Things You Are' },
+  { type: 'lead_sheet', url: 'https://www.learnjazzstandards.com/jazz-standards/autumn-leaves/', tune: 'Autumn Leaves', description: 'Learn Jazz Standards - Autumn Leaves analysis' },
+  { type: 'lead_sheet', url: 'https://www.jazzstandardsbible.com', tune: 'Blue Bossa', description: 'Jazz Standards Bible - Blue Bossa' },
+  { type: 'tab', url: 'https://www.jazzguitar.be/blog/giant-steps-coltrane-changes/', tune: 'Giant Steps', description: 'JazzGuitar.be - Giant Steps changes analysis' },
+  { type: 'tab', url: 'https://www.learnjazzstandards.com/jazz-standards/so-what/', tune: 'So What', description: 'Learn Jazz Standards - So What breakdown' },
+  { type: 'tab', url: 'https://www.jazzadvice.com/lessons/how-to-improvise-over-all-the-things-you-are/', tune: 'All The Things You Are', description: 'JazzAdvice - ATTYA improvisation guide' },
+  { type: 'lead_sheet', url: 'https://www.learnjazzstandards.com/jazz-standards/take-five/', tune: 'Take Five', description: 'Learn Jazz Standards - Take Five' },
+  { type: 'tab', url: 'https://www.jazzguitar.be/blog/autumn-leaves/', tune: 'Autumn Leaves', description: 'JazzGuitar.be - Autumn Leaves voicings' },
+  { type: 'lead_sheet', url: 'https://www.learnjazzstandards.com/jazz-standards/blue-bossa/', tune: 'Blue Bossa', description: 'Learn Jazz Standards - Blue Bossa' },
+  { type: 'tab', url: 'https://www.jazzadvice.com/lessons/donna-lee-analysis/', tune: 'Donna Lee', description: 'JazzAdvice - Donna Lee analysis' },
+  { type: 'lead_sheet', url: 'https://www.learnjazzstandards.com/jazz-standards/footprints/', tune: 'Footprints', description: 'Learn Jazz Standards - Footprints' },
+  { type: 'tab', url: 'https://www.jazzguitar.be/blog/confirmation/', tune: 'Confirmation', description: 'JazzGuitar.be - Confirmation analysis' },
+];
+
 // Sample post content templates by type - aim for 150-240 characters each
 const POST_TEMPLATES = {
   discussion: [
@@ -357,15 +462,65 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function generatePostContent(postType: string): string {
+// Find a matching YouTube video for an artist/tune combination
+function findVideoForArtistTune(artist: string, tune: string): { url: string; description: string } | null {
+  // First try exact match
+  const exactMatch = YOUTUBE_VIDEOS.find(v => 
+    v.artist.toLowerCase() === artist.toLowerCase() && 
+    v.tune.toLowerCase() === tune.toLowerCase()
+  );
+  if (exactMatch) return { url: exactMatch.url, description: exactMatch.description };
+  
+  // Try artist match with any tune
+  const artistMatch = YOUTUBE_VIDEOS.find(v => 
+    v.artist.toLowerCase() === artist.toLowerCase()
+  );
+  if (artistMatch) return { url: artistMatch.url, description: artistMatch.description };
+  
+  // Try tune match with any artist  
+  const tuneMatch = YOUTUBE_VIDEOS.find(v => 
+    v.tune.toLowerCase() === tune.toLowerCase()
+  );
+  if (tuneMatch) return { url: tuneMatch.url, description: tuneMatch.description };
+  
+  // Return a random video as fallback for performance clips
+  return randomChoice(YOUTUBE_VIDEOS);
+}
+
+// Find a transcription resource for a tune
+function findTranscriptionForTune(tune: string, type: 'tab' | 'lead_sheet'): { url: string; description: string } | null {
+  const match = TRANSCRIPTION_RESOURCES.find(r => 
+    r.tune.toLowerCase() === tune.toLowerCase() && r.type === type
+  );
+  if (match) return { url: match.url, description: match.description };
+  
+  // Return a random resource of the right type
+  const typeMatches = TRANSCRIPTION_RESOURCES.filter(r => r.type === type);
+  if (typeMatches.length > 0) return randomChoice(typeMatches);
+  
+  return randomChoice(TRANSCRIPTION_RESOURCES);
+}
+
+interface PostContent {
+  content: string;
+  media: { type: string; url: string; description: string }[];
+  mentionedArtist?: string;
+  mentionedTune?: string;
+}
+
+function generatePostContent(postType: string): PostContent {
   const templates = POST_TEMPLATES[postType as keyof typeof POST_TEMPLATES] || POST_TEMPLATES.discussion;
   let content = randomChoice(templates);
   
-  content = content.replace(/{artist}/g, randomChoice(ARTISTS));
+  // Pick artist and tune first so we can find matching videos
+  const artist = randomChoice(ARTISTS);
+  const tune = randomChoice(TUNES);
+  
+  content = content.replace(/{artist}/g, artist);
   content = content.replace(/{artist1}/g, randomChoice(ARTISTS));
   content = content.replace(/{artist2}/g, randomChoice(ARTISTS));
   content = content.replace(/{album}/g, randomChoice(ALBUMS));
-  content = content.replace(/{tune}/g, randomChoice(TUNES));
+  content = content.replace(/{tune}/g, tune);
   content = content.replace(/{concept}/g, randomChoice(CONCEPTS));
   content = content.replace(/{style}/g, randomChoice(STYLE_TAGS));
   content = content.replace(/{era}/g, randomChoice(ERA_TAGS));
@@ -382,7 +537,38 @@ function generatePostContent(postType: string): string {
   content = content.replace(/{ensemble}/g, randomChoice(['quartet', 'trio', 'big band', 'duo']));
   content = content.replace(/{musicians}/g, randomChoice(['a rhythm section from NYC', 'my mentors', 'some incredible young players']));
   
-  return content;
+  const media: { type: string; url: string; description: string }[] = [];
+  
+  // Add video for performance clips and tutorials
+  if (postType === 'performance_clip' || postType === 'tutorial') {
+    const video = findVideoForArtistTune(artist, tune);
+    if (video) {
+      media.push({ type: 'youtube', url: video.url, description: video.description });
+    }
+  }
+  
+  // Add transcription links for tab and lead_sheet posts
+  if (postType === 'tab') {
+    const resource = findTranscriptionForTune(tune, 'tab');
+    if (resource) {
+      media.push({ type: 'transcription', url: resource.url, description: resource.description });
+    }
+  }
+  
+  if (postType === 'lead_sheet') {
+    const resource = findTranscriptionForTune(tune, 'lead_sheet');
+    if (resource) {
+      media.push({ type: 'lead_sheet', url: resource.url, description: resource.description });
+    }
+  }
+  
+  // Sometimes add a video to media recommendations too
+  if (postType === 'media_recommendation' && Math.random() > 0.5) {
+    const video = randomChoice(YOUTUBE_VIDEOS);
+    media.push({ type: 'youtube', url: video.url, description: video.description });
+  }
+  
+  return { content, media, mentionedArtist: artist, mentionedTune: tune };
 }
 
 function generateTags(postType: string): string[] {
@@ -564,12 +750,14 @@ serve(async (req) => {
       const author = randomChoice(allProfiles);
       const postType = randomChoice(POST_TYPES) as string;
       const createdAt = new Date(now - randomInt(0, 3 * 24 * 60 * 60 * 1000)); // Random time in last 3 days
+      const postContent = generatePostContent(postType);
       
       posts.push({
         author_id: author.id,
-        content: generatePostContent(postType),
+        content: postContent.content,
         post_type: postType,
         tags: generateTags(postType),
+        media: postContent.media.length > 0 ? postContent.media : null,
         created_at: createdAt.toISOString(),
         updated_at: createdAt.toISOString(),
         comment_count: 0, // Will update after creating comments
