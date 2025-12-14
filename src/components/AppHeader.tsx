@@ -106,7 +106,7 @@ export function AppHeader() {
                         size="sm"
                         variant="outline"
                         className="flex-1 text-xs"
-                        onClick={() => navigate('/practice')}
+                        onClick={() => navigate('/')}
                       >
                         View
                       </Button>
