@@ -22,13 +22,41 @@ export function useFriendsProjects() {
   return useQuery({
     queryKey: ['friends-projects'],
     queryFn: async () => {
-      // Get projects from users that we have mutual follows with
+      // First get the current user's profile ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!currentProfile) return [];
+
+      // Get friend IDs from accepted friendships
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${currentProfile.id},addressee_id.eq.${currentProfile.id}`);
+
+      if (friendshipsError) throw friendshipsError;
+
+      const friendIds = friendships.map(f => 
+        f.requester_id === currentProfile.id ? f.addressee_id : f.requester_id
+      );
+
+      if (friendIds.length === 0) return [];
+
+      // Get projects from friends only
       const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
           profiles!projects_owner_id_fkey (*)
         `)
+        .in('owner_id', friendIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

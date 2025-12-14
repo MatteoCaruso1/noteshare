@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Square, Clock, Mic, Image, X, Folder, Lock, Globe } from 'lucide-react';
+import { Play, Square, Clock, Mic, Image, X, Folder, Lock, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { AudioFileWithName } from '@/types';
@@ -33,7 +33,7 @@ const Practice = () => {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [visibility, setVisibility] = useState<'private' | 'public'>('private');
+  const [visibility, setVisibility] = useState<'private' | 'friends'>('private');
   const [currentAudioName, setCurrentAudioName] = useState('');
 
   if (!user || !profile) {
@@ -119,7 +119,7 @@ const Practice = () => {
                   setTags([]);
                   setSelectedProjectId('');
                   setVisibility('private');
-                  navigate('/');
+                  // Stay on current page - don't navigate away
                 },
               }
             );
@@ -185,7 +185,7 @@ const Practice = () => {
             {/* Visibility Toggle */}
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-muted-foreground">Visibility</span>
-              <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'public')}>
+              <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -195,9 +195,9 @@ const Practice = () => {
                       <Lock className="w-3 h-3" /> Private
                     </div>
                   </SelectItem>
-                  <SelectItem value="public">
+                  <SelectItem value="friends">
                     <div className="flex items-center gap-2">
-                      <Globe className="w-3 h-3" /> Public
+                      <Users className="w-3 h-3" /> Friends
                     </div>
                   </SelectItem>
                 </SelectContent>

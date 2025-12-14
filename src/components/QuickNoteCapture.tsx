@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, Image, X, Send, Folder, Lock, Globe, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mic, Image, X, Send, Folder, Lock, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 export function QuickNoteCapture() {
@@ -26,7 +26,7 @@ export function QuickNoteCapture() {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [visibility, setVisibility] = useState<'private' | 'public'>('private');
+  const [visibility, setVisibility] = useState<'private' | 'friends'>('private');
 
   if (!profile) return null;
 
@@ -101,7 +101,7 @@ export function QuickNoteCapture() {
           {/* Visibility Toggle */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Visibility</span>
-            <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'public')}>
+            <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
@@ -111,9 +111,9 @@ export function QuickNoteCapture() {
                     <Lock className="w-3 h-3" /> Private
                   </div>
                 </SelectItem>
-                <SelectItem value="public">
+                <SelectItem value="friends">
                   <div className="flex items-center gap-2">
-                    <Globe className="w-3 h-3" /> Public
+                    <Users className="w-3 h-3" /> Friends
                   </div>
                 </SelectItem>
               </SelectContent>

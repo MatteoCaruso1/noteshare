@@ -275,12 +275,12 @@ export function useFriendsNotes() {
 
       if (friendIds.length === 0) return [];
 
-      // Get notes from friends with 'friends' or 'public' visibility
+      // Get notes from friends with 'friends' visibility only (no public option)
       const { data: notes, error: notesError } = await supabase
         .from('notes')
         .select('*')
         .in('author_id', friendIds)
-        .in('visibility', ['friends', 'public'])
+        .eq('visibility', 'friends')
         .order('created_at', { ascending: false })
         .limit(50);
 

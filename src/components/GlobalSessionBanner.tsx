@@ -1,7 +1,7 @@
 import { useActiveSession, useEndSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Clock, Square } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,6 @@ export function GlobalSessionBanner() {
   const { data: activeSession } = useActiveSession();
   const endSession = useEndSession();
   const createNote = useCreateNote();
-  const navigate = useNavigate();
   const location = useLocation();
   const [elapsed, setElapsed] = useState('0:00');
 
@@ -47,28 +46,19 @@ export function GlobalSessionBanner() {
   const handleEndSession = async () => {
     await endSession.mutateAsync({ sessionId: activeSession.id });
     // Create an empty note for the session (same behavior as Practice page)
-    createNote.mutate(
-      {
-        authorId: profile.id,
-        sessionId: activeSession.id,
-        visibility: 'private',
-      },
-      {
-        onSuccess: () => {
-          navigate('/');
-        },
-      }
-    );
+    // Stay on current page - don't navigate away
+    createNote.mutate({
+      authorId: profile.id,
+      sessionId: activeSession.id,
+      visibility: 'private',
+    });
   };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-primary-foreground/20">
       <div className="container max-w-2xl mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
-          <div 
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/practice')}
-          >
+          <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-primary-foreground recording-pulse" />
             <span className="text-sm font-medium text-primary-foreground">Session Active</span>
             <span className="text-sm text-primary-foreground/80 flex items-center gap-1 font-mono">
