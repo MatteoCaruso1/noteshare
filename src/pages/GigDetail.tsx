@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -131,6 +131,11 @@ const GigDetail = () => {
   const addNote = useAddNoteToGig();
   const updateGig = useUpdatePromoPost();
   const deleteGig = useDeletePromoPost();
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
   
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
