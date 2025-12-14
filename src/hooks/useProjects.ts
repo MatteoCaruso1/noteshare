@@ -194,9 +194,10 @@ export function useUpdateProject() {
       if (error) throw error;
       return data as Project;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', data.id] });
       toast.success('Project updated!');
     },
     onError: (error) => {
