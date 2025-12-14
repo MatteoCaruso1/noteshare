@@ -79,7 +79,7 @@ export function AudioFileItem({ audio, onRemove, onRename }: AudioFileItemProps)
       )}
       
       <div className="flex-1 min-w-0">
-        <WaveformPlayer src={audio.url} />
+        <WaveformPlayer src={audio.url} title={audio.name} />
       </div>
       
       <Button
