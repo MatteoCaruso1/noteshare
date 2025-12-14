@@ -293,31 +293,33 @@ const GigDetail = () => {
       />
 
       <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-        {/* Gig Details Card */}
-        <Card className="p-4 bg-card border-border">
-          {gig.event_date && (
-            <p className="text-sm text-primary flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4" />
-              {format(new Date(gig.event_date), 'EEEE, MMM d, yyyy · h:mm a')}
-            </p>
-          )}
+        {/* Gig Details Card - only show if there's content */}
+        {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
+          <Card className="p-4 bg-card border-border">
+            {gig.event_date && (
+              <p className="text-sm text-primary flex items-center gap-2 mb-3">
+                <Calendar className="w-4 h-4" />
+                {format(new Date(gig.event_date), 'EEEE, MMM d, yyyy · h:mm a')}
+              </p>
+            )}
 
-          {gig.description && (
-            <p className="text-sm text-muted-foreground">{gig.description}</p>
-          )}
+            {gig.description && (
+              <p className="text-sm text-muted-foreground">{gig.description}</p>
+            )}
 
-          {gig.links && gig.links.length > 0 && (
-            <a
-              href={gig.links[0]}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-3"
-            >
-              <ExternalLink className="w-4 h-4" />
-              View Details
-            </a>
-          )}
-        </Card>
+            {gig.links && gig.links.length > 0 && (
+              <a
+                href={gig.links[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-3"
+              >
+                <ExternalLink className="w-4 h-4" />
+                View Details
+              </a>
+            )}
+          </Card>
+        )}
 
         {/* Notes Section */}
         <section>
