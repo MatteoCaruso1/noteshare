@@ -131,7 +131,7 @@ export function AppHeader() {
         {/* Slogan */}
         <div className="text-right hidden sm:block">
           <p className="text-xs font-medium text-foreground">Shape your practice. Grow together.</p>
-          <p className="text-[10px] text-muted-foreground">built by musicians, for musicians</p>
+          <p className="text-[10px] text-muted-foreground">by musicians, for musicians</p>
         </div>
       </div>
     </header>
