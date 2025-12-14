@@ -15,6 +15,7 @@ import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
 import { useDeleteNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNoteCommentCount } from '@/hooks/useNoteCommentCount';
 
 interface NoteCardProps {
   note: NoteWithAuthor;
@@ -27,6 +28,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
   const updateVisibility = useUpdateNoteVisibility();
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
+  const { data: commentCount } = useNoteCommentCount(note.id);
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
@@ -259,6 +261,11 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           >
             <MessageCircle className="w-4 h-4 mr-1" />
             Comments
+            {commentCount !== undefined && commentCount > 0 && (
+              <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                {commentCount}
+              </Badge>
+            )}
           </Button>
         </div>
       )}
