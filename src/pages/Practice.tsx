@@ -33,7 +33,7 @@ const Practice = () => {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [visibility, setVisibility] = useState<'private' | 'friends'>('private');
+  const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [currentAudioName, setCurrentAudioName] = useState('');
 
   if (!user || !profile) {
@@ -118,7 +118,7 @@ const Practice = () => {
                   setImageFiles([]);
                   setTags([]);
                   setSelectedProjectId('');
-                  setVisibility('private');
+                  setVisibility('friends');
                   // Stay on current page - don't navigate away
                 },
               }

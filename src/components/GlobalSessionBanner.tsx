@@ -50,7 +50,7 @@ export function GlobalSessionBanner() {
     createNote.mutate({
       authorId: profile.id,
       sessionId: activeSession.id,
-      visibility: 'private',
+      visibility: 'friends',
     });
   };
 

@@ -89,7 +89,7 @@ export function useCreateNote() {
       tags = [],
       sessionId,
       projectId,
-      visibility = 'private',
+      visibility = 'friends',
     }: {
       authorId: string;
       textContent?: string;
@@ -145,6 +145,7 @@ export function useDeleteNote() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] }); // Recompute stats on note delete
       toast.success('Note deleted');
     },
     onError: (error) => {
