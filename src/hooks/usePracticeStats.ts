@@ -28,6 +28,11 @@ export function usePracticeStats(profileId: string | undefined) {
     queryFn: async (): Promise<PracticeStats> => {
       if (!profileId) throw new Error('Profile ID required');
 
+      // Add timeout wrapper to prevent hanging requests
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      });
+
       const now = new Date();
       const threeMonthsAgo = subMonths(now, 3);
 
@@ -201,5 +206,9 @@ export function usePracticeStats(profileId: string | undefined) {
       };
     },
     enabled: !!profileId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1, // Only retry once on failure
+    retryDelay: 1000,
   });
 }
