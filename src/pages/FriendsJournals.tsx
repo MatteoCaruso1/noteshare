@@ -8,6 +8,7 @@ import { PendingFriendRequests } from '@/components/PendingFriendRequests';
 import { DirectMessages } from '@/components/DirectMessages';
 import { FriendsList } from '@/components/FriendsList';
 import { NotificationsList } from '@/components/NotificationsList';
+import { TimelineSearch } from '@/components/TimelineSearch';
 import { useFriends } from '@/hooks/useFriendships';
 import { Users } from 'lucide-react';
 
@@ -16,6 +17,7 @@ const FriendsJournals = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: friends } = useFriends();
+  const [feedSearchQuery, setFeedSearchQuery] = useState('');
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
@@ -67,10 +69,18 @@ const FriendsJournals = () => {
 
         {/* Friends Feed */}
         <div className="pt-2">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span>Friends' Notes</span>
-          </h2>
-          <FriendsFeed />
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <h2 className="text-lg font-semibold">Friends' Notes</h2>
+            <div className="flex-1 max-w-xs">
+              <TimelineSearch onSearch={setFeedSearchQuery} />
+            </div>
+          </div>
+          {feedSearchQuery && (
+            <p className="text-sm text-muted-foreground mb-3">
+              Searching for "{feedSearchQuery}"
+            </p>
+          )}
+          <FriendsFeed searchQuery={feedSearchQuery} />
         </div>
       </main>
 

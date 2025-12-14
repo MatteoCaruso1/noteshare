@@ -1,10 +1,33 @@
+import { useMemo } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
 import { Card } from '@/components/ui/card';
 import { Users, Sparkles } from 'lucide-react';
 
-export function FriendsFeed() {
+interface FriendsFeedProps {
+  searchQuery?: string;
+}
+
+export function FriendsFeed({ searchQuery = '' }: FriendsFeedProps) {
   const { data: notes, isLoading } = useFriendsNotes();
+
+  // Filter notes based on search query
+  const filteredNotes = useMemo(() => {
+    if (!notes || !searchQuery.trim()) return notes || [];
+    
+    const query = searchQuery.toLowerCase();
+    return notes.filter((note) => {
+      // Search by text content
+      if (note.text_content?.toLowerCase().includes(query)) return true;
+      // Search by tags
+      if (note.tags.some(tag => tag.toLowerCase().includes(query))) return true;
+      // Search by audio file names
+      if (note.audio_file_names?.some(name => name?.toLowerCase().includes(query))) return true;
+      // Search by author name
+      if (note.author?.name?.toLowerCase().includes(query)) return true;
+      return false;
+    });
+  }, [notes, searchQuery]);
 
   if (isLoading) {
     return (
@@ -38,9 +61,17 @@ export function FriendsFeed() {
     );
   }
 
+  if (searchQuery && filteredNotes.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p>No results for "{searchQuery}"</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {notes.map((note) => (
+      {filteredNotes.map((note) => (
         <NoteCard key={note.id} note={note} />
       ))}
     </div>
