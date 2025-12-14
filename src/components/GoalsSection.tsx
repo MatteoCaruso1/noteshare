@@ -176,9 +176,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     <Card className="bg-card border-border">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleTrigger asChild>
-          <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
+          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
             <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary" />
+              <Target className={`w-5 h-5 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Goals</h2>
             </div>
             {isExpanded ? (
