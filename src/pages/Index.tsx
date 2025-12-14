@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { BottomNav } from '@/components/BottomNav';
@@ -9,10 +10,26 @@ import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { FeedProjects } from '@/components/FeedProjects';
 import { FeedGigs } from '@/components/FeedGigs';
 import { PracticeControls } from '@/components/PracticeControls';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Play, ChevronDown, ChevronRight } from 'lucide-react';
+
+const PRACTICE_EXPANDED_KEY = 'noteshare_practice_expanded';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
   const { data: notes, isLoading: notesLoading } = useNotes();
+
+  // Practice section collapsible state - default collapsed
+  const [isPracticeExpanded, setIsPracticeExpanded] = useState(() => {
+    const stored = localStorage.getItem(PRACTICE_EXPANDED_KEY);
+    return stored === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem(PRACTICE_EXPANDED_KEY, String(isPracticeExpanded));
+  }, [isPracticeExpanded]);
 
   if (loading) {
     return (
@@ -27,7 +44,7 @@ const Index = () => {
   }
 
   const firstName = profile?.name?.split(' ')[0] || 'Your';
-  const notesTitle = `${firstName}'s Practice Notes`;
+  const notesTitle = `${firstName}'s Notes`;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -41,8 +58,29 @@ const Index = () => {
         {/* Goals Section (Collapsible) */}
         {profile && <GoalsSection profileId={profile.id} />}
 
-        {/* Practice Controls */}
-        <PracticeControls />
+        {/* Practice Controls (Collapsible) */}
+        <Card className="bg-card border-border">
+          <Collapsible open={isPracticeExpanded} onOpenChange={setIsPracticeExpanded}>
+            <CollapsibleTrigger asChild>
+              <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Play className="w-5 h-5 text-primary" />
+                  <h2 className="font-semibold">Practice Session</h2>
+                </div>
+                {isPracticeExpanded ? (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="px-4 pb-4">
+                <PracticeControls />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
 
         {/* Quick Note Capture */}
         <QuickNoteCapture />

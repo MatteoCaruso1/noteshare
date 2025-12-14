@@ -2,6 +2,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { usePublicNotes } from '@/hooks/usePublicNotes';
 import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Music2, Disc3, Users, MapPin } from 'lucide-react';
 import { Profile } from '@/types';
+import { Timeline } from '@/components/Timeline';
 
 function usePublicProfile(profileId: string | undefined) {
   return useQuery({
@@ -33,6 +35,7 @@ const PublicProfile = () => {
   const location = useLocation();
   const { profile: myProfile } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id);
+  const { data: notes, isLoading: notesLoading } = usePublicNotes(id);
   
   // Check if we came from the friends list
   const fromFriendsList = location.state?.fromFriendsList;
@@ -85,14 +88,14 @@ const PublicProfile = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="container max-w-2xl mx-auto px-4 py-6">
+      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Back Button */}
-        <Button variant="ghost" onClick={handleBack} className="mb-4 -ml-2">
+        <Button variant="ghost" onClick={handleBack} className="-ml-2">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 
         {/* Profile Header */}
-        <Card className="p-6 bg-card border-border mb-4">
+        <Card className="p-6 bg-card border-border">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="w-20 h-20 border-2 border-primary/20">
               <AvatarImage src={profile.avatar || ''} />
@@ -160,12 +163,11 @@ const PublicProfile = () => {
           )}
         </Card>
 
-        {/* Stats Hidden Notice */}
-        <Card className="p-4 bg-muted/30 border-border text-center">
-          <p className="text-sm text-muted-foreground">
-            Practice stats are private
-          </p>
-        </Card>
+        {/* User's Notes */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4">{profile.name}'s Notes</h2>
+          <Timeline notes={notes || []} loading={notesLoading} />
+        </section>
       </div>
 
       <BottomNav />

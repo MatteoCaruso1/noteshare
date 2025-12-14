@@ -153,11 +153,27 @@ export function QuickNoteCapture() {
             </Select>
           )}
 
-          {/* Text Content */}
+          {/* Text Content - supports Tab for nested bullets */}
           <Textarea
             placeholder="What's on your mind?"
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                const target = e.target as HTMLTextAreaElement;
+                const start = target.selectionStart;
+                const end = target.selectionEnd;
+                const value = target.value;
+                
+                const newValue = value.substring(0, start) + '  ' + value.substring(end);
+                setNoteText(newValue);
+                
+                setTimeout(() => {
+                  target.selectionStart = target.selectionEnd = start + 2;
+                }, 0);
+              }
+            }}
             className="resize-none"
             rows={3}
           />

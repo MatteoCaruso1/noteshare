@@ -128,10 +128,10 @@ export function AppHeader() {
           )}
         </div>
         
-        {/* Slogan */}
-        <div className="text-right hidden sm:block">
-          <p className="text-xs font-medium text-foreground">Shape your practice. Grow together.</p>
-          <p className="text-[10px] text-muted-foreground">by musicians, for musicians</p>
+        {/* Slogan - responsive for mobile */}
+        <div className="text-right flex-shrink-0">
+          <p className="text-[10px] sm:text-xs font-medium text-foreground leading-tight">Shape your practice.</p>
+          <p className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight">Grow together.</p>
         </div>
       </div>
     </header>
