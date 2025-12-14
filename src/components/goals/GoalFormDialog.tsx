@@ -35,8 +35,15 @@ export function GoalFormDialog({
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
   const [progressType, setProgressType] = useState<'checkbox' | 'step' | 'time'>('checkbox');
-  const [targetSteps, setTargetSteps] = useState(5);
-  const [targetMinutes, setTargetMinutes] = useState(100);
+  const [targetStepsInput, setTargetStepsInput] = useState('5');
+  const [targetMinutesInput, setTargetMinutesInput] = useState('100');
+  
+  const targetSteps = parseInt(targetStepsInput) || 0;
+  const targetMinutes = parseInt(targetMinutesInput) || 0;
+  
+  const hasValidTarget = progressType === 'checkbox' || 
+    (progressType === 'step' && targetSteps > 0) ||
+    (progressType === 'time' && targetMinutes > 0);
 
   useEffect(() => {
     if (goal) {
@@ -44,28 +51,28 @@ export function GoalFormDialog({
       setDescription(goal.description || '');
       setTargetDate(goal.target_date || '');
       setProgressType(goal.progress_type || 'checkbox');
-      setTargetSteps(goal.target_steps || 5);
-      setTargetMinutes(goal.target_minutes || 100);
+      setTargetStepsInput(String(goal.target_steps || 5));
+      setTargetMinutesInput(String(goal.target_minutes || 100));
     } else {
       setTitle('');
       setDescription('');
       setTargetDate('');
       setProgressType('checkbox');
-      setTargetSteps(5);
-      setTargetMinutes(100);
+      setTargetStepsInput('5');
+      setTargetMinutesInput('100');
     }
   }, [goal, open]);
 
   const handleTemplateSelect = (template: GoalTemplate) => {
     setTitle(template.title);
     setProgressType(template.progressType);
-    if (template.targetSteps) setTargetSteps(template.targetSteps);
-    if (template.targetMinutes) setTargetMinutes(template.targetMinutes);
+    if (template.targetSteps) setTargetStepsInput(String(template.targetSteps));
+    if (template.targetMinutes) setTargetMinutesInput(String(template.targetMinutes));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !hasValidTarget) return;
 
     onSave({
       id: goal?.id,
@@ -160,10 +167,14 @@ export function GoalFormDialog({
               <Input
                 id="targetSteps"
                 type="number"
-                min={1}
-                value={targetSteps}
-                onChange={(e) => setTargetSteps(parseInt(e.target.value) || 1)}
+                min={0}
+                value={targetStepsInput}
+                onChange={(e) => setTargetStepsInput(e.target.value)}
+                className={targetSteps === 0 ? "border-destructive" : ""}
               />
+              {targetSteps === 0 && (
+                <p className="text-xs text-destructive">Target must be greater than 0</p>
+              )}
             </div>
           )}
 
@@ -173,10 +184,14 @@ export function GoalFormDialog({
               <Input
                 id="targetMinutes"
                 type="number"
-                min={1}
-                value={targetMinutes}
-                onChange={(e) => setTargetMinutes(parseInt(e.target.value) || 1)}
+                min={0}
+                value={targetMinutesInput}
+                onChange={(e) => setTargetMinutesInput(e.target.value)}
+                className={targetMinutes === 0 ? "border-destructive" : ""}
               />
+              {targetMinutes === 0 && (
+                <p className="text-xs text-destructive">Target must be greater than 0</p>
+              )}
             </div>
           )}
 
@@ -184,7 +199,7 @@ export function GoalFormDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending || !title.trim()}>
+            <Button type="submit" disabled={isPending || !title.trim() || !hasValidTarget}>
               {goal ? 'Save Changes' : 'Add Goal'}
             </Button>
           </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, Plus, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
-import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useReorderGoal, useCompleteGoal, useIncrementProgress, useDecrementProgress } from '@/hooks/useGoals';
+import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useReorderGoal, useCompleteGoal, useIncrementProgress, useDecrementProgress, useSetProgress, useRestoreGoal } from '@/hooks/useGoals';
 import { Goal } from '@/types';
 import { GoalCard } from './goals/GoalCard';
 import { GoalFormDialog } from './goals/GoalFormDialog';
@@ -22,6 +22,8 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   const completeGoal = useCompleteGoal();
   const incrementProgress = useIncrementProgress();
   const decrementProgress = useDecrementProgress();
+  const setProgress = useSetProgress();
+  const restoreGoal = useRestoreGoal();
 
   const [formOpen, setFormOpen] = useState(false);
   const [formGoalType, setFormGoalType] = useState<'near-term' | 'long-term'>('near-term');
@@ -101,6 +103,15 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     decrementProgress.mutate({ goalId: goal.id, field });
   };
 
+  const handleSetProgress = (goal: Goal, value: number) => {
+    const field = goal.progress_type === 'step' ? 'current_steps' : 'current_minutes';
+    setProgress.mutate({ goalId: goal.id, field, value });
+  };
+
+  const handleRestoreGoal = (goal: Goal) => {
+    restoreGoal.mutate({ goalId: goal.id, goalType: goal.goal_type });
+  };
+
   const renderGoalList = (goalsList: Goal[], type: 'near-term' | 'long-term') => {
     const sortedGoals = [...goalsList].sort((a, b) => a.priority - b.priority);
     
@@ -116,6 +127,7 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
             onMoveDown={() => handleMoveGoal(goal, 'down')}
             onIncrementProgress={() => handleIncrementProgress(goal)}
             onDecrementProgress={() => handleDecrementProgress(goal)}
+            onSetProgress={(value) => handleSetProgress(goal, value)}
             onComplete={() => handleCompleteGoal(goal)}
             isFirst={index === 0}
             isLast={index === sortedGoals.length - 1}
@@ -176,6 +188,7 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
                   onIncrementProgress={() => {}}
                   onDecrementProgress={() => {}}
                   onComplete={() => {}}
+                  onRestore={() => handleRestoreGoal(goal)}
                   showReorder={false}
                 />
               ))}

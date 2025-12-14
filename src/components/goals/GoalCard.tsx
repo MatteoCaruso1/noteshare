@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Goal } from '@/types';
 import { GoalProgressBar } from './GoalProgressBar';
-import { Pencil, Trash2, ChevronUp, ChevronDown, Calendar, Trophy, Sparkles } from 'lucide-react';
+import { Pencil, Trash2, ChevronUp, ChevronDown, Calendar, Trophy, Sparkles, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -15,7 +15,9 @@ interface GoalCardProps {
   onMoveDown?: () => void;
   onIncrementProgress: () => void;
   onDecrementProgress: () => void;
+  onSetProgress?: (value: number) => void;
   onComplete: () => void;
+  onRestore?: () => void;
   isFirst?: boolean;
   isLast?: boolean;
   showReorder?: boolean;
@@ -29,7 +31,9 @@ export function GoalCard({
   onMoveDown,
   onIncrementProgress,
   onDecrementProgress,
+  onSetProgress,
   onComplete,
+  onRestore,
   isFirst,
   isLast,
   showReorder = true,
@@ -121,6 +125,25 @@ export function GoalCard({
                 </Button>
               </div>
             )}
+            
+            {goal.is_completed && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {onRestore && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6" 
+                    onClick={onRestore}
+                    title="Restore to in-progress"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={onDelete}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {goal.target_date && !goal.is_completed && (
@@ -141,6 +164,7 @@ export function GoalCard({
             goal={goal}
             onIncrement={handleIncrement}
             onDecrement={onDecrementProgress}
+            onSetProgress={onSetProgress}
             onComplete={handleComplete}
             showControls={!goal.is_completed}
           />
