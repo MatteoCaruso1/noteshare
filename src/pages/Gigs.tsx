@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost } from '@/hooks/usePromoPosts';
+import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
-import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase } from 'lucide-react';
+import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Gigs = () => {
@@ -24,6 +24,7 @@ const Gigs = () => {
   const { data: friendsPosts, isLoading: friendsLoading } = useFriendsPromoPosts();
   const { data: paidGigs, isLoading: paidLoading } = usePaidGigs();
   const createPromoPost = useCreatePromoPost();
+  const deletePromoPost = useDeletePromoPost();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [promoType] = useState<'gig'>('gig');
@@ -75,7 +76,14 @@ const Gigs = () => {
     (p: any) => p.author_id !== profile?.id
   ) || [];
 
-  const PromoCard = ({ post, showAuthor = true }: { post: any; showAuthor?: boolean }) => (
+  const handleDeleteGig = (e: React.MouseEvent, postId: string) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this gig?')) {
+      deletePromoPost.mutate(postId);
+    }
+  };
+
+  const PromoCard = ({ post, showAuthor = true, showDelete = false }: { post: any; showAuthor?: boolean; showDelete?: boolean }) => (
     <Card 
       className="p-4 bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
       onClick={() => navigate(`/gigs/${post.id}`)}
@@ -88,17 +96,29 @@ const Gigs = () => {
           </Avatar>
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            {showAuthor && <span className="font-medium text-sm">{post.author?.name}</span>}
-            <Badge variant="outline" className="text-xs">
-              <Music2 className="w-3 h-3 mr-1" />
-              Gig
-            </Badge>
-            {post.is_paid_opportunity && (
-              <Badge className="text-xs bg-green-600">
-                <DollarSign className="w-3 h-3 mr-1" />
-                Paid
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              {showAuthor && <span className="font-medium text-sm">{post.author?.name}</span>}
+              <Badge variant="outline" className="text-xs">
+                <Music2 className="w-3 h-3 mr-1" />
+                Gig
               </Badge>
+              {post.is_paid_opportunity && (
+                <Badge className="text-xs bg-green-600">
+                  <DollarSign className="w-3 h-3 mr-1" />
+                  Paid
+                </Badge>
+              )}
+            </div>
+            {showDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={(e) => handleDeleteGig(e, post.id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             )}
           </div>
           <h3 className="font-semibold">{post.title}</h3>
@@ -117,6 +137,7 @@ const Gigs = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-sm text-accent hover:underline mt-2"
+              onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="w-3 h-3" />
               View Details
@@ -240,7 +261,7 @@ const Gigs = () => {
             {myLoading ? (
               <div className="text-center py-12 text-muted-foreground">Loading...</div>
             ) : myPosts && myPosts.length > 0 ? (
-              myPosts.map((post: any) => <PromoCard key={post.id} post={post} showAuthor={false} />)
+              myPosts.map((post: any) => <PromoCard key={post.id} post={post} showAuthor={false} showDelete={true} />)
             ) : (
               <EmptyState message="No posts yet. Share your gigs, releases, or events!" />
             )}
