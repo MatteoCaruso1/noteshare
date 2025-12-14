@@ -3,14 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
+import { useCreateNotification } from '@/hooks/useNotifications';
 import { BottomNav } from '@/components/BottomNav';
 import { NoteCard } from '@/components/NoteCard';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Send, User, MessageCircle } from 'lucide-react';
+import { MentionInput, extractMentions } from '@/components/MentionInput';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
+import { VoiceReplyButton } from '@/components/VoiceReplyButton';
+import { ArrowLeft, Send, User, MessageCircle, Mic } from 'lucide-react';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const NoteDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,13 +24,45 @@ const NoteDetail = () => {
   const { data: note, isLoading } = useNote(id || '');
   const { data: comments, isLoading: commentsLoading } = useNoteComments(id || '');
   const createComment = useCreateNoteComment();
+  const createNotification = useCreateNotification();
+  const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
+    
+    // Extract mentions
+    const mentions = extractMentions(newComment);
+    
+    // Create comment
     createComment.mutate(
       { noteId: id, authorId: profile.id, content: newComment },
-      { onSuccess: () => setNewComment('') }
+      {
+        onSuccess: async () => {
+          setNewComment('');
+          
+          // Create notifications for mentioned users
+          if (mentions.length > 0) {
+            for (const username of mentions) {
+              const { data: mentionedUser } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('username', username)
+                .single();
+              
+              if (mentionedUser && mentionedUser.id !== profile.id) {
+                createNotification.mutate({
+                  userId: mentionedUser.id,
+                  type: 'mention',
+                  content: 'mentioned you in a comment',
+                  noteId: id,
+                  fromUserId: profile.id,
+                });
+              }
+            }
+          }
+        },
+      }
     );
   };
 
@@ -81,22 +118,29 @@ const NoteDetail = () => {
                   <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-2">
-                  <Textarea
-                    placeholder="Add a comment..."
+                  <MentionInput
+                    placeholder="Add a comment... Use @ to mention someone"
                     value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
+                    onChange={setNewComment}
                     rows={2}
                     className="resize-none"
                   />
-                  <Button
-                    size="sm"
-                    className="bg-gradient-primary text-primary-foreground"
-                    onClick={handleAddComment}
-                    disabled={createComment.isPending || !newComment.trim()}
-                  >
-                    <Send className="w-4 h-4 mr-1" />
-                    Comment
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-primary text-primary-foreground"
+                      onClick={handleAddComment}
+                      disabled={createComment.isPending || !newComment.trim()}
+                    >
+                      <Send className="w-4 h-4 mr-1" />
+                      Comment
+                    </Button>
+                    <VoiceReplyButton
+                      noteId={id!}
+                      authorId={profile.id}
+                      onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
+                    />
+                  </div>
                 </div>
               </div>
             </Card>
@@ -121,7 +165,10 @@ const NoteDetail = () => {
                           {format(new Date(comment.created_at), 'MMM d, h:mm a')}
                         </span>
                       </div>
-                      <p className="text-sm">{comment.content}</p>
+                      <p className="text-sm mb-2">{comment.content}</p>
+                      {comment.audio_url && (
+                        <WaveformPlayer src={comment.audio_url} title="Voice Reply" />
+                      )}
                     </div>
                   </div>
                 </Card>

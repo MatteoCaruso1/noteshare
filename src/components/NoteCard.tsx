@@ -7,12 +7,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
-import { Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
+import { VoiceReplyButton } from '@/components/VoiceReplyButton';
+import { Disc3, Lock, Clock, FileText, Trash2, Users, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
 import { useDeleteNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface NoteCardProps {
   note: NoteWithAuthor;
@@ -24,6 +26,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
   const deleteNote = useDeleteNote();
+  const queryClient = useQueryClient();
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
@@ -230,10 +233,33 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       )}
 
       {note.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 mb-3">
           {note.tags.map((tag) => (
             <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
           ))}
+        </div>
+      )}
+
+      {/* Voice Reply Button */}
+      {profile && !expanded && (
+        <div className="flex items-center gap-2 pt-2 border-t border-border">
+          <VoiceReplyButton
+            noteId={note.id}
+            authorId={profile.id}
+            onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', note.id] })}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-muted-foreground hover:text-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/notes/${note.id}`);
+            }}
+          >
+            <MessageCircle className="w-4 h-4 mr-1" />
+            Comments
+          </Button>
         </div>
       )}
     </Card>
