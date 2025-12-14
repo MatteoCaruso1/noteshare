@@ -1,5 +1,4 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useActiveSession } from '@/hooks/useSessions';
 import { useNotes } from '@/hooks/useNotes';
 import { BottomNav } from '@/components/BottomNav';
 import { Timeline } from '@/components/Timeline';
@@ -12,7 +11,6 @@ import { FeedGigs } from '@/components/FeedGigs';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { data: activeSession } = useActiveSession();
   const { data: notes, isLoading: notesLoading } = useNotes();
 
   if (loading) {
@@ -31,7 +29,7 @@ const Index = () => {
   const journalTitle = `${firstName}'s Practice Journal`;
 
   return (
-    <div className={`min-h-screen bg-background pb-20 ${activeSession ? 'pt-10' : ''}`}>
+    <div className="min-h-screen bg-background pb-20">
       {/* Page Title */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
         <h1 className="text-lg sm:text-xl font-semibold">{journalTitle}</h1>

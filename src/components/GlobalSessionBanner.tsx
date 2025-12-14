@@ -55,28 +55,33 @@ export function GlobalSessionBanner() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-primary-foreground/20">
-      <div className="container max-w-2xl mx-auto px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-primary-foreground recording-pulse" />
-            <span className="text-sm font-medium text-primary-foreground">Session Active</span>
-            <span className="text-sm text-primary-foreground/80 flex items-center gap-1 font-mono">
-              <Clock className="w-3 h-3" /> {elapsed}
-            </span>
+    <>
+      {/* Spacer to push content down */}
+      <div className="h-10" />
+      {/* Fixed banner */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-primary-foreground/20">
+        <div className="container max-w-2xl mx-auto px-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-primary-foreground recording-pulse" />
+              <span className="text-sm font-medium text-primary-foreground">Session Active</span>
+              <span className="text-sm text-primary-foreground/80 flex items-center gap-1 font-mono">
+                <Clock className="w-3 h-3" /> {elapsed}
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-7 text-xs gap-1"
+              onClick={handleEndSession}
+              disabled={endSession.isPending || createNote.isPending}
+            >
+              <Square className="w-3 h-3" />
+              End
+            </Button>
           </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-7 text-xs gap-1"
-            onClick={handleEndSession}
-            disabled={endSession.isPending || createNote.isPending}
-          >
-            <Square className="w-3 h-3" />
-            End
-          </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
