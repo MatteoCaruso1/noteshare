@@ -20,7 +20,6 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
   
   const [likeMost, setLikeMost] = useState('');
   const [dislikeMost, setDislikeMost] = useState('');
-  const [willingToPay, setWillingToPay] = useState('');
   const [npsScore, setNpsScore] = useState<number | null>(null);
 
   const handleSubmit = async () => {
@@ -61,7 +60,6 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           user_id: profile.id,
           like_most: likeMost.trim(),
           dislike_most: dislikeMost.trim() || null,
-          willing_to_pay: willingToPay.trim() || null,
           nps_score: npsScore,
         });
 
@@ -74,7 +72,6 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           userEmail: user?.email || 'No email',
           likeMost: likeMost.trim(),
           dislikeMost: dislikeMost.trim() || undefined,
-          willingToPay: willingToPay.trim() || undefined,
           npsScore: npsScore || undefined,
         },
       });
@@ -87,7 +84,6 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
       // Reset form and close
       setLikeMost('');
       setDislikeMost('');
-      setWillingToPay('');
       setNpsScore(null);
       onOpenChange(false);
     } catch (error) {
@@ -148,23 +144,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
             />
           </div>
 
-          {/* Question 3 - Optional */}
-          <div className="space-y-2">
-            <Label htmlFor="willing-to-pay" className="text-sm font-medium">
-              What features would you pay for to help keep Noteshare running?
-            </Label>
-            <Textarea
-              id="willing-to-pay"
-              value={willingToPay}
-              onChange={(e) => setWillingToPay(e.target.value)}
-              className="min-h-[80px] resize-none"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck="false"
-            />
-          </div>
-
-          {/* Question 4 - NPS Score */}
+          {/* Question 3 - NPS Score */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">
               How likely are you to recommend Noteshare to a fellow musician?
