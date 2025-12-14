@@ -304,3 +304,72 @@ export function useFriendsNotes() {
     enabled: !!profile?.id,
   });
 }
+
+// Get suggested musicians (friends-of-friends who are not already friends)
+export function useSuggestedMusicians() {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ['suggested-musicians', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+
+      // Step 1: Get current friends
+      const { data: myFriendships, error: myFriendshipsError } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+
+      if (myFriendshipsError) throw myFriendshipsError;
+
+      const myFriendIds = myFriendships.map(f => 
+        f.requester_id === profile.id ? f.addressee_id : f.requester_id
+      );
+
+      if (myFriendIds.length === 0) return [];
+
+      // Step 2: Get friends of my friends
+      const { data: fofFriendships, error: fofError } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(myFriendIds.map(id => `requester_id.eq.${id},addressee_id.eq.${id}`).join(','));
+
+      if (fofError) throw fofError;
+
+      // Extract friends-of-friends IDs (excluding myself and my direct friends)
+      const excludeIds = new Set([profile.id, ...myFriendIds]);
+      const fofIds = new Set<string>();
+      const mutualCountMap = new Map<string, number>();
+
+      fofFriendships.forEach(f => {
+        const otherId = myFriendIds.includes(f.requester_id) ? f.addressee_id : f.requester_id;
+        if (!excludeIds.has(otherId)) {
+          fofIds.add(otherId);
+          mutualCountMap.set(otherId, (mutualCountMap.get(otherId) || 0) + 1);
+        }
+      });
+
+      if (fofIds.size === 0) return [];
+
+      // Step 3: Get profiles of friends-of-friends
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', Array.from(fofIds))
+        .limit(10);
+
+      if (profilesError) throw profilesError;
+
+      // Sort by mutual connection count and return with mutual count
+      return (profiles || [])
+        .map(p => ({
+          ...p,
+          mutualCount: mutualCountMap.get(p.id) || 0,
+        }))
+        .sort((a, b) => b.mutualCount - a.mutualCount) as (Profile & { mutualCount: number })[];
+    },
+    enabled: !!profile?.id,
+  });
+}
