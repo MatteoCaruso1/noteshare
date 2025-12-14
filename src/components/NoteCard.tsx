@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { Mic, Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
@@ -32,14 +34,8 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
     });
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const confirmMsg = isPracticeSession 
-      ? 'Are you sure you want to delete this practice session and note?' 
-      : 'Are you sure you want to delete this note?';
-    if (window.confirm(confirmMsg)) {
-      deleteNote.mutate({ noteId: note.id, sessionId: note.session_id });
-    }
+  const handleDelete = () => {
+    deleteNote.mutate({ noteId: note.id, sessionId: note.session_id });
   };
 
   const getVisibilityIcon = () => {
@@ -136,14 +132,39 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={handleDelete}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {isPracticeSession ? 'Delete Practice Session?' : 'Delete Note?'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isPracticeSession 
+                      ? 'This will permanently delete this practice session and its note. This action cannot be undone.'
+                      : 'This will permanently delete this note. This action cannot be undone.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
       </div>
