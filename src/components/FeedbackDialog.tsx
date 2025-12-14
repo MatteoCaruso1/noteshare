@@ -65,11 +65,9 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
 
       if (dbError) throw dbError;
 
-      // Send email notification
+      // Send email notification (user info is extracted from JWT server-side)
       await supabase.functions.invoke('send-feedback-email', {
         body: {
-          userName: profile.name || 'Anonymous',
-          userEmail: user?.email || 'No email',
           likeMost: likeMost.trim(),
           dislikeMost: dislikeMost.trim() || undefined,
           npsScore: npsScore || undefined,
