@@ -74,21 +74,56 @@ const NoteDetail = () => {
     deleteComment.mutate({ commentId, noteId: id });
   };
 
+  // Show skeleton with navigation while loading - don't block the UI
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-background pb-20">
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+          <div className="container max-w-2xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <h1 className="text-lg font-semibold">Note</h1>
+            </div>
+          </div>
+        </header>
+        <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+          {/* Note skeleton */}
+          <div className="h-48 bg-card rounded-lg animate-pulse" />
+          {/* Comments section skeleton */}
+          <div className="space-y-4">
+            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-24 bg-card rounded-lg animate-pulse" />
+          </div>
+        </main>
+        <BottomNav />
       </div>
     );
   }
 
   if (!note) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <p className="text-muted-foreground mb-4">Note not found</p>
-        <Button variant="outline" onClick={() => navigate('/')}>
-          Back to Home
-        </Button>
+      <div className="min-h-screen bg-background pb-20">
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+          <div className="container max-w-2xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <h1 className="text-lg font-semibold">Note</h1>
+            </div>
+          </div>
+        </header>
+        <main className="container max-w-2xl mx-auto px-4 py-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground mb-4">Note not found</p>
+            <Button variant="outline" onClick={() => navigate('/')}>
+              Back to Home
+            </Button>
+          </div>
+        </main>
+        <BottomNav />
       </div>
     );
   }
