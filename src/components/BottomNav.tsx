@@ -10,7 +10,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
 
   const links = [
-    { to: '/', icon: Home, label: 'My Notes' },
+    { to: '/', icon: Home, label: 'My Practice' },
     { to: '/projects', icon: Disc3, label: 'Projects' },
     { to: '/gigs', icon: Calendar, label: 'Gigs' },
     { to: '/friends', icon: Users, label: 'Friends' },
