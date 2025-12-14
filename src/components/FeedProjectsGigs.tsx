@@ -86,7 +86,7 @@ export function FeedProjectsGigs() {
                   <Card
                     key={project.id}
                     className="p-3 bg-secondary/30 border-border cursor-pointer hover:border-primary/50 transition-colors"
-                    onClick={() => navigate(`/projects/${project.id}`)}
+                    onClick={() => navigate(`/projects/${project.id}?from=notes`)}
                   >
                     <div className="flex items-center gap-3">
                       {project.cover_image ? (
@@ -121,7 +121,7 @@ export function FeedProjectsGigs() {
                   <Card
                     key={gig.id}
                     className="p-3 bg-secondary/30 border-border cursor-pointer hover:bg-secondary/50 transition-colors"
-                    onClick={() => navigate(`/gigs/${gig.id}`)}
+                    onClick={() => navigate(`/gigs/${gig.id}?from=notes`)}
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">

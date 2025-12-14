@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Send, Folder, Lock, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AudioFileWithName } from '@/types';
 
@@ -99,18 +99,22 @@ export function QuickNoteCapture() {
   const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
 
   return (
-    <Card className="p-4 bg-card border-border">
+    <Card className="bg-card border-border">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            <span className="flex items-center gap-2">
-              <Send className="w-4 h-4" />
-              Capture a Quick Note
-            </span>
-            {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </Button>
+          <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
+            <div className="flex items-center gap-2">
+              <Send className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold">Capture a Quick Note</h2>
+            </div>
+            {isOpen ? (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="pt-4 space-y-4">
+        <CollapsibleContent className="px-4 pb-4 space-y-4">
           {/* Visibility + Media Upload in same row */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">

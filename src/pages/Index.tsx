@@ -56,6 +56,9 @@ const Index = () => {
         {/* Goals Section (Collapsible) */}
         {profile && <GoalsSection profileId={profile.id} />}
 
+        {/* Projects & Gigs (Combined Collapsible) - Moved above Practice */}
+        <FeedProjectsGigs />
+
         {/* Practice Controls (Collapsible) */}
         <Card className="bg-card border-border">
           <Collapsible open={isPracticeExpanded} onOpenChange={setIsPracticeExpanded}>
@@ -82,9 +85,6 @@ const Index = () => {
 
         {/* Quick Note Capture */}
         <QuickNoteCapture />
-
-        {/* Projects & Gigs (Combined Collapsible) */}
-        <FeedProjectsGigs />
 
         {/* Memory Reminder */}
         <MemoryReminder />
