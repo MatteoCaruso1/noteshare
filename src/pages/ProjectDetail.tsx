@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
@@ -76,6 +76,11 @@ const ProjectDetail = () => {
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
   const addNote = useAddNoteToProject();
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
