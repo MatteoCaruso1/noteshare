@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AudioFileWithName } from '@/types';
 
@@ -105,7 +105,7 @@ export function QuickNoteCapture() {
         <CollapsibleTrigger asChild>
           <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
             <div className="flex items-center gap-2">
-              <Send className="w-5 h-5 text-primary" />
+              <Music className="w-5 h-5 text-primary" />
               <h2 className="font-semibold">Capture a Quick Note</h2>
             </div>
             {isOpen ? (

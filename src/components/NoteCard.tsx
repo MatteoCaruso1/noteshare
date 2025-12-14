@@ -8,7 +8,7 @@ import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
-import { Disc3, Lock, Clock, FileText, Trash2, Users, MessageCircle } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -89,7 +89,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           </Badge>
         ) : (
           <Badge variant="secondary" className="text-xs">
-            <FileText className="w-3 h-3 mr-1" />
+            <Music className="w-3 h-3 mr-1" />
             Quick Note
           </Badge>
         )}
