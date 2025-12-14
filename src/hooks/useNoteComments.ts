@@ -10,6 +10,7 @@ interface CommentWithAuthor extends NoteComment {
     username: string;
     avatar: string | null;
   };
+  audio_url?: string | null;
 }
 
 export function useNoteComments(noteId: string) {
@@ -40,10 +41,12 @@ export function useCreateNoteComment() {
       noteId,
       authorId,
       content,
+      audioUrl,
     }: {
       noteId: string;
       authorId: string;
       content: string;
+      audioUrl?: string;
     }) => {
       const { data, error } = await supabase
         .from('note_comments')
@@ -51,6 +54,7 @@ export function useCreateNoteComment() {
           note_id: noteId,
           author_id: authorId,
           content,
+          audio_url: audioUrl,
         })
         .select()
         .single();

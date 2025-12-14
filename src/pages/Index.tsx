@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { BottomNav } from '@/components/BottomNav';
@@ -9,6 +9,7 @@ import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
+import { TimelineSearch } from '@/components/TimelineSearch';
 import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Play, ChevronDown, ChevronRight } from 'lucide-react';
@@ -18,6 +19,7 @@ const PRACTICE_EXPANDED_KEY = 'noteshare_practice_expanded';
 const Index = () => {
   const { user, profile, loading } = useAuth();
   const { data: notes, isLoading: notesLoading } = useNotes();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Practice section collapsible state - default collapsed
   const [isPracticeExpanded, setIsPracticeExpanded] = useState(() => {
@@ -28,6 +30,22 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem(PRACTICE_EXPANDED_KEY, String(isPracticeExpanded));
   }, [isPracticeExpanded]);
+
+  // Filter notes based on search query
+  const filteredNotes = useMemo(() => {
+    if (!notes || !searchQuery.trim()) return notes || [];
+    
+    const query = searchQuery.toLowerCase();
+    return notes.filter((note) => {
+      // Search by text content
+      if (note.text_content?.toLowerCase().includes(query)) return true;
+      // Search by tags
+      if (note.tags.some(tag => tag.toLowerCase().includes(query))) return true;
+      // Search by audio file names
+      if (note.audio_file_names?.some(name => name?.toLowerCase().includes(query))) return true;
+      return false;
+    });
+  }, [notes, searchQuery]);
 
   if (loading) {
     return (
@@ -91,8 +109,18 @@ const Index = () => {
 
         {/* Timeline */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Timeline</h2>
-          <Timeline notes={notes || []} loading={notesLoading} />
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <h2 className="text-lg font-semibold">Timeline</h2>
+            <div className="flex-1 max-w-xs">
+              <TimelineSearch onSearch={setSearchQuery} />
+            </div>
+          </div>
+          {searchQuery && (
+            <p className="text-sm text-muted-foreground mb-3">
+              {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''} for "{searchQuery}"
+            </p>
+          )}
+          <Timeline notes={filteredNotes} loading={notesLoading} />
         </section>
       </main>
 

@@ -7,6 +7,7 @@ import { FriendsFeed } from '@/components/FriendsFeed';
 import { PendingFriendRequests } from '@/components/PendingFriendRequests';
 import { DirectMessages } from '@/components/DirectMessages';
 import { FriendsList } from '@/components/FriendsList';
+import { NotificationsList } from '@/components/NotificationsList';
 import { useFriends } from '@/hooks/useFriendships';
 import { Users } from 'lucide-react';
 
@@ -57,6 +58,9 @@ const FriendsJournals = () => {
 
         {/* User Search */}
         <UserSearch />
+
+        {/* Notifications (Mentions appear here) */}
+        <NotificationsList />
 
         {/* Direct Messages */}
         <DirectMessages />
