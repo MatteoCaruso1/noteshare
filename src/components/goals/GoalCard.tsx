@@ -118,16 +118,27 @@ export const GoalCard = memo(function GoalCard({
               )}
             </div>
             
-            {goal.is_completed && onRestore && (
+            {goal.is_completed && (
               <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                {onRestore && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6" 
+                    onClick={onRestore}
+                    title="Restore to in-progress"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-6 w-6" 
-                  onClick={onRestore}
-                  title="Restore to in-progress"
+                  className="h-6 w-6 text-destructive hover:text-destructive" 
+                  onClick={onDelete}
+                  title="Delete goal"
                 >
-                  <RotateCcw className="w-3 h-3" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             )}
@@ -147,14 +158,16 @@ export const GoalCard = memo(function GoalCard({
             </div>
           )}
 
-          <GoalProgressBar
-            goal={goal}
-            onIncrement={handleIncrement}
-            onDecrement={onDecrementProgress}
-            onSetProgress={onSetProgress}
-            onComplete={handleComplete}
-            showControls={!goal.is_completed}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <GoalProgressBar
+              goal={goal}
+              onIncrement={handleIncrement}
+              onDecrement={onDecrementProgress}
+              onSetProgress={onSetProgress}
+              onComplete={handleComplete}
+              showControls={!goal.is_completed}
+            />
+          </div>
 
           {goal.is_completed && goal.reflection && (
             <p className="mt-2 text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-2">
