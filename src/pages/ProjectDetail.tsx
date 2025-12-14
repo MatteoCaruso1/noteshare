@@ -211,6 +211,9 @@ const ProjectDetail = () => {
         title={project.title}
         date={project.created_at}
         dateLabel="Created"
+        authorName={project.owner?.name}
+        authorUsername={project.owner?.username}
+        authorAvatar={project.owner?.avatar}
         coverImage={project.cover_image}
         coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
         showSettings={isOwner}
