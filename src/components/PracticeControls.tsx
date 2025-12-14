@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
+import { useGoals, useIncrementProgress } from '@/hooks/useGoals';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
@@ -14,18 +15,20 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Square, Clock, X, Folder, Lock, Users } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Play, Square, Clock, X, Folder, Lock, Users, Target } from 'lucide-react';
+import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { AudioFileWithName } from '@/types';
 
 export function PracticeControls() {
   const { profile } = useAuth();
   const { data: activeSession } = useActiveSession();
   const { data: projects } = useProjects();
+  const { data: goals } = useGoals(profile?.id);
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const startSession = useStartSession();
   const endSession = useEndSession();
   const createNote = useCreateNote();
+  const incrementProgress = useIncrementProgress();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
   const [noteText, setNoteText] = useState('');
@@ -34,6 +37,7 @@ export function PracticeControls() {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
 
   if (!profile) return null;
@@ -82,10 +86,28 @@ export function PracticeControls() {
 
   const handleSaveNoteAndEndSession = () => {
     if (activeSession) {
+      // Calculate session duration in minutes
+      const sessionDurationMinutes = differenceInMinutes(
+        new Date(),
+        new Date(activeSession.started_at)
+      );
+
       endSession.mutate(
         { sessionId: activeSession.id },
         {
           onSuccess: () => {
+            // If a time-based goal is linked, auto-increment its progress
+            if (selectedGoalId) {
+              const linkedGoal = goals?.find(g => g.id === selectedGoalId);
+              if (linkedGoal && linkedGoal.progress_type === 'time' && !linkedGoal.is_completed) {
+                incrementProgress.mutate({
+                  goalId: selectedGoalId,
+                  field: 'current_minutes',
+                  amount: sessionDurationMinutes,
+                });
+              }
+            }
+
             createNote.mutate(
               {
                 authorId: profile.id,
@@ -104,6 +126,7 @@ export function PracticeControls() {
                   setImageFiles([]);
                   setTags([]);
                   setSelectedProjectId('');
+                  setSelectedGoalId('');
                   setVisibility('friends');
                 },
               }
@@ -215,7 +238,37 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Practice Suggestions */}
+          {/* Goal Linking */}
+          {goals && goals.filter(g => !g.is_completed).length > 0 && (
+            <div className="mb-4">
+              <Select value={selectedGoalId || "none"} onValueChange={(v) => setSelectedGoalId(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-muted-foreground" />
+                    <SelectValue placeholder="Link to a goal (optional)" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No goal</SelectItem>
+                  {goals.filter(g => !g.is_completed).map((goal) => (
+                    <SelectItem key={goal.id} value={goal.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{goal.title || goal.content}</span>
+                        {goal.progress_type === 'time' && (
+                          <Badge variant="outline" className="text-xs ml-1">+time</Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedGoalId && goals?.find(g => g.id === selectedGoalId)?.progress_type === 'time' && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Session duration will auto-add to this goal's progress
+                </p>
+              )}
+            </div>
+          )}
           {recentNotes && recentNotes.length > 0 && !noteText && (
             <div className="mb-3">
               <p className="text-xs text-muted-foreground mb-2">Quick fill from recent sessions:</p>
