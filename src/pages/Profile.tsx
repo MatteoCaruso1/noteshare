@@ -91,17 +91,15 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="container max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold">Profile & Stats</h1>
-            <Button variant="ghost" size="icon" onClick={signOut}>
-              <LogOut className="w-5 h-5" />
-            </Button>
-          </div>
+      {/* Page Title - consistent with other pages */}
+      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg sm:text-xl font-semibold">Profile & Stats</h1>
+          <Button variant="ghost" size="icon" onClick={signOut}>
+            <LogOut className="w-5 h-5" />
+          </Button>
         </div>
-      </header>
+      </div>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Header */}
