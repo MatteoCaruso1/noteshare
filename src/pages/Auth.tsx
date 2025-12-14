@@ -36,7 +36,7 @@ const Auth = () => {
         await signUp(email, password, name);
         navigate('/');
       } else {
-        await signIn(email, password);
+        await signIn(email, password, rememberMe);
         navigate('/');
       }
     } catch (error) {

@@ -10,7 +10,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -26,7 +26,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if user should be signed out (browser was closed without "Remember me")
+    const rememberMe = localStorage.getItem('noteshare_remember_me');
+    const sessionActive = sessionStorage.getItem('noteshare_session_active');
+    
     supabase.auth.getSession().then(({ data: { session } }) => {
+      // If there's a session but "Remember me" was not checked and browser was closed
+      if (session && !rememberMe && !sessionActive) {
+        // Sign out the user since they didn't want to be remembered
+        supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -97,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success('Welcome to noteshare!');
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = true) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -106,6 +120,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       toast.error(error.message);
       throw error;
+    }
+
+    // If "Remember me" is checked, store a marker in sessionStorage
+    // When browser closes, sessionStorage clears, so we know to sign out
+    if (rememberMe) {
+      localStorage.setItem('noteshare_remember_me', 'true');
+    } else {
+      localStorage.removeItem('noteshare_remember_me');
+      sessionStorage.setItem('noteshare_session_active', 'true');
     }
 
     toast.success('Welcome back!');
@@ -126,6 +149,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Clear remember me flags
+    localStorage.removeItem('noteshare_remember_me');
+    sessionStorage.removeItem('noteshare_session_active');
+    
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error(error.message);
