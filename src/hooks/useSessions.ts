@@ -34,6 +34,55 @@ export function useActiveSession() {
   });
 }
 
+export function useRecentSessionNotes(profileId: string | undefined) {
+  return useQuery({
+    queryKey: ['recent-session-notes', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      
+      // Get last 3 practice sessions with notes
+      const { data: sessions, error: sessionsError } = await supabase
+        .from('practice_sessions')
+        .select('id, notes_summary, goals')
+        .eq('user_id', profileId)
+        .not('ended_at', 'is', null)
+        .order('ended_at', { ascending: false })
+        .limit(3);
+
+      if (sessionsError) throw sessionsError;
+
+      // Get notes from those sessions
+      const sessionIds = sessions?.map(s => s.id) || [];
+      if (sessionIds.length === 0) return [];
+
+      const { data: notes, error: notesError } = await supabase
+        .from('notes')
+        .select('text_content, tags')
+        .in('session_id', sessionIds)
+        .not('text_content', 'is', null);
+
+      if (notesError) throw notesError;
+
+      // Extract unique suggestions from notes and session summaries
+      const suggestions = new Set<string>();
+      
+      sessions?.forEach(s => {
+        if (s.notes_summary) suggestions.add(s.notes_summary);
+        if (s.goals) suggestions.add(s.goals);
+      });
+      
+      notes?.forEach(n => {
+        if (n.text_content && n.text_content.length < 100) {
+          suggestions.add(n.text_content);
+        }
+      });
+
+      return Array.from(suggestions).slice(0, 5);
+    },
+    enabled: !!profileId,
+  });
+}
+
 export function useStartSession() {
   const queryClient = useQueryClient();
 
@@ -94,12 +143,80 @@ export function useEndSession() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['active-session'] });
-      queryClient.invalidateQueries({ queryKey: ['practice-stats'] }); // Recompute stats on session end
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       toast.success('Practice session ended!');
     },
     onError: (error) => {
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
+    },
+  });
+}
+
+export function useLogOfflineSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      userId, 
+      date, 
+      durationMinutes, 
+      noteText,
+      tags,
+      collaboratorIds,
+    }: { 
+      userId: string; 
+      date: string; 
+      durationMinutes: number;
+      noteText?: string;
+      tags?: string[];
+      collaboratorIds?: string[];
+    }) => {
+      // Calculate started_at and ended_at from date and duration
+      const startedAt = new Date(date);
+      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60 * 1000);
+
+      // Create the session
+      const { data: session, error: sessionError } = await supabase
+        .from('practice_sessions')
+        .insert({
+          user_id: userId,
+          started_at: startedAt.toISOString(),
+          ended_at: endedAt.toISOString(),
+          is_active: false,
+          collaborator_ids: collaboratorIds || [],
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      // Create a note for this session if there's content
+      if (noteText || (tags && tags.length > 0)) {
+        const { error: noteError } = await supabase
+          .from('notes')
+          .insert({
+            author_id: userId,
+            session_id: session.id,
+            text_content: noteText,
+            tags: tags || [],
+            visibility: 'friends',
+          });
+
+        if (noteError) throw noteError;
+      }
+
+      return session as PracticeSession;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
+      toast.success('Practice session logged!');
+    },
+    onError: (error) => {
+      console.error('Error logging session:', error);
+      toast.error('Failed to log session');
     },
   });
 }
@@ -119,7 +236,7 @@ export function useDeleteSession() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['active-session'] });
-      queryClient.invalidateQueries({ queryKey: ['practice-stats'] }); // Recompute stats on delete
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast.success('Session deleted');
     },
@@ -129,4 +246,3 @@ export function useDeleteSession() {
     },
   });
 }
-

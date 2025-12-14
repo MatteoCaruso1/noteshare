@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useActiveSession, useStartSession, useEndSession } from '@/hooks/useSessions';
+import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { BottomNav } from '@/components/BottomNav';
 import { AudioRecorder } from '@/components/AudioRecorder';
+import { OfflineSessionInput } from '@/components/OfflineSessionInput';
+import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -22,6 +24,7 @@ const Practice = () => {
   const navigate = useNavigate();
   const { data: activeSession } = useActiveSession();
   const { data: projects } = useProjects();
+  const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const startSession = useStartSession();
   const endSession = useEndSession();
   const createNote = useCreateNote();
@@ -172,6 +175,18 @@ const Practice = () => {
                 <Play className="w-4 h-4 mr-2" />
                 Start Session
               </Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+              
+              {/* Offline Session Input */}
+              <OfflineSessionInput />
             </div>
           )}
         </Card>
@@ -222,6 +237,25 @@ const Practice = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            )}
+
+            {/* Practice Suggestions */}
+            {recentNotes && recentNotes.length > 0 && !noteText && (
+              <div className="mb-3">
+                <p className="text-xs text-muted-foreground mb-2">Quick fill from recent sessions:</p>
+                <div className="flex flex-wrap gap-2">
+                  {recentNotes.slice(0, 3).map((suggestion, i) => (
+                    <Badge
+                      key={i}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-secondary/50 transition-colors text-xs"
+                      onClick={() => setNoteText(suggestion)}
+                    >
+                      {suggestion.length > 40 ? suggestion.substring(0, 40) + '...' : suggestion}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
 

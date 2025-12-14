@@ -82,6 +82,7 @@ export interface PromoPost {
   event_date: string | null;
   image: string | null;
   links: string[];
+  collaborator_ids: string[];
   show_on_feed: boolean;
   is_paid_opportunity: boolean;
   created_at: string;
