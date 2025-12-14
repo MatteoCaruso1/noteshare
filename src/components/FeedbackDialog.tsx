@@ -33,6 +33,15 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
       return;
     }
 
+    if (!dislikeMost.trim()) {
+      toast({
+        title: "Please share what could be better",
+        description: "Honest feedback helps us improve!",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!profile?.id) {
       toast({
         title: "Not signed in",
@@ -114,24 +123,28 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
             </Label>
             <Textarea
               id="like-most"
-              placeholder="The quick capture, the project organization, seeing my progress..."
               value={likeMost}
               onChange={(e) => setLikeMost(e.target.value)}
               className="min-h-[80px] resize-none"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
             />
           </div>
 
-          {/* Question 2 - Optional */}
+          {/* Question 2 - Required */}
           <div className="space-y-2">
             <Label htmlFor="dislike-most" className="text-sm font-medium">
-              What do you dislike or find confusing?
+              What do you dislike or find confusing? <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="dislike-most"
-              placeholder="Be honest — it helps us improve"
               value={dislikeMost}
               onChange={(e) => setDislikeMost(e.target.value)}
               className="min-h-[80px] resize-none"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
             />
           </div>
 
@@ -142,10 +155,12 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
             </Label>
             <Textarea
               id="willing-to-pay"
-              placeholder="Advanced stats, cloud backup, collaboration tools..."
               value={willingToPay}
               onChange={(e) => setWillingToPay(e.target.value)}
               className="min-h-[80px] resize-none"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
             />
           </div>
 
@@ -154,14 +169,14 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
             <Label className="text-sm font-medium">
               How likely are you to recommend Noteshare to a fellow musician?
             </Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-10 gap-1">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                 <Button
                   key={score}
                   type="button"
                   variant={npsScore === score ? "default" : "outline"}
                   size="sm"
-                  className="w-9 h-9 p-0"
+                  className="h-8 p-0 text-xs"
                   onClick={() => setNpsScore(score)}
                 >
                   {score}
@@ -177,7 +192,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {/* Submit */}
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !likeMost.trim()}
+            disabled={isSubmitting || !likeMost.trim() || !dislikeMost.trim()}
             className="w-full"
           >
             {isSubmitting ? 'Sending...' : 'Submit Feedback'}
