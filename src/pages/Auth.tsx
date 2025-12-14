@@ -149,13 +149,14 @@ const Auth = () => {
             </Button>
           </form>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
             {mode === 'signup' && (
               <Input
                 placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoComplete="name"
               />
             )}
             <Input
@@ -164,6 +165,8 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
+              name="email"
             />
             {mode !== 'forgot' && (
               <Input
@@ -173,6 +176,8 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                name="password"
               />
             )}
             {mode === 'signin' && (
@@ -183,7 +188,7 @@ const Auth = () => {
                   onCheckedChange={(checked) => setRememberMe(checked === true)}
                 />
                 <Label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
-                  Remember me
+                  Stay signed in on this device
                 </Label>
               </div>
             )}
