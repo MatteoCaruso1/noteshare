@@ -319,6 +319,120 @@ export function useDecrementProgress() {
   });
 }
 
+export function useSetProgress() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      goalId,
+      field,
+      value,
+    }: {
+      goalId: string;
+      field: 'current_steps' | 'current_minutes';
+      value: number;
+    }) => {
+      const { data: goalData } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('id', goalId)
+        .single();
+
+      const goal = goalData as unknown as Goal;
+      if (!goal) throw new Error('Goal not found');
+
+      const targetValue = field === 'current_steps' ? goal.target_steps : goal.target_minutes;
+      const clampedValue = Math.max(0, Math.min(value, targetValue));
+
+      const updates: Record<string, unknown> = { [field]: clampedValue };
+      
+      // Auto-complete if target reached
+      if (clampedValue >= targetValue) {
+        updates.is_completed = true;
+        updates.completed_at = new Date().toISOString();
+      } else {
+        // Un-complete if below target
+        updates.is_completed = false;
+        updates.completed_at = null;
+      }
+
+      const { error } = await supabase
+        .from('goals')
+        .update(updates)
+        .eq('id', goalId);
+
+      if (error) throw error;
+      
+      return { isComplete: clampedValue >= targetValue };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      if (result.isComplete) {
+        toast.success('Goal completed! 🎉');
+      }
+    },
+  });
+}
+
+export function useRestoreGoal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      goalId,
+      goalType,
+    }: {
+      goalId: string;
+      goalType: 'near-term' | 'long-term';
+    }) => {
+      // Get current goal data
+      const { data: goalData } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('id', goalId)
+        .single();
+
+      const goal = goalData as unknown as Goal;
+      if (!goal) throw new Error('Goal not found');
+
+      // Get max priority for this goal type
+      const { data: existingGoals } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', goal.user_id)
+        .eq('goal_type', goalType);
+
+      const goalsTyped = (existingGoals as unknown as Goal[]) || [];
+      const activeGoals = goalsTyped.filter(g => !g.is_completed);
+      const maxPriority = activeGoals.length > 0 
+        ? Math.max(...activeGoals.map(g => g.priority ?? 0)) 
+        : -1;
+
+      const { error } = await supabase
+        .from('goals')
+        .update({
+          is_completed: false,
+          completed_at: null,
+          reflection: null,
+          current_steps: 0,
+          current_minutes: 0,
+          priority: maxPriority + 1,
+        } as Record<string, unknown>)
+        .eq('id', goalId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      toast.success('Goal restored to in-progress');
+    },
+    onError: (error) => {
+      console.error('Error restoring goal:', error);
+      toast.error('Failed to restore goal');
+    },
+  });
+}
+
 // Keep legacy hook for backwards compatibility
 export function useUpsertGoal() {
   const createGoal = useCreateGoal();
