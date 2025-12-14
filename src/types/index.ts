@@ -106,8 +106,18 @@ export interface Goal {
   user_id: string;
   goal_type: 'near-term' | 'long-term';
   content: string;
+  title: string | null;
+  description: string | null;
   target_date: string | null;
-  visibility: 'public' | 'private';
+  priority: number;
+  progress_type: 'checkbox' | 'step' | 'time';
+  target_steps: number;
+  current_steps: number;
+  target_minutes: number;
+  current_minutes: number;
+  is_completed: boolean;
+  completed_at: string | null;
+  reflection: string | null;
   created_at: string;
   updated_at: string;
 }

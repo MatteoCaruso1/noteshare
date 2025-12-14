@@ -146,7 +146,6 @@ export type Database = {
           target_date: string | null
           updated_at: string
           user_id: string
-          visibility: string
         }
         Insert: {
           content: string
@@ -156,7 +155,6 @@ export type Database = {
           target_date?: string | null
           updated_at?: string
           user_id: string
-          visibility?: string
         }
         Update: {
           content?: string
@@ -166,7 +164,6 @@ export type Database = {
           target_date?: string | null
           updated_at?: string
           user_id?: string
-          visibility?: string
         }
         Relationships: [
           {

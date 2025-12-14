@@ -1,23 +1,138 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Target, Calendar, Lock, Globe, Pencil, Check, X } from 'lucide-react';
-import { useGoals, useUpsertGoal } from '@/hooks/useGoals';
+import { Target, Plus, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
+import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useReorderGoal, useCompleteGoal, useIncrementProgress, useDecrementProgress } from '@/hooks/useGoals';
 import { Goal } from '@/types';
+import { GoalCard } from './goals/GoalCard';
+import { GoalFormDialog } from './goals/GoalFormDialog';
+import { CompletionDialog } from './goals/CompletionDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface GoalsSectionProps {
   profileId: string;
 }
 
 export function GoalsSection({ profileId }: GoalsSectionProps) {
-  const { data: goals } = useGoals(profileId);
-  const upsertGoal = useUpsertGoal();
+  const { data: goals = [] } = useGoals(profileId);
+  const createGoal = useCreateGoal();
+  const updateGoal = useUpdateGoal();
+  const deleteGoal = useDeleteGoal();
+  const reorderGoal = useReorderGoal();
+  const completeGoal = useCompleteGoal();
+  const incrementProgress = useIncrementProgress();
+  const decrementProgress = useDecrementProgress();
 
-  const nearTermGoal = goals?.find(g => g.goal_type === 'near-term');
-  const longTermGoal = goals?.find(g => g.goal_type === 'long-term');
+  const [formOpen, setFormOpen] = useState(false);
+  const [formGoalType, setFormGoalType] = useState<'near-term' | 'long-term'>('near-term');
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [completionGoal, setCompletionGoal] = useState<Goal | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
+
+  const nearTermGoals = goals.filter(g => g.goal_type === 'near-term' && !g.is_completed);
+  const longTermGoals = goals.filter(g => g.goal_type === 'long-term' && !g.is_completed);
+  const completedGoals = goals.filter(g => g.is_completed);
+
+  const handleAddGoal = (type: 'near-term' | 'long-term') => {
+    setFormGoalType(type);
+    setEditingGoal(null);
+    setFormOpen(true);
+  };
+
+  const handleEditGoal = (goal: Goal) => {
+    setFormGoalType(goal.goal_type);
+    setEditingGoal(goal);
+    setFormOpen(true);
+  };
+
+  const handleSaveGoal = (data: Partial<Goal>) => {
+    if (data.id) {
+      updateGoal.mutate({ id: data.id, ...data });
+    } else {
+      createGoal.mutate({
+        userId: profileId,
+        goalType: formGoalType,
+        title: data.title || data.content || '',
+        description: data.description,
+        targetDate: data.target_date,
+        progressType: data.progress_type || 'checkbox',
+        targetSteps: data.target_steps,
+        targetMinutes: data.target_minutes,
+      });
+    }
+  };
+
+  const handleMoveGoal = (goal: Goal, direction: 'up' | 'down') => {
+    const sameTypeGoals = goals
+      .filter(g => g.goal_type === goal.goal_type && !g.is_completed)
+      .sort((a, b) => a.priority - b.priority);
+    
+    const currentIndex = sameTypeGoals.findIndex(g => g.id === goal.id);
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    
+    if (targetIndex < 0 || targetIndex >= sameTypeGoals.length) return;
+
+    const targetGoal = sameTypeGoals[targetIndex];
+    
+    // Swap priorities
+    reorderGoal.mutate({ goalId: goal.id, newPriority: targetGoal.priority });
+    reorderGoal.mutate({ goalId: targetGoal.id, newPriority: goal.priority });
+  };
+
+  const handleCompleteGoal = (goal: Goal) => {
+    if (goal.progress_type === 'checkbox') {
+      setCompletionGoal(goal);
+    }
+  };
+
+  const handleConfirmComplete = (reflection?: string) => {
+    if (completionGoal) {
+      completeGoal.mutate({ goalId: completionGoal.id, reflection });
+    }
+  };
+
+  const handleIncrementProgress = (goal: Goal) => {
+    const field = goal.progress_type === 'step' ? 'current_steps' : 'current_minutes';
+    incrementProgress.mutate({ goalId: goal.id, field });
+  };
+
+  const handleDecrementProgress = (goal: Goal) => {
+    const field = goal.progress_type === 'step' ? 'current_steps' : 'current_minutes';
+    decrementProgress.mutate({ goalId: goal.id, field });
+  };
+
+  const renderGoalList = (goalsList: Goal[], type: 'near-term' | 'long-term') => {
+    const sortedGoals = [...goalsList].sort((a, b) => a.priority - b.priority);
+    
+    return (
+      <div className="space-y-2">
+        {sortedGoals.map((goal, index) => (
+          <GoalCard
+            key={goal.id}
+            goal={goal}
+            onEdit={() => handleEditGoal(goal)}
+            onDelete={() => deleteGoal.mutate(goal.id)}
+            onMoveUp={() => handleMoveGoal(goal, 'up')}
+            onMoveDown={() => handleMoveGoal(goal, 'down')}
+            onIncrementProgress={() => handleIncrementProgress(goal)}
+            onDecrementProgress={() => handleDecrementProgress(goal)}
+            onComplete={() => handleCompleteGoal(goal)}
+            isFirst={index === 0}
+            isLast={index === sortedGoals.length - 1}
+          />
+        ))}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full text-muted-foreground"
+          onClick={() => handleAddGoal(type)}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add {type === 'near-term' ? 'Near-Term' : 'Long-Term'} Goal
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <Card className="p-4 bg-card border-border">
@@ -25,163 +140,65 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
         <Target className="w-5 h-5 text-primary" />
         <h2 className="font-semibold">Goals</h2>
       </div>
-      <div className="space-y-4">
-        <GoalItem
-          type="near-term"
-          label="Near-term"
-          goal={nearTermGoal}
-          profileId={profileId}
-          onSave={upsertGoal.mutate}
-          isPending={upsertGoal.isPending}
-        />
-        <GoalItem
-          type="long-term"
-          label="Long-term"
-          goal={longTermGoal}
-          profileId={profileId}
-          onSave={upsertGoal.mutate}
-          isPending={upsertGoal.isPending}
-        />
-      </div>
-    </Card>
-  );
-}
 
-interface GoalItemProps {
-  type: 'near-term' | 'long-term';
-  label: string;
-  goal?: Goal;
-  profileId: string;
-  onSave: (params: any) => void;
-  isPending: boolean;
-}
-
-function GoalItem({ type, label, goal, profileId, onSave, isPending }: GoalItemProps) {
-  const [editing, setEditing] = useState(false);
-  const [content, setContent] = useState(goal?.content || '');
-  const [targetDate, setTargetDate] = useState(goal?.target_date || '');
-  const [visibility, setVisibility] = useState<'public' | 'private'>(goal?.visibility || 'private');
-
-  useEffect(() => {
-    setContent(goal?.content || '');
-    setTargetDate(goal?.target_date || '');
-    setVisibility(goal?.visibility || 'private');
-  }, [goal]);
-
-  const handleSave = () => {
-    if (!content.trim()) return;
-    onSave({
-      id: goal?.id,
-      userId: profileId,
-      goalType: type,
-      content: content.trim(),
-      targetDate: targetDate || null,
-      visibility,
-    });
-    setEditing(false);
-  };
-
-  const handleCancel = () => {
-    setContent(goal?.content || '');
-    setTargetDate(goal?.target_date || '');
-    setVisibility(goal?.visibility || 'private');
-    setEditing(false);
-  };
-
-  if (!editing && !goal) {
-    return (
-      <div className="p-3 bg-secondary/30 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <div className="space-y-6">
+        {/* Near-Term Goals */}
+        <div>
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Near-Term Goals</h3>
+          {renderGoalList(nearTermGoals, 'near-term')}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setEditing(true)}
-          className="w-full text-muted-foreground"
-        >
-          + Set {label.toLowerCase()} goal
-        </Button>
-      </div>
-    );
-  }
 
-  if (!editing && goal) {
-    return (
-      <div className="p-3 bg-secondary/30 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">{label}</span>
-            {goal.visibility === 'private' ? (
-              <Lock className="w-3 h-3 text-muted-foreground" />
-            ) : (
-              <Globe className="w-3 h-3 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {goal.target_date && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                Target completion: {new Date(goal.target_date).toLocaleDateString()}
-              </span>
-            )}
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditing(true)}>
-              <Pencil className="w-3 h-3" />
-            </Button>
-          </div>
+        {/* Long-Term Goals */}
+        <div>
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Long-Term Goals</h3>
+          {renderGoalList(longTermGoals, 'long-term')}
         </div>
-        <p className="text-sm">{goal.content}</p>
-      </div>
-    );
-  }
 
-  return (
-    <div className="p-3 bg-secondary/50 rounded-lg space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{label}</span>
-        <Select value={visibility} onValueChange={(v) => setVisibility(v as 'public' | 'private')}>
-          <SelectTrigger className="w-28 h-7 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="private">
-              <div className="flex items-center gap-1">
-                <Lock className="w-3 h-3" /> Private
-              </div>
-            </SelectItem>
-            <SelectItem value="public">
-              <div className="flex items-center gap-1">
-                <Globe className="w-3 h-3" /> Public
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Completed Goals */}
+        {completedGoals.length > 0 && (
+          <Collapsible open={showCompleted} onOpenChange={setShowCompleted}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4" />
+                  <span>Completed Goals ({completedGoals.length})</span>
+                </div>
+                {showCompleted ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2 mt-2">
+              {completedGoals.map((goal) => (
+                <GoalCard
+                  key={goal.id}
+                  goal={goal}
+                  onEdit={() => {}}
+                  onDelete={() => deleteGoal.mutate(goal.id)}
+                  onIncrementProgress={() => {}}
+                  onDecrementProgress={() => {}}
+                  onComplete={() => {}}
+                  showReorder={false}
+                />
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </div>
-      <Textarea
-        placeholder={`What's your ${label.toLowerCase()} goal?`}
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={2}
-        className="resize-none text-sm"
+
+      <GoalFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        goalType={formGoalType}
+        goal={editingGoal}
+        onSave={handleSaveGoal}
+        isPending={createGoal.isPending || updateGoal.isPending}
       />
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 flex-1">
-          <Calendar className="w-4 h-4 text-muted-foreground" />
-          <Input
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            className="flex-1 h-8 text-sm"
-            aria-label="Target completion date"
-          />
-        </div>
-        <Button size="sm" variant="ghost" onClick={handleCancel} disabled={isPending}>
-          <X className="w-4 h-4" />
-        </Button>
-        <Button size="sm" onClick={handleSave} disabled={isPending || !content.trim()}>
-          <Check className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
+
+      <CompletionDialog
+        open={!!completionGoal}
+        onOpenChange={(open) => !open && setCompletionGoal(null)}
+        goal={completionGoal}
+        onComplete={handleConfirmComplete}
+      />
+    </Card>
   );
 }
