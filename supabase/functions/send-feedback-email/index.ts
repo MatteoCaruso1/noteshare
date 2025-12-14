@@ -35,12 +35,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build email content
     const emailHtml = `
-      <h2>New Feedback from Noteshare</h2>
+      <h2>New Feedback from noteshare</h2>
       <p><strong>From:</strong> ${userName} (${userEmail})</p>
       <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
       <hr/>
       
-      <h3>1. What do you like most about Noteshare?</h3>
+      <h3>1. What do you like most about noteshare?</h3>
       <p>${likeMost}</p>
       
       <h3>2. What do you dislike or find confusing?</h3>
@@ -60,9 +60,9 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Noteshare Feedback <onboarding@resend.dev>",
+        from: "noteshare Feedback <onboarding@resend.dev>",
         to: ["matteo.m.caruso1@gmail.com"],
-        subject: `Noteshare Feedback from ${userName}`,
+        subject: `noteshare Feedback from ${userName}`,
         html: emailHtml,
       }),
     });

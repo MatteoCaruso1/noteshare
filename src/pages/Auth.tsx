@@ -53,7 +53,7 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-4">
             <Music className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold">Noteshare</h1>
+          <h1 className="text-2xl font-semibold">noteshare</h1>
           <p className="text-muted-foreground mt-1">
             {mode === 'forgot' 
               ? 'Reset your password' 
