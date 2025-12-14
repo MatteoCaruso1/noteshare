@@ -35,33 +35,35 @@ export function usePracticeStats(profileId: string | undefined) {
 
       const now = new Date();
       const threeMonthsAgo = subMonths(now, 3);
-
-      // Fetch all sessions from last 3 months
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('practice_sessions')
-        .select('*')
-        .eq('user_id', profileId)
-        .gte('started_at', threeMonthsAgo.toISOString())
-        .order('started_at', { ascending: true });
-
-      if (sessionsError) throw sessionsError;
-
-      // Fetch all notes from this month for keyword/tag analysis
       const thisMonthStart = startOfMonth(now);
-      const { data: notes, error: notesError } = await supabase
-        .from('notes')
-        .select('text_content, tags, created_at')
-        .eq('author_id', profileId)
-        .gte('created_at', thisMonthStart.toISOString());
 
-      if (notesError) throw notesError;
+      // Run both queries in parallel for better performance
+      const [sessionsResult, notesResult] = await Promise.all([
+        supabase
+          .from('practice_sessions')
+          .select('started_at, ended_at')
+          .eq('user_id', profileId)
+          .gte('started_at', threeMonthsAgo.toISOString())
+          .order('started_at', { ascending: true }),
+        supabase
+          .from('notes')
+          .select('text_content, tags')
+          .eq('author_id', profileId)
+          .gte('created_at', thisMonthStart.toISOString())
+      ]);
+
+      if (sessionsResult.error) throw sessionsResult.error;
+      if (notesResult.error) throw notesResult.error;
+
+      const sessions = sessionsResult.data || [];
+      const notes = notesResult.data || [];
 
       // Calculate session durations
-      const sessionsWithDuration = (sessions || []).map(session => {
+      const sessionsWithDuration = sessions.map(session => {
         const start = parseISO(session.started_at);
         const end = session.ended_at ? parseISO(session.ended_at) : now;
         const durationMinutes = Math.max(0, differenceInMinutes(end, start));
-        return { ...session, durationMinutes, startDate: start };
+        return { durationMinutes, startDate: start };
       });
 
       // Time boundaries
@@ -159,7 +161,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const keywords: Record<string, number> = {};
       const tags: Record<string, number> = {};
 
-      (notes || []).forEach(note => {
+      notes.forEach(note => {
         // Extract tags separately
         (note.tags || []).forEach(tag => {
           const lowerTag = tag.toLowerCase().trim();
