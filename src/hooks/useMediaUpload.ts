@@ -43,20 +43,9 @@ export function useMediaUpload() {
   };
 
   const uploadAudio = async (blob: Blob, userId: string): Promise<string | null> => {
-    // Preserve the original MIME type from the recorder to avoid format mismatches
-    const mimeType = blob.type || 'audio/webm';
-    const extFromMime = mimeType.split('/')[1] || 'webm';
-    const safeExt = extFromMime.includes('webm')
-      ? 'webm'
-      : extFromMime.includes('ogg')
-        ? 'ogg'
-        : extFromMime.includes('wav')
-          ? 'wav'
-          : extFromMime.includes('mp4') || extFromMime.includes('mpg')
-            ? 'mp4'
-            : 'webm';
-
-    const file = new File([blob], `recording-${Date.now()}.${safeExt}`, { type: mimeType });
+    // Force a single, widely supported format (webm/opus) for consistency
+    const file = new File([blob], `recording-${Date.now()}.webm`, { type: 'audio/webm' });
+    console.log('[MediaUpload] uploading audio file', file.name, 'size:', file.size, 'type:', file.type);
     return uploadFile(file, userId, 'audio');
   };
 

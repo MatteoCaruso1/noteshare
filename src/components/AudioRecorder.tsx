@@ -61,6 +61,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
       const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
       
       const mediaRecorder = new MediaRecorder(stream, options);
+      console.log('[AudioRecorder] Using mimeType:', mediaRecorder.mimeType || mimeType);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
       startTimeRef.current = Date.now();
@@ -72,12 +73,14 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
       }, 1000);
 
       mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
+        console.log('[AudioRecorder] dataavailable, size:', e.data?.size);
+        if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
 
       mediaRecorder.onstop = () => {
+        console.log('[AudioRecorder] onstop, chunks:', chunksRef.current.length);
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
@@ -86,12 +89,12 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
         const actualMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm';
         const blob = new Blob(chunksRef.current, { type: actualMimeType });
+        console.log('[AudioRecorder] final blob size:', blob.size, 'type:', blob.type, 'duration(s):', duration);
         
-        // Only callback if we have actual audio data
         if (blob.size > 0 && duration > 0) {
           onRecorded(blob, duration);
         } else {
-          toast.error('Recording too short. Please try again.');
+          toast.error('Recording too short or empty. Please try again.');
         }
         
         stream.getTracks().forEach(track => track.stop());
@@ -112,7 +115,6 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
         setElapsedTime(0);
       };
 
-      // Start without timeslice to avoid chunking issues with some browsers
       mediaRecorder.start();
       setRecording(true);
     } catch (err) {
@@ -124,10 +126,6 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       setProcessing(true);
-      // Request any remaining data before stopping
-      if (mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.requestData();
-      }
       mediaRecorderRef.current.stop();
       setRecording(false);
     }
