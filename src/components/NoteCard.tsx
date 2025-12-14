@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
+import { RichTextContent } from '@/components/RichTextContent';
 import { Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -184,9 +185,11 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       )}
 
       {note.text_content && (
-        <p className={`text-sm mb-3 whitespace-pre-wrap ${!expanded ? 'line-clamp-3' : ''}`}>
-          {note.text_content}
-        </p>
+        <RichTextContent 
+          content={note.text_content} 
+          className="mb-3"
+          lineClamp={!expanded ? 3 : undefined}
+        />
       )}
 
       {note.audio_files.length > 0 && (
