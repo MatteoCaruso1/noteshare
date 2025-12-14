@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mic, X, Pencil, Check } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
 
 interface AudioFileItemProps {
   audio: AudioFileWithName;
@@ -77,7 +78,9 @@ export function AudioFileItem({ audio, onRemove, onRename }: AudioFileItemProps)
         </div>
       )}
       
-      <audio src={audio.url} controls className="flex-1 h-8 min-w-0" />
+      <div className="flex-1 min-w-0">
+        <WaveformPlayer src={audio.url} />
+      </div>
       
       <Button
         variant="ghost"

@@ -45,7 +45,8 @@ export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
       barRadius: 2,
       height: 40,
       normalize: true,
-      backend: 'WebAudio',
+      // Use MediaElement backend for better mobile/iOS compatibility
+      backend: 'MediaElement',
     });
 
     wavesurferRef.current = wavesurfer;
