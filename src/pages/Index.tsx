@@ -8,6 +8,7 @@ import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { FeedProjects } from '@/components/FeedProjects';
 import { FeedGigs } from '@/components/FeedGigs';
+import { PracticeControls } from '@/components/PracticeControls';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -26,19 +27,22 @@ const Index = () => {
   }
 
   const firstName = profile?.name?.split(' ')[0] || 'Your';
-  const journalTitle = `${firstName}'s Practice Journal`;
+  const notesTitle = `${firstName}'s Practice Notes`;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Page Title */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <h1 className="text-lg sm:text-xl font-semibold">{journalTitle}</h1>
+        <h1 className="text-lg sm:text-xl font-semibold">{notesTitle}</h1>
       </div>
 
       {/* Main Content */}
       <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4 sm:space-y-6">
-        {/* Goals Section */}
+        {/* Goals Section (Collapsible) */}
         {profile && <GoalsSection profileId={profile.id} />}
+
+        {/* Practice Controls */}
+        <PracticeControls />
 
         {/* Quick Note Capture */}
         <QuickNoteCapture />

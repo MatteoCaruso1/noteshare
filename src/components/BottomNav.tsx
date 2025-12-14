@@ -1,13 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Music, Disc3, Calendar, User, Users } from 'lucide-react';
+import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function BottomNav() {
   const location = useLocation();
 
   const links = [
-    { to: '/', icon: Home, label: 'My Journal' },
-    { to: '/practice', icon: Music, label: 'Practice' },
+    { to: '/', icon: Home, label: 'My Notes' },
     { to: '/projects', icon: Disc3, label: 'Projects' },
     { to: '/gigs', icon: Calendar, label: 'Gigs' },
     { to: '/friends', icon: Users, label: 'Friends' },
@@ -25,7 +24,7 @@ export function BottomNav() {
                 key={to}
                 to={to}
                 className={cn(
-                  'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[64px]',
+                  'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px]',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 )}
               >

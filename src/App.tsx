@@ -8,7 +8,6 @@ import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import Index from "./pages/Index";
-import Practice from "./pages/Practice";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import NoteDetail from "./pages/NoteDetail";
@@ -35,7 +34,6 @@ const App = () => (
           <GlobalSessionBanner />
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/practice" element={<Practice />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/notes/:id" element={<NoteDetail />} />
