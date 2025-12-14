@@ -129,6 +129,7 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
+              autoComplete="new-password"
             />
             <Input
               type="password"
@@ -137,6 +138,7 @@ const Auth = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
+              autoComplete="new-password"
             />
             <Button
               type="submit"

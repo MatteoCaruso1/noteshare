@@ -30,9 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const rememberMe = localStorage.getItem('noteshare_remember_me');
     const sessionActive = sessionStorage.getItem('noteshare_session_active');
     
+    // Check if this is a password reset flow - don't interfere with it
+    const isPasswordResetFlow = window.location.search.includes('reset=true') || 
+                                 window.location.hash.includes('type=recovery');
+    
     supabase.auth.getSession().then(({ data: { session } }) => {
       // If there's a session but "Remember me" was not checked and browser was closed
-      if (session && !rememberMe && !sessionActive) {
+      // BUT skip this check if we're in a password reset flow
+      if (session && !rememberMe && !sessionActive && !isPasswordResetFlow) {
         // Sign out the user since they didn't want to be remembered
         supabase.auth.signOut();
         setSession(null);
