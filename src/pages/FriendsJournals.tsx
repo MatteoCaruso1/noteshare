@@ -40,10 +40,10 @@ const FriendsJournals = () => {
       {/* Page Header - Clickable to see friends list */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
         <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-          <div className="cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="cursor-pointer transition-opacity group">
             <div className="flex items-center gap-2">
               <h1 className="text-lg sm:text-xl font-semibold">Friends</h1>
-              <Users className="w-5 h-5 text-primary" />
+              <Users className="w-5 h-5 text-muted-foreground transition-colors group-hover:text-primary" />
             </div>
             <p className="text-xs text-muted-foreground">
               {friends?.length || 0} friends · Tap to view
