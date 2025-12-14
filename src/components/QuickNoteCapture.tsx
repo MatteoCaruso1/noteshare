@@ -26,7 +26,7 @@ export function QuickNoteCapture() {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [visibility, setVisibility] = useState<'private' | 'friends'>('private');
+  const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
 
   if (!profile) return null;
 
@@ -76,7 +76,7 @@ export function QuickNoteCapture() {
           setImageFiles([]);
           setTags([]);
           setSelectedProjectId('');
-          setVisibility('private');
+          setVisibility('friends');
           setIsOpen(false);
         },
       }
