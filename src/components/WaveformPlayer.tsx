@@ -53,6 +53,7 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   useEffect(() => {
     if (!containerRef.current || !src) return;
 
+    let isMounted = true;
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
       waveColor: 'rgba(147, 197, 253, 0.5)',
@@ -71,33 +72,50 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
     wavesurferRef.current = wavesurfer;
 
     wavesurfer.on('ready', () => {
-      setDuration(wavesurfer.getDuration());
-      setIsReady(true);
-      setError(false);
+      if (isMounted) {
+        setDuration(wavesurfer.getDuration());
+        setIsReady(true);
+        setError(false);
+      }
     });
 
     wavesurfer.on('audioprocess', () => {
-      setCurrentTime(wavesurfer.getCurrentTime());
+      if (isMounted) {
+        setCurrentTime(wavesurfer.getCurrentTime());
+      }
     });
 
     wavesurfer.on('seeking', () => {
-      setCurrentTime(wavesurfer.getCurrentTime());
+      if (isMounted) {
+        setCurrentTime(wavesurfer.getCurrentTime());
+      }
     });
 
-    wavesurfer.on('play', () => setIsPlaying(true));
-    wavesurfer.on('pause', () => setIsPlaying(false));
-    wavesurfer.on('finish', () => setIsPlaying(false));
+    wavesurfer.on('play', () => isMounted && setIsPlaying(true));
+    wavesurfer.on('pause', () => isMounted && setIsPlaying(false));
+    wavesurfer.on('finish', () => isMounted && setIsPlaying(false));
 
     wavesurfer.on('error', (err) => {
+      // Ignore AbortErrors from unmount cleanup
+      if (err?.name === 'AbortError' || (err as any)?.message?.includes('abort')) {
+        return;
+      }
       console.error('[WaveformPlayer] Error loading audio:', err);
-      setError(true);
-      onError?.();
+      if (isMounted) {
+        setError(true);
+        onError?.();
+      }
     });
 
     wavesurfer.load(src);
 
     return () => {
-      wavesurfer.destroy();
+      isMounted = false;
+      try {
+        wavesurfer.destroy();
+      } catch (e) {
+        // Ignore destroy errors (e.g., AbortError when unmounting during load)
+      }
     };
   }, [src, onError]);
 
