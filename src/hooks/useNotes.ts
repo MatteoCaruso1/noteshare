@@ -139,17 +139,32 @@ export function useDeleteNote() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (noteId: string) => {
-      const { error } = await supabase
+    mutationFn: async ({ noteId, sessionId }: { noteId: string; sessionId?: string | null }) => {
+      // Delete the note
+      const { error: noteError } = await supabase
         .from('notes')
         .delete()
         .eq('id', noteId);
 
-      if (error) throw error;
+      if (noteError) throw noteError;
+
+      // If this note was linked to a session, delete the session too
+      if (sessionId) {
+        const { error: sessionError } = await supabase
+          .from('practice_sessions')
+          .delete()
+          .eq('id', sessionId);
+
+        if (sessionError) {
+          console.error('Error deleting session:', sessionError);
+          // Don't throw - the note was already deleted
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      queryClient.invalidateQueries({ queryKey: ['practice-stats'] }); // Recompute stats on note delete
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       toast.success('Note deleted');
     },
     onError: (error) => {

@@ -34,8 +34,11 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      deleteNote.mutate(note.id);
+    const confirmMsg = isPracticeSession 
+      ? 'Are you sure you want to delete this practice session and note?' 
+      : 'Are you sure you want to delete this note?';
+    if (window.confirm(confirmMsg)) {
+      deleteNote.mutate({ noteId: note.id, sessionId: note.session_id });
     }
   };
 
