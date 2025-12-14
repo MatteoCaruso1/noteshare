@@ -25,13 +25,14 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
   }, []);
 
   const getSupportedMimeType = (): string => {
+    // Prefer webm/ogg (more reliable in Chrome) and fall back to mp4
     const types = [
-      'audio/mp4',
       'audio/webm;codecs=opus',
       'audio/webm',
       'audio/ogg;codecs=opus',
       'audio/ogg',
       'audio/wav',
+      'audio/mp4',
     ];
     
     for (const type of types) {
