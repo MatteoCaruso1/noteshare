@@ -1,25 +1,45 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { NoteWithAuthor } from '@/types';
+import { NoteWithAuthor, Profile } from '@/types';
+import { useAuth } from './useAuth';
 
 export function useNotes(projectId?: string) {
+  const { profile } = useAuth();
+  
   return useQuery({
-    queryKey: ['notes', projectId],
+    queryKey: ['notes', projectId, profile?.id],
     queryFn: async () => {
-      let query = supabase
+      // If viewing a project, get all notes for that project the user can see
+      if (projectId) {
+        const { data, error } = await supabase
+          .from('notes')
+          .select(`
+            *,
+            profiles!notes_author_id_fkey (*)
+          `)
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return data.map((note: any) => ({
+          ...note,
+          author: note.profiles,
+        })) as NoteWithAuthor[];
+      }
+
+      // For personal journal (My Journal), only show current user's notes
+      if (!profile?.id) return [];
+      
+      const { data, error } = await supabase
         .from('notes')
         .select(`
           *,
           profiles!notes_author_id_fkey (*)
         `)
+        .eq('author_id', profile.id)
         .order('created_at', { ascending: false });
-
-      if (projectId) {
-        query = query.eq('project_id', projectId);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -28,6 +48,7 @@ export function useNotes(projectId?: string) {
         author: note.profiles,
       })) as NoteWithAuthor[];
     },
+    enabled: projectId ? true : !!profile?.id,
   });
 }
 
@@ -78,7 +99,7 @@ export function useCreateNote() {
       tags?: string[];
       sessionId?: string;
       projectId?: string;
-      visibility?: 'private' | 'collaborators' | 'followers' | 'public';
+      visibility?: 'private' | 'friends';
     }) => {
       const { data, error } = await supabase
         .from('notes')

@@ -39,7 +39,7 @@ export interface Note {
   image_files: string[];
   video_files: string[];
   tags: string[];
-  visibility: 'private' | 'collaborators' | 'followers' | 'public' | 'friends';
+  visibility: 'private' | 'friends';
   created_at: string;
   updated_at: string;
 }

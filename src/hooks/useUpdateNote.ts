@@ -11,7 +11,7 @@ export function useUpdateNoteVisibility() {
       visibility,
     }: {
       noteId: string;
-      visibility: 'private' | 'collaborators' | 'followers' | 'public' | 'friends';
+      visibility: 'private' | 'friends';
     }) => {
       const { data, error } = await supabase
         .from('notes')

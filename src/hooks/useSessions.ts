@@ -94,11 +94,38 @@ export function useEndSession() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['active-session'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] }); // Recompute stats on session end
       toast.success('Practice session ended!');
     },
     onError: (error) => {
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
+    },
+  });
+}
+
+export function useDeleteSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase
+        .from('practice_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] }); // Recompute stats on delete
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      toast.success('Session deleted');
+    },
+    onError: (error) => {
+      console.error('Error deleting session:', error);
+      toast.error('Failed to delete session');
     },
   });
 }

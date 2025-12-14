@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Mic, User, Disc3, Lock, Globe, Clock, FileText, Trash2, Users } from 'lucide-react';
+import { Mic, User, Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -28,7 +28,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
   const handleVisibilityChange = (value: string) => {
     updateVisibility.mutate({
       noteId: note.id,
-      visibility: value as 'private' | 'friends' | 'public',
+      visibility: value as 'private' | 'friends',
     });
   };
 
@@ -45,8 +45,6 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
         return <Lock className="w-3 h-3 text-muted-foreground" />;
       case 'friends':
         return <Users className="w-3 h-3 text-primary" />;
-      case 'public':
-        return <Globe className="w-3 h-3 text-muted-foreground" />;
       default:
         return <Lock className="w-3 h-3 text-muted-foreground" />;
     }
@@ -109,11 +107,6 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
                 <SelectItem value="friends">
                   <div className="flex items-center gap-1">
                     <Users className="w-3 h-3" /> Friends
-                  </div>
-                </SelectItem>
-                <SelectItem value="public">
-                  <div className="flex items-center gap-1">
-                    <Globe className="w-3 h-3" /> Public
                   </div>
                 </SelectItem>
               </SelectContent>
