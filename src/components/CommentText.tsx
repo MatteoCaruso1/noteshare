@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Fragment } from 'react';
 
 interface CommentTextProps {
@@ -7,6 +7,7 @@ interface CommentTextProps {
 
 export function CommentText({ content }: CommentTextProps) {
   const navigate = useNavigate();
+  const { id: noteId } = useParams<{ id: string }>();
 
   // Parse the content and make @mentions clickable
   const parts = content.split(/(@\w+)/g);
@@ -21,8 +22,8 @@ export function CommentText({ content }: CommentTextProps) {
               key={index}
               onClick={(e) => {
                 e.stopPropagation();
-                // Navigate to find the profile by username
-                navigate(`/profile/${username}`);
+                // Navigate to find the profile by username, passing the note we came from
+                navigate(`/profile/${username}`, { state: { fromNote: noteId } });
               }}
               className="text-primary hover:underline font-medium"
             >
