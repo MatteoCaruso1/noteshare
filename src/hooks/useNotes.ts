@@ -16,7 +16,8 @@ export function useNotes(projectId?: string) {
           .from('notes')
           .select(`
             *,
-            profiles!notes_author_id_fkey (*)
+            profiles!notes_author_id_fkey (*),
+            practice_sessions!notes_session_id_fkey (*)
           `)
           .eq('project_id', projectId)
           .order('created_at', { ascending: false });
@@ -26,6 +27,7 @@ export function useNotes(projectId?: string) {
         return data.map((note: any) => ({
           ...note,
           author: note.profiles,
+          session: note.practice_sessions,
         })) as NoteWithAuthor[];
       }
 
@@ -36,7 +38,8 @@ export function useNotes(projectId?: string) {
         .from('notes')
         .select(`
           *,
-          profiles!notes_author_id_fkey (*)
+          profiles!notes_author_id_fkey (*),
+          practice_sessions!notes_session_id_fkey (*)
         `)
         .eq('author_id', profile.id)
         .order('created_at', { ascending: false });
@@ -46,6 +49,7 @@ export function useNotes(projectId?: string) {
       return data.map((note: any) => ({
         ...note,
         author: note.profiles,
+        session: note.practice_sessions,
       })) as NoteWithAuthor[];
     },
     enabled: projectId ? true : !!profile?.id,

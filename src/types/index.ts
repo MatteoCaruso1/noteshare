@@ -46,6 +46,7 @@ export interface Note {
 
 export interface NoteWithAuthor extends Note {
   author: Profile;
+  session?: PracticeSession | null;
 }
 
 export interface Project {
