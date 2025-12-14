@@ -41,6 +41,7 @@ export function GoalTemplates({ goalType, onSelect }: GoalTemplatesProps) {
         {filteredTemplates.map((template) => (
           <Button
             key={template.title}
+            type="button"
             variant="outline"
             size="sm"
             className="text-xs h-7"
