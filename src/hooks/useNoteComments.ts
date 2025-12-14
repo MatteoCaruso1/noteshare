@@ -30,6 +30,7 @@ export function useNoteComments(noteId: string) {
       })) as CommentWithAuthor[];
     },
     enabled: !!noteId,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
 }
 

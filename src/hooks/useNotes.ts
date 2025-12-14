@@ -78,6 +78,7 @@ export function useNote(noteId: string) {
       } as NoteWithAuthor;
     },
     enabled: !!noteId,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
 }
 
