@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, lazy, Suspense } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle } from 'lucide-react';
@@ -16,13 +17,6 @@ import { useDeleteNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNoteCommentCount } from '@/hooks/useNoteCommentCount';
-
-// Lazy load WaveformPlayer for better initial render performance
-const WaveformPlayer = lazy(() => import('@/components/WaveformPlayer').then(m => ({ default: m.WaveformPlayer })));
-
-const WaveformFallback = () => (
-  <div className="h-14 bg-secondary/50 rounded-lg animate-pulse" />
-);
 
 interface NoteCardProps {
   note: NoteWithAuthor;
@@ -77,7 +71,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps
     return `~${rounded}m`;
   }, [note.session?.started_at, note.session?.ended_at]);
 
-  const handleNavigateToNote = useCallback(() => {
+  const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
     navigate(`/notes/${note.id}`);
   }, [navigate, note.id]);
 
@@ -213,12 +208,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps
       {note.audio_files.length > 0 && (
         <div className="space-y-2 mb-3">
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
-            <Suspense key={i} fallback={<WaveformFallback />}>
-              <WaveformPlayer 
-                src={url} 
-                title={note.audio_file_names?.[i]}
-              />
-            </Suspense>
+            <WaveformPlayer 
+              key={i}
+              src={url} 
+              title={note.audio_file_names?.[i]}
+            />
           ))}
           {!expanded && note.audio_files.length > 1 && (
             <p className="text-xs text-muted-foreground">+{note.audio_files.length - 1} more audio</p>

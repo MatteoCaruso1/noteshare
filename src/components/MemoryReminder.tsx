@@ -1,4 +1,4 @@
-import { memo, lazy, Suspense } from 'react';
+import { memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,13 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Clock } from 'lucide-react';
 import { format, subMonths, subYears } from 'date-fns';
 import { NoteWithAuthor } from '@/types';
-
-// Lazy load WaveformPlayer
-const WaveformPlayer = lazy(() => import('@/components/WaveformPlayer').then(m => ({ default: m.WaveformPlayer })));
-
-const WaveformFallback = () => (
-  <div className="h-14 bg-secondary/50 rounded-lg animate-pulse" />
-);
+import { WaveformPlayer } from '@/components/WaveformPlayer';
 
 export const MemoryReminder = memo(function MemoryReminder() {
   const { profile } = useAuth();
@@ -124,9 +118,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
           )}
           {note.audio_files && note.audio_files.length > 0 && (
             <div className="mt-2">
-              <Suspense fallback={<WaveformFallback />}>
-                <WaveformPlayer src={note.audio_files[0]} />
-              </Suspense>
+              <WaveformPlayer src={note.audio_files[0]} />
             </div>
           )}
         </Card>
