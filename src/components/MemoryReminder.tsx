@@ -78,6 +78,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
                   project_id: null,
                   gig_id: null,
                   audio_file_names: null,
+                  comment_count: 0,
                 } as NoteWithAuthor,
                 label: range.label,
                 color: range.color,

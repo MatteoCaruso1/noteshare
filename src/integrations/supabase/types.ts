@@ -285,6 +285,7 @@ export type Database = {
           audio_file_names: string[] | null
           audio_files: string[] | null
           author_id: string
+          comment_count: number
           created_at: string
           gig_id: string | null
           id: string
@@ -301,6 +302,7 @@ export type Database = {
           audio_file_names?: string[] | null
           audio_files?: string[] | null
           author_id: string
+          comment_count?: number
           created_at?: string
           gig_id?: string | null
           id?: string
@@ -317,6 +319,7 @@ export type Database = {
           audio_file_names?: string[] | null
           audio_files?: string[] | null
           author_id?: string
+          comment_count?: number
           created_at?: string
           gig_id?: string | null
           id?: string
