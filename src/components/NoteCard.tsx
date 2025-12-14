@@ -194,7 +194,21 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
             <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
               <Mic className="w-4 h-4 text-primary flex-shrink-0" />
-              <audio src={url} controls className="flex-1 h-8 min-w-0" onClick={(e) => e.stopPropagation()} />
+              <audio
+                src={url}
+                controls
+                preload="metadata"
+                className="flex-1 h-8 min-w-0"
+                onClick={(e) => e.stopPropagation()}
+                onLoadedMetadata={(e) => {
+                  const audio = e.currentTarget;
+                  console.log('[NoteCard] loadedmetadata duration:', audio.duration, 'src:', audio.src);
+                }}
+                onError={(e) => {
+                  const audio = e.currentTarget;
+                  console.error('[NoteCard] audio error for src:', audio.src);
+                }}
+              />
             </div>
           ))}
           {!expanded && note.audio_files.length > 1 && (
