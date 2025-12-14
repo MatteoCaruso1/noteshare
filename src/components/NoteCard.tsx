@@ -206,7 +206,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
       {/* Linked Project */}
       {note.project_id && (
         <div
-          className="flex items-center gap-2 mb-3 p-2 bg-secondary/30 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors"
+          className="flex items-center gap-2 mb-3 p-2 bg-accent/10 rounded-lg cursor-pointer hover:bg-accent/20 transition-colors"
           onClick={handleNavigateToProject}
         >
           <Disc3 className="w-4 h-4 text-accent" />
