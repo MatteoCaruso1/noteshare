@@ -95,8 +95,13 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   };
 
   const handleCompleteGoal = (goal: Goal) => {
-    // Open completion dialog for all goal types
-    setCompletionGoal(goal);
+    // Only show completion dialog for long-term goals
+    if (goal.goal_type === 'long-term') {
+      setCompletionGoal(goal);
+    } else {
+      // For near-term goals, complete directly without dialog
+      completeGoal.mutate({ goalId: goal.id });
+    }
   };
 
   const handleConfirmComplete = (reflection?: string) => {

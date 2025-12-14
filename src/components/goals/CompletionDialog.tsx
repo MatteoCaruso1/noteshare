@@ -70,12 +70,7 @@ export function CompletionDialog({
             />
           </div>
 
-          <div className="flex justify-end gap-2">
-            {goal.goal_type !== 'long-term' && (
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Skip
-              </Button>
-            )}
+          <div className="flex justify-end">
             <Button onClick={handleComplete}>
               Complete Goal
             </Button>
