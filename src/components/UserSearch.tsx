@@ -4,16 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Search, UserPlus, UserCheck, Clock, X } from 'lucide-react';
-import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest } from '@/hooks/useFriendships';
+import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles } from 'lucide-react';
+import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile } from '@/types';
+import { useNavigate } from 'react-router-dom';
 
 export function UserSearch() {
   const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { data: searchResults, isLoading } = useSearchUsers(query);
   const { data: friendships } = useFriendships();
+  const { data: suggestedMusicians, isLoading: suggestionsLoading } = useSuggestedMusicians();
   const sendRequest = useSendFriendRequest();
   const respondToRequest = useRespondToFriendRequest();
 
@@ -45,19 +49,23 @@ export function UserSearch() {
     respondToRequest.mutate({ friendshipId, status: 'rejected' });
   };
 
-  const renderFriendButton = (targetProfile: Profile) => {
+  const renderFriendButton = (targetProfile: Profile, compact?: boolean) => {
     const status = getFriendshipStatus(targetProfile.id);
     
     if (!status) {
       return (
         <Button
           size="sm"
-          variant="outline"
-          onClick={() => handleAddFriend(targetProfile.id)}
+          variant={compact ? "default" : "outline"}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddFriend(targetProfile.id);
+          }}
           disabled={sendRequest.isPending}
+          className={compact ? "h-7 text-xs" : ""}
         >
           <UserPlus className="w-4 h-4 mr-1" />
-          Add Friend
+          {compact ? "Add" : "Add Friend"}
         </Button>
       );
     }
@@ -85,7 +93,10 @@ export function UserSearch() {
             <Button
               size="sm"
               variant="default"
-              onClick={() => handleAccept(status.friendshipId)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAccept(status.friendshipId);
+              }}
               disabled={respondToRequest.isPending}
             >
               Accept
@@ -93,7 +104,10 @@ export function UserSearch() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => handleDecline(status.friendshipId)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDecline(status.friendshipId);
+              }}
               disabled={respondToRequest.isPending}
             >
               <X className="w-4 h-4" />
@@ -107,15 +121,22 @@ export function UserSearch() {
     return (
       <Button
         size="sm"
-        variant="outline"
-        onClick={() => handleAddFriend(targetProfile.id)}
+        variant={compact ? "default" : "outline"}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleAddFriend(targetProfile.id);
+        }}
         disabled={sendRequest.isPending}
+        className={compact ? "h-7 text-xs" : ""}
       >
         <UserPlus className="w-4 h-4 mr-1" />
-        Add Friend
+        {compact ? "Add" : "Add Friend"}
       </Button>
     );
   };
+
+  const showSuggestions = isFocused && query.length < 2 && suggestedMusicians && suggestedMusicians.length > 0;
+  const showSearchResults = query.length >= 2;
 
   return (
     <div className="space-y-3">
@@ -125,11 +146,63 @@ export function UserSearch() {
           placeholder="Search musicians by name or @handle"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
           className="pl-9"
         />
       </div>
       
-      {query.length >= 2 && (
+      {/* Suggested Musicians (when focused but no search query) */}
+      {showSuggestions && (
+        <Card className="p-3 bg-card border-border">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Suggested</span>
+            <span className="text-xs text-muted-foreground">Based on mutual connections</span>
+          </div>
+          <div className="space-y-2">
+            {suggestedMusicians.map((user) => (
+              <div 
+                key={user.id} 
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
+                onClick={() => navigate(`/user/${user.id}`)}
+              >
+                <ClickableAvatar
+                  profileId={user.id}
+                  avatar={user.avatar}
+                  name={user.name}
+                  size="md"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{user.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
+                    {user.mutualCount > 0 && (
+                      <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-0.5">
+                        <Users className="w-3 h-3" />
+                        {user.mutualCount} mutual
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                {renderFriendButton(user, true)}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Loading suggestions */}
+      {isFocused && query.length < 2 && suggestionsLoading && (
+        <Card className="p-4 bg-card border-border">
+          <div className="text-center text-muted-foreground text-sm">
+            Finding suggestions...
+          </div>
+        </Card>
+      )}
+
+      {/* Search Results */}
+      {showSearchResults && (
         <Card className="p-2 bg-card border-border divide-y divide-border">
           {isLoading ? (
             <div className="py-4 text-center text-muted-foreground text-sm">
@@ -137,7 +210,11 @@ export function UserSearch() {
             </div>
           ) : searchResults && searchResults.length > 0 ? (
             searchResults.map((user) => (
-              <div key={user.id} className="flex items-center gap-3 py-3 px-2">
+              <div 
+                key={user.id} 
+                className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-secondary/30 transition-colors"
+                onClick={() => navigate(`/user/${user.id}`)}
+              >
                 <ClickableAvatar
                   profileId={user.id}
                   avatar={user.avatar}
