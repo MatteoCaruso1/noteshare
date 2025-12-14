@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Goal } from '@/types';
@@ -23,7 +23,7 @@ interface GoalCardProps {
   showReorder?: boolean;
 }
 
-export function GoalCard({
+export const GoalCard = memo(function GoalCard({
   goal,
   onEdit,
   onDelete,
@@ -40,13 +40,13 @@ export function GoalCard({
 }: GoalCardProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     onComplete();
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 2000);
-  };
+  }, [onComplete]);
 
-  const handleIncrement = () => {
+  const handleIncrement = useCallback(() => {
     onIncrementProgress();
     // Check if this increment will complete the goal
     if (goal.progress_type === 'step' && goal.current_steps + 1 >= goal.target_steps) {
@@ -57,7 +57,7 @@ export function GoalCard({
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 2000);
     }
-  };
+  }, [onIncrementProgress, goal.progress_type, goal.current_steps, goal.target_steps, goal.current_minutes, goal.target_minutes]);
 
   return (
     <Card className={cn(
@@ -178,4 +178,4 @@ export function GoalCard({
       </div>
     </Card>
   );
-}
+});

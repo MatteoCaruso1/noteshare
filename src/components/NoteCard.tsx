@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo, lazy, Suspense } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle } from 'lucide-react';
@@ -17,12 +17,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNoteCommentCount } from '@/hooks/useNoteCommentCount';
 
+// Lazy load WaveformPlayer for better initial render performance
+const WaveformPlayer = lazy(() => import('@/components/WaveformPlayer').then(m => ({ default: m.WaveformPlayer })));
+
+const WaveformFallback = () => (
+  <div className="h-14 bg-secondary/50 rounded-lg animate-pulse" />
+);
+
 interface NoteCardProps {
   note: NoteWithAuthor;
   expanded?: boolean;
 }
 
-export function NoteCard({ note, expanded }: NoteCardProps) {
+export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
@@ -33,18 +40,18 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
 
-  const handleVisibilityChange = (value: string) => {
+  const handleVisibilityChange = useCallback((value: string) => {
     updateVisibility.mutate({
       noteId: note.id,
       visibility: value as 'private' | 'friends',
     });
-  };
+  }, [updateVisibility, note.id]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     deleteNote.mutate({ noteId: note.id, sessionId: note.session_id });
-  };
+  }, [deleteNote, note.id, note.session_id]);
 
-  const getVisibilityIcon = () => {
+  const visibilityIcon = useMemo(() => {
     switch (note.visibility) {
       case 'private':
         return <Lock className="w-3 h-3 text-muted-foreground" />;
@@ -53,10 +60,10 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       default:
         return <Lock className="w-3 h-3 text-muted-foreground" />;
     }
-  };
+  }, [note.visibility]);
 
-  // Calculate session duration
-  const getSessionDuration = () => {
+  // Calculate session duration - memoized
+  const sessionDuration = useMemo(() => {
     if (!note.session?.started_at || !note.session?.ended_at) return null;
     
     const start = new Date(note.session.started_at).getTime();
@@ -64,20 +71,29 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
     const durationMinutes = Math.round((end - start) / 60000);
     
     if (durationMinutes < 5) {
-      // Round to nearest 1 minute for short sessions
       return `~${Math.max(1, durationMinutes)}m`;
     }
-    // Round to nearest 5 minutes
     const rounded = Math.round(durationMinutes / 5) * 5;
     return `~${rounded}m`;
-  };
+  }, [note.session?.started_at, note.session?.ended_at]);
 
-  const sessionDuration = getSessionDuration();
+  const handleNavigateToNote = useCallback(() => {
+    navigate(`/notes/${note.id}`);
+  }, [navigate, note.id]);
+
+  const handleNavigateToProject = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/projects/${note.project_id}`);
+  }, [navigate, note.project_id]);
+
+  const handleInvalidateComments = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['note-comments', note.id] });
+  }, [queryClient, note.id]);
 
   return (
     <Card
       className={`p-3 sm:p-4 bg-card border-border ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
-      onClick={!expanded ? () => navigate(`/notes/${note.id}`) : undefined}
+      onClick={!expanded ? handleNavigateToNote : undefined}
     >
       {/* Type Badge */}
       <div className="flex items-center gap-2 mb-3">
@@ -105,7 +121,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium truncate">{note.author?.name}</p>
-            {getVisibilityIcon()}
+            {visibilityIcon}
           </div>
           <p className="text-xs text-muted-foreground">
             {format(new Date(note.created_at), 'MMM d, yyyy · h:mm a')}
@@ -179,10 +195,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       {note.project_id && (
         <div
           className="flex items-center gap-2 mb-3 p-2 bg-secondary/30 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/projects/${note.project_id}`);
-          }}
+          onClick={handleNavigateToProject}
         >
           <Disc3 className="w-4 h-4 text-accent" />
           <span className="text-sm text-accent">Linked to project</span>
@@ -200,11 +213,12 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       {note.audio_files.length > 0 && (
         <div className="space-y-2 mb-3">
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
-            <WaveformPlayer 
-              key={i} 
-              src={url} 
-              title={note.audio_file_names?.[i]}
-            />
+            <Suspense key={i} fallback={<WaveformFallback />}>
+              <WaveformPlayer 
+                src={url} 
+                title={note.audio_file_names?.[i]}
+              />
+            </Suspense>
           ))}
           {!expanded && note.audio_files.length > 1 && (
             <p className="text-xs text-muted-foreground">+{note.audio_files.length - 1} more audio</p>
@@ -248,16 +262,13 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           <VoiceReplyButton
             noteId={note.id}
             authorId={profile.id}
-            onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', note.id] })}
+            onSuccess={handleInvalidateComments}
           />
           <Button
             variant="ghost"
             size="sm"
             className="h-7 text-xs text-muted-foreground hover:text-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/notes/${note.id}`);
-            }}
+            onClick={handleNavigateToNote}
           >
             <MessageCircle className="w-4 h-4 mr-1" />
             Comments
@@ -271,4 +282,4 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       )}
     </Card>
   );
-}
+});
