@@ -15,11 +15,15 @@ export function FloatingInstruments() {
   const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
 
   useEffect(() => {
-    // Create a set of floating emojis
+    // Create a set of floating emojis with even distribution across the page
+    const columns = 12;
+    const columnWidth = 100 / columns;
+    
     const initialEmojis: FloatingEmoji[] = Array.from({ length: 12 }, (_, i) => ({
       id: i,
       emoji: INSTRUMENTS[Math.floor(Math.random() * INSTRUMENTS.length)],
-      left: Math.random() * 100,
+      // Distribute evenly across columns with small random offset within each column
+      left: (i % columns) * columnWidth + Math.random() * (columnWidth * 0.6),
       delay: Math.random() * 20,
       duration: 25 + Math.random() * 15,
       size: 16 + Math.random() * 12,
@@ -32,7 +36,7 @@ export function FloatingInstruments() {
       {emojis.map((item) => (
         <div
           key={item.id}
-          className="absolute opacity-[0.04] animate-float-down"
+          className="absolute opacity-[0.05] animate-float-down grayscale"
           style={{
             left: `${item.left}%`,
             fontSize: `${item.size}px`,
