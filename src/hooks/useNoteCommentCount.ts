@@ -5,13 +5,13 @@ export function useNoteCommentCount(noteId: string) {
   return useQuery({
     queryKey: ['note-comment-count', noteId],
     queryFn: async () => {
-      const { count, error } = await supabase
+      const { data, count, error } = await supabase
         .from('note_comments')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact' })
         .eq('note_id', noteId);
 
       if (error) throw error;
-      return count || 0;
+      return count ?? data?.length ?? 0;
     },
     enabled: !!noteId,
   });
