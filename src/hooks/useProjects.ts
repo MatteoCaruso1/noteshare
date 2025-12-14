@@ -7,9 +7,23 @@ export function useProjects() {
   return useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
+      // Get current user's profile ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!currentProfile) return [];
+
+      // Only fetch projects owned by the current user
       const { data, error } = await supabase
         .from('projects')
         .select('*')
+        .eq('owner_id', currentProfile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
