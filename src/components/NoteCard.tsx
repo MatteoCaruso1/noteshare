@@ -13,10 +13,11 @@ import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle } from 'lucide-
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
-import { useDeleteNote } from '@/hooks/useNotes';
+import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNoteCommentCount } from '@/hooks/useNoteCommentCount';
+import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 
 interface NoteCardProps {
   note: NoteWithAuthor;
@@ -30,6 +31,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
   const { data: commentCount } = useNoteCommentCount(note.id);
+  const prefetchNote = usePrefetchNote();
+  const prefetchComments = usePrefetchNoteComments();
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
@@ -85,10 +88,20 @@ export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps
     queryClient.invalidateQueries({ queryKey: ['note-comments', note.id] });
   }, [queryClient, note.id]);
 
+  // Prefetch note data and comments on hover for faster navigation
+  const handlePrefetch = useCallback(() => {
+    if (!expanded) {
+      prefetchNote(note.id);
+      prefetchComments(note.id);
+    }
+  }, [expanded, prefetchNote, prefetchComments, note.id]);
+
   return (
     <Card
       className={`p-3 sm:p-4 bg-card border-border ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
       onClick={!expanded ? handleNavigateToNote : undefined}
+      onMouseEnter={handlePrefetch}
+      onTouchStart={handlePrefetch}
     >
       {/* Type Badge */}
       <div className="flex items-center gap-2 mb-3">

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { NoteComment } from '@/types';
+import { useCallback } from 'react';
 
 interface CommentWithAuthor extends NoteComment {
   author: {
@@ -13,25 +14,41 @@ interface CommentWithAuthor extends NoteComment {
   audio_url?: string | null;
 }
 
+// Shared query function for comments - reusable for prefetch
+async function fetchNoteComments(noteId: string) {
+  const { data, error } = await supabase
+    .from('note_comments')
+    .select(`*, profiles!note_comments_author_id_fkey (id, name, username, avatar)`)
+    .eq('note_id', noteId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data.map((comment: any) => ({
+    ...comment,
+    author: comment.profiles,
+  })) as CommentWithAuthor[];
+}
+
 export function useNoteComments(noteId: string) {
   return useQuery({
     queryKey: ['note-comments', noteId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('note_comments')
-        .select(`*, profiles!note_comments_author_id_fkey (id, name, username, avatar)`)
-        .eq('note_id', noteId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return data.map((comment: any) => ({
-        ...comment,
-        author: comment.profiles,
-      })) as CommentWithAuthor[];
-    },
+    queryFn: () => fetchNoteComments(noteId),
     enabled: !!noteId,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
+}
+
+// Prefetch comments on hover - call this from NoteCard
+export function usePrefetchNoteComments() {
+  const queryClient = useQueryClient();
+  
+  return useCallback((noteId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: ['note-comments', noteId],
+      queryFn: () => fetchNoteComments(noteId),
+      staleTime: 30 * 1000,
+    });
+  }, [queryClient]);
 }
 
 export function useCreateNoteComment() {

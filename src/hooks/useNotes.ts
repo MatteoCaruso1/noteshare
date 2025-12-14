@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -57,29 +58,45 @@ export function useNotes(projectId?: string) {
   });
 }
 
+// Shared query function for note fetching - reusable for prefetch
+async function fetchNote(noteId: string) {
+  const { data, error } = await supabase
+    .from('notes')
+    .select(`
+      *,
+      profiles!notes_author_id_fkey (*)
+    `)
+    .eq('id', noteId)
+    .single();
+
+  if (error) throw error;
+
+  return {
+    ...data,
+    author: data.profiles,
+  } as NoteWithAuthor;
+}
+
 export function useNote(noteId: string) {
   return useQuery({
     queryKey: ['note', noteId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('notes')
-        .select(`
-          *,
-          profiles!notes_author_id_fkey (*)
-        `)
-        .eq('id', noteId)
-        .single();
-
-      if (error) throw error;
-
-      return {
-        ...data,
-        author: data.profiles,
-      } as NoteWithAuthor;
-    },
+    queryFn: () => fetchNote(noteId),
     enabled: !!noteId,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
+}
+
+// Prefetch a note on hover - call this from NoteCard
+export function usePrefetchNote() {
+  const queryClient = useQueryClient();
+  
+  return useCallback((noteId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: ['note', noteId],
+      queryFn: () => fetchNote(noteId),
+      staleTime: 30 * 1000,
+    });
+  }, [queryClient]);
 }
 
 export function useCreateNote() {
