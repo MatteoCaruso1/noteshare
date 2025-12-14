@@ -306,15 +306,27 @@ export function useFriendsNotes() {
 }
 
 // Get suggested musicians (friends-of-friends who are not already friends)
+export type SuggestionReason = 'mutual' | 'genre' | 'collaborate';
+
+export type SuggestedProfile = Profile & {
+  mutualCount: number;
+  reasons: SuggestionReason[];
+  matchingGenres: string[];
+};
+
 export function useSuggestedMusicians() {
   const { profile } = useAuth();
 
   return useQuery({
     queryKey: ['suggested-musicians', profile?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<SuggestedProfile[]> => {
       if (!profile?.id) return [];
 
-      // Step 1: Get current friends
+      const myGenres = profile.genres || [];
+      const excludeIds = new Set<string>([profile.id]);
+      const suggestionMap = new Map<string, { mutualCount: number; reasons: Set<SuggestionReason>; matchingGenres: string[] }>();
+
+      // Step 1: Get current friends to exclude them
       const { data: myFriendships, error: myFriendshipsError } = await supabase
         .from('friendships')
         .select('requester_id, addressee_id')
@@ -323,52 +335,125 @@ export function useSuggestedMusicians() {
 
       if (myFriendshipsError) throw myFriendshipsError;
 
-      const myFriendIds = myFriendships.map(f => 
+      const myFriendIds = (myFriendships || []).map(f => 
         f.requester_id === profile.id ? f.addressee_id : f.requester_id
       );
+      myFriendIds.forEach(id => excludeIds.add(id));
 
-      if (myFriendIds.length === 0) return [];
-
-      // Step 2: Get friends of my friends
-      const { data: fofFriendships, error: fofError } = await supabase
+      // Also exclude pending requests
+      const { data: pendingFriendships } = await supabase
         .from('friendships')
         .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(myFriendIds.map(id => `requester_id.eq.${id},addressee_id.eq.${id}`).join(','));
+        .eq('status', 'pending')
+        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
 
-      if (fofError) throw fofError;
+      (pendingFriendships || []).forEach(f => {
+        excludeIds.add(f.requester_id);
+        excludeIds.add(f.addressee_id);
+      });
 
-      // Extract friends-of-friends IDs (excluding myself and my direct friends)
-      const excludeIds = new Set([profile.id, ...myFriendIds]);
-      const fofIds = new Set<string>();
-      const mutualCountMap = new Map<string, number>();
+      // Step 2: Get friends-of-friends (mutual connections)
+      if (myFriendIds.length > 0) {
+        const { data: fofFriendships, error: fofError } = await supabase
+          .from('friendships')
+          .select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or(myFriendIds.map(id => `requester_id.eq.${id},addressee_id.eq.${id}`).join(','));
 
-      fofFriendships.forEach(f => {
-        const otherId = myFriendIds.includes(f.requester_id) ? f.addressee_id : f.requester_id;
-        if (!excludeIds.has(otherId)) {
-          fofIds.add(otherId);
-          mutualCountMap.set(otherId, (mutualCountMap.get(otherId) || 0) + 1);
+        if (fofError) throw fofError;
+
+        (fofFriendships || []).forEach(f => {
+          const otherId = myFriendIds.includes(f.requester_id) ? f.addressee_id : f.requester_id;
+          if (!excludeIds.has(otherId)) {
+            const existing = suggestionMap.get(otherId) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
+            existing.mutualCount += 1;
+            existing.reasons.add('mutual');
+            suggestionMap.set(otherId, existing);
+          }
+        });
+      }
+
+      // Step 3: Get users open to collaborate
+      const { data: collaborators, error: collabError } = await supabase
+        .from('profiles')
+        .select('id, genres')
+        .eq('open_to_collaborate', true)
+        .neq('id', profile.id)
+        .limit(50);
+
+      if (collabError) throw collabError;
+
+      (collaborators || []).forEach(user => {
+        if (!excludeIds.has(user.id)) {
+          const existing = suggestionMap.get(user.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
+          existing.reasons.add('collaborate');
+          
+          // Check for genre overlap
+          const userGenres = user.genres || [];
+          const overlap = myGenres.filter(g => userGenres.includes(g));
+          if (overlap.length > 0) {
+            existing.reasons.add('genre');
+            existing.matchingGenres = overlap;
+          }
+          
+          suggestionMap.set(user.id, existing);
         }
       });
 
-      if (fofIds.size === 0) return [];
+      // Step 4: Get users with matching genres (even if not open to collaborate)
+      if (myGenres.length > 0) {
+        const { data: genreMatches, error: genreError } = await supabase
+          .from('profiles')
+          .select('id, genres')
+          .neq('id', profile.id)
+          .overlaps('genres', myGenres)
+          .limit(50);
 
-      // Step 3: Get profiles of friends-of-friends
+        if (genreError) throw genreError;
+
+        (genreMatches || []).forEach(user => {
+          if (!excludeIds.has(user.id)) {
+            const existing = suggestionMap.get(user.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
+            const userGenres = user.genres || [];
+            const overlap = myGenres.filter(g => userGenres.includes(g));
+            if (overlap.length > 0) {
+              existing.reasons.add('genre');
+              existing.matchingGenres = overlap;
+            }
+            suggestionMap.set(user.id, existing);
+          }
+        });
+      }
+
+      // Step 5: Fetch full profiles for all suggestions
+      const suggestionIds = Array.from(suggestionMap.keys());
+      if (suggestionIds.length === 0) return [];
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .in('id', Array.from(fofIds))
-        .limit(10);
+        .in('id', suggestionIds)
+        .limit(15);
 
       if (profilesError) throw profilesError;
 
-      // Sort by mutual connection count and return with mutual count
+      // Score and sort suggestions
       return (profiles || [])
-        .map(p => ({
-          ...p,
-          mutualCount: mutualCountMap.get(p.id) || 0,
-        }))
-        .sort((a, b) => b.mutualCount - a.mutualCount) as (Profile & { mutualCount: number })[];
+        .map(p => {
+          const meta = suggestionMap.get(p.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
+          return {
+            ...p,
+            mutualCount: meta.mutualCount,
+            reasons: Array.from(meta.reasons) as SuggestionReason[],
+            matchingGenres: meta.matchingGenres,
+          };
+        })
+        .sort((a, b) => {
+          // Score: mutual connections worth 3, collaborate worth 2, genre worth 1
+          const scoreA = a.mutualCount * 3 + (a.reasons.includes('collaborate') ? 2 : 0) + (a.reasons.includes('genre') ? 1 : 0);
+          const scoreB = b.mutualCount * 3 + (b.reasons.includes('collaborate') ? 2 : 0) + (b.reasons.includes('genre') ? 1 : 0);
+          return scoreB - scoreA;
+        });
     },
     enabled: !!profile?.id,
   });

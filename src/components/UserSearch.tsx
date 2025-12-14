@@ -4,11 +4,36 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles } from 'lucide-react';
-import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians } from '@/hooks/useFriendships';
+import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles, Music, Handshake } from 'lucide-react';
+import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians, SuggestionReason } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile } from '@/types';
 import { useNavigate } from 'react-router-dom';
+
+const ReasonBadge = ({ reason, matchingGenres }: { reason: SuggestionReason; matchingGenres?: string[] }) => {
+  switch (reason) {
+    case 'mutual':
+      return null; // Handled separately with count
+    case 'collaborate':
+      return (
+        <Badge variant="outline" className="text-xs py-0 px-1.5 gap-0.5 border-primary/30 text-primary">
+          <Handshake className="w-3 h-3" />
+          Open to collab
+        </Badge>
+      );
+    case 'genre':
+      return (
+        <Badge variant="outline" className="text-xs py-0 px-1.5 gap-0.5 border-accent/50 text-accent-foreground">
+          <Music className="w-3 h-3" />
+          {matchingGenres && matchingGenres.length > 0 
+            ? matchingGenres.slice(0, 2).join(', ')
+            : 'Similar taste'}
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
 
 export function UserSearch() {
   const [query, setQuery] = useState('');
@@ -157,8 +182,7 @@ export function UserSearch() {
         <Card className="p-3 bg-card border-border">
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Suggested</span>
-            <span className="text-xs text-muted-foreground">Based on mutual connections</span>
+            <span className="text-sm font-medium text-foreground">Suggested for you</span>
           </div>
           <div className="space-y-2">
             {suggestedMusicians.map((user) => (
@@ -175,14 +199,21 @@ export function UserSearch() {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{user.name}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
+                  <p className="text-xs text-muted-foreground truncate mb-1">@{user.username}</p>
+                  <div className="flex flex-wrap items-center gap-1">
                     {user.mutualCount > 0 && (
                       <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-0.5">
                         <Users className="w-3 h-3" />
                         {user.mutualCount} mutual
                       </Badge>
                     )}
+                    {user.reasons.filter(r => r !== 'mutual').map((reason) => (
+                      <ReasonBadge 
+                        key={reason} 
+                        reason={reason} 
+                        matchingGenres={reason === 'genre' ? user.matchingGenres : undefined} 
+                      />
+                    ))}
                   </div>
                 </div>
                 {renderFriendButton(user, true)}
