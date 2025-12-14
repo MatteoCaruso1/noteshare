@@ -2,7 +2,11 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function BottomNav() {
+interface BottomNavProps {
+  overrideActiveRoute?: string;
+}
+
+export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
 
   const links = [
@@ -15,6 +19,9 @@ export function BottomNav() {
 
   // Check if we're on a user profile page (part of friends flow)
   const isUserProfilePage = location.pathname.startsWith('/user/');
+  
+  // Determine current path - allow override for nested routes
+  const currentPath = overrideActiveRoute || location.pathname;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
@@ -22,7 +29,7 @@ export function BottomNav() {
         <div className="flex items-center justify-around py-2">
           {links.map(({ to, icon: Icon, label }) => {
             // Friends tab stays active when viewing user profiles
-            const isActive = location.pathname === to || 
+            const isActive = currentPath === to || 
               (to === '/friends' && isUserProfilePage);
             return (
               <NavLink

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -124,7 +124,9 @@ function useAddNoteToGig() {
 
 const GigDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const fromNotes = searchParams.get('from') === 'notes';
   const { profile } = useAuth();
   const { data: gig, isLoading: gigLoading } = useGig(id);
   const { data: notes, isLoading: notesLoading } = useGigNotes(id);
@@ -223,10 +225,25 @@ const GigDetail = () => {
 
     deleteGig.mutate(gig.id, {
       onSuccess: () => {
-        navigate('/gigs');
+        if (fromNotes) {
+          localStorage.setItem('noteshare_projects_gigs_expanded', 'true');
+          navigate('/');
+        } else {
+          navigate('/gigs');
+        }
       },
     });
   };
+
+  // Determine back path based on where user came from
+  const backPath = fromNotes ? '/' : '/gigs';
+  
+  // When coming from notes, ensure projects/gigs section stays expanded
+  useEffect(() => {
+    if (fromNotes) {
+      localStorage.setItem('noteshare_projects_gigs_expanded', 'true');
+    }
+  }, [fromNotes]);
 
   const handleAddNote = (data: {
     textContent?: string;
@@ -276,7 +293,7 @@ const GigDetail = () => {
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <CollectionDetailHeader
-        backPath="/gigs"
+        backPath={backPath}
         title={gig.title}
         date={gig.event_date || ''}
         dateLabel="Gig date"
@@ -485,7 +502,7 @@ const GigDetail = () => {
         </DialogContent>
       </Dialog>
 
-      <BottomNav />
+      <BottomNav overrideActiveRoute={fromNotes ? '/' : undefined} />
     </div>
   );
 };
