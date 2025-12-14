@@ -288,6 +288,7 @@ export type Database = {
           comment_count: number
           created_at: string
           gig_id: string | null
+          goal_id: string | null
           id: string
           image_files: string[] | null
           project_id: string | null
@@ -305,6 +306,7 @@ export type Database = {
           comment_count?: number
           created_at?: string
           gig_id?: string | null
+          goal_id?: string | null
           id?: string
           image_files?: string[] | null
           project_id?: string | null
@@ -322,6 +324,7 @@ export type Database = {
           comment_count?: number
           created_at?: string
           gig_id?: string | null
+          goal_id?: string | null
           id?: string
           image_files?: string[] | null
           project_id?: string | null
@@ -345,6 +348,13 @@ export type Database = {
             columns: ["gig_id"]
             isOneToOne: false
             referencedRelation: "promo_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
             referencedColumns: ["id"]
           },
           {

@@ -9,7 +9,7 @@ import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -80,8 +80,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
 
   const handleNavigateToProject = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/projects/${note.project_id}`);
+    if (note.project_id) {
+      navigate(`/projects/${note.project_id}`);
+    }
   }, [navigate, note.project_id]);
+
+  const projectName = note.project?.title || 'Project';
+  const goalName = note.goal?.title || note.goal?.content || 'Goal';
 
   const handleInvalidateComments = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['note-comments', note.id] });
@@ -205,7 +210,15 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
           onClick={handleNavigateToProject}
         >
           <Disc3 className="w-4 h-4 text-accent" />
-          <span className="text-sm text-accent">Linked to project</span>
+          <span className="text-sm text-accent truncate">{projectName}</span>
+        </div>
+      )}
+
+      {/* Linked Goal */}
+      {note.goal_id && (
+        <div className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg">
+          <Target className="w-4 h-4 text-primary" />
+          <span className="text-sm text-primary truncate">{goalName}</span>
         </div>
       )}
 

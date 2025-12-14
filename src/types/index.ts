@@ -45,6 +45,7 @@ export interface Note {
   author_id: string;
   session_id: string | null;
   project_id: string | null;
+  goal_id: string | null;
   text_content: string | null;
   audio_files: string[];
   audio_file_names: string[];
@@ -60,6 +61,8 @@ export interface Note {
 export interface NoteWithAuthor extends Note {
   author: Profile;
   session?: PracticeSession | null;
+  project?: { id: string; title: string } | null;
+  goal?: { id: string; title: string | null; content: string } | null;
 }
 
 export interface Project {
