@@ -5,6 +5,8 @@ import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { AudioRecorder } from '@/components/AudioRecorder';
+import { AudioFileItem } from '@/components/AudioFileItem';
+import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Square, Clock, Mic, Image, X, Folder, Lock, Users } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { AudioFileWithName } from '@/types';
 
@@ -33,7 +35,6 @@ export function PracticeControls() {
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
-  const [currentAudioName, setCurrentAudioName] = useState('');
 
   if (!profile) return null;
 
@@ -41,35 +42,31 @@ export function PracticeControls() {
     startSession.mutate({ userId: profile.id });
   };
 
-  const handleAudioRecorded = async (blob: Blob) => {
+  const handleAudioRecorded = async (blob: Blob, duration: number) => {
     const url = await uploadAudio(blob, profile.id);
     if (url) {
-      const name = currentAudioName.trim() || `Recording ${audioFiles.length + 1}`;
+      const name = `Recording ${audioFiles.length + 1}`;
+      setAudioFiles([...audioFiles, { url, name, duration }]);
+    }
+  };
+
+  const handleAudioFileUpload = async (file: File) => {
+    const url = await uploadFile(file, profile.id, 'audio');
+    if (url) {
+      const name = file.name.replace(/\.[^/.]+$/, '') || `Recording ${audioFiles.length + 1}`;
       setAudioFiles([...audioFiles, { url, name }]);
-      setCurrentAudioName('');
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = await uploadImage(file, profile.id);
-      if (url) {
-        setImageFiles([...imageFiles, url]);
-      }
+  const handleImageUpload = async (file: File) => {
+    const url = await uploadImage(file, profile.id);
+    if (url) {
+      setImageFiles([...imageFiles, url]);
     }
   };
 
-  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = await uploadFile(file, profile.id, 'audio');
-      if (url) {
-        const name = currentAudioName.trim() || file.name || `Recording ${audioFiles.length + 1}`;
-        setAudioFiles([...audioFiles, { url, name }]);
-        setCurrentAudioName('');
-      }
-    }
+  const handleRenameAudio = (index: number, newName: string) => {
+    setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
   const handleAddTag = () => {
@@ -89,7 +86,6 @@ export function PracticeControls() {
         { sessionId: activeSession.id },
         {
           onSuccess: () => {
-            // Always create a note for the session (even if empty)
             createNote.mutate(
               {
                 authorId: profile.id,
@@ -165,7 +161,6 @@ export function PracticeControls() {
               </div>
             </div>
             
-            {/* Offline Session Input */}
             <OfflineSessionInput />
           </div>
         )}
@@ -248,65 +243,32 @@ export function PracticeControls() {
             rows={4}
           />
 
-          {/* Audio Recording with Name */}
-          <div className="mb-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Name this recording (optional)"
-                value={currentAudioName}
-                onChange={(e) => setCurrentAudioName(e.target.value)}
-                className="flex-1"
-              />
-              <label className="cursor-pointer">
-                <input
-                  type="file"
-                  accept="audio/*"
-                  onChange={handleAudioFileUpload}
-                  className="hidden"
-                />
-                <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors">
-                  <Mic className="w-4 h-4" />
-                  <span className="text-sm">Upload Audio</span>
-                </div>
-              </label>
-            </div>
+          {/* Audio Recording */}
+          <div className="mb-4">
             <AudioRecorder onRecorded={handleAudioRecorded} />
           </div>
 
-          {/* Uploaded Audio Files */}
+          {/* Uploaded Audio Files - with editable names */}
           {audioFiles.length > 0 && (
             <div className="mb-4 space-y-2">
               {audioFiles.map((audio, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
-                  <Mic className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="text-sm font-medium min-w-0 truncate">{audio.name}</span>
-                  <audio src={audio.url} controls className="flex-1 h-8" />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
+                <AudioFileItem
+                  key={i}
+                  audio={audio}
+                  onRemove={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
+                  onRename={(newName) => handleRenameAudio(i, newName)}
+                />
               ))}
             </div>
           )}
 
-          {/* Image Upload */}
-          <div className="flex gap-2 mb-4">
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors">
-                <Image className="w-4 h-4" />
-                <span className="text-sm">Add Image</span>
-              </div>
-            </label>
+          {/* Combined Upload Button */}
+          <div className="mb-4">
+            <MediaUploadButton
+              onAudioUpload={handleAudioFileUpload}
+              onImageUpload={handleImageUpload}
+              uploading={uploading}
+            />
           </div>
 
           {/* Uploaded Images */}

@@ -4,24 +4,27 @@ import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { AudioRecorder } from '@/components/AudioRecorder';
+import { AudioFileItem } from '@/components/AudioFileItem';
+import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, Image, X, Send, Folder, Lock, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Send, Folder, Lock, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AudioFileWithName } from '@/types';
 
 export function QuickNoteCapture() {
   const { profile } = useAuth();
   const { data: projects } = useProjects();
   const createNote = useCreateNote();
-  const { uploadAudio, uploadImage, uploading } = useMediaUpload();
+  const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
   const [isOpen, setIsOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
-  const [audioFiles, setAudioFiles] = useState<string[]>([]);
+  const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -30,21 +33,31 @@ export function QuickNoteCapture() {
 
   if (!profile) return null;
 
-  const handleAudioRecorded = async (blob: Blob) => {
+  const handleAudioRecorded = async (blob: Blob, duration: number) => {
     const url = await uploadAudio(blob, profile.id);
     if (url) {
-      setAudioFiles([...audioFiles, url]);
+      const name = `Recording ${audioFiles.length + 1}`;
+      setAudioFiles([...audioFiles, { url, name, duration }]);
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = await uploadImage(file, profile.id);
-      if (url) {
-        setImageFiles([...imageFiles, url]);
-      }
+  const handleAudioFileUpload = async (file: File) => {
+    const url = await uploadFile(file, profile.id, 'audio');
+    if (url) {
+      const name = file.name.replace(/\.[^/.]+$/, '') || `Recording ${audioFiles.length + 1}`;
+      setAudioFiles([...audioFiles, { url, name }]);
     }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    const url = await uploadImage(file, profile.id);
+    if (url) {
+      setImageFiles([...imageFiles, url]);
+    }
+  };
+
+  const handleRenameAudio = (index: number, newName: string) => {
+    setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
   const handleAddTag = () => {
@@ -63,7 +76,7 @@ export function QuickNoteCapture() {
       {
         authorId: profile.id,
         textContent: noteText,
-        audioFiles,
+        audioFiles: audioFiles.map(a => a.url),
         imageFiles,
         tags,
         projectId: selectedProjectId || undefined,
@@ -152,40 +165,26 @@ export function QuickNoteCapture() {
           {/* Audio Recording */}
           <AudioRecorder onRecorded={handleAudioRecorded} />
 
-          {/* Uploaded Audio Files */}
+          {/* Uploaded Audio Files - with editable names */}
           {audioFiles.length > 0 && (
             <div className="space-y-2">
-              {audioFiles.map((url, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
-                  <Mic className="w-4 h-4 text-primary" />
-                  <audio src={url} controls className="flex-1 h-8" />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
+              {audioFiles.map((audio, i) => (
+                <AudioFileItem
+                  key={i}
+                  audio={audio}
+                  onRemove={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
+                  onRename={(newName) => handleRenameAudio(i, newName)}
+                />
               ))}
             </div>
           )}
 
-          {/* Image Upload */}
-          <div className="flex gap-2">
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors">
-                <Image className="w-4 h-4" />
-                <span className="text-sm">Add Image</span>
-              </div>
-            </label>
-          </div>
+          {/* Combined Upload Button */}
+          <MediaUploadButton
+            onAudioUpload={handleAudioFileUpload}
+            onImageUpload={handleImageUpload}
+            uploading={uploading}
+          />
 
           {/* Uploaded Images */}
           {imageFiles.length > 0 && (
