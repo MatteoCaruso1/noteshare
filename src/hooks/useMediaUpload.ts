@@ -61,13 +61,40 @@ export function useMediaUpload() {
   };
 
   const uploadImage = async (file: File, userId: string): Promise<string | null> => {
-    return uploadFile(file, userId, 'image');
-  };
+    let toUpload = file;
 
+    try {
+      const supportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (file.type.startsWith('image/') && !supportedTypes.includes(file.type)) {
+        console.log('[MediaUpload] Converting image to JPEG for compatibility, original type:', file.type);
+
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d');
+
+        if (ctx) {
+          ctx.drawImage(bitmap, 0, 0);
+          const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9)
+          );
+
+          if (blob) {
+            toUpload = new File([blob], `image-${Date.now()}.jpeg`, { type: 'image/jpeg' });
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[MediaUpload] Image compatibility conversion failed, uploading original file', error);
+    }
+
+    return uploadFile(toUpload, userId, 'image');
+  };
+ 
   const uploadVideo = async (file: File, userId: string): Promise<string | null> => {
     return uploadFile(file, userId, 'video');
   };
-
   return {
     uploading,
     progress,
