@@ -139,6 +139,7 @@ export interface FriendshipWithProfile extends Friendship {
 export interface AudioFileWithName {
   url: string;
   name: string;
+  duration?: number;
 }
 
 export const INSTRUMENTS = [
