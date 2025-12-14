@@ -6,7 +6,7 @@ import { FriendsFeed } from '@/components/FriendsFeed';
 import { PendingFriendRequests } from '@/components/PendingFriendRequests';
 import { DirectMessages } from '@/components/DirectMessages';
 import { useFriends } from '@/hooks/useFriendships';
-import { Heart, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 const FriendsJournals = () => {
   const { user } = useAuth();
@@ -27,7 +27,7 @@ const FriendsJournals = () => {
             <Users className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold">Friends' Journals</h1>
+            <h1 className="text-lg sm:text-xl font-semibold">Friends</h1>
             <p className="text-xs text-muted-foreground">
               {friends?.length || 0} friends
             </p>
@@ -36,26 +36,14 @@ const FriendsJournals = () => {
       </div>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Purpose Section */}
-        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-          <div className="flex items-start gap-3">
-            <Heart className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-foreground">
-                A space to share and celebrate practice progress, mistakes, ideas, and the journey we're on together.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Direct Messages */}
-        <DirectMessages />
-
         {/* Pending Friend Requests */}
         <PendingFriendRequests />
 
         {/* User Search */}
         <UserSearch />
+
+        {/* Direct Messages */}
+        <DirectMessages />
 
         {/* Friends Feed */}
         <div className="pt-2">
