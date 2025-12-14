@@ -15,6 +15,7 @@ import { LogOut, User, Settings, Camera } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
 import { FeedbackCard } from '@/components/FeedbackCard';
+import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -263,6 +264,13 @@ const Profile = () => {
         {!editing && (
           <div className="pt-4">
             <FeedbackCard />
+          </div>
+        )}
+
+        {/* Add to Home Screen Info */}
+        {!editing && (
+          <div className="pt-2">
+            <AddToHomescreenInfo />
           </div>
         )}
       </main>

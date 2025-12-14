@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
+import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import Index from "./pages/Index";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -32,6 +33,7 @@ const App = () => (
           <FloatingInstruments />
           <AppHeader />
           <GlobalSessionBanner />
+          <AddToHomescreenPrompt />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/projects" element={<Projects />} />
