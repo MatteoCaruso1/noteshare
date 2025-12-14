@@ -1,10 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import { useFeedGigs } from '@/hooks/usePromoPosts';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Music2, Calendar, DollarSign, ExternalLink } from 'lucide-react';
+import { Music2, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 
 export function FeedGigs() {
+  const navigate = useNavigate();
   const { data: gigs, isLoading } = useFeedGigs();
 
   if (isLoading || !gigs || gigs.length === 0) {
@@ -18,7 +20,8 @@ export function FeedGigs() {
         {gigs.map((gig) => (
           <Card
             key={gig.id}
-            className="p-3 bg-card border-border"
+            className="p-3 bg-card border-border cursor-pointer hover:bg-card/80 transition-colors"
+            onClick={() => navigate(`/gigs/${gig.id}`)}
           >
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -39,17 +42,6 @@ export function FeedGigs() {
                     <Calendar className="w-3 h-3" />
                     {format(new Date(gig.event_date), 'MMM d, yyyy · h:mm a')}
                   </p>
-                )}
-                {gig.links && gig.links.length > 0 && (
-                  <a
-                    href={gig.links[0]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-accent hover:underline mt-1"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    View Details
-                  </a>
                 )}
               </div>
             </div>
