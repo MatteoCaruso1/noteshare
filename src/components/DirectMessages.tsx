@@ -43,12 +43,11 @@ export function DirectMessages() {
   }
 
   return (
-    <Card className="p-4 bg-card border-border">
+    <div className="pt-2">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <MessageCircle className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Messages</h3>
-        </div>
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <span>Messages</span>
+        </h2>
         <Button 
           variant="outline" 
           size="sm"
@@ -57,6 +56,7 @@ export function DirectMessages() {
           New
         </Button>
       </div>
+      <Card className="p-4 bg-card border-border">
 
       {convsLoading ? (
         <div className="text-center py-8 text-muted-foreground text-sm">
@@ -103,7 +103,8 @@ export function DirectMessages() {
           <p className="text-xs mt-1">Start a conversation with a friend</p>
         </div>
       )}
-    </Card>
+      </Card>
+    </div>
   );
 }
 
