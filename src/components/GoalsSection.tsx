@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, Plus, ChevronDown, ChevronUp, Trophy, ChevronRight } from 'lucide-react';
@@ -44,23 +44,32 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     localStorage.setItem(GOALS_EXPANDED_KEY, String(isExpanded));
   }, [isExpanded]);
 
-  const nearTermGoals = goals.filter(g => g.goal_type === 'near-term' && !g.is_completed);
-  const longTermGoals = goals.filter(g => g.goal_type === 'long-term' && !g.is_completed);
-  const completedGoals = goals.filter(g => g.is_completed);
+  const nearTermGoals = useMemo(() => 
+    goals.filter(g => g.goal_type === 'near-term' && !g.is_completed),
+    [goals]
+  );
+  const longTermGoals = useMemo(() => 
+    goals.filter(g => g.goal_type === 'long-term' && !g.is_completed),
+    [goals]
+  );
+  const completedGoals = useMemo(() => 
+    goals.filter(g => g.is_completed),
+    [goals]
+  );
 
-  const handleAddGoal = (type: 'near-term' | 'long-term') => {
+  const handleAddGoal = useCallback((type: 'near-term' | 'long-term') => {
     setFormGoalType(type);
     setEditingGoal(null);
     setFormOpen(true);
-  };
+  }, []);
 
-  const handleEditGoal = (goal: Goal) => {
+  const handleEditGoal = useCallback((goal: Goal) => {
     setFormGoalType(goal.goal_type);
     setEditingGoal(goal);
     setFormOpen(true);
-  };
+  }, []);
 
-  const handleSaveGoal = (data: Partial<Goal>) => {
+  const handleSaveGoal = useCallback((data: Partial<Goal>) => {
     if (data.id) {
       updateGoal.mutate({ id: data.id, ...data });
     } else {
@@ -75,9 +84,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
         targetMinutes: data.target_minutes,
       });
     }
-  };
+  }, [createGoal, updateGoal, profileId, formGoalType]);
 
-  const handleMoveGoal = (goal: Goal, direction: 'up' | 'down') => {
+  const handleMoveGoal = useCallback((goal: Goal, direction: 'up' | 'down') => {
     const sameTypeGoals = goals
       .filter(g => g.goal_type === goal.goal_type && !g.is_completed)
       .sort((a, b) => a.priority - b.priority);
@@ -92,7 +101,7 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     // Swap priorities
     reorderGoal.mutate({ goalId: goal.id, newPriority: targetGoal.priority });
     reorderGoal.mutate({ goalId: targetGoal.id, newPriority: goal.priority });
-  };
+  }, [goals, reorderGoal]);
 
   const handleCompleteGoal = (goal: Goal) => {
     // Only show completion dialog for long-term goals

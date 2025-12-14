@@ -1,15 +1,20 @@
-import { useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Users, Sparkles } from 'lucide-react';
 
 interface FriendsFeedProps {
   searchQuery?: string;
 }
 
-export function FriendsFeed({ searchQuery = '' }: FriendsFeedProps) {
+const INITIAL_LIMIT = 10;
+const LOAD_MORE_COUNT = 10;
+
+export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '' }: FriendsFeedProps) {
   const { data: notes, isLoading } = useFriendsNotes();
+  const [displayCount, setDisplayCount] = useState(INITIAL_LIMIT);
 
   // Filter notes based on search query
   const filteredNotes = useMemo(() => {
@@ -28,6 +33,17 @@ export function FriendsFeed({ searchQuery = '' }: FriendsFeedProps) {
       return false;
     });
   }, [notes, searchQuery]);
+
+  const displayedNotes = useMemo(() => 
+    filteredNotes.slice(0, displayCount),
+    [filteredNotes, displayCount]
+  );
+
+  const hasMore = displayCount < filteredNotes.length;
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + LOAD_MORE_COUNT);
+  };
 
   if (isLoading) {
     return (
@@ -71,9 +87,18 @@ export function FriendsFeed({ searchQuery = '' }: FriendsFeedProps) {
 
   return (
     <div className="space-y-4">
-      {filteredNotes.map((note) => (
+      {displayedNotes.map((note) => (
         <NoteCard key={note.id} note={note} />
       ))}
+      {hasMore && (
+        <Button 
+          variant="outline" 
+          className="w-full" 
+          onClick={handleLoadMore}
+        >
+          Load more ({filteredNotes.length - displayCount} remaining)
+        </Button>
+      )}
     </div>
   );
-}
+});

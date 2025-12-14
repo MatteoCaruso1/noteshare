@@ -53,6 +53,7 @@ export function useNotes(projectId?: string) {
       })) as NoteWithAuthor[];
     },
     enabled: projectId ? true : !!profile?.id,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
 }
 

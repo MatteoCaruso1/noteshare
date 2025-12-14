@@ -302,6 +302,7 @@ export function useFriendsNotes() {
       })) as NoteWithAuthor[];
     },
     enabled: !!profile?.id,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
   });
 }
 
