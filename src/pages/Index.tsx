@@ -8,6 +8,7 @@ import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { FeedProjects } from '@/components/FeedProjects';
+import { FeedGigs } from '@/components/FeedGigs';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -48,6 +49,9 @@ const Index = () => {
 
         {/* Feed Projects */}
         <FeedProjects />
+
+        {/* Feed Gigs */}
+        <FeedGigs />
 
         {/* Memory Reminder */}
         <MemoryReminder />

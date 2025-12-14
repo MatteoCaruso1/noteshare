@@ -46,9 +46,38 @@ export function useFriendsPromoPosts() {
   return useQuery({
     queryKey: ['friends-promo-posts'],
     queryFn: async () => {
+      // First get the current user's profile ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!currentProfile) return [];
+
+      // Get friend IDs from accepted friendships
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${currentProfile.id},addressee_id.eq.${currentProfile.id}`);
+
+      if (friendshipsError) throw friendshipsError;
+
+      const friendIds = friendships.map(f => 
+        f.requester_id === currentProfile.id ? f.addressee_id : f.requester_id
+      );
+
+      if (friendIds.length === 0) return [];
+
+      // Get promo posts from friends only
       const { data, error } = await supabase
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
+        .in('author_id', friendIds)
         .order('event_date', { ascending: true });
 
       if (error) throw error;
@@ -79,6 +108,37 @@ export function usePaidGigs() {
   });
 }
 
+export function useFeedGigs() {
+  return useQuery({
+    queryKey: ['feed-gigs'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!currentProfile) return [];
+
+      const { data, error } = await supabase
+        .from('promo_posts')
+        .select(`*, profiles!promo_posts_author_id_fkey (*)`)
+        .eq('author_id', currentProfile.id)
+        .eq('show_on_feed', true)
+        .order('event_date', { ascending: true });
+
+      if (error) throw error;
+      return data.map((post: any) => ({
+        ...post,
+        author: post.profiles,
+      }));
+    },
+  });
+}
+
 export function useCreatePromoPost() {
   const queryClient = useQueryClient();
 
@@ -96,7 +156,7 @@ export function useCreatePromoPost() {
       collaboratorIds = [],
     }: {
       authorId: string;
-      promoType: 'gig' | 'release' | 'event';
+      promoType: 'gig';
       title: string;
       description?: string;
       eventDate?: string;
@@ -131,6 +191,7 @@ export function useCreatePromoPost() {
       queryClient.invalidateQueries({ queryKey: ['my-promo-posts'] });
       queryClient.invalidateQueries({ queryKey: ['friends-promo-posts'] });
       queryClient.invalidateQueries({ queryKey: ['paid-gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-gigs'] });
       toast.success('Posted!');
     },
     onError: (error) => {
