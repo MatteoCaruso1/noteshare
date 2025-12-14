@@ -15,11 +15,6 @@ export function AppHeader() {
   const endSession = useEndSession();
   const createNote = useCreateNote();
   const [elapsed, setElapsed] = useState('0:00');
-  
-  // Don't show on auth page
-  if (location.pathname === '/auth') {
-    return null;
-  }
 
   useEffect(() => {
     if (!activeSession) {
@@ -30,7 +25,7 @@ export function AppHeader() {
     const updateElapsed = () => {
       const start = new Date(activeSession.started_at).getTime();
       const now = Date.now();
-      const diff = Math.floor((now - start) / 1000);
+      const diff = Math.max(0, Math.floor((now - start) / 1000));
       
       const hours = Math.floor(diff / 3600);
       const minutes = Math.floor((diff % 3600) / 60);
@@ -43,10 +38,16 @@ export function AppHeader() {
       }
     };
 
+    // Initialize immediately
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
     return () => clearInterval(interval);
   }, [activeSession]);
+  
+  // Don't show on auth page
+  if (location.pathname === '/auth') {
+    return null;
+  }
 
   const handleEndSession = async () => {
     if (!activeSession || !profile) return;
