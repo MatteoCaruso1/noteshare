@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,15 +49,25 @@ const PublicProfile = () => {
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
   
-  // Check if we came from the friends list
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id, username]);
+  
+  // Check if we came from the friends list or a note detail page
   const fromFriendsList = location.state?.fromFriendsList;
+  const fromNote = location.state?.fromNote;
   
   const handleBack = () => {
     if (fromFriendsList) {
       // Navigate back to friends page and tell it to open the friends list
       navigate('/friends', { state: { openFriendsList: true } });
+    } else if (fromNote) {
+      // Navigate back to the specific note
+      navigate(`/notes/${fromNote}`);
     } else {
-      navigate(-1);
+      // Default: go back in history, but if that fails, go to friends
+      navigate('/friends');
     }
   };
 

@@ -18,7 +18,10 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   ];
 
   // Check if we're on a user profile page (part of friends flow)
-  const isUserProfilePage = location.pathname.startsWith('/user/');
+  const isUserProfilePage = location.pathname.startsWith('/user/') || location.pathname.startsWith('/profile/');
+  
+  // Check if we're on a note detail page (still part of My Notes flow)
+  const isNoteDetailPage = location.pathname.startsWith('/notes/');
   
   // Determine current path - allow override for nested routes
   const currentPath = overrideActiveRoute || location.pathname;
@@ -29,8 +32,10 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
         <div className="flex items-center justify-around py-2">
           {links.map(({ to, icon: Icon, label }) => {
             // Friends tab stays active when viewing user profiles
+            // My Notes tab stays active when viewing note details
             const isActive = currentPath === to || 
-              (to === '/friends' && isUserProfilePage);
+              (to === '/friends' && isUserProfilePage) ||
+              (to === '/' && isNoteDetailPage);
             return (
               <NavLink
                 key={to}
