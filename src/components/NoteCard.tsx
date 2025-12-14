@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Mic, Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
+import { Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -192,24 +192,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       {note.audio_files.length > 0 && (
         <div className="space-y-2 mb-3">
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
-            <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
-              <Mic className="w-4 h-4 text-primary flex-shrink-0" />
-              <audio
-                src={url}
-                controls
-                preload="metadata"
-                className="flex-1 h-8 min-w-0"
-                onClick={(e) => e.stopPropagation()}
-                onLoadedMetadata={(e) => {
-                  const audio = e.currentTarget;
-                  console.log('[NoteCard] loadedmetadata duration:', audio.duration, 'src:', audio.src);
-                }}
-                onError={(e) => {
-                  const audio = e.currentTarget;
-                  console.error('[NoteCard] audio error for src:', audio.src);
-                }}
-              />
-            </div>
+            <WaveformPlayer key={i} src={url} />
           ))}
           {!expanded && note.audio_files.length > 1 && (
             <p className="text-xs text-muted-foreground">+{note.audio_files.length - 1} more audio</p>
