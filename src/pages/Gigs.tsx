@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
-import { Plus, Calendar, Music2, Disc3, PartyPopper, User, ExternalLink, DollarSign, Briefcase } from 'lucide-react';
+import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -26,7 +26,7 @@ const Gigs = () => {
   const createPromoPost = useCreatePromoPost();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [promoType, setPromoType] = useState<'gig' | 'release' | 'event'>('gig');
+  const [promoType] = useState<'gig'>('gig');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
@@ -88,10 +88,8 @@ const Gigs = () => {
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             {showAuthor && <span className="font-medium text-sm">{post.author?.name}</span>}
             <Badge variant="outline" className="text-xs">
-              {post.promo_type === 'gig' && <Music2 className="w-3 h-3 mr-1" />}
-              {post.promo_type === 'release' && <Disc3 className="w-3 h-3 mr-1" />}
-              {post.promo_type === 'event' && <PartyPopper className="w-3 h-3 mr-1" />}
-              {post.promo_type}
+              <Music2 className="w-3 h-3 mr-1" />
+              Gig
             </Badge>
             {post.is_paid_opportunity && (
               <Badge className="text-xs bg-green-600">
@@ -138,7 +136,7 @@ const Gigs = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold">Gigs & Releases</h1>
+            <h1 className="text-xl font-semibold">Gigs</h1>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-primary text-primary-foreground">
@@ -151,20 +149,9 @@ const Gigs = () => {
                   <DialogTitle>Share an Update</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
-                  <div className="flex gap-2 flex-wrap">
-                    {(['gig', 'release', 'event'] as const).map((type) => (
-                      <Button
-                        key={type}
-                        variant={promoType === type ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setPromoType(type)}
-                      >
-                        {type === 'gig' && <Music2 className="w-4 h-4 mr-1" />}
-                        {type === 'release' && <Disc3 className="w-4 h-4 mr-1" />}
-                        {type === 'event' && <PartyPopper className="w-4 h-4 mr-1" />}
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </Button>
-                    ))}
+                  <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg">
+                    <Music2 className="w-5 h-5 text-primary" />
+                    <span className="font-medium">New Gig</span>
                   </div>
                   <Input
                     placeholder="Title"
@@ -198,25 +185,23 @@ const Gigs = () => {
                     />
                   </div>
 
-                  {/* Paid Opportunity Toggle (only for gigs) */}
-                  {promoType === 'gig' && (
-                    <div className="flex items-center justify-between py-2 border-t border-border pt-4">
-                      <div>
-                        <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
-                          <Briefcase className="w-4 h-4" />
-                          Paid Opportunity
-                        </Label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Mark this as a paid booking for artists to apply
-                        </p>
-                      </div>
-                      <Switch
-                        id="paid-opportunity"
-                        checked={isPaidOpportunity}
-                        onCheckedChange={setIsPaidOpportunity}
-                      />
+                  {/* Paid Opportunity Toggle */}
+                  <div className="flex items-center justify-between py-2 border-t border-border pt-4">
+                    <div>
+                      <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        Paid Opportunity
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Mark this as a paid booking for artists to apply
+                      </p>
                     </div>
-                  )}
+                    <Switch
+                      id="paid-opportunity"
+                      checked={isPaidOpportunity}
+                      onCheckedChange={setIsPaidOpportunity}
+                    />
+                  </div>
 
                   {/* Collaborator Picker */}
                   <div className="border-t border-border pt-4">
