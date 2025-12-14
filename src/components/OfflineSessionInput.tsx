@@ -108,7 +108,7 @@ export function OfflineSessionInput() {
                 placeholder="Custom"
                 value={!['15', '30', '45', '60', '90'].includes(duration) ? duration : ''}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-20"
+                className="w-24"
                 min="1"
               />
             </div>

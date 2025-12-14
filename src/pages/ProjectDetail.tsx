@@ -180,13 +180,9 @@ const ProjectDetail = () => {
             <div className="text-center py-12 bg-card rounded-lg border border-border">
               <Disc3 className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">No notes in this project yet</p>
-              <Button
-                className="mt-4"
-                variant="outline"
-                onClick={() => navigate('/')}
-              >
-                Add a Note
-              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                Create a note from your journal and link it to this project
+              </p>
             </div>
           )}
         </section>
