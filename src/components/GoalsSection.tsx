@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Target, Plus, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
+import { Target, Plus, ChevronDown, ChevronUp, Trophy, ChevronRight } from 'lucide-react';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useReorderGoal, useCompleteGoal, useIncrementProgress, useDecrementProgress, useSetProgress, useRestoreGoal } from '@/hooks/useGoals';
 import { Goal } from '@/types';
 import { GoalCard } from './goals/GoalCard';
@@ -12,6 +12,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 interface GoalsSectionProps {
   profileId: string;
 }
+
+const GOALS_EXPANDED_KEY = 'noteshare_goals_expanded';
 
 export function GoalsSection({ profileId }: GoalsSectionProps) {
   const { data: goals = [] } = useGoals(profileId);
@@ -25,11 +27,22 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   const setProgress = useSetProgress();
   const restoreGoal = useRestoreGoal();
 
+  // Main collapsible state - default collapsed, persist in localStorage
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const stored = localStorage.getItem(GOALS_EXPANDED_KEY);
+    return stored === 'true';
+  });
+
   const [formOpen, setFormOpen] = useState(false);
   const [formGoalType, setFormGoalType] = useState<'near-term' | 'long-term'>('near-term');
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [completionGoal, setCompletionGoal] = useState<Goal | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+
+  // Persist expanded state
+  useEffect(() => {
+    localStorage.setItem(GOALS_EXPANDED_KEY, String(isExpanded));
+  }, [isExpanded]);
 
   const nearTermGoals = goals.filter(g => g.goal_type === 'near-term' && !g.is_completed);
   const longTermGoals = goals.filter(g => g.goal_type === 'long-term' && !g.is_completed);
@@ -147,55 +160,68 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   };
 
   return (
-    <Card className="p-4 bg-card border-border">
-      <div className="flex items-center gap-2 mb-4">
-        <Target className="w-5 h-5 text-primary" />
-        <h2 className="font-semibold">Goals</h2>
-      </div>
+    <Card className="bg-card border-border">
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold">Goals</h2>
+            </div>
+            {isExpanded ? (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+        </CollapsibleTrigger>
 
-      <div className="space-y-6">
-        {/* Near-Term Goals */}
-        <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Near-Term Goals</h3>
-          {renderGoalList(nearTermGoals, 'near-term')}
-        </div>
+        <CollapsibleContent>
+          <div className="px-4 pb-4 space-y-6">
+            {/* Near-Term Goals */}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Near-Term Goals</h3>
+              {renderGoalList(nearTermGoals, 'near-term')}
+            </div>
 
-        {/* Long-Term Goals */}
-        <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Long-Term Goals</h3>
-          {renderGoalList(longTermGoals, 'long-term')}
-        </div>
+            {/* Long-Term Goals */}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Long-Term Goals</h3>
+              {renderGoalList(longTermGoals, 'long-term')}
+            </div>
 
-        {/* Completed Goals */}
-        {completedGoals.length > 0 && (
-          <Collapsible open={showCompleted} onOpenChange={setShowCompleted}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="w-full justify-between text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4" />
-                  <span>Completed Goals ({completedGoals.length})</span>
-                </div>
-                {showCompleted ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-2 mt-2">
-              {completedGoals.map((goal) => (
-                <GoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onEdit={() => {}}
-                  onDelete={() => deleteGoal.mutate(goal.id)}
-                  onIncrementProgress={() => {}}
-                  onDecrementProgress={() => {}}
-                  onComplete={() => {}}
-                  onRestore={() => handleRestoreGoal(goal)}
-                  showReorder={false}
-                />
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-      </div>
+            {/* Completed Goals */}
+            {completedGoals.length > 0 && (
+              <Collapsible open={showCompleted} onOpenChange={setShowCompleted}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4" />
+                      <span>Completed Goals ({completedGoals.length})</span>
+                    </div>
+                    {showCompleted ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 mt-2">
+                  {completedGoals.map((goal) => (
+                    <GoalCard
+                      key={goal.id}
+                      goal={goal}
+                      onEdit={() => {}}
+                      onDelete={() => deleteGoal.mutate(goal.id)}
+                      onIncrementProgress={() => {}}
+                      onDecrementProgress={() => {}}
+                      onComplete={() => {}}
+                      onRestore={() => handleRestoreGoal(goal)}
+                      showReorder={false}
+                    />
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       <GoalFormDialog
         open={formOpen}
