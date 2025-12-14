@@ -139,29 +139,62 @@ export type Database = {
       }
       goals: {
         Row: {
+          completed_at: string | null
           content: string
           created_at: string
+          current_minutes: number | null
+          current_steps: number | null
+          description: string | null
           goal_type: string
           id: string
+          is_completed: boolean | null
+          priority: number | null
+          progress_type: string | null
+          reflection: string | null
           target_date: string | null
+          target_minutes: number | null
+          target_steps: number | null
+          title: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           content: string
           created_at?: string
+          current_minutes?: number | null
+          current_steps?: number | null
+          description?: string | null
           goal_type: string
           id?: string
+          is_completed?: boolean | null
+          priority?: number | null
+          progress_type?: string | null
+          reflection?: string | null
           target_date?: string | null
+          target_minutes?: number | null
+          target_steps?: number | null
+          title?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           content?: string
           created_at?: string
+          current_minutes?: number | null
+          current_steps?: number | null
+          description?: string | null
           goal_type?: string
           id?: string
+          is_completed?: boolean | null
+          priority?: number | null
+          progress_type?: string | null
+          reflection?: string | null
           target_date?: string | null
+          target_minutes?: number | null
+          target_steps?: number | null
+          title?: string | null
           updated_at?: string
           user_id?: string
         }
