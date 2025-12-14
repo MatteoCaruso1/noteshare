@@ -190,14 +190,15 @@ export function GoalProgressBar({
         </div>
         {showControls && !goal.is_completed && (
           <div className="flex items-center gap-1">
-            {goal.progress_type === 'checkbox' && onComplete && (
+            {onComplete && (
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-6 w-6"
+                size="sm"
+                className="h-6 px-2 text-xs gap-1"
                 onClick={onComplete}
               >
                 <Check className="w-3 h-3" />
+                Complete
               </Button>
             )}
           </div>

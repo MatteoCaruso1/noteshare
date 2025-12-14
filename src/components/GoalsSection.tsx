@@ -95,9 +95,8 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   };
 
   const handleCompleteGoal = (goal: Goal) => {
-    if (goal.progress_type === 'checkbox') {
-      setCompletionGoal(goal);
-    }
+    // Open completion dialog for all goal types
+    setCompletionGoal(goal);
   };
 
   const handleConfirmComplete = (reflection?: string) => {
