@@ -50,6 +50,25 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
     }
   };
 
+  // Calculate session duration
+  const getSessionDuration = () => {
+    if (!note.session?.started_at || !note.session?.ended_at) return null;
+    
+    const start = new Date(note.session.started_at).getTime();
+    const end = new Date(note.session.ended_at).getTime();
+    const durationMinutes = Math.round((end - start) / 60000);
+    
+    if (durationMinutes < 5) {
+      // Round to nearest 1 minute for short sessions
+      return `~${Math.max(1, durationMinutes)}m`;
+    }
+    // Round to nearest 5 minutes
+    const rounded = Math.round(durationMinutes / 5) * 5;
+    return `~${rounded}m`;
+  };
+
+  const sessionDuration = getSessionDuration();
+
   return (
     <Card
       className={`p-3 sm:p-4 bg-card border-border ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
@@ -61,6 +80,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 text-xs">
             <Clock className="w-3 h-3 mr-1" />
             Practice Session
+            {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
           </Badge>
         ) : (
           <Badge variant="secondary" className="text-xs">
