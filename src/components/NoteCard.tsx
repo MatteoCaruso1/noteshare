@@ -276,7 +276,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps
             onClick={handleNavigateToNote}
           >
             <MessageCircle className="w-4 h-4 mr-1" />
-            Comments
+            {note.comment_count > 0 ? (
+              <>
+                {note.comment_count} {note.comment_count === 1 ? 'Comment' : 'Comments'}
+              </>
+            ) : (
+              'Comment'
+            )}
           </Button>
         </div>
       )}
