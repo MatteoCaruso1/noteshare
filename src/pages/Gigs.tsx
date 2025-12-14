@@ -10,6 +10,17 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -130,11 +141,8 @@ const Gigs = () => {
     (p: any) => p.author_id !== profile?.id
   ) || [];
 
-  const handleDeleteGig = (e: React.MouseEvent, postId: string) => {
-    e.stopPropagation();
-    if (confirm('Are you sure you want to delete this gig?')) {
-      deletePromoPost.mutate(postId);
-    }
+  const handleDeleteGig = (postId: string) => {
+    deletePromoPost.mutate(postId);
   };
 
   const GigCard = ({ post, showAuthor = true, showDelete = false }: { post: any; showAuthor?: boolean; showDelete?: boolean }) => (
@@ -168,14 +176,35 @@ const Gigs = () => {
               )}
             </div>
             {showDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive flex-shrink-0"
-                onClick={(e) => handleDeleteGig(e, post.id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Gig</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{post.title}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDeleteGig(post.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
           
