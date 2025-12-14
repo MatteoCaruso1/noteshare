@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
 
-    toast.success('Welcome to Noteshare!');
+    toast.success('Welcome to noteshare!');
   };
 
   const signIn = async (email: string, password: string) => {

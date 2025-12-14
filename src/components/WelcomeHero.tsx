@@ -10,7 +10,7 @@ export function WelcomeHero() {
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-primary mb-6">
         <Music className="w-10 h-10 text-primary-foreground" />
       </div>
-      <h1 className="text-3xl font-semibold mb-2">Noteshare</h1>
+      <h1 className="text-3xl font-semibold mb-2">noteshare</h1>
       <p className="text-lg text-muted-foreground mb-8 max-w-md">
         Your practice journal. Capture, organize, and share your musical journey with those who matter.
       </p>
