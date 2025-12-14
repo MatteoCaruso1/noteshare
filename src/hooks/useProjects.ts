@@ -166,6 +166,7 @@ export function useUpdateProject() {
       coverImage,
       tags,
       showOnFeed,
+      releaseDate,
     }: {
       projectId: string;
       title?: string;
@@ -173,6 +174,7 @@ export function useUpdateProject() {
       coverImage?: string;
       tags?: string[];
       showOnFeed?: boolean;
+      releaseDate?: string;
     }) => {
       const updates: any = { updated_at: new Date().toISOString() };
       if (title !== undefined) updates.title = title;
@@ -180,6 +182,7 @@ export function useUpdateProject() {
       if (coverImage !== undefined) updates.cover_image = coverImage;
       if (tags !== undefined) updates.tags = tags;
       if (showOnFeed !== undefined) updates.show_on_feed = showOnFeed;
+      if (releaseDate !== undefined) updates.release_date = releaseDate || null;
 
       const { data, error } = await supabase
         .from('projects')

@@ -273,8 +273,8 @@ const GigDetail = () => {
       <CollectionDetailHeader
         backPath="/gigs"
         title={gig.title}
-        date={gig.event_date || gig.created_at}
-        dateLabel={gig.event_date ? 'Event' : 'Created'}
+        date={gig.event_date || ''}
+        dateLabel="Gig date"
         authorName={gig.author?.name}
         authorUsername={gig.author?.username}
         authorAvatar={gig.author?.avatar}
