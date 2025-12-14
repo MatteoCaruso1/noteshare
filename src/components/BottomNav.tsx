@@ -37,11 +37,17 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
       <div className="container max-w-2xl mx-auto px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around py-2">
           {links.map(({ to, icon: Icon, label }) => {
-            // Friends tab stays active when viewing user profiles
-            // My Notes tab stays active when viewing note details
-            const isActive = currentPath === to || 
-              (to === '/friends' && isUserProfilePage) ||
-              (to === '/' && isNoteDetailPage);
+            // Use override if provided, otherwise fall back to standard logic
+            let isActive: boolean;
+            if (overrideActiveRoute) {
+              isActive = to === overrideActiveRoute;
+            } else {
+              // Friends tab stays active when viewing user profiles
+              // My Notes tab stays active when viewing note details
+              isActive = currentPath === to || 
+                (to === '/friends' && isUserProfilePage) ||
+                (to === '/' && isNoteDetailPage);
+            }
             return (
               <NavLink
                 key={to}
