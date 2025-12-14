@@ -40,6 +40,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
               <NavLink
                 key={to}
                 to={to}
+                onClick={() => window.scrollTo(0, 0)}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px]',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
