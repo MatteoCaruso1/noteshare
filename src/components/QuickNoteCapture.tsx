@@ -111,26 +111,33 @@ export function QuickNoteCapture() {
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-4 space-y-4">
-          {/* Visibility Toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Visibility</span>
-            <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="private">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-3 h-3" /> Private
-                  </div>
-                </SelectItem>
-                <SelectItem value="friends">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-3 h-3" /> Friends
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Visibility + Media Upload in same row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Visibility:</span>
+              <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
+                <SelectTrigger className="w-28 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="private">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-3 h-3" /> Private
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="friends">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-3 h-3" /> Friends
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <MediaUploadButton
+              onAudioUpload={handleAudioFileUpload}
+              onImageUpload={handleImageUpload}
+              uploading={uploading}
+            />
           </div>
 
           {/* Project Selection */}
@@ -195,12 +202,6 @@ export function QuickNoteCapture() {
             </div>
           )}
 
-          {/* Combined Upload Button */}
-          <MediaUploadButton
-            onAudioUpload={handleAudioFileUpload}
-            onImageUpload={handleImageUpload}
-            uploading={uploading}
-          />
 
           {/* Uploaded Images */}
           {imageFiles.length > 0 && (

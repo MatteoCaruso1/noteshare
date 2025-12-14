@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Check, Clock, ListChecks } from 'lucide-react';
 import { Goal } from '@/types';
 import { cn } from '@/lib/utils';
@@ -180,13 +181,59 @@ export function GoalProgressBar({
   const axisData = getAxisLabels();
   const isSlider = goal.progress_type !== 'checkbox' && onSetProgress && !goal.is_completed;
   const currentValue = goal.progress_type === 'step' ? goal.current_steps : goal.current_minutes;
+  const targetValue = goal.progress_type === 'step' ? goal.target_steps : goal.target_minutes;
+
+  const [isEditingValue, setIsEditingValue] = useState(false);
+  const [editValue, setEditValue] = useState(String(currentValue));
+
+  const handleManualValueSubmit = () => {
+    const numValue = parseInt(editValue, 10);
+    if (!isNaN(numValue) && onSetProgress) {
+      onSetProgress(Math.max(0, Math.min(numValue, targetValue)));
+    }
+    setIsEditingValue(false);
+  };
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-1 text-muted-foreground">
           {getIcon()}
-          <span>{getProgressText()}</span>
+          {/* Editable progress value for step/time goals */}
+          {showControls && !goal.is_completed && goal.progress_type !== 'checkbox' ? (
+            isEditingValue ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={handleManualValueSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleManualValueSubmit();
+                    if (e.key === 'Escape') setIsEditingValue(false);
+                  }}
+                  className="h-5 w-12 text-xs px-1 text-center"
+                  autoFocus
+                  min={0}
+                  max={targetValue}
+                />
+                <span>/{targetValue} {goal.progress_type === 'time' ? 'min' : 'steps'}</span>
+              </div>
+            ) : (
+              <span
+                className="cursor-pointer hover:text-primary underline-offset-2 hover:underline"
+                onClick={() => {
+                  setEditValue(String(currentValue));
+                  setIsEditingValue(true);
+                }}
+                title="Click to edit"
+              >
+                {getProgressText()}
+              </span>
+            )
+          ) : (
+            <span>{getProgressText()}</span>
+          )}
         </div>
         {showControls && !goal.is_completed && (
           <div className="flex items-center gap-1">

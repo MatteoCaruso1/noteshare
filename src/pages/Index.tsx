@@ -7,11 +7,9 @@ import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
-import { FeedProjects } from '@/components/FeedProjects';
-import { FeedGigs } from '@/components/FeedGigs';
+import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Play, ChevronDown, ChevronRight } from 'lucide-react';
 
@@ -85,11 +83,8 @@ const Index = () => {
         {/* Quick Note Capture */}
         <QuickNoteCapture />
 
-        {/* Feed Projects */}
-        <FeedProjects />
-
-        {/* Feed Gigs */}
-        <FeedGigs />
+        {/* Projects & Gigs (Combined Collapsible) */}
+        <FeedProjectsGigs />
 
         {/* Memory Reminder */}
         <MemoryReminder />
