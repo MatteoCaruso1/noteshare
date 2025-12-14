@@ -60,11 +60,14 @@ export const GoalCard = memo(function GoalCard({
   }, [onIncrementProgress, goal.progress_type, goal.current_steps, goal.target_steps, goal.current_minutes, goal.target_minutes]);
 
   return (
-    <Card className={cn(
-      "p-3 bg-secondary/30 border-border relative overflow-hidden transition-all",
-      goal.is_completed && "bg-primary/5 border-primary/20",
-      showConfetti && "ring-2 ring-primary"
-    )}>
+    <Card 
+      className={cn(
+        "p-3 bg-secondary/30 border-border relative overflow-hidden transition-all cursor-pointer hover:bg-secondary/50",
+        goal.is_completed && "bg-primary/5 border-primary/20 hover:bg-primary/10",
+        showConfetti && "ring-2 ring-primary"
+      )}
+      onClick={onEdit}
+    >
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
           <div className="flex gap-1 animate-bounce">
@@ -77,7 +80,7 @@ export const GoalCard = memo(function GoalCard({
 
       <div className="flex items-start gap-2">
         {showReorder && !goal.is_completed && (
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
               size="icon"
@@ -115,32 +118,16 @@ export const GoalCard = memo(function GoalCard({
               )}
             </div>
             
-            {!goal.is_completed && (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onEdit}>
-                  <Pencil className="w-3 h-3" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={onDelete}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
-            
-            {goal.is_completed && (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {onRestore && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6" 
-                    onClick={onRestore}
-                    title="Restore to in-progress"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                  </Button>
-                )}
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={onDelete}>
-                  <Trash2 className="w-3 h-3" />
+            {goal.is_completed && onRestore && (
+              <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6" 
+                  onClick={onRestore}
+                  title="Restore to in-progress"
+                >
+                  <RotateCcw className="w-3 h-3" />
                 </Button>
               </div>
             )}

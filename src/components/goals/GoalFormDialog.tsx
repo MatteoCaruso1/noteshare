@@ -12,7 +12,18 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Goal } from '@/types';
 import { GoalTemplates, GoalTemplate } from './GoalTemplates';
-import { Check, ListChecks, Clock } from 'lucide-react';
+import { Check, ListChecks, Clock, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface GoalFormDialogProps {
   open: boolean;
@@ -20,6 +31,7 @@ interface GoalFormDialogProps {
   goalType: 'near-term' | 'long-term';
   goal?: Goal | null;
   onSave: (data: Partial<Goal>) => void;
+  onDelete?: () => void;
   isPending?: boolean;
 }
 
@@ -29,6 +41,7 @@ export function GoalFormDialog({
   goalType,
   goal,
   onSave,
+  onDelete,
   isPending,
 }: GoalFormDialogProps) {
   const [title, setTitle] = useState('');
@@ -195,13 +208,47 @@ export function GoalFormDialog({
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isPending || !title.trim() || !hasValidTarget}>
-              {goal ? 'Save Changes' : 'Add Goal'}
-            </Button>
+          <div className="flex justify-between gap-2 pt-2">
+            {goal && onDelete ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Goal</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this goal? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        onDelete();
+                        onOpenChange(false);
+                      }}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <div />
+            )}
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isPending || !title.trim() || !hasValidTarget}>
+                {goal ? 'Save Changes' : 'Add Goal'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
