@@ -234,11 +234,29 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Text Content */}
+          {/* Text Content - supports Tab for nested bullets */}
           <Textarea
             placeholder="What did you practice? Any insights or breakthroughs?"
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                const target = e.target as HTMLTextAreaElement;
+                const start = target.selectionStart;
+                const end = target.selectionEnd;
+                const value = target.value;
+                
+                // Insert tab character (or spaces for indentation)
+                const newValue = value.substring(0, start) + '  ' + value.substring(end);
+                setNoteText(newValue);
+                
+                // Move cursor after the inserted spaces
+                setTimeout(() => {
+                  target.selectionStart = target.selectionEnd = start + 2;
+                }, 0);
+              }
+            }}
             className="resize-none mb-4"
             rows={4}
           />
