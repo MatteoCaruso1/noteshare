@@ -10,20 +10,31 @@ interface PracticeStatsProps {
 }
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
-  const { data: stats, isLoading, error } = usePracticeStats(profileId);
+  const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
 
-  if (isLoading) {
+  // Show error state with retry option
+  if (error) {
+    return (
+      <Card className="p-4 bg-card border-border">
+        <p className="text-sm text-muted-foreground text-center">
+          Unable to load stats. Pull down to refresh.
+        </p>
+      </Card>
+    );
+  }
+
+  if (isLoading && !stats) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full animate-pulse" />
+        <Skeleton className="h-32 w-full animate-pulse" />
+        <Skeleton className="h-48 w-full animate-pulse" />
+        <Skeleton className="h-32 w-full animate-pulse" />
       </div>
     );
   }
 
-  if (error || !stats) {
+  if (!stats) {
     return null;
   }
 
