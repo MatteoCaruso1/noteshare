@@ -76,6 +76,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
                   updated_at: noteData.created_at,
                   session_id: null,
                   project_id: null,
+                  goal_id: null,
                   gig_id: null,
                   audio_file_names: null,
                   comment_count: 0,

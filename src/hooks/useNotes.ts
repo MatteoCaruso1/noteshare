@@ -18,7 +18,9 @@ export function useNotes(projectId?: string) {
           .select(`
             *,
             profiles!notes_author_id_fkey (*),
-            practice_sessions!notes_session_id_fkey (*)
+            practice_sessions!notes_session_id_fkey (*),
+            projects!notes_project_id_fkey (id, title),
+            goals!notes_goal_id_fkey (id, title, content)
           `)
           .eq('project_id', projectId)
           .order('created_at', { ascending: false });
@@ -29,6 +31,8 @@ export function useNotes(projectId?: string) {
           ...note,
           author: note.profiles,
           session: note.practice_sessions,
+          project: note.projects,
+          goal: note.goals,
         })) as NoteWithAuthor[];
       }
 
@@ -40,7 +44,9 @@ export function useNotes(projectId?: string) {
         .select(`
           *,
           profiles!notes_author_id_fkey (*),
-          practice_sessions!notes_session_id_fkey (*)
+          practice_sessions!notes_session_id_fkey (*),
+          projects!notes_project_id_fkey (id, title),
+          goals!notes_goal_id_fkey (id, title, content)
         `)
         .eq('author_id', profile.id)
         .order('created_at', { ascending: false });
@@ -51,6 +57,8 @@ export function useNotes(projectId?: string) {
         ...note,
         author: note.profiles,
         session: note.practice_sessions,
+        project: note.projects,
+        goal: note.goals,
       })) as NoteWithAuthor[];
     },
     enabled: projectId ? true : !!profile?.id,
@@ -64,7 +72,10 @@ async function fetchNote(noteId: string) {
     .from('notes')
     .select(`
       *,
-      profiles!notes_author_id_fkey (*)
+      profiles!notes_author_id_fkey (*),
+      practice_sessions!notes_session_id_fkey (*),
+      projects!notes_project_id_fkey (id, title),
+      goals!notes_goal_id_fkey (id, title, content)
     `)
     .eq('id', noteId)
     .single();
@@ -74,6 +85,9 @@ async function fetchNote(noteId: string) {
   return {
     ...data,
     author: data.profiles,
+    session: data.practice_sessions,
+    project: data.projects,
+    goal: data.goals,
   } as NoteWithAuthor;
 }
 
@@ -113,6 +127,7 @@ export function useCreateNote() {
       tags = [],
       sessionId,
       projectId,
+      goalId,
       visibility = 'friends',
     }: {
       authorId: string;
@@ -124,6 +139,7 @@ export function useCreateNote() {
       tags?: string[];
       sessionId?: string;
       projectId?: string;
+      goalId?: string;
       visibility?: 'private' | 'friends';
     }) => {
       const { data, error } = await supabase
@@ -138,6 +154,7 @@ export function useCreateNote() {
           tags,
           session_id: sessionId,
           project_id: projectId,
+          goal_id: goalId,
           visibility,
         })
         .select()

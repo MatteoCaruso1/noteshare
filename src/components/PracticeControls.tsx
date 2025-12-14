@@ -118,6 +118,7 @@ export function PracticeControls() {
                 tags,
                 sessionId: activeSession.id,
                 projectId: selectedProjectId || undefined,
+                goalId: selectedGoalId || undefined,
                 visibility,
               },
               {
