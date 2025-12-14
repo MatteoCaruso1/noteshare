@@ -88,6 +88,7 @@ export function useCreateNote() {
       authorId,
       textContent,
       audioFiles = [],
+      audioFileNames = [],
       imageFiles = [],
       videoFiles = [],
       tags = [],
@@ -98,6 +99,7 @@ export function useCreateNote() {
       authorId: string;
       textContent?: string;
       audioFiles?: string[];
+      audioFileNames?: string[];
       imageFiles?: string[];
       videoFiles?: string[];
       tags?: string[];
@@ -111,6 +113,7 @@ export function useCreateNote() {
           author_id: authorId,
           text_content: textContent,
           audio_files: audioFiles,
+          audio_file_names: audioFileNames,
           image_files: imageFiles,
           video_files: videoFiles,
           tags,

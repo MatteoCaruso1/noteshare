@@ -36,6 +36,7 @@ export interface Note {
   project_id: string | null;
   text_content: string | null;
   audio_files: string[];
+  audio_file_names: string[];
   image_files: string[];
   video_files: string[];
   tags: string[];

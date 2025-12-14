@@ -77,6 +77,7 @@ export function QuickNoteCapture() {
         authorId: profile.id,
         textContent: noteText,
         audioFiles: audioFiles.map(a => a.url),
+        audioFileNames: audioFiles.map(a => a.name),
         imageFiles,
         tags,
         projectId: selectedProjectId || undefined,
