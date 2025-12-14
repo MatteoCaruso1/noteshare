@@ -10,20 +10,20 @@ interface WaveformPlayerProps {
 }
 
 // Extract filename from URL for display
-function extractFilename(url: string): string | null {
+function extractFilename(url: string): string {
   try {
     const pathname = new URL(url).pathname;
     const filename = pathname.split('/').pop();
-    if (!filename) return null;
+    if (!filename) return 'Audio Recording';
     // Remove timestamp prefix if present (e.g., 1765730706098.webm -> audio)
     const decoded = decodeURIComponent(filename);
     // Remove file extension
     const withoutExt = decoded.replace(/\.[^/.]+$/, '');
-    // If it's just a timestamp, return null
-    if (/^\d+$/.test(withoutExt)) return null;
+    // If it's just a timestamp, return default name
+    if (/^\d+$/.test(withoutExt)) return 'Audio Recording';
     return withoutExt;
   } catch {
-    return null;
+    return 'Audio Recording';
   }
 }
 
