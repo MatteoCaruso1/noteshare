@@ -159,18 +159,17 @@ const Projects = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="container max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold">Projects</h1>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-primary text-primary-foreground">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Project
-                </Button>
-              </DialogTrigger>
+      {/* Page Header */}
+      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg sm:text-xl font-semibold">Projects</h1>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-gradient-primary text-primary-foreground">
+                <Plus className="w-4 h-4 mr-1" />
+                New
+              </Button>
+            </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
@@ -245,9 +244,8 @@ const Projects = () => {
             </Dialog>
           </div>
         </div>
-      </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-6">
+      <main className="container max-w-2xl mx-auto px-4 py-4">
         <Tabs defaultValue="my" className="w-full">
           <TabsList className="w-full mb-4">
             <TabsTrigger value="my" className="flex-1">My Projects</TabsTrigger>

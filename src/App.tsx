@@ -13,6 +13,7 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import NoteDetail from "./pages/NoteDetail";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
 import Discover from "./pages/Discover";
 import Gigs from "./pages/Gigs";
 import FriendsJournals from "./pages/FriendsJournals";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/notes/:id" element={<NoteDetail />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/user/:id" element={<PublicProfile />} />
             <Route path="/discover" element={<Discover />} />
             <Route path="/gigs" element={<Gigs />} />
             <Route path="/friends" element={<FriendsJournals />} />

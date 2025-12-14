@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Search, User, UserPlus, UserCheck, Clock, X } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { Search, UserPlus, UserCheck, Clock, X } from 'lucide-react';
 import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile } from '@/types';
@@ -138,12 +138,12 @@ export function UserSearch() {
           ) : searchResults && searchResults.length > 0 ? (
             searchResults.map((user) => (
               <div key={user.id} className="flex items-center gap-3 py-3 px-2">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={user.avatar || ''} />
-                  <AvatarFallback>
-                    <User className="w-5 h-5" />
-                  </AvatarFallback>
-                </Avatar>
+                <ClickableAvatar
+                  profileId={user.id}
+                  avatar={user.avatar}
+                  name={user.name}
+                  size="lg"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{user.name}</p>
                   <p className="text-xs text-muted-foreground truncate">@{user.username}</p>

@@ -32,15 +32,13 @@ const Index = () => {
 
   return (
     <div className={`min-h-screen bg-background pb-20 ${activeSession ? 'pt-10' : ''}`}>
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border" style={{ top: activeSession ? '40px' : '0' }}>
-        <div className="container max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-semibold">{journalTitle}</h1>
-        </div>
-      </header>
+      {/* Page Title */}
+      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+        <h1 className="text-lg sm:text-xl font-semibold">{journalTitle}</h1>
+      </div>
 
       {/* Main Content */}
-      <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4 sm:space-y-6">
         {/* Goals Section */}
         {profile && <GoalsSection profileId={profile.id} />}
 

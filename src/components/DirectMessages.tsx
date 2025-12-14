@@ -5,10 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, User, Send, ArrowLeft, Users } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { MessageCircle, Send, ArrowLeft, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { Profile } from '@/types';
 
@@ -67,13 +67,15 @@ export function DirectMessages() {
           {conversations.map((conv) => (
             <div
               key={conv.friendId}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
               onClick={() => setSelectedFriend(conv.friend)}
             >
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={conv.friend.avatar || ''} />
-                <AvatarFallback><User className="w-5 h-5" /></AvatarFallback>
-              </Avatar>
+              <ClickableAvatar
+                profileId={conv.friendId}
+                avatar={conv.friend.avatar}
+                name={conv.friend.name}
+                size="lg"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm truncate">{conv.friend.name}</p>
@@ -130,13 +132,15 @@ function NewMessageView({
           {friends.map((friend) => (
             <div
               key={friend.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
               onClick={() => onSelect(friend)}
             >
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={friend.avatar || ''} />
-                <AvatarFallback><User className="w-5 h-5" /></AvatarFallback>
-              </Avatar>
+              <ClickableAvatar
+                profileId={friend.id}
+                avatar={friend.avatar}
+                name={friend.name}
+                size="lg"
+              />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{friend.name}</p>
                 <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
@@ -188,10 +192,12 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={friend.avatar || ''} />
-          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-        </Avatar>
+        <ClickableAvatar
+          profileId={friend.id}
+          avatar={friend.avatar}
+          name={friend.name}
+          size="md"
+        />
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{friend.name}</p>
           <p className="text-xs text-muted-foreground">@{friend.username}</p>
@@ -217,7 +223,7 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
                     className={`max-w-[80%] px-3 py-2 rounded-lg ${
                       isMe 
                         ? 'bg-primary text-primary-foreground' 
-                        : 'bg-secondary'
+                        : 'bg-muted text-foreground'
                     }`}
                   >
                     <p className="text-sm">{msg.content}</p>

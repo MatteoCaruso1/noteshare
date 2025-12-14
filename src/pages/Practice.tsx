@@ -135,13 +135,12 @@ const Practice = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="container max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-semibold">Practice</h1>
-        </div>
-      </header>
+      {/* Page Title */}
+      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+        <h1 className="text-lg sm:text-xl font-semibold">Practice</h1>
+      </div>
 
-      <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4 sm:space-y-6">
         {/* Session Control */}
         <Card className="p-6 bg-card border-border">
           {activeSession ? (
