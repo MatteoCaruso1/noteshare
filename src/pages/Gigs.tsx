@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
+import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -32,7 +33,7 @@ const Gigs = () => {
   const [description, setDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [link, setLink] = useState('');
-  const [showOnFeed, setShowOnFeed] = useState(false);
+  const [showOnFeed, setShowOnFeed] = useState(true); // Default to true (friends visibility)
   const [isPaidOpportunity, setIsPaidOpportunity] = useState(false);
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
 
@@ -62,7 +63,7 @@ const Gigs = () => {
           setDescription('');
           setEventDate('');
           setLink('');
-          setShowOnFeed(false);
+          setShowOnFeed(true);
           setIsPaidOpportunity(false);
           setCollaboratorIds([]);
           setIsDialogOpen(false);
@@ -83,28 +84,31 @@ const Gigs = () => {
     }
   };
 
-  const PromoCard = ({ post, showAuthor = true, showDelete = false }: { post: any; showAuthor?: boolean; showDelete?: boolean }) => (
+  const GigCard = ({ post, showAuthor = true, showDelete = false }: { post: any; showAuthor?: boolean; showDelete?: boolean }) => (
     <Card 
       className="p-4 bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
       onClick={() => navigate(`/gigs/${post.id}`)}
     >
-      <div className="flex items-start gap-3">
-        {showAuthor && (
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={post.author?.avatar || ''} />
-            <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-          </Avatar>
+      <div className="flex items-start gap-4">
+        {/* Gig image or icon - matching project card layout */}
+        {post.image ? (
+          <img
+            src={post.image}
+            alt=""
+            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+            <Music2 className="w-6 h-6 text-muted-foreground" />
+          </div>
         )}
+        
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              {showAuthor && <span className="font-medium text-sm">{post.author?.name}</span>}
-              <Badge variant="outline" className="text-xs">
-                <Music2 className="w-3 h-3 mr-1" />
-                Gig
-              </Badge>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+              <h3 className="font-semibold truncate">{post.title}</h3>
               {post.is_paid_opportunity && (
-                <Badge className="text-xs bg-green-600">
+                <Badge className="text-xs bg-green-600 flex-shrink-0">
                   <DollarSign className="w-3 h-3 mr-1" />
                   Paid
                 </Badge>
@@ -114,29 +118,42 @@ const Gigs = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive"
+                className="h-8 w-8 text-destructive hover:text-destructive flex-shrink-0"
                 onClick={(e) => handleDeleteGig(e, post.id)}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
             )}
           </div>
-          <h3 className="font-semibold">{post.title}</h3>
-          {post.event_date && (
-            <p className="text-sm text-primary flex items-center gap-1 mt-1">
-              <Calendar className="w-3 h-3" />
-              {format(new Date(post.event_date), 'EEEE, MMM d, yyyy · h:mm a')}
-            </p>
+          
+          {showAuthor && post.author && (
+            <div className="flex items-center gap-2 mt-1">
+              <Avatar className="w-4 h-4">
+                <AvatarImage src={post.author?.avatar || ''} />
+                <AvatarFallback><User className="w-2 h-2" /></AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground">{post.author?.name}</span>
+            </div>
           )}
+          
           {post.description && (
-            <p className="text-sm text-muted-foreground mt-2">{post.description}</p>
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{post.description}</p>
           )}
+          
+          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+            <Calendar className="w-3 h-3" />
+            {post.event_date 
+              ? format(new Date(post.event_date), 'MMM d, yyyy · h:mm a')
+              : format(new Date(post.created_at), 'MMM d, yyyy')
+            }
+          </div>
+          
           {post.links?.length > 0 && (
             <a
               href={post.links[0]}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-accent hover:underline mt-2"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
               onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="w-3 h-3" />
@@ -146,13 +163,6 @@ const Gigs = () => {
         </div>
       </div>
     </Card>
-  );
-
-  const EmptyState = ({ message }: { message: string }) => (
-    <div className="text-center py-12 text-muted-foreground">
-      <Music2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-      <p>{message}</p>
-    </div>
   );
 
   return (
@@ -165,89 +175,91 @@ const Gigs = () => {
             <DialogTrigger asChild>
               <Button size="sm" className="bg-gradient-primary text-primary-foreground">
                 <Plus className="w-4 h-4 mr-1" />
-                Post
+                New
               </Button>
             </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Share an Update</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-lg">
-                    <Music2 className="w-5 h-5 text-primary" />
-                    <span className="font-medium">New Gig</span>
-                  </div>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Gig</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <Input
+                  placeholder="Gig title (e.g., Jazz Night at Blue Note)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+                <Textarea
+                  placeholder="Describe your gig..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                />
+                <div>
+                  <Label htmlFor="event-date" className="text-sm text-muted-foreground mb-2 block">
+                    Event Date & Time
+                  </Label>
                   <Input
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                  <Textarea
-                    placeholder="Description..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
-                  />
-                  <Input
+                    id="event-date"
                     type="datetime-local"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
                   />
-                  <Input
-                    placeholder="Link (optional)"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                  />
-                  
-                  {/* Show on Feed Toggle */}
-                  <div className="flex items-center justify-between py-2">
-                    <Label htmlFor="show-feed-gig" className="text-sm">Show on home feed</Label>
-                    <Switch
-                      id="show-feed-gig"
-                      checked={showOnFeed}
-                      onCheckedChange={setShowOnFeed}
-                    />
-                  </div>
-
-                  {/* Paid Opportunity Toggle */}
-                  <div className="flex items-center justify-between py-2 border-t border-border pt-4">
-                    <div>
-                      <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
-                        <Briefcase className="w-4 h-4" />
-                        Paid Opportunity
-                      </Label>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Mark this as a paid booking for artists to apply
-                      </p>
-                    </div>
-                    <Switch
-                      id="paid-opportunity"
-                      checked={isPaidOpportunity}
-                      onCheckedChange={setIsPaidOpportunity}
-                    />
-                  </div>
-
-                  {/* Collaborator Picker */}
-                  <div className="border-t border-border pt-4">
-                    <CollaboratorPicker
-                      selectedIds={collaboratorIds}
-                      onSelect={setCollaboratorIds}
-                      label="Tag Collaborators"
-                    />
-                  </div>
-
-                  <Button
-                    className="w-full bg-gradient-primary text-primary-foreground"
-                    onClick={handleCreate}
-                    disabled={createPromoPost.isPending || !title.trim()}
-                  >
-                    Post
-                  </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <Input
+                  placeholder="Link (optional)"
+                  value={link}
+                  onChange={(e) => setLink(e.target.value)}
+                />
+                
+                {/* Show on Feed Toggle */}
+                <div className="flex items-center justify-between py-2">
+                  <Label htmlFor="show-feed-gig" className="text-sm">Show on home feed</Label>
+                  <Switch
+                    id="show-feed-gig"
+                    checked={showOnFeed}
+                    onCheckedChange={setShowOnFeed}
+                  />
+                </div>
+
+                {/* Paid Opportunity Toggle */}
+                <div className="flex items-center justify-between py-2 border-t border-border pt-4">
+                  <div>
+                    <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Paid Opportunity
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Mark this as a paid booking for artists to apply
+                    </p>
+                  </div>
+                  <Switch
+                    id="paid-opportunity"
+                    checked={isPaidOpportunity}
+                    onCheckedChange={setIsPaidOpportunity}
+                  />
+                </div>
+
+                {/* Collaborator Picker */}
+                <div className="border-t border-border pt-4">
+                  <CollaboratorPicker
+                    selectedIds={collaboratorIds}
+                    onSelect={setCollaboratorIds}
+                    label="Tag Collaborators"
+                  />
+                </div>
+
+                <Button
+                  className="w-full bg-gradient-primary text-primary-foreground"
+                  onClick={handleCreate}
+                  disabled={createPromoPost.isPending || !title.trim()}
+                >
+                  Create Gig
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
+      </div>
 
       <main className="container max-w-2xl mx-auto px-4 py-4">
         <Tabs defaultValue="my" className="w-full">
@@ -259,21 +271,39 @@ const Gigs = () => {
 
           <TabsContent value="my" className="space-y-4">
             {myLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <div className="text-center text-muted-foreground py-12">Loading...</div>
             ) : myPosts && myPosts.length > 0 ? (
-              myPosts.map((post: any) => <PromoCard key={post.id} post={post} showAuthor={false} showDelete={true} />)
+              <div className="space-y-4">
+                {myPosts.map((post: any) => (
+                  <GigCard key={post.id} post={post} showAuthor={false} showDelete={true} />
+                ))}
+              </div>
             ) : (
-              <EmptyState message="No posts yet. Share your gigs, releases, or events!" />
+              <CollectionEmptyState
+                icon={Music2}
+                title="No gigs yet"
+                subtitle="Share your first gig, release, or event with your friends"
+                actionLabel="Create First Gig"
+                onAction={() => setIsDialogOpen(true)}
+              />
             )}
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-4">
             {friendsLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <div className="text-center text-muted-foreground py-12">Loading...</div>
             ) : filteredFriendsPosts.length > 0 ? (
-              filteredFriendsPosts.map((post: any) => <PromoCard key={post.id} post={post} />)
+              <div className="space-y-4">
+                {filteredFriendsPosts.map((post: any) => (
+                  <GigCard key={post.id} post={post} />
+                ))}
+              </div>
             ) : (
-              <EmptyState message="Connect with friends to see their gigs and releases" />
+              <CollectionEmptyState
+                icon={Music2}
+                title="No friend's gigs"
+                subtitle="Connect with friends to see their gigs and releases"
+              />
             )}
           </TabsContent>
 
@@ -288,11 +318,19 @@ const Gigs = () => {
               </p>
             </div>
             {paidLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <div className="text-center text-muted-foreground py-12">Loading...</div>
             ) : paidGigs && paidGigs.length > 0 ? (
-              paidGigs.map((post: any) => <PromoCard key={post.id} post={post} />)
+              <div className="space-y-4">
+                {paidGigs.map((post: any) => (
+                  <GigCard key={post.id} post={post} />
+                ))}
+              </div>
             ) : (
-              <EmptyState message="No paid opportunities available right now" />
+              <CollectionEmptyState
+                icon={Briefcase}
+                title="No paid opportunities"
+                subtitle="No paid opportunities available right now"
+              />
             )}
           </TabsContent>
         </Tabs>

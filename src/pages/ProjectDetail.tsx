@@ -4,18 +4,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
 import { useNotes } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
-import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { BottomNav } from '@/components/BottomNav';
-import { Timeline } from '@/components/Timeline';
+import { NoteCard } from '@/components/NoteCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Settings, Disc3, Upload, Trash2, Plus, FileText } from 'lucide-react';
-import { format } from 'date-fns';
+import { CollectionDetailHeader } from '@/components/shared/CollectionDetailHeader';
+import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
+import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
+import { Disc3, Upload, Trash2, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -75,7 +76,6 @@ const ProjectDetail = () => {
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
   const addNote = useAddNoteToProject();
-  const { uploadFile, uploading } = useMediaUpload();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
@@ -85,12 +85,6 @@ const ProjectDetail = () => {
   const [editCoverImage, setEditCoverImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Add note state
-  const [noteText, setNoteText] = useState('');
-  const [videoFiles, setVideoFiles] = useState<string[]>([]);
-  const [imageFiles, setImageFiles] = useState<string[]>([]);
-  const [audioFiles, setAudioFiles] = useState<string[]>([]);
 
   const isOwner = profile?.id === project?.owner_id;
   const isCollaborator = project?.collaborator_ids?.includes(profile?.id || '');
@@ -136,54 +130,25 @@ const ProjectDetail = () => {
     }
   };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && profile) {
-      const url = await uploadFile(file, profile.id, 'video');
-      if (url) {
-        setVideoFiles([...videoFiles, url]);
-      }
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && profile) {
-      const url = await uploadFile(file, profile.id, 'image');
-      if (url) {
-        setImageFiles([...imageFiles, url]);
-      }
-    }
-  };
-
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && profile) {
-      const url = await uploadFile(file, profile.id, 'audio');
-      if (url) {
-        setAudioFiles([...audioFiles, url]);
-      }
-    }
-  };
-
-  const handleAddNote = () => {
+  const handleAddNote = (data: {
+    textContent?: string;
+    audioFiles: string[];
+    videoFiles: string[];
+    imageFiles: string[];
+  }) => {
     if (!profile || !id) return;
 
     addNote.mutate(
       {
         authorId: profile.id,
         projectId: id,
-        textContent: noteText || undefined,
-        videoFiles,
-        imageFiles,
-        audioFiles,
+        textContent: data.textContent,
+        videoFiles: data.videoFiles,
+        imageFiles: data.imageFiles,
+        audioFiles: data.audioFiles,
       },
       {
         onSuccess: () => {
-          setNoteText('');
-          setVideoFiles([]);
-          setImageFiles([]);
-          setAudioFiles([]);
           setIsAddNoteOpen(false);
         },
       }
@@ -241,155 +206,52 @@ const ProjectDetail = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/projects')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex items-center gap-3 flex-1">
-            {project.cover_image ? (
-              <img
-                src={project.cover_image}
-                alt=""
-                className="w-10 h-10 rounded-lg object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-                <Disc3 className="w-5 h-5 text-muted-foreground" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold truncate">{project.title}</h1>
-              <p className="text-xs text-muted-foreground">
-                Created {format(new Date(project.created_at), 'MMM d, yyyy')}
-              </p>
-            </div>
-          </div>
-          {isOwner && (
-            <Button variant="ghost" size="icon" onClick={openSettings}>
-              <Settings className="w-5 h-5" />
-            </Button>
-          )}
-        </div>
-      </div>
+      <CollectionDetailHeader
+        backPath="/projects"
+        title={project.title}
+        date={project.created_at}
+        dateLabel="Created"
+        coverImage={project.cover_image}
+        coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+        showSettings={isOwner}
+        onSettingsClick={openSettings}
+      />
 
       <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-        {/* Project Info */}
+        {/* Project Description */}
         {project.description && (
           <div className="p-4 bg-card rounded-lg border border-border">
             <p className="text-sm text-muted-foreground">{project.description}</p>
           </div>
         )}
 
-        {/* Project Notes */}
+        {/* Notes Section */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Project Notes</h2>
-            {canAddNotes && (
-              <Dialog open={isAddNoteOpen} onOpenChange={setIsAddNoteOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Note
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Note to Project</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <Textarea
-                      placeholder="Add a note about this project..."
-                      value={noteText}
-                      onChange={(e) => setNoteText(e.target.value)}
-                      rows={3}
-                    />
-
-                    <div className="flex gap-2 flex-wrap">
-                      <label className="cursor-pointer flex-1 min-w-[100px]">
-                        <input
-                          type="file"
-                          accept="audio/*"
-                          onChange={handleAudioUpload}
-                          className="hidden"
-                        />
-                        <div className="flex items-center justify-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors text-sm">
-                          🎵 Audio
-                        </div>
-                      </label>
-                      <label className="cursor-pointer flex-1 min-w-[100px]">
-                        <input
-                          type="file"
-                          accept="video/*"
-                          onChange={handleVideoUpload}
-                          className="hidden"
-                        />
-                        <div className="flex items-center justify-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors text-sm">
-                          📹 Video
-                        </div>
-                      </label>
-                      <label className="cursor-pointer flex-1 min-w-[100px]">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                        <div className="flex items-center justify-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors text-sm">
-                          📷 Image
-                        </div>
-                      </label>
-                    </div>
-
-                    {audioFiles.length > 0 && (
-                      <div className="space-y-2">
-                        {audioFiles.map((url, i) => (
-                          <audio key={i} src={url} controls className="w-full" />
-                        ))}
-                      </div>
-                    )}
-
-                    {videoFiles.length > 0 && (
-                      <div className="space-y-2">
-                        {videoFiles.map((url, i) => (
-                          <video key={i} src={url} controls className="w-full rounded-lg" />
-                        ))}
-                      </div>
-                    )}
-
-                    {imageFiles.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {imageFiles.map((url, i) => (
-                          <img key={i} src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
-                        ))}
-                      </div>
-                    )}
-
-                    <Button
-                      className="w-full"
-                      onClick={handleAddNote}
-                      disabled={addNote.isPending || uploading || (!noteText && videoFiles.length === 0 && imageFiles.length === 0 && audioFiles.length === 0)}
-                    >
-                      Add Note
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+            {canAddNotes && profile && (
+              <AddNoteDialog
+                open={isAddNoteOpen}
+                onOpenChange={setIsAddNoteOpen}
+                onSubmit={handleAddNote}
+                isSubmitting={addNote.isPending}
+                title="Add Note to Project"
+                contextLabel="this project"
+                profileId={profile.id}
+              />
             )}
           </div>
 
-          {notes && notes.length > 0 ? (
-            <Timeline notes={notes} loading={notesLoading} />
-          ) : (
-            <div className="text-center py-12 bg-card rounded-lg border border-border">
-              <FileText className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">No notes in this project yet</p>
-              {canAddNotes && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Add audio, videos, photos, or notes to your project
-                </p>
-              )}
+          {notesLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : notes && notes.length > 0 ? (
+            <div className="space-y-4">
+              {notes.map((note) => (
+                <NoteCard key={note.id} note={note} />
+              ))}
             </div>
+          ) : (
+            <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this project" />
           )}
         </section>
       </main>
@@ -477,7 +339,7 @@ const ProjectDetail = () => {
                   <AlertDialogTitle>Delete Project?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will permanently delete "{project.title}" and cannot be undone.
-                    Notes linked to this project will not be deleted.
+                    Notes attached to this project will not be deleted but will no longer be associated with a project.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
