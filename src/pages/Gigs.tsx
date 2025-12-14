@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost } from '@/hooks/usePromoPosts';
 import { BottomNav } from '@/components/BottomNav';
@@ -14,12 +15,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 const Gigs = () => {
-  const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const { data: myPosts, isLoading: myLoading } = useMyPromoPosts(profile?.id);
   const { data: friendsPosts, isLoading: friendsLoading } = useFriendsPromoPosts();
   const { data: paidGigs, isLoading: paidLoading } = usePaidGigs();
@@ -76,7 +76,10 @@ const Gigs = () => {
   ) || [];
 
   const PromoCard = ({ post, showAuthor = true }: { post: any; showAuthor?: boolean }) => (
-    <Card className="p-4 bg-card border-border">
+    <Card 
+      className="p-4 bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
+      onClick={() => navigate(`/gigs/${post.id}`)}
+    >
       <div className="flex items-start gap-3">
         {showAuthor && (
           <Avatar className="w-10 h-10">

@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import PublicProfile from "./pages/PublicProfile";
 import Discover from "./pages/Discover";
 import Gigs from "./pages/Gigs";
+import GigDetail from "./pages/GigDetail";
 import FriendsJournals from "./pages/FriendsJournals";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/user/:id" element={<PublicProfile />} />
             <Route path="/discover" element={<Discover />} />
             <Route path="/gigs" element={<Gigs />} />
+            <Route path="/gigs/:id" element={<GigDetail />} />
             <Route path="/friends" element={<FriendsJournals />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />

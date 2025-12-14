@@ -222,6 +222,7 @@ export type Database = {
           audio_files: string[] | null
           author_id: string
           created_at: string
+          gig_id: string | null
           id: string
           image_files: string[] | null
           project_id: string | null
@@ -236,6 +237,7 @@ export type Database = {
           audio_files?: string[] | null
           author_id: string
           created_at?: string
+          gig_id?: string | null
           id?: string
           image_files?: string[] | null
           project_id?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           audio_files?: string[] | null
           author_id?: string
           created_at?: string
+          gig_id?: string | null
           id?: string
           image_files?: string[] | null
           project_id?: string | null
@@ -266,6 +269,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "promo_posts"
             referencedColumns: ["id"]
           },
           {
@@ -286,6 +296,7 @@ export type Database = {
       }
       practice_sessions: {
         Row: {
+          collaborator_ids: string[] | null
           created_at: string
           ended_at: string | null
           goals: string | null
@@ -296,6 +307,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          collaborator_ids?: string[] | null
           created_at?: string
           ended_at?: string | null
           goals?: string | null
@@ -306,6 +318,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          collaborator_ids?: string[] | null
           created_at?: string
           ended_at?: string | null
           goals?: string | null
