@@ -5,13 +5,32 @@ import { Play, Pause, Mic, AlertCircle } from 'lucide-react';
 
 interface WaveformPlayerProps {
   src: string;
+  title?: string;
   onError?: () => void;
+}
+
+// Extract filename from URL for display
+function extractFilename(url: string): string | null {
+  try {
+    const pathname = new URL(url).pathname;
+    const filename = pathname.split('/').pop();
+    if (!filename) return null;
+    // Remove timestamp prefix if present (e.g., 1765730706098.webm -> audio)
+    const decoded = decodeURIComponent(filename);
+    // Remove file extension
+    const withoutExt = decoded.replace(/\.[^/.]+$/, '');
+    // If it's just a timestamp, return null
+    if (/^\d+$/.test(withoutExt)) return null;
+    return withoutExt;
+  } catch {
+    return null;
+  }
 }
 
 // Target loudness level (0-1 scale, where 0.7 is a comfortable listening level)
 const TARGET_LOUDNESS = 0.7;
 
-export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
+export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -148,35 +167,46 @@ export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
     );
   }
 
+  const displayTitle = title || extractFilename(src);
+
   return (
     <div 
-      className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg w-full"
+      className="bg-secondary/50 rounded-lg w-full"
       onClick={(e) => e.stopPropagation()}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 flex-shrink-0 text-primary hover:text-primary hover:bg-primary/20"
-        onClick={handlePlayPause}
-        disabled={!isReady}
-      >
-        {isPlaying ? (
-          <Pause className="h-4 w-4" />
-        ) : (
-          <Play className="h-4 w-4" />
-        )}
-      </Button>
+      {displayTitle && (
+        <div className="px-3 pt-2 pb-0">
+          <p className="text-xs text-muted-foreground truncate">
+            🎵 {displayTitle}
+          </p>
+        </div>
+      )}
+      <div className="flex items-center gap-3 p-3 pt-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 flex-shrink-0 text-primary hover:text-primary hover:bg-primary/20"
+          onClick={handlePlayPause}
+          disabled={!isReady}
+        >
+          {isPlaying ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+        </Button>
 
-      <div className="flex-1 min-w-0">
-        <div 
-          ref={containerRef} 
-          className="w-full cursor-pointer"
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
+        <div className="flex-1 min-w-0">
+          <div 
+            ref={containerRef} 
+            className="w-full cursor-pointer"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
 
-      <div className="text-xs text-muted-foreground flex-shrink-0 min-w-[70px] text-right font-mono">
-        {formatTime(currentTime)} / {formatTime(duration)}
+        <div className="text-xs text-muted-foreground flex-shrink-0 min-w-[70px] text-right font-mono">
+          {formatTime(currentTime)} / {formatTime(duration)}
+        </div>
       </div>
     </div>
   );
