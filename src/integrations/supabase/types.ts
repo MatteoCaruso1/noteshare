@@ -56,6 +56,36 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          created_at: string
+          dislike_most: string | null
+          id: string
+          like_most: string
+          nps_score: number | null
+          user_id: string
+          willing_to_pay: string | null
+        }
+        Insert: {
+          created_at?: string
+          dislike_most?: string | null
+          id?: string
+          like_most: string
+          nps_score?: number | null
+          user_id: string
+          willing_to_pay?: string | null
+        }
+        Update: {
+          created_at?: string
+          dislike_most?: string | null
+          id?: string
+          like_most?: string
+          nps_score?: number | null
+          user_id?: string
+          willing_to_pay?: string | null
+        }
+        Relationships: []
+      }
       followers: {
         Row: {
           approved: boolean | null

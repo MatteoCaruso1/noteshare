@@ -14,6 +14,7 @@ import { INSTRUMENTS, GENRES } from '@/types';
 import { LogOut, User, Settings, Camera } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
+import { FeedbackCard } from '@/components/FeedbackCard';
 
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -255,6 +256,13 @@ const Profile = () => {
           <div className="pt-4">
             <h2 className="text-lg font-semibold mb-4">Your Practice Stats</h2>
             <PracticeStats profileId={profile.id} />
+          </div>
+        )}
+
+        {/* Feedback Section */}
+        {!editing && (
+          <div className="pt-4">
+            <FeedbackCard />
           </div>
         )}
       </main>
