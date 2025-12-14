@@ -4,8 +4,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Clock } from 'lucide-react';
-import { format, subMonths, subYears, differenceInDays } from 'date-fns';
+import { format, subMonths, subYears } from 'date-fns';
 import { NoteWithAuthor } from '@/types';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
 
 export function MemoryReminder() {
   const { profile } = useAuth();
@@ -82,7 +83,7 @@ export function MemoryReminder() {
           )}
           {note.audio_files.length > 0 && (
             <div className="mt-2">
-              <audio src={note.audio_files[0]} controls className="w-full h-8" />
+              <WaveformPlayer src={note.audio_files[0]} />
             </div>
           )}
         </Card>
