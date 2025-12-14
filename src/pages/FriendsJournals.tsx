@@ -20,22 +20,20 @@ const FriendsJournals = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
-        <div className="container max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold">Friends' Journals</h1>
-              <p className="text-xs text-muted-foreground">
-                {friends?.length || 0} friends
-              </p>
-            </div>
+      {/* Page Header */}
+      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-semibold">Friends' Journals</h1>
+            <p className="text-xs text-muted-foreground">
+              {friends?.length || 0} friends
+            </p>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Purpose Section */}

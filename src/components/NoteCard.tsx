@@ -1,10 +1,10 @@
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Mic, User, Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { Mic, Disc3, Lock, Clock, FileText, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -52,18 +52,18 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
 
   return (
     <Card
-      className={`p-4 bg-card border-border ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
+      className={`p-3 sm:p-4 bg-card border-border ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
       onClick={!expanded ? () => navigate(`/notes/${note.id}`) : undefined}
     >
       {/* Type Badge */}
       <div className="flex items-center gap-2 mb-3">
         {isPracticeSession ? (
-          <Badge variant="default" className="bg-primary/20 text-primary border-primary/30">
+          <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 text-xs">
             <Clock className="w-3 h-3 mr-1" />
             Practice Session
           </Badge>
         ) : (
-          <Badge variant="secondary">
+          <Badge variant="secondary" className="text-xs">
             <FileText className="w-3 h-3 mr-1" />
             Quick Note
           </Badge>
@@ -71,13 +71,15 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       </div>
 
       <div className="flex items-start gap-3 mb-3">
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={note.author?.avatar || ''} />
-          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-        </Avatar>
+        <ClickableAvatar
+          profileId={note.author_id}
+          avatar={note.author?.avatar}
+          name={note.author?.name}
+          size="md"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium">{note.author?.name}</p>
+            <p className="text-sm font-medium truncate">{note.author?.name}</p>
             {getVisibilityIcon()}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -93,7 +95,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
               onValueChange={handleVisibilityChange}
             >
               <SelectTrigger
-                className="w-28 h-8 text-xs"
+                className="w-24 sm:w-28 h-8 text-xs"
                 onClick={(e) => e.stopPropagation()}
               >
                 <SelectValue />
@@ -148,7 +150,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
             <div key={i} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
               <Mic className="w-4 h-4 text-primary flex-shrink-0" />
-              <audio src={url} controls className="flex-1 h-8" onClick={(e) => e.stopPropagation()} />
+              <audio src={url} controls className="flex-1 h-8 min-w-0" onClick={(e) => e.stopPropagation()} />
             </div>
           ))}
           {!expanded && note.audio_files.length > 1 && (
@@ -164,7 +166,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
               key={i}
               src={url}
               alt=""
-              className={`${expanded ? 'w-full max-w-md' : 'w-20 h-20'} object-cover rounded-lg`}
+              className={`${expanded ? 'w-full max-w-md' : 'w-16 h-16 sm:w-20 sm:h-20'} object-cover rounded-lg`}
               onClick={(e) => {
                 e.stopPropagation();
                 if (!expanded) navigate(`/notes/${note.id}`);
@@ -172,7 +174,7 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
             />
           ))}
           {!expanded && note.image_files.length > 4 && (
-            <div className="w-20 h-20 rounded-lg bg-secondary flex items-center justify-center text-sm text-muted-foreground">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-secondary flex items-center justify-center text-sm text-muted-foreground">
               +{note.image_files.length - 4}
             </div>
           )}

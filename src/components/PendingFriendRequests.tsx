@@ -1,8 +1,8 @@
 import { usePendingFriendRequests, useRespondToFriendRequest } from '@/hooks/useFriendships';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Check, X, UserPlus } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { Check, X, UserPlus } from 'lucide-react';
 
 export function PendingFriendRequests() {
   const { data: requests, isLoading } = usePendingFriendRequests();
@@ -32,12 +32,12 @@ export function PendingFriendRequests() {
       <div className="space-y-3">
         {requests.map((request) => (
           <div key={request.id} className="flex items-center gap-3">
-            <Avatar className="w-9 h-9">
-              <AvatarImage src={request.requester?.avatar || ''} />
-              <AvatarFallback>
-                <User className="w-4 h-4" />
-              </AvatarFallback>
-            </Avatar>
+            <ClickableAvatar
+              profileId={request.requester?.id || ''}
+              avatar={request.requester?.avatar}
+              name={request.requester?.name}
+              size="md"
+            />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{request.requester?.name}</p>
               <p className="text-xs text-muted-foreground truncate">@{request.requester?.username}</p>
