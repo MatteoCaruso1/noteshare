@@ -7,6 +7,7 @@ import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
+import { FeedProjects } from '@/components/FeedProjects';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -44,6 +45,9 @@ const Index = () => {
 
         {/* Quick Note Capture */}
         <QuickNoteCapture />
+
+        {/* Feed Projects */}
+        <FeedProjects />
 
         {/* Memory Reminder */}
         <MemoryReminder />
