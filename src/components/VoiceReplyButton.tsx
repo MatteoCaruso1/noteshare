@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Mic, Square, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,6 +20,7 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [replyTitle, setReplyTitle] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -75,13 +78,14 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
         .from('practice-media')
         .getPublicUrl(uploadData.path);
 
-      // Create comment with audio
+      // Create comment with audio - use custom title or default
+      const displayTitle = replyTitle.trim() || '🎤 Voice reply';
       const { error: commentError } = await supabase
         .from('note_comments')
         .insert({
           note_id: noteId,
           author_id: authorId,
-          content: '🎤 Voice reply',
+          content: displayTitle,
           audio_url: publicUrl.publicUrl,
         });
 
@@ -106,6 +110,7 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
       setAudioUrl(null);
     }
     setIsRecording(false);
+    setReplyTitle('');
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -152,7 +157,16 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
             </div>
           ) : (
             <div className="space-y-4">
-              <WaveformPlayer src={audioUrl} title="Voice Reply Preview" />
+              <div className="space-y-2">
+                <Label htmlFor="reply-title">Title (optional)</Label>
+                <Input
+                  id="reply-title"
+                  placeholder="Name your voice reply..."
+                  value={replyTitle}
+                  onChange={(e) => setReplyTitle(e.target.value)}
+                />
+              </div>
+              <WaveformPlayer src={audioUrl} title={replyTitle || 'Voice Reply Preview'} />
               <div className="flex gap-2">
                 <Button
                   variant="outline"

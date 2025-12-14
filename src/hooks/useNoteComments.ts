@@ -72,3 +72,27 @@ export function useCreateNoteComment() {
     },
   });
 }
+
+export function useDeleteNoteComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ commentId, noteId }: { commentId: string; noteId: string }) => {
+      const { error } = await supabase
+        .from('note_comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+      return { noteId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['note-comments', data.noteId] });
+      toast.success('Comment deleted');
+    },
+    onError: (error) => {
+      console.error('Error deleting comment:', error);
+      toast.error('Failed to delete comment');
+    },
+  });
+}
