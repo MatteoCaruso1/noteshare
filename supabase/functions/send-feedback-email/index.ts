@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,51 +14,48 @@ interface FeedbackPayload {
   npsScore?: number;
 }
 
-serve(async (req) => {
+const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
+    if (!resendApiKey) {
+      console.log("RESEND_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ success: true, message: "Feedback saved (email not configured)" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const payload: FeedbackPayload = await req.json();
     const { userName, userEmail, likeMost, dislikeMost, willingToPay, npsScore } = payload;
 
     // Build email content
-    const emailBody = `
-New Feedback from Noteshare
-
-From: ${userName} (${userEmail})
-Submitted: ${new Date().toLocaleString()}
-
----
-
-1. What do you like most about Noteshare?
-${likeMost}
-
-2. What do you dislike or find confusing?
-${dislikeMost || "No response"}
-
-3. What features would you be willing to pay for?
-${willingToPay || "No response"}
-
-4. NPS Score (1-10): ${npsScore || "Not provided"}
-
----
-End of feedback
-    `.trim();
-
-    // Send email using Resend API
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    
-    if (!resendApiKey) {
-      console.log("RESEND_API_KEY not configured - logging feedback instead:");
-      console.log(emailBody);
-      return new Response(
-        JSON.stringify({ success: true, message: "Feedback logged (email not configured)" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const emailHtml = `
+      <h2>New Feedback from Noteshare</h2>
+      <p><strong>From:</strong> ${userName} (${userEmail})</p>
+      <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+      <hr/>
+      
+      <h3>1. What do you like most about Noteshare?</h3>
+      <p>${likeMost}</p>
+      
+      <h3>2. What do you dislike or find confusing?</h3>
+      <p>${dislikeMost || "<em>No response</em>"}</p>
+      
+      <h3>3. What features would you be willing to pay for?</h3>
+      <p>${willingToPay || "<em>No response</em>"}</p>
+      
+      <h3>4. NPS Score (1-10)</h3>
+      <p>${npsScore || "<em>Not provided</em>"}</p>
+      
+      <hr/>
+      <p><em>End of feedback</em></p>
+    `;
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -70,7 +67,7 @@ End of feedback
         from: "Noteshare Feedback <onboarding@resend.dev>",
         to: ["matteo.m.caruso1@gmail.com"],
         subject: `Noteshare Feedback from ${userName}`,
-        text: emailBody,
+        html: emailHtml,
       }),
     });
 
@@ -84,15 +81,19 @@ End of feedback
       );
     }
 
+    console.log("Email sent successfully");
+
     return new Response(
       JSON.stringify({ success: true, message: "Feedback sent successfully" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error processing feedback:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to process feedback" }),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+};
+
+serve(handler);
