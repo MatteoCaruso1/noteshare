@@ -60,13 +60,13 @@ const Index = () => {
   }
 
   const firstName = profile?.name?.split(' ')[0] || 'Your';
-  const notesTitle = `${firstName}'s Notes`;
+  const timelineTitle = `${firstName}'s Notes`;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Page Title */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <h1 className="text-lg sm:text-xl font-semibold">{notesTitle}</h1>
+        <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
       </div>
 
       {/* Main Content */}
@@ -110,7 +110,7 @@ const Index = () => {
         {/* Timeline */}
         <section>
           <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg font-semibold">Timeline</h2>
+            <h2 className="text-lg font-semibold">{timelineTitle}</h2>
             <div className="flex-1 max-w-xs">
               <TimelineSearch onSearch={setSearchQuery} />
             </div>
