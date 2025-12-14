@@ -193,13 +193,19 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
           <div className="px-4 pb-4 space-y-6">
             {/* Near-Term Goals */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Near-Term Goals</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-muted-foreground">Near-Term Goals</h3>
+                <span className="text-xs text-muted-foreground/60">always private</span>
+              </div>
               {renderGoalList(nearTermGoals, 'near-term')}
             </div>
 
             {/* Long-Term Goals */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Long-Term Goals</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-muted-foreground">Long-Term Goals</h3>
+                <span className="text-xs text-muted-foreground/60">always private</span>
+              </div>
               {renderGoalList(longTermGoals, 'long-term')}
             </div>
 

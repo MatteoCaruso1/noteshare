@@ -214,8 +214,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         </div>
       )}
 
-      {/* Linked Goal */}
-      {note.goal_id && (
+      {/* Linked Goal - only visible to note owner since goals are private */}
+      {note.goal_id && isOwner && (
         <div className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg">
           <Target className="w-4 h-4 text-primary" />
           <span className="text-sm text-primary truncate">{goalName}</span>
