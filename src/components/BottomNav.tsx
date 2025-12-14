@@ -13,12 +13,17 @@ export function BottomNav() {
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
+  // Check if we're on a user profile page (part of friends flow)
+  const isUserProfilePage = location.pathname.startsWith('/user/');
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
       <div className="container max-w-2xl mx-auto px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around py-2">
           {links.map(({ to, icon: Icon, label }) => {
-            const isActive = location.pathname === to;
+            // Friends tab stays active when viewing user profiles
+            const isActive = location.pathname === to || 
+              (to === '/friends' && isUserProfilePage);
             return (
               <NavLink
                 key={to}

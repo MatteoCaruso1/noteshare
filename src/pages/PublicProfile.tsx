@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,8 +30,21 @@ function usePublicProfile(profileId: string | undefined) {
 const PublicProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile: myProfile } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id);
+  
+  // Check if we came from the friends list
+  const fromFriendsList = location.state?.fromFriendsList;
+  
+  const handleBack = () => {
+    if (fromFriendsList) {
+      // Navigate back to friends page and tell it to open the friends list
+      navigate('/friends', { state: { openFriendsList: true } });
+    } else {
+      navigate(-1);
+    }
+  };
 
   // If viewing own profile, redirect to profile page
   if (myProfile?.id === id) {
@@ -57,7 +70,7 @@ const PublicProfile = () => {
     return (
       <div className="min-h-screen bg-background pb-20">
         <div className="container max-w-2xl mx-auto px-4 py-6">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <Button variant="ghost" onClick={handleBack} className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
           <Card className="p-8 text-center">
@@ -74,7 +87,7 @@ const PublicProfile = () => {
     <div className="min-h-screen bg-background pb-20">
       <div className="container max-w-2xl mx-auto px-4 py-6">
         {/* Back Button */}
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 -ml-2">
+        <Button variant="ghost" onClick={handleBack} className="mb-4 -ml-2">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 

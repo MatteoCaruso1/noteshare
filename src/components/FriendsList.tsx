@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -9,20 +8,22 @@ import { Users, Music, Handshake, Guitar } from 'lucide-react';
 
 interface FriendsListProps {
   children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function FriendsList({ children }: FriendsListProps) {
-  const [open, setOpen] = useState(false);
+export function FriendsList({ children, open, onOpenChange }: FriendsListProps) {
   const navigate = useNavigate();
   const { data: friends, isLoading } = useFriends();
 
   const handleFriendClick = (friendId: string) => {
-    setOpen(false);
-    navigate(`/user/${friendId}`);
+    onOpenChange?.(false);
+    // Navigate with state so back button knows to reopen the dialog
+    navigate(`/user/${friendId}`, { state: { fromFriendsList: true } });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
