@@ -10,7 +10,6 @@ interface FeedbackPayload {
   userEmail: string;
   likeMost: string;
   dislikeMost?: string;
-  willingToPay?: string;
   npsScore?: number;
 }
 
@@ -32,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const payload: FeedbackPayload = await req.json();
-    const { userName, userEmail, likeMost, dislikeMost, willingToPay, npsScore } = payload;
+    const { userName, userEmail, likeMost, dislikeMost, npsScore } = payload;
 
     // Build email content
     const emailHtml = `
@@ -47,10 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
       <h3>2. What do you dislike or find confusing?</h3>
       <p>${dislikeMost || "<em>No response</em>"}</p>
       
-      <h3>3. What features would you be willing to pay for?</h3>
-      <p>${willingToPay || "<em>No response</em>"}</p>
-      
-      <h3>4. NPS Score (1-10)</h3>
+      <h3>3. NPS Score (1-10)</h3>
       <p>${npsScore || "<em>Not provided</em>"}</p>
       
       <hr/>
