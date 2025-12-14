@@ -8,6 +8,9 @@ interface WaveformPlayerProps {
   onError?: () => void;
 }
 
+// Target loudness level (0-1 scale, where 0.7 is a comfortable listening level)
+const TARGET_LOUDNESS = 0.7;
+
 export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -16,6 +19,7 @@ export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(false);
+  const [normalizedVolume, setNormalizedVolume] = useState(1);
 
   const formatTime = (seconds: number): string => {
     if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
@@ -31,8 +35,45 @@ export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
     }
   }, [isReady]);
 
+  // Calculate normalized volume based on audio peak analysis
+  const analyzeAndNormalizeAudio = useCallback(async (audioUrl: string) => {
+    try {
+      const response = await fetch(audioUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      // Analyze all channels and find the peak amplitude
+      let maxPeak = 0;
+      for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+        const channelData = audioBuffer.getChannelData(channel);
+        for (let i = 0; i < channelData.length; i++) {
+          const absValue = Math.abs(channelData[i]);
+          if (absValue > maxPeak) {
+            maxPeak = absValue;
+          }
+        }
+      }
+      
+      // Calculate the gain needed to reach target loudness
+      // Clamp between 0.5 and 2.0 to avoid extreme adjustments
+      if (maxPeak > 0) {
+        const gain = Math.min(2.0, Math.max(0.5, TARGET_LOUDNESS / maxPeak));
+        setNormalizedVolume(gain);
+      }
+      
+      audioContext.close();
+    } catch (err) {
+      console.warn('[WaveformPlayer] Audio normalization analysis failed, using default volume:', err);
+      setNormalizedVolume(1);
+    }
+  }, []);
+
   useEffect(() => {
     if (!containerRef.current || !src) return;
+
+    // Analyze audio for normalization
+    analyzeAndNormalizeAudio(src);
 
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
@@ -80,7 +121,14 @@ export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
     return () => {
       wavesurfer.destroy();
     };
-  }, [src, onError]);
+  }, [src, onError, analyzeAndNormalizeAudio]);
+
+  // Apply normalized volume when it changes or when ready
+  useEffect(() => {
+    if (wavesurferRef.current && isReady) {
+      wavesurferRef.current.setVolume(normalizedVolume);
+    }
+  }, [normalizedVolume, isReady]);
 
   // Fallback to native audio if waveform fails
   if (error) {
