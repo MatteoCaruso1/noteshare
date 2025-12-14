@@ -15,10 +15,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
-import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Trash2, Upload } from 'lucide-react';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Trash2, Upload, CalendarIcon, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const Gigs = () => {
   const navigate = useNavigate();
@@ -33,7 +36,8 @@ const Gigs = () => {
   const [promoType] = useState<'gig'>('gig');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [eventDate, setEventDate] = useState('');
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
+  const [eventTime, setEventTime] = useState('');
   const [link, setLink] = useState('');
   const [showOnFeed, setShowOnFeed] = useState(true); // Default to true (friends visibility)
   const [isPaidOpportunity, setIsPaidOpportunity] = useState(false);
@@ -80,13 +84,24 @@ const Gigs = () => {
   const handleCreate = () => {
     if (!profile || !title.trim()) return;
 
+    // Combine date and time into ISO string
+    let combinedDateTime: string | undefined;
+    if (eventDate) {
+      const date = new Date(eventDate);
+      if (eventTime) {
+        const [hours, minutes] = eventTime.split(':').map(Number);
+        date.setHours(hours, minutes, 0, 0);
+      }
+      combinedDateTime = date.toISOString();
+    }
+
     createPromoPost.mutate(
       {
         authorId: profile.id,
         promoType,
         title,
         description,
-        eventDate: eventDate || undefined,
+        eventDate: combinedDateTime,
         image: gigImage || undefined,
         links: link ? [link] : [],
         showOnFeed,
@@ -97,7 +112,8 @@ const Gigs = () => {
         onSuccess: () => {
           setTitle('');
           setDescription('');
-          setEventDate('');
+          setEventDate(undefined);
+          setEventTime('');
           setLink('');
           setShowOnFeed(true);
           setIsPaidOpportunity(false);
@@ -258,16 +274,45 @@ const Gigs = () => {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
                 />
-                <div>
-                  <Label htmlFor="event-date" className="text-sm text-muted-foreground mb-2 block">
+                <div className="space-y-3">
+                  <Label className="text-sm text-muted-foreground block">
                     Event Date & Time
                   </Label>
-                  <Input
-                    id="event-date"
-                    type="datetime-local"
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                  />
+                  <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            !eventDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {eventDate ? format(eventDate, "MMM d, yyyy") : "Pick date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={eventDate}
+                          onSelect={setEventDate}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        type="time"
+                        value={eventTime}
+                        onChange={(e) => setEventTime(e.target.value)}
+                        className="pl-9 w-[120px]"
+                        placeholder="Time"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <Input
                   placeholder="Link (optional)"
