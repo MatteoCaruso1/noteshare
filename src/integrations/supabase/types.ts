@@ -279,6 +279,7 @@ export type Database = {
       }
       notes: {
         Row: {
+          audio_file_names: string[] | null
           audio_files: string[] | null
           author_id: string
           created_at: string
@@ -294,6 +295,7 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          audio_file_names?: string[] | null
           audio_files?: string[] | null
           author_id: string
           created_at?: string
@@ -309,6 +311,7 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          audio_file_names?: string[] | null
           audio_files?: string[] | null
           author_id?: string
           created_at?: string

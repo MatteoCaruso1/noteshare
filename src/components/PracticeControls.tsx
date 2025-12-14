@@ -113,6 +113,7 @@ export function PracticeControls() {
                 authorId: profile.id,
                 textContent: noteText || undefined,
                 audioFiles: audioFiles.map(a => a.url),
+                audioFileNames: audioFiles.map(a => a.name),
                 imageFiles,
                 tags,
                 sessionId: activeSession.id,

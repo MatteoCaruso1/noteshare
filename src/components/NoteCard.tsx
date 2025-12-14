@@ -195,7 +195,11 @@ export function NoteCard({ note, expanded }: NoteCardProps) {
       {note.audio_files.length > 0 && (
         <div className="space-y-2 mb-3">
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
-            <WaveformPlayer key={i} src={url} />
+            <WaveformPlayer 
+              key={i} 
+              src={url} 
+              title={note.audio_file_names?.[i]}
+            />
           ))}
           {!expanded && note.audio_files.length > 1 && (
             <p className="text-xs text-muted-foreground">+{note.audio_files.length - 1} more audio</p>
