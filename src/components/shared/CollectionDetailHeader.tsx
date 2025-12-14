@@ -85,7 +85,7 @@ export const CollectionDetailHeader = ({
           {/* Date and badges */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <p className="text-xs text-muted-foreground">
-              {dateLabel} {format(new Date(date), 'MMM d, yyyy')}
+              {date ? `${dateLabel} ${format(new Date(date), 'MMM d, yyyy')}` : 'No date specified'}
             </p>
             {badges}
           </div>

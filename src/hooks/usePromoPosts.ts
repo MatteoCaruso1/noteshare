@@ -218,11 +218,73 @@ export function useDeletePromoPost() {
       queryClient.invalidateQueries({ queryKey: ['my-promo-posts'] });
       queryClient.invalidateQueries({ queryKey: ['friends-promo-posts'] });
       queryClient.invalidateQueries({ queryKey: ['paid-gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['gig'] });
       toast.success('Post deleted');
     },
     onError: (error) => {
       console.error('Error deleting promo post:', error);
       toast.error('Failed to delete post');
+    },
+  });
+}
+
+export function useUpdatePromoPost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      postId,
+      title,
+      description,
+      eventDate,
+      image,
+      links,
+      showOnFeed,
+      isPaidOpportunity,
+      collaboratorIds,
+    }: {
+      postId: string;
+      title?: string;
+      description?: string;
+      eventDate?: string | null;
+      image?: string | null;
+      links?: string[];
+      showOnFeed?: boolean;
+      isPaidOpportunity?: boolean;
+      collaboratorIds?: string[];
+    }) => {
+      const updates: Record<string, any> = {};
+      if (title !== undefined) updates.title = title;
+      if (description !== undefined) updates.description = description;
+      if (eventDate !== undefined) updates.event_date = eventDate;
+      if (image !== undefined) updates.image = image;
+      if (links !== undefined) updates.links = links;
+      if (showOnFeed !== undefined) updates.show_on_feed = showOnFeed;
+      if (isPaidOpportunity !== undefined) updates.is_paid_opportunity = isPaidOpportunity;
+      if (collaboratorIds !== undefined) updates.collaborator_ids = collaboratorIds;
+
+      const { data, error } = await supabase
+        .from('promo_posts')
+        .update(updates)
+        .eq('id', postId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as PromoPost;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['my-promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-promo-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['paid-gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['gig'] });
+      toast.success('Gig updated!');
+    },
+    onError: (error) => {
+      console.error('Error updating promo post:', error);
+      toast.error('Failed to update gig');
     },
   });
 }

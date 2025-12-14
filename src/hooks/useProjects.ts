@@ -88,12 +88,18 @@ export function useProject(projectId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
+        .select(`
+          *,
+          profiles!projects_owner_id_fkey (*)
+        `)
         .eq('id', projectId)
         .single();
 
       if (error) throw error;
-      return data as Project;
+      return {
+        ...data,
+        owner: data.profiles,
+      };
     },
     enabled: !!projectId,
   });
