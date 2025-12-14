@@ -248,6 +248,7 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
         goalType={formGoalType}
         goal={editingGoal}
         onSave={handleSaveGoal}
+        onDelete={editingGoal ? () => deleteGoal.mutate(editingGoal.id) : undefined}
         isPending={createGoal.isPending || updateGoal.isPending}
       />
 
