@@ -12,30 +12,41 @@ import { ArrowLeft, User, Music2, Disc3, Users, MapPin } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline } from '@/components/Timeline';
 
-function usePublicProfile(profileId: string | undefined) {
+function usePublicProfile(profileId: string | undefined, username: string | undefined) {
   return useQuery({
-    queryKey: ['public-profile', profileId],
+    queryKey: ['public-profile', profileId, username],
     queryFn: async () => {
-      if (!profileId) throw new Error('Profile ID required');
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', profileId)
-        .single();
-      if (error) throw error;
-      return data as Profile;
+      if (profileId) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', profileId)
+          .single();
+        if (error) throw error;
+        return data as Profile;
+      }
+      if (username) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', username)
+          .single();
+        if (error) throw error;
+        return data as Profile;
+      }
+      throw new Error('Profile ID or username required');
     },
-    enabled: !!profileId,
+    enabled: !!profileId || !!username,
   });
 }
 
 const PublicProfile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, username } = useParams<{ id?: string; username?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { profile: myProfile } = useAuth();
-  const { data: profile, isLoading, error } = usePublicProfile(id);
-  const { data: notes, isLoading: notesLoading } = usePublicNotes(id);
+  const { data: profile, isLoading, error } = usePublicProfile(id, username);
+  const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
   
   // Check if we came from the friends list
   const fromFriendsList = location.state?.fromFriendsList;
@@ -50,7 +61,7 @@ const PublicProfile = () => {
   };
 
   // If viewing own profile, redirect to profile page
-  if (myProfile?.id === id) {
+  if (profile && myProfile?.id === profile.id) {
     navigate('/profile');
     return null;
   }
