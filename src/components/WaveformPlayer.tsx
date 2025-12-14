@@ -124,9 +124,11 @@ export function WaveformPlayer({ src, onError }: WaveformPlayerProps) {
   }, [src, onError, analyzeAndNormalizeAudio]);
 
   // Apply normalized volume when it changes or when ready
+  // HTMLMediaElement volume must be between 0 and 1, so we clamp the value
   useEffect(() => {
     if (wavesurferRef.current && isReady) {
-      wavesurferRef.current.setVolume(normalizedVolume);
+      const clampedVolume = Math.min(1, Math.max(0, normalizedVolume));
+      wavesurferRef.current.setVolume(clampedVolume);
     }
   }, [normalizedVolume, isReady]);
 
