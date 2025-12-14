@@ -88,7 +88,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '' }: Frien
   return (
     <div className="space-y-4">
       {displayedNotes.map((note) => (
-        <NoteCard key={note.id} note={note} />
+        <NoteCard key={note.id} note={note} fromFriends />
       ))}
       {hasMore && (
         <Button 

@@ -21,9 +21,10 @@ import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 interface NoteCardProps {
   note: NoteWithAuthor;
   expanded?: boolean;
+  fromFriends?: boolean;
 }
 
-export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps) {
+export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
@@ -74,8 +75,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded }: NoteCardProps
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    navigate(`/notes/${note.id}`);
-  }, [navigate, note.id]);
+    navigate(`/notes/${note.id}`, { state: fromFriends ? { fromFriends: true } : undefined });
+  }, [navigate, note.id, fromFriends]);
 
   const handleNavigateToProject = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();

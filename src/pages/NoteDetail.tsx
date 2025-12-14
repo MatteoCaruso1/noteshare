@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +22,7 @@ import { useQueryClient } from '@tanstack/react-query';
 const NoteDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
   const { data: note, isLoading } = useNote(id || '');
   const { data: comments, isLoading: commentsLoading } = useNoteComments(id || '');
@@ -30,6 +31,9 @@ const NoteDetail = () => {
   const createNotification = useCreateNotification();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
+  
+  // Check if we came from the Friends tab
+  const fromFriends = location.state?.fromFriends;
 
   const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
@@ -97,7 +101,7 @@ const NoteDetail = () => {
             <div className="h-24 bg-card rounded-lg animate-pulse" />
           </div>
         </main>
-        <BottomNav />
+        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : undefined} />
       </div>
     );
   }
@@ -123,7 +127,7 @@ const NoteDetail = () => {
             </Button>
           </div>
         </main>
-        <BottomNav />
+        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : undefined} />
       </div>
     );
   }
@@ -265,7 +269,7 @@ const NoteDetail = () => {
         </section>
       </main>
 
-      <BottomNav />
+      <BottomNav overrideActiveRoute={fromFriends ? '/friends' : undefined} />
     </div>
   );
 };
