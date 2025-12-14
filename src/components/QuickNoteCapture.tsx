@@ -103,9 +103,9 @@ export function QuickNoteCapture() {
     <Card className="bg-card border-border">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
+          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
             <div className="flex items-center gap-2">
-              <Music className="w-5 h-5 text-primary" />
+              <Music className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Capture a Quick Note</h2>
             </div>
             {isOpen ? (

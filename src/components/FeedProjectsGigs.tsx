@@ -63,9 +63,9 @@ export function FeedProjectsGigs() {
     <Card className="bg-card border-border">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleTrigger asChild>
-          <button className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg">
+          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-primary" />
+              <Briefcase className={`w-5 h-5 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Projects & Gigs</h2>
               <Badge variant="secondary" className="text-xs">{totalCount}</Badge>
             </div>
