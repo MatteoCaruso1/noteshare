@@ -430,6 +430,7 @@ export type Database = {
           description: string | null
           id: string
           owner_id: string
+          release_date: string | null
           show_on_feed: boolean
           tags: string[] | null
           title: string
@@ -442,6 +443,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id: string
+          release_date?: string | null
           show_on_feed?: boolean
           tags?: string[] | null
           title: string
@@ -454,6 +456,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id?: string
+          release_date?: string | null
           show_on_feed?: boolean
           tags?: string[] | null
           title?: string

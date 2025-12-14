@@ -83,6 +83,7 @@ const ProjectDetail = () => {
   const [editDescription, setEditDescription] = useState('');
   const [editShowOnFeed, setEditShowOnFeed] = useState(false);
   const [editCoverImage, setEditCoverImage] = useState<string | null>(null);
+  const [editReleaseDate, setEditReleaseDate] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,6 +97,7 @@ const ProjectDetail = () => {
       setEditDescription(project.description || '');
       setEditShowOnFeed(project.show_on_feed || false);
       setEditCoverImage(project.cover_image || null);
+      setEditReleaseDate(project.release_date || '');
       setIsSettingsOpen(true);
     }
   };
@@ -165,6 +167,7 @@ const ProjectDetail = () => {
         description: editDescription,
         coverImage: editCoverImage || undefined,
         showOnFeed: editShowOnFeed,
+        releaseDate: editReleaseDate || undefined,
       },
       {
         onSuccess: () => {
@@ -209,8 +212,8 @@ const ProjectDetail = () => {
       <CollectionDetailHeader
         backPath="/projects"
         title={project.title}
-        date={project.created_at}
-        dateLabel="Created"
+        date={project.release_date || ''}
+        dateLabel="Expected release"
         authorName={project.owner?.name}
         authorUsername={project.owner?.username}
         authorAvatar={project.owner?.avatar}
@@ -309,6 +312,15 @@ const ProjectDetail = () => {
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="release-date">Expected Release Date</Label>
+              <Input
+                id="release-date"
+                type="date"
+                value={editReleaseDate}
+                onChange={(e) => setEditReleaseDate(e.target.value)}
               />
             </div>
             
