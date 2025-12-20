@@ -6,8 +6,8 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -175,28 +175,11 @@ export function QuickNoteCapture() {
             </Select>
           )}
 
-          {/* Text Content - supports Tab for nested bullets */}
-          <Textarea
+          {/* Text Content - with list formatting support */}
+          <RichTextarea
             placeholder="What are you working on?"
             value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                const target = e.target as HTMLTextAreaElement;
-                const start = target.selectionStart;
-                const end = target.selectionEnd;
-                const value = target.value;
-                
-                const newValue = value.substring(0, start) + '  ' + value.substring(end);
-                setNoteText(newValue);
-                
-                setTimeout(() => {
-                  target.selectionStart = target.selectionEnd = start + 2;
-                }, 0);
-              }
-            }}
-            className="resize-none"
+            onChange={setNoteText}
             rows={3}
           />
 

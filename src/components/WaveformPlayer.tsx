@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useId } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Mic, AlertCircle, Loader2 } from 'lucide-react';
+import { Play, Pause, Mic, Loader2, GripHorizontal } from 'lucide-react';
 import { audioManager } from '@/lib/audioManager';
 
 interface WaveformPlayerProps {
@@ -76,13 +76,16 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
       progressColor: 'hsl(var(--primary))',
       cursorColor: 'hsl(var(--primary))',
       cursorWidth: 2,
-      barWidth: 2,
-      barGap: 1,
-      barRadius: 2,
-      height: 40,
+      barWidth: 3,
+      barGap: 2,
+      barRadius: 3,
+      height: 48,
       normalize: true,
       // Use MediaElement backend for better mobile/iOS compatibility
       backend: 'MediaElement',
+      // Enable touch/drag interaction
+      interact: true,
+      dragToSeek: true,
     });
 
     wavesurferRef.current = wavesurfer;
@@ -220,16 +223,16 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 flex-shrink-0 text-primary hover:text-primary hover:bg-primary/20"
+          className="h-9 w-9 flex-shrink-0 text-primary hover:text-primary hover:bg-primary/20"
           onClick={handlePlayPause}
           disabled={!isReady || isLoading}
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : isPlaying ? (
-            <Pause className="h-4 w-4" />
+            <Pause className="h-5 w-5" />
           ) : (
-            <Play className="h-4 w-4" />
+            <Play className="h-5 w-5" />
           )}
         </Button>
 
@@ -244,9 +247,17 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
           )}
           <div 
             ref={containerRef} 
-            className={`w-full cursor-pointer ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
+            className={`w-full touch-none ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
+            style={{ cursor: isReady ? 'pointer' : 'default' }}
             onClick={(e) => e.stopPropagation()}
           />
+          {/* Scrub hint for mobile */}
+          {isReady && !isLoading && (
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[10px] text-muted-foreground/60 pointer-events-none md:hidden">
+              <GripHorizontal className="w-3 h-3" />
+              <span>drag to scrub</span>
+            </div>
+          )}
         </div>
 
         <div className="text-xs text-muted-foreground flex-shrink-0 min-w-[70px] text-right font-mono">

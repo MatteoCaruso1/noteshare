@@ -9,8 +9,8 @@ import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -306,32 +306,15 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Text Content - supports Tab for nested bullets */}
-          <Textarea
-            placeholder="What did you practice? Any insights or breakthroughs?"
-            value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                const target = e.target as HTMLTextAreaElement;
-                const start = target.selectionStart;
-                const end = target.selectionEnd;
-                const value = target.value;
-                
-                // Insert tab character (or spaces for indentation)
-                const newValue = value.substring(0, start) + '  ' + value.substring(end);
-                setNoteText(newValue);
-                
-                // Move cursor after the inserted spaces
-                setTimeout(() => {
-                  target.selectionStart = target.selectionEnd = start + 2;
-                }, 0);
-              }
-            }}
-            className="resize-none mb-4"
-            rows={4}
-          />
+          {/* Text Content - with list formatting support */}
+          <div className="mb-4">
+            <RichTextarea
+              placeholder="What did you practice? Any insights or breakthroughs?"
+              value={noteText}
+              onChange={setNoteText}
+              rows={4}
+            />
+          </div>
 
           {/* Audio Recording */}
           <div className="mb-4">
