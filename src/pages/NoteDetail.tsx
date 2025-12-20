@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { BottomNav } from '@/components/BottomNav';
 import { NoteCard } from '@/components/NoteCard';
+import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,7 +15,7 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, Send, User, MessageCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, User, MessageCircle, Trash2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -31,6 +32,7 @@ const NoteDetail = () => {
   const createNotification = useCreateNotification();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
+  const [focusDialogOpen, setFocusDialogOpen] = useState(false);
   
   // Check if we came from the Friends tab
   const fromFriends = location.state?.fromFriends;
@@ -152,6 +154,26 @@ const NoteDetail = () => {
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         <NoteCard note={note} expanded />
+        
+        {/* View Focus Button */}
+        {note.focus_text_snapshot && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setFocusDialogOpen(true)}
+          >
+            <Calendar className="w-4 h-4" />
+            View Focus
+          </Button>
+        )}
+        
+        <FocusViewDialog
+          open={focusDialogOpen}
+          onOpenChange={setFocusDialogOpen}
+          focusDate={note.focus_date || ''}
+          focusText={note.focus_text_snapshot || ''}
+        />
 
         {/* Comments Section */}
         <section>
