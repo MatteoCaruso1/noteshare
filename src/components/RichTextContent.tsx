@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Youtube, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExternalLink, Youtube, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface RichTextContentProps {
@@ -21,6 +21,17 @@ function getYouTubeVideoId(url: string): string | null {
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) return match[1];
+  }
+  return null;
+}
+
+// Extract Spotify content info from various Spotify URL formats
+function getSpotifyInfo(url: string): { type: string; id: string } | null {
+  // Matches: open.spotify.com/track/ID, open.spotify.com/album/ID, open.spotify.com/playlist/ID, open.spotify.com/artist/ID, open.spotify.com/episode/ID
+  const pattern = /open\.spotify\.com\/(track|album|playlist|artist|episode)\/([a-zA-Z0-9]+)/;
+  const match = url.match(pattern);
+  if (match) {
+    return { type: match[1], id: match[2] };
   }
   return null;
 }
@@ -75,12 +86,81 @@ function YouTubePreview({ videoId, url }: { videoId: string; url: string }) {
   );
 }
 
+function SpotifyPreview({ type, id, url }: { type: string; id: string; url: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Spotify embed URL
+  const embedUrl = `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`;
+  
+  // Determine height based on content type
+  const getHeight = () => {
+    switch (type) {
+      case 'track':
+      case 'episode':
+        return 152;
+      case 'album':
+      case 'playlist':
+        return 352;
+      case 'artist':
+        return 352;
+      default:
+        return 152;
+    }
+  };
+
+  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+
+  return (
+    <div className="mt-2 mb-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground p-0 h-auto"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
+      >
+        <Music className="w-4 h-4 text-[#1DB954]" />
+        <span>Spotify {typeLabel}</span>
+        {isExpanded ? (
+          <ChevronUp className="w-3 h-3" />
+        ) : (
+          <ChevronDown className="w-3 h-3" />
+        )}
+      </Button>
+      
+      {isExpanded && (
+        <div 
+          className="mt-2 max-w-sm rounded-lg overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height={getHeight()}
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            className="rounded-lg"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LinkPreview({ url }: { url: string }) {
   // Check if it's a YouTube URL
   const youtubeId = getYouTubeVideoId(url);
-  
   if (youtubeId) {
     return <YouTubePreview videoId={youtubeId} url={url} />;
+  }
+  
+  // Check if it's a Spotify URL
+  const spotifyInfo = getSpotifyInfo(url);
+  if (spotifyInfo) {
+    return <SpotifyPreview type={spotifyInfo.type} id={spotifyInfo.id} url={url} />;
   }
   
   return null;
@@ -116,16 +196,16 @@ export function RichTextContent({ content, className = '', lineClamp }: RichText
     }
   });
 
-  // Collect YouTube URLs for preview
-  const youtubeUrls = urls.filter(url => getYouTubeVideoId(url));
+  // Collect URLs that have previews (YouTube or Spotify)
+  const previewUrls = urls.filter(url => getYouTubeVideoId(url) || getSpotifyInfo(url));
 
   return (
     <div className={className}>
       <p className={`text-sm whitespace-pre-wrap ${lineClamp ? `line-clamp-${lineClamp}` : ''}`}>
         {elements}
       </p>
-      {/* Show YouTube previews below the text */}
-      {youtubeUrls.map((url, i) => (
+      {/* Show previews below the text */}
+      {previewUrls.map((url, i) => (
         <LinkPreview key={`preview-${i}`} url={url} />
       ))}
     </div>
