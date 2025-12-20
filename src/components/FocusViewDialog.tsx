@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar, X } from 'lucide-react';
+import { Calendar, Trash2 } from 'lucide-react';
 
 interface FocusViewDialogProps {
   open: boolean;
@@ -55,13 +55,12 @@ export function FocusViewDialog({
           </div>
           {canRemove && onRemove && (
             <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2 text-muted-foreground hover:text-destructive hover:border-destructive"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
               onClick={handleRemove}
             >
-              <X className="w-4 h-4" />
-              Remove focus from this note
+              <Trash2 className="w-4 h-4" />
             </Button>
           )}
         </div>

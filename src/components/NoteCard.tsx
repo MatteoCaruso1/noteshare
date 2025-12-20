@@ -159,15 +159,19 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         )}
       </div>
 
-      {/* Focus View Dialog */}
-      <FocusViewDialog
-        open={focusDialogOpen}
-        onOpenChange={setFocusDialogOpen}
-        focusDate={note.focus_date || ''}
-        focusText={note.focus_text_snapshot || ''}
-        onRemove={handleRemoveFocus}
-        canRemove={isOwner && expanded}
-      />
+      {/* Focus View Dialog - rendered outside the Card click handler */}
+      {focusDialogOpen && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <FocusViewDialog
+            open={focusDialogOpen}
+            onOpenChange={setFocusDialogOpen}
+            focusDate={note.focus_date || ''}
+            focusText={note.focus_text_snapshot || ''}
+            onRemove={handleRemoveFocus}
+            canRemove={isOwner && expanded}
+          />
+        </div>
+      )}
 
       <div className="flex items-start gap-3 mb-3">
         <ClickableAvatar
