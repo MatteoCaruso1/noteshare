@@ -14,7 +14,7 @@ import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
+import { useUpdateNoteVisibility, useRemoveNoteFocus } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,11 +30,16 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
+  const removeNoteFocus = useRemoveNoteFocus();
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
   const prefetchNote = usePrefetchNote();
   const prefetchComments = usePrefetchNoteComments();
   const [focusDialogOpen, setFocusDialogOpen] = useState(false);
+
+  const handleRemoveFocus = useCallback(() => {
+    removeNoteFocus.mutate(note.id);
+  }, [removeNoteFocus, note.id]);
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
@@ -160,6 +165,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         onOpenChange={setFocusDialogOpen}
         focusDate={note.focus_date || ''}
         focusText={note.focus_text_snapshot || ''}
+        onRemove={handleRemoveFocus}
+        canRemove={isOwner && expanded}
       />
 
       <div className="flex items-start gap-3 mb-3">
