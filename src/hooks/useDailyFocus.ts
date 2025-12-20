@@ -130,6 +130,28 @@ export function useCurrentFocusEntry() {
   });
 }
 
+// Hook to fetch all focus entries for history view
+export function useFocusHistory() {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ['focus-history', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+
+      const { data, error } = await supabase
+        .from('daily_focus')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('focus_date', { ascending: false });
+
+      if (error) throw error;
+      return data as DailyFocus[];
+    },
+    enabled: !!profile?.id,
+  });
+}
+
 // Hook to fetch all focus dates for filtering
 export function useFocusDates() {
   const { profile } = useAuth();
