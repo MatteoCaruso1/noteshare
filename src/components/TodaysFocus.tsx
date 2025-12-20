@@ -9,6 +9,7 @@ export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
   const [text, setText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -218,7 +219,7 @@ export function TodaysFocus() {
   return (
     <Card className="p-4 bg-card border-border">
       <div className="flex items-center gap-2 mb-3">
-        <Crosshair className="w-5 h-5 text-primary" />
+        <Crosshair className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
         <h2 className="font-semibold">Today's Focus</h2>
       </div>
       <div className="space-y-2">
@@ -249,7 +250,11 @@ export function TodaysFocus() {
           value={text}
           onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false);
+            handleBlur();
+          }}
           placeholder="What will you work on today?"
           className="min-h-[60px] resize-none text-sm"
           rows={2}

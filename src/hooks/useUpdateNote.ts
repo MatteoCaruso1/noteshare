@@ -34,3 +34,36 @@ export function useUpdateNoteVisibility() {
     },
   });
 }
+
+export function useRemoveNoteFocus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (noteId: string) => {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ 
+          focus_entry_id: null,
+          focus_date: null,
+          focus_text_snapshot: null,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', noteId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      queryClient.invalidateQueries({ queryKey: ['note'] });
+      toast.success('Focus removed from note');
+    },
+    onError: (error) => {
+      console.error('Error removing focus:', error);
+      toast.error('Failed to remove focus');
+    },
+  });
+}
