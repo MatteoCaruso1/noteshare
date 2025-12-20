@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { StreakIndicator } from '@/components/StreakIndicator';
 
 export function AppHeader() {
   const location = useLocation();
@@ -128,10 +129,13 @@ export function AppHeader() {
           )}
         </div>
         
-        {/* Slogan - responsive for mobile */}
-        <div className="text-right flex-shrink-0">
-          <p className="text-[10px] sm:text-xs font-medium text-foreground leading-tight">Shape your practice.</p>
-          <p className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight">Grow together.</p>
+        {/* Streak Indicator & Slogan */}
+        <div className="flex items-center gap-3">
+          {user && <StreakIndicator />}
+          <div className="text-right flex-shrink-0">
+            <p className="text-[10px] sm:text-xs font-medium text-foreground leading-tight">Shape your practice.</p>
+            <p className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight">Grow together.</p>
+          </div>
         </div>
       </div>
     </header>

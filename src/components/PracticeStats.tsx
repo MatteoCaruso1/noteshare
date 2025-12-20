@@ -2,8 +2,9 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Zap } from 'lucide-react';
+import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Zap, Award } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getStreakTier, getStreakMilestoneMessage, STREAK_TIERS } from '@/lib/streakUtils';
 
 interface PracticeStatsProps {
   profileId: string;
@@ -130,9 +131,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
 
         {/* Current Streak, Best Streak & Best Week */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-            <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mb-1" />
+            <Zap className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 ${getStreakTier(stats.currentStreak).colorClass || 'text-green-500'}`} />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Streak</p>
           </div>
@@ -146,6 +147,38 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Top Wk</p>
           </div>
+        </div>
+
+        {/* Streak Milestones */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Award className="w-4 h-4" />
+            <span>Streak Recognition</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {STREAK_TIERS.filter(t => t.tier !== 'none').map((tier) => {
+              const achieved = stats.currentStreak >= tier.minDays;
+              return (
+                <div 
+                  key={tier.tier}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
+                    achieved 
+                      ? `${tier.bgColorClass} ${tier.colorClass} font-medium` 
+                      : 'bg-muted/30 text-muted-foreground/60'
+                  }`}
+                >
+                  <span>{tier.minDays}d</span>
+                  <span className="capitalize">{tier.label}</span>
+                  {achieved && <span>✓</span>}
+                </div>
+              );
+            })}
+          </div>
+          {getStreakMilestoneMessage(stats.currentStreak) && (
+            <p className="text-xs text-muted-foreground italic mt-1">
+              {getStreakMilestoneMessage(stats.currentStreak)}
+            </p>
+          )}
         </div>
       </Card>
 

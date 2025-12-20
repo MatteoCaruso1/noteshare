@@ -9,12 +9,14 @@ import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
+import { StreakTintedName } from '@/components/StreakTintedName';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
+import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 
@@ -35,6 +37,10 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
+  
+  // Get streak for own notes to apply tint
+  const { data: ownStats } = usePracticeStats(isOwner ? profile?.id : undefined);
+  const streakDays = isOwner ? (ownStats?.currentStreak || 0) : 0;
 
   const handleVisibilityChange = useCallback((value: string) => {
     updateVisibility.mutate({
@@ -142,7 +148,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium truncate">{note.author?.name}</p>
+            <StreakTintedName 
+              name={note.author?.name || 'Unknown'} 
+              streakDays={streakDays}
+              className="text-sm font-medium truncate"
+            />
             {visibilityIcon}
           </div>
           <p className="text-xs text-muted-foreground">
