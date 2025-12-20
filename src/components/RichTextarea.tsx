@@ -96,10 +96,10 @@ export function RichTextarea({
     const newValue = value.substring(0, lineStart) + newLine + value.substring(lineEnd);
     onChange(newValue);
     
-    // Restore cursor position
+    // Position cursor at the end of the line (after the content)
     setTimeout(() => {
-      const newPos = Math.max(lineStart, textarea.selectionStart + newCursorOffset);
-      textarea.selectionStart = textarea.selectionEnd = newPos;
+      const newCursorPos = lineStart + newLine.length;
+      textarea.selectionStart = textarea.selectionEnd = newCursorPos;
       textarea.focus();
     }, 0);
   }, [value, onChange, getLineInfo]);
