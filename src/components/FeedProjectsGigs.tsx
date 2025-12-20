@@ -102,9 +102,12 @@ export function FeedProjectsGigs() {
                       )}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">{project.title}</h4>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <p className={`text-xs flex items-center gap-1 mt-1 ${project.release_date ? 'text-primary' : 'text-muted-foreground'}`}>
                           <Calendar className="w-3 h-3" />
-                          {format(new Date(project.created_at), 'MMM d, yyyy')}
+                          {project.release_date 
+                            ? format(new Date(project.release_date), 'MMM d, yyyy')
+                            : format(new Date(project.created_at), 'MMM d, yyyy')
+                          }
                         </p>
                       </div>
                     </div>
