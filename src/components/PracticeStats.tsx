@@ -130,27 +130,21 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
 
         {/* Current Streak, Best Streak & Best Week */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-            <Zap className="w-5 h-5 text-green-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-lg font-bold">{stats.currentStreak} days</p>
-              <p className="text-xs text-muted-foreground">Current streak</p>
-            </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+            <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mb-1" />
+            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Streak</p>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-            <Flame className="w-5 h-5 text-orange-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-lg font-bold">{stats.bestDailyStreak} days</p>
-              <p className="text-xs text-muted-foreground">Best streak</p>
-            </div>
+          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+            <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 mb-1" />
+            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-            <Trophy className="w-5 h-5 text-yellow-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-lg font-bold">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
-              <p className="text-xs text-muted-foreground">Best week</p>
-            </div>
+          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mb-1" />
+            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Top Wk</p>
           </div>
         </div>
       </Card>
