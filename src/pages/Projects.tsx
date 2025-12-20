@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
 import { BottomNav } from '@/components/BottomNav';
@@ -23,8 +24,11 @@ import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { CollectionCard } from '@/components/shared/CollectionCard';
-import { Plus, Disc3, Upload, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Disc3, Upload, Trash2, CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -40,6 +44,7 @@ const Projects = () => {
   const [newDescription, setNewDescription] = useState('');
   const [showOnFeed, setShowOnFeed] = useState(true); // Default to true (friends visibility)
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [releaseDate, setReleaseDate] = useState<Date | undefined>(undefined);
   const [isUploading, setIsUploading] = useState(false);
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +95,7 @@ const Projects = () => {
         coverImage: coverImage || undefined,
         showOnFeed,
         collaboratorIds,
+        releaseDate: releaseDate ? format(releaseDate, 'yyyy-MM-dd') : undefined,
       },
       {
         onSuccess: () => {
@@ -98,6 +104,7 @@ const Projects = () => {
           setCoverImage(null);
           setShowOnFeed(true);
           setCollaboratorIds([]);
+          setReleaseDate(undefined);
           setIsDialogOpen(false);
         },
       }
@@ -164,6 +171,34 @@ const Projects = () => {
                   onChange={(e) => setNewDescription(e.target.value)}
                   rows={3}
                 />
+
+                {/* Release Date */}
+                <div className="space-y-2">
+                  <Label className="text-sm">Expected Release Date (optional)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !releaseDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {releaseDate ? format(releaseDate, "MMM d, yyyy") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={releaseDate}
+                        onSelect={setReleaseDate}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 
                 {/* Show on Feed Toggle */}
                 <div className="flex items-center justify-between py-2">
@@ -219,6 +254,7 @@ const Projects = () => {
                     coverImage={project.cover_image}
                     coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
                     date={project.created_at}
+                    releaseDate={project.release_date}
                     actions={
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -278,6 +314,7 @@ const Projects = () => {
                     coverImage={project.cover_image}
                     coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
                     date={project.created_at}
+                    releaseDate={project.release_date}
                     showOwner
                     ownerName={project.owner?.name}
                     ownerAvatar={project.owner?.avatar}

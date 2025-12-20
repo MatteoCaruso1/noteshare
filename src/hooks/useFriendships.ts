@@ -276,9 +276,13 @@ export function useFriendsNotes() {
       if (friendIds.length === 0) return [];
 
       // Get notes from friends with 'friends' visibility only (no public option)
+      // Also fetch session data for duration display
       const { data: notes, error: notesError } = await supabase
         .from('notes')
-        .select('*')
+        .select(`
+          *,
+          practice_sessions!notes_session_id_fkey (*)
+        `)
         .in('author_id', friendIds)
         .eq('visibility', 'friends')
         .order('created_at', { ascending: false })
@@ -295,10 +299,11 @@ export function useFriendsNotes() {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      return notes.map(note => ({
+      return notes.map((note: any) => ({
         ...note,
         visibility: note.visibility as NoteWithAuthor['visibility'],
         author: profileMap.get(note.author_id) as Profile,
+        session: note.practice_sessions,
       })) as NoteWithAuthor[];
     },
     enabled: !!profile?.id,

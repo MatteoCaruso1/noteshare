@@ -63,7 +63,10 @@ export function FeedProjects() {
                 <h4 className="font-medium text-sm truncate">{project.title}</h4>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  {format(new Date(project.created_at), 'MMM d, yyyy')}
+                  {project.release_date 
+                    ? `Release: ${format(new Date(project.release_date), 'MMM d, yyyy')}`
+                    : format(new Date(project.created_at), 'MMM d, yyyy')
+                  }
                 </p>
               </div>
             </div>

@@ -95,15 +95,20 @@ const Gigs = () => {
   const handleCreate = () => {
     if (!profile || !title.trim()) return;
 
-    // Combine date and time into ISO string
+    // Combine date and time into ISO string, preserving local time
     let combinedDateTime: string | undefined;
     if (eventDate) {
-      const date = new Date(eventDate);
+      const year = eventDate.getFullYear();
+      const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+      const day = String(eventDate.getDate()).padStart(2, '0');
+      
       if (eventTime) {
-        const [hours, minutes] = eventTime.split(':').map(Number);
-        date.setHours(hours, minutes, 0, 0);
+        // Create ISO string with explicit time to avoid timezone shifts
+        combinedDateTime = `${year}-${month}-${day}T${eventTime}:00`;
+      } else {
+        // Default to noon to avoid date shifting
+        combinedDateTime = `${year}-${month}-${day}T12:00:00`;
       }
-      combinedDateTime = date.toISOString();
     }
 
     createPromoPost.mutate(
