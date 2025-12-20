@@ -7,7 +7,8 @@ import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
-import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
+// FeedProjectsGigs hidden from Home - component preserved for reversibility
+// import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { Card } from '@/components/ui/card';
@@ -74,8 +75,8 @@ const Index = () => {
         {/* Goals Section (Collapsible) */}
         {profile && <GoalsSection profileId={profile.id} />}
 
-        {/* Projects & Gigs (Combined Collapsible) - Moved above Practice */}
-        <FeedProjectsGigs />
+        {/* Projects & Gigs hidden from Home - pages still accessible via navigation */}
+        {/* <FeedProjectsGigs /> */}
 
         {/* Practice Controls (Collapsible) */}
         <Card className="bg-card border-border">
