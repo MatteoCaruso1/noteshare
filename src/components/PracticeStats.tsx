@@ -212,21 +212,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
           </div>
           
-          {/* Tags frequency */}
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">Top tags this month</p>
-            <div className="flex flex-wrap gap-2">
-              {stats.topTagsThisMonth.length > 0 ? (
-                stats.topTagsThisMonth.map(({ tag, count }) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
-                    #{tag} ({count})
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground italic">No tags yet</p>
-              )}
-            </div>
-          </div>
         </div>
       </Card>
     </div>

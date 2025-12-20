@@ -39,12 +39,10 @@ export function PracticeControls() {
   const [noteText, setNoteText] = useState('');
   const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
-  const [attachFocus, setAttachFocus] = useState(false);
+  const [attachFocus, setAttachFocus] = useState(true);
 
   if (!profile) return null;
 
@@ -79,17 +77,6 @@ export function PracticeControls() {
     setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
-  };
-
   const handleSaveNoteAndEndSession = () => {
     if (activeSession) {
       // Calculate session duration in minutes
@@ -121,7 +108,7 @@ export function PracticeControls() {
                 audioFiles: audioFiles.map(a => a.url),
                 audioFileNames: audioFiles.map(a => a.name),
                 imageFiles,
-                tags,
+                tags: [],
                 sessionId: activeSession.id,
                 projectId: selectedProjectId || undefined,
                 goalId: selectedGoalId || undefined,
@@ -135,11 +122,10 @@ export function PracticeControls() {
                   setNoteText('');
                   setAudioFiles([]);
                   setImageFiles([]);
-                  setTags([]);
                   setSelectedProjectId('');
                   setSelectedGoalId('');
                   setVisibility('friends');
-                  setAttachFocus(false);
+                  setAttachFocus(true);
                 },
               }
             );
@@ -388,37 +374,6 @@ export function PracticeControls() {
               ))}
             </div>
           )}
-
-          {/* Tags */}
-          <div className="mb-4">
-            <div className="flex gap-2 mb-2">
-              <Input
-                placeholder="Add tag (e.g., scales, chord voicings)"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1"
-              />
-              <Button variant="outline" onClick={handleAddTag}>
-                Add
-              </Button>
-            </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="cursor-pointer"
-                    onClick={() => handleRemoveTag(tag)}
-                  >
-                    {tag}
-                    <X className="w-3 h-3 ml-1" />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Save and End Session Button */}
           <Button

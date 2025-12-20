@@ -9,8 +9,6 @@ import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextarea } from '@/components/RichTextarea';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -31,11 +29,9 @@ export function QuickNoteCapture() {
   const [noteText, setNoteText] = useState('');
   const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
-  const [attachFocus, setAttachFocus] = useState(false);
+  const [attachFocus, setAttachFocus] = useState(true);
 
   if (!profile) return null;
 
@@ -66,17 +62,6 @@ export function QuickNoteCapture() {
     setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
-  };
-
   const handleSaveNote = () => {
     createNote.mutate(
       {
@@ -85,7 +70,7 @@ export function QuickNoteCapture() {
         audioFiles: audioFiles.map(a => a.url),
         audioFileNames: audioFiles.map(a => a.name),
         imageFiles,
-        tags,
+        tags: [],
         projectId: selectedProjectId || undefined,
         visibility,
         // Attach focus if toggle is on and focus exists
@@ -98,10 +83,9 @@ export function QuickNoteCapture() {
           setNoteText('');
           setAudioFiles([]);
           setImageFiles([]);
-          setTags([]);
           setSelectedProjectId('');
           setVisibility('friends');
-          setAttachFocus(false);
+          setAttachFocus(true);
           setIsOpen(false);
         },
       }
@@ -246,37 +230,6 @@ export function QuickNoteCapture() {
               ))}
             </div>
           )}
-
-          {/* Tags */}
-          <div>
-            <div className="flex gap-2 mb-2">
-              <Input
-                placeholder="Add tag"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1"
-              />
-              <Button variant="outline" onClick={handleAddTag}>
-                Add
-              </Button>
-            </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="cursor-pointer"
-                    onClick={() => handleRemoveTag(tag)}
-                  >
-                    {tag}
-                    <X className="w-3 h-3 ml-1" />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Save Button */}
           <Button
