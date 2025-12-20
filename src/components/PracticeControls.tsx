@@ -344,7 +344,7 @@ export function PracticeControls() {
               placeholder="What did you practice?"
               value={noteText}
               onChange={setNoteText}
-              rows={2}
+              rows={1}
               autoExpand
             />
           </div>
