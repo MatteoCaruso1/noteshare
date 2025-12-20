@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { List, ListOrdered } from 'lucide-react';
@@ -11,17 +11,28 @@ interface RichTextareaProps {
   rows?: number;
   className?: string;
   showToolbar?: boolean;
+  autoExpand?: boolean;
 }
 
 export function RichTextarea({
   value,
   onChange,
   placeholder,
-  rows = 3,
+  rows = 2,
   className,
   showToolbar = true,
+  autoExpand = true,
 }: RichTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-expand textarea as content grows
+  useEffect(() => {
+    if (autoExpand && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const minHeight = rows * 24; // Approximate line height
+      textareaRef.current.style.height = `${Math.max(minHeight, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [value, autoExpand, rows]);
 
   const getLineInfo = useCallback(() => {
     const textarea = textareaRef.current;
