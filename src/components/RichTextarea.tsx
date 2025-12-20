@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { List, ListOrdered } from 'lucide-react';
+import { List, ListOrdered, Bold, Underline } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RichTextareaProps {
@@ -56,6 +56,49 @@ export function RichTextarea({
     const line = text.substring(lineStart, lineEnd);
     return { lineStart, lineEnd, line, cursorPos: start };
   }, []);
+
+  const wrapSelection = useCallback((wrapper: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = value.substring(start, end);
+    
+    if (start === end) {
+      // No selection - insert wrapper markers and place cursor between
+      const newValue = value.substring(0, start) + wrapper + wrapper + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + wrapper.length;
+        textarea.focus();
+      }, 0);
+    } else {
+      // Check if already wrapped
+      const beforeStart = value.substring(start - wrapper.length, start);
+      const afterEnd = value.substring(end, end + wrapper.length);
+      
+      if (beforeStart === wrapper && afterEnd === wrapper) {
+        // Remove wrapping
+        const newValue = value.substring(0, start - wrapper.length) + selectedText + value.substring(end + wrapper.length);
+        onChange(newValue);
+        setTimeout(() => {
+          textarea.selectionStart = start - wrapper.length;
+          textarea.selectionEnd = end - wrapper.length;
+          textarea.focus();
+        }, 0);
+      } else {
+        // Add wrapping
+        const newValue = value.substring(0, start) + wrapper + selectedText + wrapper + value.substring(end);
+        onChange(newValue);
+        setTimeout(() => {
+          textarea.selectionStart = start + wrapper.length;
+          textarea.selectionEnd = end + wrapper.length;
+          textarea.focus();
+        }, 0);
+      }
+    }
+  }, [value, onChange]);
 
   const insertListPrefix = useCallback((prefix: string) => {
     const textarea = textareaRef.current;
@@ -119,6 +162,20 @@ export function RichTextarea({
     const textarea = e.target as HTMLTextAreaElement;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    
+    // Bold: Ctrl/Cmd + B
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault();
+      wrapSelection('**');
+      return;
+    }
+    
+    // Underline: Ctrl/Cmd + U
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+      e.preventDefault();
+      wrapSelection('__');
+      return;
+    }
     
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -201,7 +258,7 @@ export function RichTextarea({
         }, 0);
       }
     }
-  }, [value, onChange, getLineInfo]);
+  }, [value, onChange, getLineInfo, wrapSelection]);
 
   return (
     <div className="space-y-1">
@@ -226,6 +283,26 @@ export function RichTextarea({
             title="Numbered list"
           >
             <ListOrdered className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => wrapSelection('**')}
+            title="Bold (Ctrl+B)"
+          >
+            <Bold className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => wrapSelection('__')}
+            title="Underline (Ctrl+U)"
+          >
+            <Underline className="w-4 h-4" />
           </Button>
         </div>
       )}
