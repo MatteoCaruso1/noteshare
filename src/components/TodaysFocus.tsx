@@ -10,15 +10,17 @@ export function TodaysFocus() {
   const [text, setText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize text from focus data
+  // Initialize text from focus data - only once on initial load
   useEffect(() => {
-    if (focus?.focus_text !== undefined) {
+    if (!isInitialized && focus?.focus_text !== undefined) {
       setText(focus.focus_text);
+      setIsInitialized(true);
     }
-  }, [focus?.focus_text]);
+  }, [focus?.focus_text, isInitialized]);
 
   // Auto-resize textarea
   useEffect(() => {
