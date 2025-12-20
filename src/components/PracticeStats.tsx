@@ -149,14 +149,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </div>
 
-        {/* Streak Milestones */}
+        {/* Streak Rewards */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Award className="w-4 h-4" />
-            <span>Streak Recognition</span>
+            <span>Streak rewards</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {STREAK_TIERS.filter(t => t.tier !== 'none').map((tier) => {
+            {[...STREAK_TIERS].filter(t => t.tier !== 'none').reverse().map((tier) => {
               const achieved = stats.currentStreak >= tier.minDays;
               return (
                 <div 
@@ -164,11 +164,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
                     achieved 
                       ? `${tier.bgColorClass} ${tier.colorClass} font-medium` 
-                      : 'bg-muted/30 text-muted-foreground/60'
+                      : tier.tier === 'bronze' 
+                        ? 'bg-amber-600/20 text-amber-700/60 dark:text-amber-500/60'
+                        : tier.tier === 'silver'
+                          ? 'bg-slate-400/20 text-slate-500/60 dark:text-slate-300/60'
+                          : 'bg-yellow-500/20 text-yellow-600/60 dark:text-yellow-400/60'
                   }`}
                 >
                   <span>{tier.minDays}d</span>
-                  <span className="capitalize">{tier.label}</span>
                   {achieved && <span>✓</span>}
                 </div>
               );
