@@ -15,17 +15,33 @@ export function FloatingInstruments() {
   const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
 
   useEffect(() => {
-    // Create a set of floating emojis with even distribution across the page
-    const columns = 12;
-    const columnWidth = 100 / columns;
+    // Create a set of floating emojis with truly random distribution
+    const emojiCount = 12;
     
-    const initialEmojis: FloatingEmoji[] = Array.from({ length: 12 }, (_, i) => ({
+    // Generate random positions ensuring good spread
+    const usedPositions: number[] = [];
+    const getRandomPosition = (): number => {
+      let pos: number;
+      let attempts = 0;
+      do {
+        pos = Math.random() * 90 + 5; // 5% to 95% to avoid edges
+        attempts++;
+        // Check if position is far enough from existing ones (at least 6% apart)
+      } while (
+        attempts < 20 && 
+        usedPositions.some(p => Math.abs(p - pos) < 6)
+      );
+      usedPositions.push(pos);
+      return pos;
+    };
+    
+    const initialEmojis: FloatingEmoji[] = Array.from({ length: emojiCount }, (_, i) => ({
       id: i,
       emoji: INSTRUMENTS[Math.floor(Math.random() * INSTRUMENTS.length)],
-      // Distribute evenly across columns with small random offset within each column
-      left: (i % columns) * columnWidth + Math.random() * (columnWidth * 0.6),
-      delay: Math.random() * 20,
-      duration: 25 + Math.random() * 15,
+      left: getRandomPosition(),
+      // Stagger delays more to avoid clustering
+      delay: (i * 3) + Math.random() * 8,
+      duration: 25 + Math.random() * 20,
       size: 16 + Math.random() * 12,
     }));
     setEmojis(initialEmojis);
