@@ -35,16 +35,19 @@ const Index = () => {
     localStorage.setItem(PRACTICE_EXPANDED_KEY, String(isPracticeExpanded));
   }, [isPracticeExpanded]);
 
-  // Filter notes based on search query and focus date
+  // Filter notes based on search query and date
   const filteredNotes = useMemo(() => {
     if (!notes) return [];
     
     let filtered = notes;
     
-    // Filter by focus date
+    // Filter by creation date
     if (focusDateFilter) {
       const filterDateStr = format(focusDateFilter, 'yyyy-MM-dd');
-      filtered = filtered.filter((note) => note.focus_date === filterDateStr);
+      filtered = filtered.filter((note) => {
+        const noteDate = format(new Date(note.created_at), 'yyyy-MM-dd');
+        return noteDate === filterDateStr;
+      });
     }
     
     // Filter by search query
@@ -143,7 +146,7 @@ const Index = () => {
             <p className="text-sm text-muted-foreground mb-3">
               {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
               {searchQuery && ` for "${searchQuery}"`}
-              {focusDateFilter && ` with focus on ${format(focusDateFilter, 'MMM d, yyyy')}`}
+              {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
             </p>
           )}
           <Timeline notes={filteredNotes} loading={notesLoading} />
