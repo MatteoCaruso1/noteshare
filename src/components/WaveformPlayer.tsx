@@ -40,7 +40,7 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const [error, setError] = useState(false);
 
   const formatTime = (seconds: number): string => {
-    if (!isFinite(seconds) || isNaN(seconds) || seconds === 0) return '--:--';
+    if (!isFinite(seconds) || isNaN(seconds)) return '--:--';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -250,7 +250,7 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
         </div>
 
         <div className="text-xs text-muted-foreground flex-shrink-0 min-w-[70px] text-right font-mono">
-          {isLoading ? (
+          {isLoading || !isReady ? (
             <span className="text-muted-foreground/50">--:-- / --:--</span>
           ) : (
             <>{formatTime(currentTime)} / {formatTime(duration)}</>
