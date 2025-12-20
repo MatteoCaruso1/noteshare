@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ExternalLink, Youtube, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -166,12 +166,52 @@ function LinkPreview({ url }: { url: string }) {
   return null;
 }
 
+// Check if content contains HTML tags
+function isHtmlContent(content: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(content);
+}
+
+// Extract plain text from HTML for URL detection
+function extractTextFromHtml(html: string): string {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
+
 export function RichTextContent({ content, className = '', lineClamp }: RichTextContentProps) {
-  // Split content by URLs and create an array of text and link elements
-  const parts = content.split(URL_REGEX);
-  const urls: string[] = content.match(URL_REGEX) || [];
+  const isHtml = useMemo(() => isHtmlContent(content), [content]);
   
-  // Build elements array
+  // Extract URLs from content (works for both plain text and HTML)
+  const urls = useMemo(() => {
+    const textContent = isHtml ? extractTextFromHtml(content) : content;
+    return textContent.match(URL_REGEX) || [];
+  }, [content, isHtml]);
+  
+  // Collect URLs that have previews (YouTube or Spotify)
+  const previewUrls = useMemo(() => 
+    urls.filter(url => getYouTubeVideoId(url) || getSpotifyInfo(url)),
+    [urls]
+  );
+
+  // For HTML content (from TipTap), render as HTML
+  if (isHtml) {
+    return (
+      <div className={className}>
+        <div 
+          className={`text-sm prose prose-sm prose-invert max-w-none ${lineClamp ? `line-clamp-${lineClamp}` : ''}`}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+        {/* Show previews below the text */}
+        {previewUrls.map((url, i) => (
+          <LinkPreview key={`preview-${i}`} url={url} />
+        ))}
+      </div>
+    );
+  }
+
+  // For plain text content, split by URLs and create elements
+  const parts = content.split(URL_REGEX);
+  
   const elements: React.ReactNode[] = [];
   
   parts.forEach((part, index) => {
@@ -195,9 +235,6 @@ export function RichTextContent({ content, className = '', lineClamp }: RichText
       elements.push(<span key={`text-${index}`}>{part}</span>);
     }
   });
-
-  // Collect URLs that have previews (YouTube or Spotify)
-  const previewUrls = urls.filter(url => getYouTubeVideoId(url) || getSpotifyInfo(url));
 
   return (
     <div className={className}>
