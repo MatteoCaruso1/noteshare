@@ -192,15 +192,16 @@ export function PracticeControls() {
         <Card className="p-6 bg-card border-border">
           <h2 className="text-lg font-semibold mb-4">Capture Session Notes</h2>
 
-          {/* Settings + Media Upload in same row */}
-          <div className="flex items-center justify-between gap-2 mb-4">
+          {/* Compact toolbar row: Settings, Upload, Project, Goal, Focus toggle */}
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            {/* Settings */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Settings className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="start">
+              <PopoverContent className="w-48 p-2 bg-popover" align="start">
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground px-2">Visibility</p>
                   <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
@@ -223,100 +224,101 @@ export function PracticeControls() {
                 </div>
               </PopoverContent>
             </Popover>
+
+            {/* Upload Media (icon only) */}
             <MediaUploadButton
               onAudioUpload={handleAudioFileUpload}
               onImageUpload={handleImageUpload}
               uploading={uploading}
+              iconOnly
             />
-          </div>
 
-          {/* Project Selection */}
-          {projects && projects.length > 0 && (
-            <div className="mb-4">
-              <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
-                <SelectTrigger>
-                  <div className="flex items-center gap-2">
-                    <Folder className="w-4 h-4 text-muted-foreground" />
-                    <SelectValue placeholder="Link to a project (optional)" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No project</SelectItem>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Goal Linking */}
-          {goals && goals.filter(g => !g.is_completed).length > 0 && (
-            <div className="mb-4">
-              <Select value={selectedGoalId || "none"} onValueChange={(v) => setSelectedGoalId(v === "none" ? "" : v)}>
-                <SelectTrigger>
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-muted-foreground" />
-                    <SelectValue placeholder="Link to a goal (optional)" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No goal</SelectItem>
-                  {goals.filter(g => !g.is_completed).map((goal) => (
-                    <SelectItem key={goal.id} value={goal.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{goal.title || goal.content}</span>
-                        {goal.progress_type === 'time' && (
-                          <Badge variant="outline" className="text-xs ml-1">+time</Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedGoalId && goals?.find(g => g.id === selectedGoalId)?.progress_type === 'time' && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Session duration will auto-add to this goal's progress
-                </p>
-              )}
-            </div>
-          )}
-          {recentNotes && recentNotes.length > 0 && !noteText && (
-            <div className="mb-3">
-              <p className="text-xs text-muted-foreground mb-2">Quick fill from recent sessions:</p>
-              <div className="flex flex-wrap gap-2">
-                {recentNotes.slice(0, 3).map((suggestion, i) => (
-                  <Badge
-                    key={i}
-                    variant="outline"
-                    className="cursor-pointer hover:bg-secondary/50 transition-colors text-xs"
-                    onClick={() => setNoteText(suggestion)}
+            {/* Project (icon dropdown) */}
+            {projects && projects.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={`h-8 w-8 ${selectedProjectId ? 'text-primary' : ''}`}
                   >
-                    {suggestion.length > 40 ? suggestion.substring(0, 40) + '...' : suggestion}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+                    <Folder className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2 bg-popover" align="start">
+                  <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="No project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No project</SelectItem>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </PopoverContent>
+              </Popover>
+            )}
 
-          {/* Attach to Today's Focus toggle */}
-          {currentFocus && currentFocus.focus_text && (
-            <div className="flex items-center justify-between p-3 mb-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Crosshair className="w-4 h-4 text-primary" />
-                <Label htmlFor="attach-focus-session" className="text-sm cursor-pointer">
-                  Attach to Today's Focus
+            {/* Goal (icon dropdown) */}
+            {goals && goals.filter(g => !g.is_completed).length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={`h-8 w-8 ${selectedGoalId ? 'text-primary' : ''}`}
+                  >
+                    <Target className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2 bg-popover" align="start">
+                  <Select value={selectedGoalId || "none"} onValueChange={(v) => setSelectedGoalId(v === "none" ? "" : v)}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="No goal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No goal</SelectItem>
+                      {goals.filter(g => !g.is_completed).map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{goal.title || goal.content}</span>
+                            {goal.progress_type === 'time' && (
+                              <Badge variant="outline" className="text-xs ml-1">+time</Badge>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedGoalId && goals?.find(g => g.id === selectedGoalId)?.progress_type === 'time' && (
+                    <p className="text-xs text-muted-foreground mt-2 px-1">
+                      Session time auto-adds to goal
+                    </p>
+                  )}
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {/* Focus toggle - inline */}
+            {currentFocus && currentFocus.focus_text && (
+              <div className="flex items-center gap-2 ml-auto">
+                <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                <Label htmlFor="attach-focus-session" className="text-xs cursor-pointer text-muted-foreground">
+                  Focus
                 </Label>
+                <Switch
+                  id="attach-focus-session"
+                  checked={attachFocus}
+                  onCheckedChange={setAttachFocus}
+                  className="scale-90"
+                />
               </div>
-              <Switch
-                id="attach-focus-session"
-                checked={attachFocus}
-                onCheckedChange={setAttachFocus}
-              />
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Text Content - with list formatting support */}
           <div className="mb-4">
@@ -346,16 +348,6 @@ export function PracticeControls() {
               ))}
             </div>
           )}
-
-          {/* Combined Upload Button */}
-          <div className="mb-4">
-            <MediaUploadButton
-              onAudioUpload={handleAudioFileUpload}
-              onImageUpload={handleImageUpload}
-              uploading={uploading}
-            />
-          </div>
-
           {/* Uploaded Images */}
           {imageFiles.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-2">
