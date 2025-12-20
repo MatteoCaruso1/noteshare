@@ -32,6 +32,7 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const instanceId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const playStartTimeoutRef = useRef<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -48,35 +49,33 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
 
   const handlePlayPause = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('[WaveformPlayer] Play/Pause clicked, isReady:', isReady, 'isPlaying:', isPlaying);
-    
-    if (!wavesurferRef.current) {
-      console.warn('[WaveformPlayer] No wavesurfer instance');
-      return;
-    }
-    
-    if (!isReady) {
-      console.warn('[WaveformPlayer] Not ready yet');
-      return;
-    }
-    
+
+    const ws = wavesurferRef.current;
+    if (!ws || !isReady) return;
+
     try {
-      if (!isPlaying) {
-        // Notify audio manager we're about to play
-        audioManager.play(
-          { 
-            pause: () => wavesurferRef.current?.pause(),
-            paused: !wavesurferRef.current.isPlaying()
-          }, 
-          instanceId
-        );
+      if (!ws.isPlaying()) {
+        // If playback doesn't actually start, fall back to native audio controls.
+        if (playStartTimeoutRef.current) {
+          window.clearTimeout(playStartTimeoutRef.current);
+        }
+        playStartTimeoutRef.current = window.setTimeout(() => {
+          const stillNotPlaying = !wavesurferRef.current?.isPlaying();
+          if (stillNotPlaying) {
+            console.warn('[WaveformPlayer] Playback did not start; falling back to native audio');
+            setError(true);
+          }
+        }, 400);
+
+        audioManager.pauseAll();
       }
-      wavesurferRef.current.playPause();
-      console.log('[WaveformPlayer] playPause called successfully');
+
+      ws.playPause();
     } catch (err) {
       console.error('[WaveformPlayer] Error during playPause:', err);
+      setError(true);
     }
-  }, [isReady, isPlaying, instanceId]);
+  }, [isReady]);
 
   useEffect(() => {
     if (!containerRef.current || !src) return;
@@ -133,23 +132,19 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
     });
 
     wavesurfer.on('play', () => {
+      if (playStartTimeoutRef.current) {
+        window.clearTimeout(playStartTimeoutRef.current);
+        playStartTimeoutRef.current = null;
+      }
+
       if (isMounted) {
         setIsPlaying(true);
-        // Notify audio manager
-        audioManager.play(
-          { 
-            pause: () => wavesurfer.pause(),
-            paused: false
-          }, 
-          instanceId
-        );
       }
     });
     
     wavesurfer.on('pause', () => {
       if (isMounted) {
         setIsPlaying(false);
-        audioManager.stop({ pause: () => wavesurfer.pause() });
       }
     });
     
@@ -187,6 +182,10 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
     return () => {
       isMounted = false;
       audioManager.unregisterWavesurfer(instanceId);
+      if (playStartTimeoutRef.current) {
+        window.clearTimeout(playStartTimeoutRef.current);
+        playStartTimeoutRef.current = null;
+      }
       try {
         wavesurfer.destroy();
       } catch (e) {
