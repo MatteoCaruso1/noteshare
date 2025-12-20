@@ -48,7 +48,19 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
 
   const handlePlayPause = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (wavesurferRef.current && isReady) {
+    console.log('[WaveformPlayer] Play/Pause clicked, isReady:', isReady, 'isPlaying:', isPlaying);
+    
+    if (!wavesurferRef.current) {
+      console.warn('[WaveformPlayer] No wavesurfer instance');
+      return;
+    }
+    
+    if (!isReady) {
+      console.warn('[WaveformPlayer] Not ready yet');
+      return;
+    }
+    
+    try {
       if (!isPlaying) {
         // Notify audio manager we're about to play
         audioManager.play(
@@ -60,6 +72,9 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
         );
       }
       wavesurferRef.current.playPause();
+      console.log('[WaveformPlayer] playPause called successfully');
+    } catch (err) {
+      console.error('[WaveformPlayer] Error during playPause:', err);
     }
   }, [isReady, isPlaying, instanceId]);
 
