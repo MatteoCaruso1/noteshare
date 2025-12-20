@@ -117,6 +117,7 @@ export function useCreateProject() {
       tags = [],
       showOnFeed = false,
       collaboratorIds = [],
+      releaseDate,
     }: {
       ownerId: string;
       title: string;
@@ -125,6 +126,7 @@ export function useCreateProject() {
       tags?: string[];
       showOnFeed?: boolean;
       collaboratorIds?: string[];
+      releaseDate?: string;
     }) => {
       const { data, error } = await supabase
         .from('projects')
@@ -136,6 +138,7 @@ export function useCreateProject() {
           tags,
           show_on_feed: showOnFeed,
           collaborator_ids: collaboratorIds,
+          release_date: releaseDate || null,
         })
         .select()
         .single();

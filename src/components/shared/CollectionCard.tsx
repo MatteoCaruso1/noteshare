@@ -13,11 +13,13 @@ interface CollectionCardProps {
   coverImage?: string | null;
   coverIcon: ReactNode;
   date: string;
+  releaseDate?: string | null;
   showOwner?: boolean;
   ownerName?: string;
   ownerAvatar?: string | null;
   badges?: ReactNode;
   actions?: ReactNode;
+  dateLabel?: string;
 }
 
 export const CollectionCard = ({
@@ -28,13 +30,19 @@ export const CollectionCard = ({
   coverImage,
   coverIcon,
   date,
+  releaseDate,
   showOwner = false,
   ownerName,
   ownerAvatar,
   badges,
   actions,
+  dateLabel,
 }: CollectionCardProps) => {
   const navigate = useNavigate();
+
+  // Prefer release date if available, otherwise use created date
+  const displayDate = releaseDate || date;
+  const displayLabel = releaseDate ? 'Release' : (dateLabel || 'Created');
 
   return (
     <Card
@@ -84,7 +92,8 @@ export const CollectionCard = ({
           
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <Calendar className="w-3 h-3" />
-            {format(new Date(date), 'MMM d, yyyy')}
+            <span>{displayLabel}:</span>
+            {format(new Date(displayDate), 'MMM d, yyyy')}
           </div>
         </div>
       </div>

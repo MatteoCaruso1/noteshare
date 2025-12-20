@@ -86,6 +86,18 @@ const Profile = () => {
     const url = await uploadImage(file, profile.id);
     if (url) {
       setAvatar(url);
+      // Auto-save avatar immediately so it persists even if user navigates away
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar: url })
+        .eq('id', profile.id);
+      
+      if (error) {
+        toast.error('Failed to save profile picture');
+      } else {
+        toast.success('Profile picture updated!');
+        await refreshProfile();
+      }
     }
   };
 

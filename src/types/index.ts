@@ -74,6 +74,7 @@ export interface Project {
   tags: string[];
   collaborator_ids: string[];
   show_on_feed: boolean;
+  release_date: string | null;
   created_at: string;
   updated_at: string;
 }
