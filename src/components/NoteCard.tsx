@@ -168,7 +168,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
             focusDate={note.focus_date || ''}
             focusText={note.focus_text_snapshot || ''}
             onRemove={handleRemoveFocus}
-            canRemove={isOwner && expanded}
+            canRemove={isOwner}
           />
         </div>
       )}
