@@ -9,6 +9,7 @@ import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
+import { FocusHistory } from '@/components/FocusHistory';
 // FeedProjectsGigs hidden from Home - component preserved for reversibility
 // import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
@@ -123,6 +124,9 @@ const Index = () => {
 
         {/* Today's Focus */}
         {profile && <TodaysFocus />}
+
+        {/* Focus History */}
+        {profile && <FocusHistory onSelectDate={setFocusDateFilter} />}
 
         {/* Memory Reminder */}
         <MemoryReminder />
