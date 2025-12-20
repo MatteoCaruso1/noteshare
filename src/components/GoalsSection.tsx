@@ -34,7 +34,8 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [formGoalType, setFormGoalType] = useState<'near-term' | 'long-term'>('near-term');
+  // Unified goals: always use 'long-term' type for new goals (preserves all functionality)
+  const [formGoalType, setFormGoalType] = useState<'near-term' | 'long-term'>('long-term');
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [completionGoal, setCompletionGoal] = useState<Goal | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -44,12 +45,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     localStorage.setItem(GOALS_EXPANDED_KEY, String(isExpanded));
   }, [isExpanded]);
 
-  const nearTermGoals = useMemo(() => 
-    goals.filter(g => g.goal_type === 'near-term' && !g.is_completed),
-    [goals]
-  );
-  const longTermGoals = useMemo(() => 
-    goals.filter(g => g.goal_type === 'long-term' && !g.is_completed),
+  // Unified goals list - combines both near-term and long-term into one list
+  const activeGoals = useMemo(() => 
+    goals.filter(g => !g.is_completed).sort((a, b) => a.priority - b.priority),
     [goals]
   );
   const completedGoals = useMemo(() => 
@@ -57,8 +55,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     [goals]
   );
 
-  const handleAddGoal = useCallback((type: 'near-term' | 'long-term') => {
-    setFormGoalType(type);
+  const handleAddGoal = useCallback(() => {
+    // Unified: always create as 'long-term' to get full functionality
+    setFormGoalType('long-term');
     setEditingGoal(null);
     setFormOpen(true);
   }, []);
@@ -87,30 +86,22 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   }, [createGoal, updateGoal, profileId, formGoalType]);
 
   const handleMoveGoal = useCallback((goal: Goal, direction: 'up' | 'down') => {
-    const sameTypeGoals = goals
-      .filter(g => g.goal_type === goal.goal_type && !g.is_completed)
-      .sort((a, b) => a.priority - b.priority);
-    
-    const currentIndex = sameTypeGoals.findIndex(g => g.id === goal.id);
+    // Unified: reorder across all active goals
+    const currentIndex = activeGoals.findIndex(g => g.id === goal.id);
     const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     
-    if (targetIndex < 0 || targetIndex >= sameTypeGoals.length) return;
+    if (targetIndex < 0 || targetIndex >= activeGoals.length) return;
 
-    const targetGoal = sameTypeGoals[targetIndex];
+    const targetGoal = activeGoals[targetIndex];
     
     // Swap priorities
     reorderGoal.mutate({ goalId: goal.id, newPriority: targetGoal.priority });
     reorderGoal.mutate({ goalId: targetGoal.id, newPriority: goal.priority });
-  }, [goals, reorderGoal]);
+  }, [activeGoals, reorderGoal]);
 
   const handleCompleteGoal = (goal: Goal) => {
-    // Only show completion dialog for long-term goals
-    if (goal.goal_type === 'long-term') {
-      setCompletionGoal(goal);
-    } else {
-      // For near-term goals, complete directly without dialog
-      completeGoal.mutate({ goalId: goal.id });
-    }
+    // Unified: always show completion dialog for reflection
+    setCompletionGoal(goal);
   };
 
   const handleConfirmComplete = (reflection?: string) => {
@@ -138,12 +129,10 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     restoreGoal.mutate({ goalId: goal.id, goalType: goal.goal_type });
   };
 
-  const renderGoalList = (goalsList: Goal[], type: 'near-term' | 'long-term') => {
-    const sortedGoals = [...goalsList].sort((a, b) => a.priority - b.priority);
-    
+  const renderGoalList = () => {
     return (
       <div className="space-y-2">
-        {sortedGoals.map((goal, index) => (
+        {activeGoals.map((goal, index) => (
           <GoalCard
             key={goal.id}
             goal={goal}
@@ -156,17 +145,17 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
             onSetProgress={(value) => handleSetProgress(goal, value)}
             onComplete={() => handleCompleteGoal(goal)}
             isFirst={index === 0}
-            isLast={index === sortedGoals.length - 1}
+            isLast={index === activeGoals.length - 1}
           />
         ))}
         <Button
           variant="outline"
           size="sm"
           className="w-full text-muted-foreground"
-          onClick={() => handleAddGoal(type)}
+          onClick={handleAddGoal}
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add {type === 'near-term' ? 'Near-Term' : 'Long-Term'} Goal
+          Add Goal
         </Button>
       </div>
     );
@@ -190,23 +179,13 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="px-4 pb-4 space-y-6">
-            {/* Near-Term Goals */}
+          <div className="px-4 pb-4 space-y-4">
+            {/* Unified Goals List */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-muted-foreground">Near-Term Goals</h3>
                 <span className="text-xs text-muted-foreground/60">always private</span>
               </div>
-              {renderGoalList(nearTermGoals, 'near-term')}
-            </div>
-
-            {/* Long-Term Goals */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-muted-foreground">Long-Term Goals</h3>
-                <span className="text-xs text-muted-foreground/60">always private</span>
-              </div>
-              {renderGoalList(longTermGoals, 'long-term')}
+              {renderGoalList()}
             </div>
 
             {/* Completed Goals */}
