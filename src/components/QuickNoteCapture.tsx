@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AudioFileWithName } from '@/types';
 
@@ -116,28 +117,37 @@ export function QuickNoteCapture() {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="px-4 pb-4 space-y-4">
-          {/* Visibility + Media Upload in same row */}
+          {/* Settings + Media Upload in same row */}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Visibility:</span>
-              <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                <SelectTrigger className="w-28 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="private">
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-3 h-3" /> Private
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="friends">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-3 h-3" /> Friends
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Settings className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2" align="start">
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground px-2">Visibility</p>
+                  <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="private">
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-3 h-3" /> Private
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="friends">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-3 h-3" /> Friends
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </PopoverContent>
+            </Popover>
             <MediaUploadButton
               onAudioUpload={handleAudioFileUpload}
               onImageUpload={handleImageUpload}
