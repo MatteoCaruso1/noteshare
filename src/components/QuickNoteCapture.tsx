@@ -7,7 +7,7 @@ import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
-import { RichTextarea } from '@/components/RichTextarea';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -213,12 +213,11 @@ export function QuickNoteCapture() {
           </TooltipProvider>
 
           {/* Text Content */}
-          <RichTextarea
+          <RichTextEditor
             placeholder="What are you working on?"
             value={noteText}
             onChange={setNoteText}
-            rows={1}
-            autoExpand
+            minHeight="36px"
           />
 
           {/* Audio Recording */}

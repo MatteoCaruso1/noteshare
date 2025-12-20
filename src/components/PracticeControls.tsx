@@ -10,7 +10,7 @@ import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
-import { RichTextarea } from '@/components/RichTextarea';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -340,12 +340,11 @@ export function PracticeControls() {
 
           {/* Text Content - with list formatting support */}
           <div className="mb-4">
-            <RichTextarea
+            <RichTextEditor
               placeholder="What did you practice?"
               value={noteText}
               onChange={setNoteText}
-              rows={1}
-              autoExpand
+              minHeight="36px"
             />
           </div>
 
