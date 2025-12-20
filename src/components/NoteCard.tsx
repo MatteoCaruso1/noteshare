@@ -44,8 +44,18 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
   }, [updateVisibility, note.id]);
 
   const handleDelete = useCallback(() => {
-    deleteNote.mutate({ noteId: note.id, sessionId: note.session_id });
-  }, [deleteNote, note.id, note.session_id]);
+    deleteNote.mutate(
+      { noteId: note.id, sessionId: note.session_id },
+      {
+        onSuccess: () => {
+          // If in expanded/detail view, navigate back to home
+          if (expanded) {
+            navigate('/');
+          }
+        },
+      }
+    );
+  }, [deleteNote, note.id, note.session_id, expanded, navigate]);
 
   const visibilityIcon = useMemo(() => {
     switch (note.visibility) {
