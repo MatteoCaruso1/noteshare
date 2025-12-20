@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { BottomNav } from '@/components/BottomNav';
@@ -22,6 +23,7 @@ const Index = () => {
   const { user, profile, loading } = useAuth();
   const { data: notes, isLoading: notesLoading } = useNotes();
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
 
   // Practice section collapsible state - default collapsed
   const [isPracticeExpanded, setIsPracticeExpanded] = useState(() => {
@@ -33,21 +35,34 @@ const Index = () => {
     localStorage.setItem(PRACTICE_EXPANDED_KEY, String(isPracticeExpanded));
   }, [isPracticeExpanded]);
 
-  // Filter notes based on search query
+  // Filter notes based on search query and focus date
   const filteredNotes = useMemo(() => {
-    if (!notes || !searchQuery.trim()) return notes || [];
+    if (!notes) return [];
     
-    const query = searchQuery.toLowerCase();
-    return notes.filter((note) => {
-      // Search by text content
-      if (note.text_content?.toLowerCase().includes(query)) return true;
-      // Search by tags
-      if (note.tags.some(tag => tag.toLowerCase().includes(query))) return true;
-      // Search by audio file names
-      if (note.audio_file_names?.some(name => name?.toLowerCase().includes(query))) return true;
-      return false;
-    });
-  }, [notes, searchQuery]);
+    let filtered = notes;
+    
+    // Filter by focus date
+    if (focusDateFilter) {
+      const filterDateStr = format(focusDateFilter, 'yyyy-MM-dd');
+      filtered = filtered.filter((note) => note.focus_date === filterDateStr);
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((note) => {
+        // Search by text content
+        if (note.text_content?.toLowerCase().includes(query)) return true;
+        // Search by tags
+        if (note.tags.some(tag => tag.toLowerCase().includes(query))) return true;
+        // Search by audio file names
+        if (note.audio_file_names?.some(name => name?.toLowerCase().includes(query))) return true;
+        return false;
+      });
+    }
+    
+    return filtered;
+  }, [notes, searchQuery, focusDateFilter]);
 
   if (loading) {
     return (
@@ -114,15 +129,21 @@ const Index = () => {
 
         {/* Timeline */}
         <section>
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg font-semibold">{timelineTitle}</h2>
-            <div className="flex-1 max-w-xs">
-              <TimelineSearch onSearch={setSearchQuery} />
+          <div className="space-y-3 mb-4">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold">{timelineTitle}</h2>
             </div>
+            <TimelineSearch 
+              onSearch={setSearchQuery} 
+              onFocusDateFilter={setFocusDateFilter}
+              focusDate={focusDateFilter}
+            />
           </div>
-          {searchQuery && (
+          {(searchQuery || focusDateFilter) && (
             <p className="text-sm text-muted-foreground mb-3">
-              {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''} for "{searchQuery}"
+              {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
+              {searchQuery && ` for "${searchQuery}"`}
+              {focusDateFilter && ` with focus on ${format(focusDateFilter, 'MMM d, yyyy')}`}
             </p>
           )}
           <Timeline notes={filteredNotes} loading={notesLoading} />
