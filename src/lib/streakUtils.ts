@@ -41,5 +41,5 @@ export function getStreakMilestoneMessage(streakDays: number): string | null {
   if (!nextMilestone) return null;
   
   const daysRemaining = nextMilestone.days - streakDays;
-  return `${daysRemaining} more days to unlock ${nextMilestone.tier.label} recognition`;
+  return `${daysRemaining} more day${daysRemaining !== 1 ? 's' : ''} until next reward`;
 }
