@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
@@ -11,15 +12,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings } from 'lucide-react';
+import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Crosshair } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AudioFileWithName } from '@/types';
 
 export function QuickNoteCapture() {
   const { profile } = useAuth();
   const { data: projects } = useProjects();
+  const { data: currentFocus } = useCurrentFocusEntry();
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
@@ -31,6 +35,7 @@ export function QuickNoteCapture() {
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
+  const [attachFocus, setAttachFocus] = useState(false);
 
   if (!profile) return null;
 
@@ -83,6 +88,10 @@ export function QuickNoteCapture() {
         tags,
         projectId: selectedProjectId || undefined,
         visibility,
+        // Attach focus if toggle is on and focus exists
+        focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
+        focusDate: attachFocus && currentFocus ? currentFocus.focus_date : undefined,
+        focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
       },
       {
         onSuccess: () => {
@@ -92,6 +101,7 @@ export function QuickNoteCapture() {
           setTags([]);
           setSelectedProjectId('');
           setVisibility('friends');
+          setAttachFocus(false);
           setIsOpen(false);
         },
       }
@@ -182,6 +192,23 @@ export function QuickNoteCapture() {
             onChange={setNoteText}
             rows={3}
           />
+
+          {/* Attach to Today's Focus toggle */}
+          {currentFocus && currentFocus.focus_text && (
+            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Crosshair className="w-4 h-4 text-primary" />
+                <Label htmlFor="attach-focus" className="text-sm cursor-pointer">
+                  Attach to Today's Focus
+                </Label>
+              </div>
+              <Switch
+                id="attach-focus"
+                checked={attachFocus}
+                onCheckedChange={setAttachFocus}
+              />
+            </div>
+          )}
 
           {/* Audio Recording */}
           <AudioRecorder onRecorded={handleAudioRecorded} />

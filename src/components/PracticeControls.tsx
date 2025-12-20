@@ -5,6 +5,7 @@ import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useGoals, useIncrementProgress } from '@/hooks/useGoals';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
@@ -14,9 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair } from 'lucide-react';
 import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { AudioFileWithName } from '@/types';
 
@@ -26,6 +29,7 @@ export function PracticeControls() {
   const { data: projects } = useProjects();
   const { data: goals } = useGoals(profile?.id);
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
+  const { data: currentFocus } = useCurrentFocusEntry();
   const startSession = useStartSession();
   const endSession = useEndSession();
   const createNote = useCreateNote();
@@ -40,6 +44,7 @@ export function PracticeControls() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
+  const [attachFocus, setAttachFocus] = useState(false);
 
   if (!profile) return null;
 
@@ -121,6 +126,9 @@ export function PracticeControls() {
                 projectId: selectedProjectId || undefined,
                 goalId: selectedGoalId || undefined,
                 visibility,
+                focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
+                focusDate: attachFocus && currentFocus ? currentFocus.focus_date : undefined,
+                focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
               },
               {
                 onSuccess: () => {
@@ -131,6 +139,7 @@ export function PracticeControls() {
                   setSelectedProjectId('');
                   setSelectedGoalId('');
                   setVisibility('friends');
+                  setAttachFocus(false);
                 },
               }
             );
@@ -303,6 +312,23 @@ export function PracticeControls() {
                   </Badge>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Attach to Today's Focus toggle */}
+          {currentFocus && currentFocus.focus_text && (
+            <div className="flex items-center justify-between p-3 mb-4 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Crosshair className="w-4 h-4 text-primary" />
+                <Label htmlFor="attach-focus-session" className="text-sm cursor-pointer">
+                  Attach to Today's Focus
+                </Label>
+              </div>
+              <Switch
+                id="attach-focus-session"
+                checked={attachFocus}
+                onCheckedChange={setAttachFocus}
+              />
             </div>
           )}
 

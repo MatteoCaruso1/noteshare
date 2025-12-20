@@ -47,6 +47,9 @@ export interface Note {
   session_id: string | null;
   project_id: string | null;
   goal_id: string | null;
+  focus_entry_id: string | null;
+  focus_date: string | null;
+  focus_text_snapshot: string | null;
   text_content: string | null;
   audio_files: string[];
   audio_file_names: string[];

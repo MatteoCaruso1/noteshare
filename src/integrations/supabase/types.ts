@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_focus: {
+        Row: {
+          created_at: string
+          focus_date: string
+          focus_text: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          focus_date: string
+          focus_text?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          focus_date?: string
+          focus_text?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           content: string
@@ -287,6 +314,9 @@ export type Database = {
           author_id: string
           comment_count: number
           created_at: string
+          focus_date: string | null
+          focus_entry_id: string | null
+          focus_text_snapshot: string | null
           gig_id: string | null
           goal_id: string | null
           id: string
@@ -305,6 +335,9 @@ export type Database = {
           author_id: string
           comment_count?: number
           created_at?: string
+          focus_date?: string | null
+          focus_entry_id?: string | null
+          focus_text_snapshot?: string | null
           gig_id?: string | null
           goal_id?: string | null
           id?: string
@@ -323,6 +356,9 @@ export type Database = {
           author_id?: string
           comment_count?: number
           created_at?: string
+          focus_date?: string | null
+          focus_entry_id?: string | null
+          focus_text_snapshot?: string | null
           gig_id?: string | null
           goal_id?: string | null
           id?: string
@@ -341,6 +377,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_focus_entry_id_fkey"
+            columns: ["focus_entry_id"]
+            isOneToOne: false
+            referencedRelation: "daily_focus"
             referencedColumns: ["id"]
           },
           {
@@ -433,6 +476,9 @@ export type Database = {
           collaborator_ids: string[] | null
           created_at: string
           ended_at: string | null
+          focus_date: string | null
+          focus_entry_id: string | null
+          focus_text_snapshot: string | null
           goals: string | null
           id: string
           is_active: boolean | null
@@ -444,6 +490,9 @@ export type Database = {
           collaborator_ids?: string[] | null
           created_at?: string
           ended_at?: string | null
+          focus_date?: string | null
+          focus_entry_id?: string | null
+          focus_text_snapshot?: string | null
           goals?: string | null
           id?: string
           is_active?: boolean | null
@@ -455,6 +504,9 @@ export type Database = {
           collaborator_ids?: string[] | null
           created_at?: string
           ended_at?: string | null
+          focus_date?: string | null
+          focus_entry_id?: string | null
+          focus_text_snapshot?: string | null
           goals?: string | null
           id?: string
           is_active?: boolean | null
@@ -463,6 +515,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "practice_sessions_focus_entry_id_fkey"
+            columns: ["focus_entry_id"]
+            isOneToOne: false
+            referencedRelation: "daily_focus"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "practice_sessions_user_id_fkey"
             columns: ["user_id"]

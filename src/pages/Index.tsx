@@ -7,6 +7,7 @@ import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
 import { GoalsSection } from '@/components/GoalsSection';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
+import { TodaysFocus } from '@/components/TodaysFocus';
 // FeedProjectsGigs hidden from Home - component preserved for reversibility
 // import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
@@ -104,6 +105,9 @@ const Index = () => {
 
         {/* Quick Note Capture */}
         <QuickNoteCapture />
+
+        {/* Today's Focus */}
+        {profile && <TodaysFocus />}
 
         {/* Memory Reminder */}
         <MemoryReminder />
