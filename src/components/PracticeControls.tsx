@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair } from 'lucide-react';
 import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { AudioFileWithName } from '@/types';
@@ -193,140 +194,158 @@ export function PracticeControls() {
           <h2 className="text-lg font-semibold mb-4">Capture Session Notes</h2>
 
           {/* Compact toolbar row: Settings, Upload, Project, Goal, Focus toggle */}
-          <div className="flex items-center gap-2 flex-wrap mb-4">
-            {/* Settings */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Settings className="w-4 h-4 text-muted-foreground" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground px-2">Visibility</p>
-                  <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                    <SelectTrigger className="w-full h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">
-                        <div className="flex items-center gap-2">
-                          <Lock className="w-3 h-3" /> Private
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="friends">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-3 h-3" /> Friends
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Upload Media (icon only) */}
-            <MediaUploadButton
-              onAudioUpload={handleAudioFileUpload}
-              onImageUpload={handleImageUpload}
-              uploading={uploading}
-              iconOnly
-            />
-
-            {/* Project (icon dropdown) */}
-            {projects && projects.length > 0 && (
+          <TooltipProvider delayDuration={1000}>
+            <div className="flex items-center gap-2 flex-wrap mb-4">
+              {/* Settings */}
               <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`h-8 w-8 ${selectedProjectId ? 'text-primary' : ''}`}
-                  >
-                    <Folder className="w-4 h-4" />
-                  </Button>
-                </PopoverTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Settings className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Visibility settings</TooltipContent>
+                </Tooltip>
                 <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                  <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
-                    <SelectTrigger className="w-full h-8">
-                      <SelectValue placeholder="No project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No project</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </PopoverContent>
-              </Popover>
-            )}
-
-            {/* Goal (icon dropdown) */}
-            {goals && goals.filter(g => !g.is_completed).length > 0 && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`h-8 w-8 ${selectedGoalId ? 'text-primary' : ''}`}
-                  >
-                    <Target className="w-4 h-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-2 bg-popover" align="start">
-                  <Select value={selectedGoalId || "none"} onValueChange={(v) => setSelectedGoalId(v === "none" ? "" : v)}>
-                    <SelectTrigger className="w-full h-8">
-                      <SelectValue placeholder="No goal" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No goal</SelectItem>
-                      {goals.filter(g => !g.is_completed).map((goal) => (
-                        <SelectItem key={goal.id} value={goal.id}>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground px-2">Visibility</p>
+                    <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
+                      <SelectTrigger className="w-full h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">
                           <div className="flex items-center gap-2">
-                            <span>{goal.title || goal.content}</span>
-                            {goal.progress_type === 'time' && (
-                              <Badge variant="outline" className="text-xs ml-1">+time</Badge>
-                            )}
+                            <Lock className="w-3 h-3" /> Private
                           </div>
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedGoalId && goals?.find(g => g.id === selectedGoalId)?.progress_type === 'time' && (
-                    <p className="text-xs text-muted-foreground mt-2 px-1">
-                      Session time auto-adds to goal
-                    </p>
-                  )}
+                        <SelectItem value="friends">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-3 h-3" /> Friends
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </PopoverContent>
               </Popover>
-            )}
 
-            {/* Focus toggle - inline */}
-            {currentFocus && currentFocus.focus_text && (
-              <div className="flex items-center gap-2 ml-auto">
-                <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
-                <Label htmlFor="attach-focus-session" className="text-xs cursor-pointer text-muted-foreground">
-                  Focus
-                </Label>
-                <Switch
-                  id="attach-focus-session"
-                  checked={attachFocus}
-                  onCheckedChange={setAttachFocus}
-                  className="scale-90"
-                />
-              </div>
-            )}
-          </div>
+              {/* Upload Media (icon only) */}
+              <MediaUploadButton
+                onAudioUpload={handleAudioFileUpload}
+                onImageUpload={handleImageUpload}
+                uploading={uploading}
+                iconOnly
+              />
+
+              {/* Project (icon dropdown) */}
+              {projects && projects.length > 0 && (
+                <Popover>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className={`h-8 w-8 ${selectedProjectId ? 'text-primary' : ''}`}
+                        >
+                          <Folder className="w-4 h-4" />
+                        </Button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Link to project</TooltipContent>
+                  </Tooltip>
+                  <PopoverContent className="w-48 p-2 bg-popover" align="start">
+                    <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
+                      <SelectTrigger className="w-full h-8">
+                        <SelectValue placeholder="No project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No project</SelectItem>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </PopoverContent>
+                </Popover>
+              )}
+
+              {/* Goal (icon dropdown) */}
+              {goals && goals.filter(g => !g.is_completed).length > 0 && (
+                <Popover>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className={`h-8 w-8 ${selectedGoalId ? 'text-primary' : ''}`}
+                        >
+                          <Target className="w-4 h-4" />
+                        </Button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Link to goal</TooltipContent>
+                  </Tooltip>
+                  <PopoverContent className="w-56 p-2 bg-popover" align="start">
+                    <Select value={selectedGoalId || "none"} onValueChange={(v) => setSelectedGoalId(v === "none" ? "" : v)}>
+                      <SelectTrigger className="w-full h-8">
+                        <SelectValue placeholder="No goal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No goal</SelectItem>
+                        {goals.filter(g => !g.is_completed).map((goal) => (
+                          <SelectItem key={goal.id} value={goal.id}>
+                            <div className="flex items-center gap-2">
+                              <span>{goal.title || goal.content}</span>
+                              {goal.progress_type === 'time' && (
+                                <Badge variant="outline" className="text-xs ml-1">+time</Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedGoalId && goals?.find(g => g.id === selectedGoalId)?.progress_type === 'time' && (
+                      <p className="text-xs text-muted-foreground mt-2 px-1">
+                        Session time auto-adds to goal
+                      </p>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              )}
+
+              {/* Focus toggle - inline */}
+              {currentFocus && currentFocus.focus_text && (
+                <div className="flex items-center gap-2 ml-auto">
+                  <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Label htmlFor="attach-focus-session" className="text-xs cursor-pointer text-muted-foreground">
+                    Focus
+                  </Label>
+                  <Switch
+                    id="attach-focus-session"
+                    checked={attachFocus}
+                    onCheckedChange={setAttachFocus}
+                    className="scale-90"
+                  />
+                </div>
+              )}
+            </div>
+          </TooltipProvider>
 
           {/* Text Content - with list formatting support */}
           <div className="mb-4">
             <RichTextarea
-              placeholder="What did you practice? Any insights or breakthroughs?"
+              placeholder="What did you practice?"
               value={noteText}
               onChange={setNoteText}
-              rows={4}
+              rows={2}
+              autoExpand
             />
           </div>
 
