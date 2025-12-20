@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Square, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { audioManager } from '@/lib/audioManager';
 
 interface AudioRecorderProps {
   onRecorded: (blob: Blob, duration: number) => void;
@@ -15,14 +16,34 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
+
+  // Handle visibility change (screen lock)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && recording && mediaRecorderRef.current) {
+        // When screen is locked/hidden, try to keep recording
+        // Most browsers will pause, but we can at least handle it gracefully
+        console.log('[AudioRecorder] Screen hidden while recording');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [recording]);
 
   const getSupportedMimeType = (): string => {
     // Prefer webm/ogg (more reliable in Chrome) and fall back to mp4
@@ -31,8 +52,9 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
       'audio/webm',
       'audio/ogg;codecs=opus',
       'audio/ogg',
-      'audio/wav',
       'audio/mp4',
+      'audio/mpeg',
+      'audio/wav',
     ];
     
     for (const type of types) {
@@ -51,12 +73,19 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
 
   const startRecording = async () => {
     try {
+      // Pause any playing audio before recording
+      audioManager.pauseAll();
+      audioManager.setRecording(true);
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
         }
       });
+      
+      streamRef.current = stream;
       
       const mimeType = getSupportedMimeType();
       const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
@@ -87,6 +116,8 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           timerRef.current = null;
         }
         
+        audioManager.setRecording(false);
+        
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
         const actualMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm';
         const blob = new Blob(chunksRef.current, { type: actualMimeType });
@@ -98,28 +129,37 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           toast.error('Recording too short or empty. Please try again.');
         }
         
-        stream.getTracks().forEach(track => track.stop());
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
         setProcessing(false);
         setElapsedTime(0);
       };
 
       mediaRecorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
+        console.error('[AudioRecorder] MediaRecorder error:', event);
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
         }
+        audioManager.setRecording(false);
         toast.error('Recording failed. Please try again.');
-        stream.getTracks().forEach(track => track.stop());
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
         setRecording(false);
         setProcessing(false);
         setElapsedTime(0);
       };
 
-      mediaRecorder.start();
+      // Use timeslice to get data more frequently (helps with screen lock scenarios)
+      mediaRecorder.start(1000);
       setRecording(true);
     } catch (err) {
-      console.error('Failed to start recording:', err);
+      console.error('[AudioRecorder] Failed to start recording:', err);
+      audioManager.setRecording(false);
       toast.error('Could not access microphone. Please check permissions.');
     }
   };
@@ -127,7 +167,12 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       setProcessing(true);
-      mediaRecorderRef.current.stop();
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.error('[AudioRecorder] Error stopping recorder:', e);
+        setProcessing(false);
+      }
       setRecording(false);
     }
   };
@@ -145,7 +190,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
             Stop Recording
           </Button>
           <div className="flex items-center gap-2 text-sm text-destructive min-w-[80px]">
-            <div className="w-2 h-2 rounded-full bg-destructive recording-pulse" />
+            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             {formatTime(elapsedTime)}
           </div>
         </>

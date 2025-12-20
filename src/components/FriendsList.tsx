@@ -17,9 +17,19 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
   const { data: friends, isLoading } = useFriends();
 
   const handleFriendClick = (friendId: string) => {
+    // Validate friendId before navigation
+    if (!friendId || friendId === 'undefined' || friendId === 'null') {
+      console.warn('[FriendsList] Invalid friendId:', friendId);
+      return;
+    }
+    
     onOpenChange?.(false);
     // Navigate with state so back button knows to reopen the dialog
-    navigate(`/user/${friendId}`, { state: { fromFriendsList: true } });
+    try {
+      navigate(`/user/${friendId}`, { state: { fromFriendsList: true } });
+    } catch (error) {
+      console.error('[FriendsList] Navigation error:', error);
+    }
   };
 
   return (

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useId } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Mic, AlertCircle } from 'lucide-react';
+import { Play, Pause, Mic, AlertCircle, Loader2 } from 'lucide-react';
+import { audioManager } from '@/lib/audioManager';
 
 interface WaveformPlayerProps {
   src: string;
@@ -28,12 +29,14 @@ function extractFilename(url: string): string {
 }
 
 export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
+  const instanceId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const formatTime = (seconds: number): string => {
@@ -46,14 +49,27 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const handlePlayPause = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (wavesurferRef.current && isReady) {
+      if (!isPlaying) {
+        // Notify audio manager we're about to play
+        audioManager.play(
+          { 
+            pause: () => wavesurferRef.current?.pause(),
+            paused: !wavesurferRef.current.isPlaying()
+          }, 
+          instanceId
+        );
+      }
       wavesurferRef.current.playPause();
     }
-  }, [isReady]);
+  }, [isReady, isPlaying, instanceId]);
 
   useEffect(() => {
     if (!containerRef.current || !src) return;
 
     let isMounted = true;
+    setIsLoading(true);
+    setError(false);
+    
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
       waveColor: 'rgba(147, 197, 253, 0.5)',
@@ -71,10 +87,17 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
 
     wavesurferRef.current = wavesurfer;
 
+    // Register with audio manager for global pause coordination
+    audioManager.registerWavesurfer(instanceId, {
+      pause: () => wavesurfer.pause(),
+      isPlaying: () => wavesurfer.isPlaying(),
+    });
+
     wavesurfer.on('ready', () => {
       if (isMounted) {
         setDuration(wavesurfer.getDuration());
         setIsReady(true);
+        setIsLoading(false);
         setError(false);
       }
     });
@@ -91,9 +114,33 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
       }
     });
 
-    wavesurfer.on('play', () => isMounted && setIsPlaying(true));
-    wavesurfer.on('pause', () => isMounted && setIsPlaying(false));
-    wavesurfer.on('finish', () => isMounted && setIsPlaying(false));
+    wavesurfer.on('play', () => {
+      if (isMounted) {
+        setIsPlaying(true);
+        // Notify audio manager
+        audioManager.play(
+          { 
+            pause: () => wavesurfer.pause(),
+            paused: false
+          }, 
+          instanceId
+        );
+      }
+    });
+    
+    wavesurfer.on('pause', () => {
+      if (isMounted) {
+        setIsPlaying(false);
+        audioManager.stop({ pause: () => wavesurfer.pause() });
+      }
+    });
+    
+    wavesurfer.on('finish', () => {
+      if (isMounted) {
+        setIsPlaying(false);
+        audioManager.stop({ pause: () => wavesurfer.pause() });
+      }
+    });
 
     wavesurfer.on('error', (err) => {
       // Ignore AbortErrors from unmount cleanup
@@ -103,21 +150,32 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
       console.error('[WaveformPlayer] Error loading audio:', err);
       if (isMounted) {
         setError(true);
+        setIsLoading(false);
         onError?.();
       }
     });
 
-    wavesurfer.load(src);
+    // Load with error handling
+    try {
+      wavesurfer.load(src);
+    } catch (e) {
+      console.error('[WaveformPlayer] Error initiating load:', e);
+      if (isMounted) {
+        setError(true);
+        setIsLoading(false);
+      }
+    }
 
     return () => {
       isMounted = false;
+      audioManager.unregisterWavesurfer(instanceId);
       try {
         wavesurfer.destroy();
       } catch (e) {
         // Ignore destroy errors (e.g., AbortError when unmounting during load)
       }
     };
-  }, [src, onError]);
+  }, [src, onError, instanceId]);
 
   // Fallback to native audio if waveform fails
   if (error) {
@@ -130,6 +188,15 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
           preload="metadata"
           className="flex-1 h-8 min-w-0"
           onClick={(e) => e.stopPropagation()}
+          onPlay={(e) => {
+            audioManager.play(e.currentTarget);
+          }}
+          onPause={(e) => {
+            audioManager.stop(e.currentTarget);
+          }}
+          onEnded={(e) => {
+            audioManager.stop(e.currentTarget);
+          }}
         />
       </div>
     );
@@ -155,9 +222,11 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
           size="icon"
           className="h-8 w-8 flex-shrink-0 text-primary hover:text-primary hover:bg-primary/20"
           onClick={handlePlayPause}
-          disabled={!isReady}
+          disabled={!isReady || isLoading}
         >
-          {isPlaying ? (
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : isPlaying ? (
             <Pause className="h-4 w-4" />
           ) : (
             <Play className="h-4 w-4" />
