@@ -47,9 +47,9 @@ export function usePracticeStats(profileId: string | undefined) {
           .order('started_at', { ascending: true }),
         supabase
           .from('notes')
-          .select('text_content, tags')
+          .select('text_content, tags, created_at')
           .eq('author_id', profileId)
-          .gte('created_at', thisMonthStart.toISOString())
+          .gte('created_at', threeMonthsAgo.toISOString())
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
@@ -111,9 +111,18 @@ export function usePracticeStats(profileId: string | undefined) {
       );
 
       // Daily streak calculation (current and best)
-      const sessionDates = new Set(
-        sessionsWithDuration.map(s => format(s.startDate, 'yyyy-MM-dd'))
-      );
+      // Include BOTH practice sessions AND notes for streak
+      const activityDates = new Set<string>();
+      
+      // Add session dates
+      sessionsWithDuration.forEach(s => {
+        activityDates.add(format(s.startDate, 'yyyy-MM-dd'));
+      });
+      
+      // Add note dates (quick notes count towards streak too)
+      notes.forEach(note => {
+        activityDates.add(format(parseISO(note.created_at), 'yyyy-MM-dd'));
+      });
       
       let bestDailyStreak = 0;
       let tempStreak = 0;
@@ -121,7 +130,7 @@ export function usePracticeStats(profileId: string | undefined) {
       // Calculate best streak from last 90 days
       for (let i = 90; i >= 0; i--) {
         const checkDate = format(subDays(now, i), 'yyyy-MM-dd');
-        if (sessionDates.has(checkDate)) {
+        if (activityDates.has(checkDate)) {
           tempStreak++;
           bestDailyStreak = Math.max(bestDailyStreak, tempStreak);
         } else {
@@ -136,18 +145,18 @@ export function usePracticeStats(profileId: string | undefined) {
       
       // Start counting from today or yesterday
       let startDay = 0;
-      if (sessionDates.has(today)) {
+      if (activityDates.has(today)) {
         startDay = 0;
-      } else if (sessionDates.has(yesterday)) {
+      } else if (activityDates.has(yesterday)) {
         startDay = 1;
       } else {
         currentStreak = 0;
       }
 
-      if (sessionDates.has(today) || sessionDates.has(yesterday)) {
+      if (activityDates.has(today) || activityDates.has(yesterday)) {
         for (let i = startDay; i < 90; i++) {
           const checkDate = format(subDays(now, i), 'yyyy-MM-dd');
-          if (sessionDates.has(checkDate)) {
+          if (activityDates.has(checkDate)) {
             currentStreak++;
           } else {
             break;
@@ -161,7 +170,12 @@ export function usePracticeStats(profileId: string | undefined) {
       const keywords: Record<string, number> = {};
       const tags: Record<string, number> = {};
 
-      notes.forEach(note => {
+      // Filter notes to this month for keyword analysis
+      const thisMonthNotes = notes.filter(note => 
+        parseISO(note.created_at) >= thisMonthStart
+      );
+
+      thisMonthNotes.forEach(note => {
         // Extract tags separately
         (note.tags || []).forEach(tag => {
           const lowerTag = tag.toLowerCase().trim();
