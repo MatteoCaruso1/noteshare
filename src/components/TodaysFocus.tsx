@@ -217,16 +217,9 @@ export function TodaysFocus() {
 
   return (
     <Card className="p-4 bg-card border-border">
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <Crosshair className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold">Today's Focus</h2>
-        </div>
-        {(isUpdating || hasChanges) && (
-          <span className="text-xs text-muted-foreground">
-            {isUpdating ? 'Saving...' : 'Unsaved'}
-          </span>
-        )}
+      <div className="flex items-center gap-2 mb-3">
+        <Crosshair className="w-5 h-5 text-primary" />
+        <h2 className="font-semibold">Today's Focus</h2>
       </div>
       <div className="space-y-2">
         <div className="flex gap-1">
@@ -257,7 +250,7 @@ export function TodaysFocus() {
           onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          placeholder="What's your focus for today? What do you want to accomplish?"
+          placeholder="What will you work on today?"
           className="min-h-[60px] resize-none text-sm"
           rows={2}
         />
