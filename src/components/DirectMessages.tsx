@@ -243,14 +243,21 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
         )}
       </ScrollArea>
 
-      {/* Input */}
-      <div className="flex items-center gap-2 p-4 border-t border-border">
+      {/* Input - fixed at bottom with proper mobile handling */}
+      <div className="flex items-center gap-2 p-4 border-t border-border bg-card">
         <Input
           placeholder="Type a message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           className="flex-1"
+          // Prevent scroll jump on mobile focus
+          onFocus={(e) => {
+            // Small delay to let the keyboard open before any scroll adjustment
+            setTimeout(() => {
+              e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+          }}
         />
         <Button 
           size="icon" 

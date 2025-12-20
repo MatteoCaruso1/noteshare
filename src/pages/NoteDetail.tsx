@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
@@ -34,6 +34,11 @@ const NoteDetail = () => {
   
   // Check if we came from the Friends tab
   const fromFriends = location.state?.fromFriends;
+
+  // Scroll to top on mount
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
@@ -82,7 +87,7 @@ const NoteDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg">
+        <header className="sticky top-0 z-40 bg-background">
           <div className="container max-w-2xl mx-auto px-4 py-4">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -109,7 +114,7 @@ const NoteDetail = () => {
   if (!note) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg">
+        <header className="sticky top-0 z-40 bg-background">
           <div className="container max-w-2xl mx-auto px-4 py-4">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -134,7 +139,7 @@ const NoteDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg">
+      <header className="sticky top-0 z-40 bg-background">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
