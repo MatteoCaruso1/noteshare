@@ -18,20 +18,7 @@ export function OfflineSessionInput() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [duration, setDuration] = useState('30');
   const [noteText, setNoteText] = useState('');
-  const [tagInput, setTagInput] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
-  };
 
   const handleSubmit = () => {
     if (!profile) return;
@@ -44,7 +31,6 @@ export function OfflineSessionInput() {
         date,
         durationMinutes,
         noteText: noteText || undefined,
-        tags: tags.length > 0 ? tags : undefined,
         collaboratorIds: collaboratorIds.length > 0 ? collaboratorIds : undefined,
       },
       {
@@ -52,7 +38,6 @@ export function OfflineSessionInput() {
           setDate(new Date().toISOString().split('T')[0]);
           setDuration('30');
           setNoteText('');
-          setTags([]);
           setCollaboratorIds([]);
           setIsOpen(false);
         },
@@ -125,40 +110,6 @@ export function OfflineSessionInput() {
               onChange={(e) => setNoteText(e.target.value)}
               rows={3}
             />
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Tags (optional)
-            </label>
-            <div className="flex gap-2 mb-2">
-              <Input
-                placeholder="Add tag"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1"
-              />
-              <Button variant="outline" onClick={handleAddTag} type="button">
-                Add
-              </Button>
-            </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="cursor-pointer"
-                    onClick={() => handleRemoveTag(tag)}
-                  >
-                    {tag}
-                    <X className="w-3 h-3 ml-1" />
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Collaborators */}

@@ -321,14 +321,6 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         </div>
       )}
 
-      {note.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {note.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-          ))}
-        </div>
-      )}
-
       {/* Voice Reply Button */}
       {profile && !expanded && (
         <div className="flex items-center gap-2 pt-2 border-t border-border">
