@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { List, ListOrdered, Bold, Underline } from 'lucide-react';
+import { List, ListOrdered } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RichTextareaProps {
@@ -18,7 +18,7 @@ export function RichTextarea({
   value,
   onChange,
   placeholder,
-  rows = 2,
+  rows = 1,
   className,
   showToolbar = true,
   autoExpand = true,
@@ -57,49 +57,6 @@ export function RichTextarea({
     return { lineStart, lineEnd, line, cursorPos: start };
   }, []);
 
-  const wrapSelection = useCallback((wrapper: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = value.substring(start, end);
-    
-    if (start === end) {
-      // No selection - insert wrapper markers and place cursor between
-      const newValue = value.substring(0, start) + wrapper + wrapper + value.substring(end);
-      onChange(newValue);
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + wrapper.length;
-        textarea.focus();
-      }, 0);
-    } else {
-      // Check if already wrapped
-      const beforeStart = value.substring(start - wrapper.length, start);
-      const afterEnd = value.substring(end, end + wrapper.length);
-      
-      if (beforeStart === wrapper && afterEnd === wrapper) {
-        // Remove wrapping
-        const newValue = value.substring(0, start - wrapper.length) + selectedText + value.substring(end + wrapper.length);
-        onChange(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = start - wrapper.length;
-          textarea.selectionEnd = end - wrapper.length;
-          textarea.focus();
-        }, 0);
-      } else {
-        // Add wrapping
-        const newValue = value.substring(0, start) + wrapper + selectedText + wrapper + value.substring(end);
-        onChange(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = start + wrapper.length;
-          textarea.selectionEnd = end + wrapper.length;
-          textarea.focus();
-        }, 0);
-      }
-    }
-  }, [value, onChange]);
-
   const insertListPrefix = useCallback((prefix: string) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -114,36 +71,29 @@ export function RichTextarea({
     const numberMatch = line.match(/^(\s*)(\d+\.\s)/);
     
     let newLine: string;
-    let newCursorOffset: number;
     
     if (prefix === '• ') {
       if (bulletMatch) {
         // Remove bullet
         newLine = line.replace(/^(\s*)[-•]\s/, '$1');
-        newCursorOffset = -bulletMatch[2].length;
       } else if (numberMatch) {
         // Replace number with bullet
         newLine = line.replace(/^(\s*)\d+\.\s/, '$1• ');
-        newCursorOffset = '• '.length - numberMatch[2].length;
       } else {
         // Add bullet
         newLine = '• ' + line;
-        newCursorOffset = 2;
       }
     } else {
       // Numbered list
       if (numberMatch) {
         // Remove number
         newLine = line.replace(/^(\s*)\d+\.\s/, '$1');
-        newCursorOffset = -numberMatch[2].length;
       } else if (bulletMatch) {
         // Replace bullet with number
         newLine = line.replace(/^(\s*)[-•]\s/, '$11. ');
-        newCursorOffset = '1. '.length - bulletMatch[2].length;
       } else {
         // Add number
         newLine = '1. ' + line;
-        newCursorOffset = 3;
       }
     }
     
@@ -163,18 +113,9 @@ export function RichTextarea({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     
-    // Bold: Ctrl/Cmd + B
-    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
-      e.preventDefault();
-      wrapSelection('**');
-      return;
-    }
-    
-    // Underline: Ctrl/Cmd + U
-    if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
-      e.preventDefault();
-      wrapSelection('__');
-      return;
+    // Allow native undo/redo (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z)
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'y')) {
+      return; // Let the browser handle undo/redo natively
     }
     
     if (e.key === 'Tab') {
@@ -258,7 +199,7 @@ export function RichTextarea({
         }, 0);
       }
     }
-  }, [value, onChange, getLineInfo, wrapSelection]);
+  }, [value, onChange, getLineInfo]);
 
   return (
     <div className="space-y-1">
@@ -284,26 +225,6 @@ export function RichTextarea({
           >
             <ListOrdered className="w-4 h-4" />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => wrapSelection('**')}
-            title="Bold (Ctrl+B)"
-          >
-            <Bold className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => wrapSelection('__')}
-            title="Underline (Ctrl+U)"
-          >
-            <Underline className="w-4 h-4" />
-          </Button>
         </div>
       )}
       <Textarea
@@ -313,7 +234,7 @@ export function RichTextarea({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={rows}
-        className={cn("resize-none text-sm", className)}
+        className={cn("resize-none text-sm min-h-[36px]", className)}
       />
     </div>
   );

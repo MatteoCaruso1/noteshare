@@ -217,7 +217,7 @@ export function QuickNoteCapture() {
             placeholder="What are you working on?"
             value={noteText}
             onChange={setNoteText}
-            rows={2}
+            rows={1}
             autoExpand
           />
 
