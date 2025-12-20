@@ -167,7 +167,7 @@ export function QuickNoteCapture() {
 
           {/* Text Content - supports Tab for nested bullets */}
           <Textarea
-            placeholder="What's on your mind?"
+            placeholder="What are you working on?"
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             onKeyDown={(e) => {

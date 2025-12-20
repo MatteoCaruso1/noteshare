@@ -140,8 +140,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
           </p>
         </div>
 
-        {/* Visibility Toggle and Delete for Owner */}
-        {isOwner && (
+        {/* Visibility Toggle and Delete for Owner - only show in expanded/detail view */}
+        {isOwner && expanded && (
           <div className="flex items-center gap-1">
             <Select
               value={note.visibility}

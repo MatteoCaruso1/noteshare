@@ -40,7 +40,7 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const [error, setError] = useState(false);
 
   const formatTime = (seconds: number): string => {
-    if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
+    if (!isFinite(seconds) || isNaN(seconds) || seconds === 0) return '--:--';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -233,16 +233,28 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
           )}
         </Button>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 relative">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading audio...</span>
+              </div>
+            </div>
+          )}
           <div 
             ref={containerRef} 
-            className="w-full cursor-pointer"
+            className={`w-full cursor-pointer ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
             onClick={(e) => e.stopPropagation()}
           />
         </div>
 
         <div className="text-xs text-muted-foreground flex-shrink-0 min-w-[70px] text-right font-mono">
-          {formatTime(currentTime)} / {formatTime(duration)}
+          {isLoading ? (
+            <span className="text-muted-foreground/50">--:-- / --:--</span>
+          ) : (
+            <>{formatTime(currentTime)} / {formatTime(duration)}</>
+          )}
         </div>
       </div>
     </div>

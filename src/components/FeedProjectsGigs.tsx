@@ -124,9 +124,17 @@ export function FeedProjectsGigs() {
                     onClick={() => navigate(`/gigs/${gig.id}?from=notes`)}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Music2 className="w-5 h-5 text-primary" />
-                      </div>
+                      {gig.image ? (
+                        <img
+                          src={gig.image}
+                          alt=""
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Music2 className="w-5 h-5 text-primary" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-medium text-sm">{gig.title}</h4>
