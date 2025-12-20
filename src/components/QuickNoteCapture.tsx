@@ -111,15 +111,16 @@ export function QuickNoteCapture() {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="px-4 pb-4 space-y-4">
-          {/* Settings + Media Upload in same row */}
-          <div className="flex items-center justify-between gap-2">
+          {/* Compact toolbar row: Settings, Upload, Project, Focus toggle */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Settings */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Settings className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="start">
+              <PopoverContent className="w-48 p-2 bg-popover" align="start">
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground px-2">Visibility</p>
                   <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
@@ -142,57 +143,61 @@ export function QuickNoteCapture() {
                 </div>
               </PopoverContent>
             </Popover>
+
+            {/* Upload Media (icon only) */}
             <MediaUploadButton
               onAudioUpload={handleAudioFileUpload}
               onImageUpload={handleImageUpload}
               uploading={uploading}
+              iconOnly
             />
-          </div>
 
-          {/* Project Selection */}
-          {projects && projects.length > 0 && (
-            <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
-              <SelectTrigger>
-                <div className="flex items-center gap-2">
-                  <Folder className="w-4 h-4 text-muted-foreground" />
-                  <SelectValue placeholder="Link to a project (optional)" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No project</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+            {/* Project (icon dropdown) */}
+            {projects && projects.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={`h-8 w-8 ${selectedProjectId ? 'text-primary' : ''}`}
+                  >
+                    <Folder className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2 bg-popover" align="start">
+                  <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="No project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No project</SelectItem>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </PopoverContent>
+              </Popover>
+            )}
 
-          {/* Text Content - with list formatting support */}
-          <RichTextarea
-            placeholder="What are you working on?"
-            value={noteText}
-            onChange={setNoteText}
-            rows={3}
-          />
-
-          {/* Attach to Today's Focus toggle */}
-          {currentFocus && currentFocus.focus_text && (
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Crosshair className="w-4 h-4 text-primary" />
-                <Label htmlFor="attach-focus" className="text-sm cursor-pointer">
-                  Attach to Today's Focus
+            {/* Focus toggle - inline */}
+            {currentFocus && currentFocus.focus_text && (
+              <div className="flex items-center gap-2 ml-auto">
+                <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                <Label htmlFor="attach-focus" className="text-xs cursor-pointer text-muted-foreground">
+                  Focus
                 </Label>
+                <Switch
+                  id="attach-focus"
+                  checked={attachFocus}
+                  onCheckedChange={setAttachFocus}
+                  className="scale-90"
+                />
               </div>
-              <Switch
-                id="attach-focus"
-                checked={attachFocus}
-                onCheckedChange={setAttachFocus}
-              />
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Audio Recording */}
           <AudioRecorder onRecorded={handleAudioRecorded} />
