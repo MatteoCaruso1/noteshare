@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface TimelineSearchProps {
   onSearch: (query: string) => void;
@@ -30,8 +31,8 @@ export function TimelineSearch({ onSearch, onFocusDateFilter, focusDate }: Timel
   };
 
   return (
-    <div className="space-y-2">
-      <div className="relative">
+    <div className="flex items-center gap-2">
+      <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           type="text"
@@ -52,40 +53,41 @@ export function TimelineSearch({ onSearch, onFocusDateFilter, focusDate }: Timel
         )}
       </div>
       
-      {/* Focus Date Filter */}
-      <div className="flex items-center gap-2">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={`h-8 gap-2 text-xs ${focusDate ? 'bg-primary/10 border-primary/30' : ''}`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              {focusDate ? format(focusDate, 'MMM d, yyyy') : 'Filter by Focus Date'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <CalendarComponent
-              mode="single"
-              selected={focusDate}
-              onSelect={onFocusDateFilter}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-        {focusDate && (
+      {/* Date Filter */}
+      <Popover>
+        <PopoverTrigger asChild>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={handleClearFocusDate}
+            size="icon"
+            className={cn(
+              "h-9 w-9 shrink-0",
+              focusDate && "text-primary bg-primary/10"
+            )}
           >
-            <X className="w-3.5 h-3.5 mr-1" />
-            Clear
+            <Calendar className="w-4 h-4" />
           </Button>
-        )}
-      </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <CalendarComponent
+            mode="single"
+            selected={focusDate}
+            onSelect={onFocusDateFilter}
+            initialFocus
+            className={cn("p-3 pointer-events-auto")}
+          />
+        </PopoverContent>
+      </Popover>
+      {focusDate && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
+          onClick={handleClearFocusDate}
+        >
+          {format(focusDate, 'M/d')}
+          <X className="w-3 h-3 ml-1" />
+        </Button>
+      )}
     </div>
   );
 }
