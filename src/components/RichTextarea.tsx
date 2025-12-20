@@ -225,7 +225,7 @@ export function RichTextarea({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={rows}
-        className={cn("resize-none font-mono text-sm", className)}
+        className={cn("resize-none text-sm", className)}
       />
     </div>
   );
