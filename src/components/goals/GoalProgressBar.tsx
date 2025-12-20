@@ -282,7 +282,7 @@ export function GoalProgressBar({
 
       {/* Axis labels */}
       {axisData && (
-        <div className="relative h-4 mt-1">
+        <div className="relative h-4 mt-1 mx-2">
           {axisData.labels.map(({ value, position }, index) => (
             <div
               key={index}

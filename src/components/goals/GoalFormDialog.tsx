@@ -106,7 +106,7 @@ export function GoalFormDialog({
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {goal ? 'Edit Goal' : `Add ${goalType === 'near-term' ? 'Near-Term' : 'Long-Term'} Goal`}
+            {goal ? 'Edit Goal' : 'Add Goal'}
           </DialogTitle>
         </DialogHeader>
 

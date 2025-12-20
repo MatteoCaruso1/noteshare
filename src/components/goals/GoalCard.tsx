@@ -1,9 +1,8 @@
 import { memo, useState, useCallback } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Goal } from '@/types';
 import { GoalProgressBar } from './GoalProgressBar';
-import { Pencil, Trash2, ChevronUp, ChevronDown, Calendar, Trophy, Sparkles, RotateCcw } from 'lucide-react';
+import { ChevronUp, ChevronDown, Calendar, Trophy, Sparkles, RotateCcw, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -60,16 +59,17 @@ export const GoalCard = memo(function GoalCard({
   }, [onIncrementProgress, goal.progress_type, goal.current_steps, goal.target_steps, goal.current_minutes, goal.target_minutes]);
 
   return (
-    <Card 
+    <div 
       className={cn(
-        "p-3 bg-secondary/30 border-border relative overflow-hidden transition-all cursor-pointer hover:bg-secondary/50",
+        "group relative rounded-xl border bg-card/50 backdrop-blur-sm transition-all duration-200 cursor-pointer",
+        "hover:bg-card hover:shadow-md hover:border-primary/20",
         goal.is_completed && "bg-primary/5 border-primary/20 hover:bg-primary/10",
-        showConfetti && "ring-2 ring-primary"
+        showConfetti && "ring-2 ring-primary ring-offset-2 ring-offset-background"
       )}
       onClick={onEdit}
     >
       {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
           <div className="flex gap-1 animate-bounce">
             <Sparkles className="w-5 h-5 text-primary animate-pulse" />
             <Trophy className="w-6 h-6 text-primary" />
@@ -78,104 +78,108 @@ export const GoalCard = memo(function GoalCard({
         </div>
       )}
 
-      <div className="flex items-start gap-2">
-        {showReorder && !goal.is_completed && (
-          <div className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5"
-              onClick={onMoveUp}
-              disabled={isFirst}
-            >
-              <ChevronUp className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5"
-              onClick={onMoveDown}
-              disabled={isLast}
-            >
-              <ChevronDown className="w-3 h-3" />
-            </Button>
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex-1 min-w-0">
-              <h4 className={cn(
-                "font-medium text-sm truncate",
-                goal.is_completed && "line-through text-muted-foreground"
-              )}>
-                {goal.title || goal.content}
-              </h4>
-              {goal.description && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                  {goal.description}
-                </p>
-              )}
+      <div className="p-4">
+        <div className="flex items-start gap-3">
+          {/* Reorder buttons */}
+          {showReorder && !goal.is_completed && (
+            <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 hover:bg-primary/10"
+                onClick={onMoveUp}
+                disabled={isFirst}
+              >
+                <ChevronUp className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 hover:bg-primary/10"
+                onClick={onMoveDown}
+                disabled={isLast}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
             </div>
-            
-            {goal.is_completed && (
-              <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                {onRestore && (
+          )}
+
+          <div className="flex-1 min-w-0 space-y-3">
+            {/* Header row */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h4 className={cn(
+                  "font-semibold text-base leading-tight",
+                  goal.is_completed && "line-through text-muted-foreground"
+                )}>
+                  {goal.title || goal.content}
+                </h4>
+                
+                {/* Target date - inline with title area */}
+                {goal.target_date && !goal.is_completed && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{format(new Date(goal.target_date), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+                
+                {/* Completion date */}
+                {goal.is_completed && goal.completed_at && (
+                  <div className="flex items-center gap-1.5 text-xs text-primary mt-1.5">
+                    <Trophy className="w-3.5 h-3.5" />
+                    <span>Completed {format(new Date(goal.completed_at), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Action buttons for completed goals */}
+              {goal.is_completed && (
+                <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {onRestore && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 hover:bg-primary/10" 
+                      onClick={onRestore}
+                      title="Restore to in-progress"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-6 w-6" 
-                    onClick={onRestore}
-                    title="Restore to in-progress"
+                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                    onClick={onDelete}
+                    title="Delete goal"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
-                )}
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 text-destructive hover:text-destructive" 
-                  onClick={onDelete}
-                  title="Delete goal"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
+                </div>
+              )}
+            </div>
+
+            {/* Progress section */}
+            <div onClick={(e) => e.stopPropagation()}>
+              <GoalProgressBar
+                goal={goal}
+                onIncrement={handleIncrement}
+                onDecrement={onDecrementProgress}
+                onSetProgress={onSetProgress}
+                onComplete={handleComplete}
+                showControls={!goal.is_completed}
+              />
+            </div>
+
+            {/* Reflection for completed goals */}
+            {goal.is_completed && goal.reflection && (
+              <p className="text-sm text-muted-foreground italic border-l-2 border-primary/30 pl-3 py-1">
+                "{goal.reflection}"
+              </p>
             )}
           </div>
-
-          {goal.target_date && !goal.is_completed && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-              <Calendar className="w-3 h-3" />
-              <span>Target: {format(new Date(goal.target_date), 'MMM d, yyyy')}</span>
-            </div>
-          )}
-
-          {goal.is_completed && goal.completed_at && (
-            <div className="flex items-center gap-1 text-xs text-primary mb-2">
-              <Trophy className="w-3 h-3" />
-              <span>Completed {format(new Date(goal.completed_at), 'MMM d, yyyy')}</span>
-            </div>
-          )}
-
-          <div onClick={(e) => e.stopPropagation()}>
-            <GoalProgressBar
-              goal={goal}
-              onIncrement={handleIncrement}
-              onDecrement={onDecrementProgress}
-              onSetProgress={onSetProgress}
-              onComplete={handleComplete}
-              showControls={!goal.is_completed}
-            />
-          </div>
-
-          {goal.is_completed && goal.reflection && (
-            <p className="mt-2 text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-2">
-              "{goal.reflection}"
-            </p>
-          )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 });
