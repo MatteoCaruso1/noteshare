@@ -17,6 +17,16 @@ function usePublicProfile(profileId: string | undefined, username: string | unde
   return useQuery({
     queryKey: ['public-profile', profileId, username],
     queryFn: async () => {
+      // Validate inputs
+      if (!profileId && !username) {
+        throw new Error('Profile ID or username required');
+      }
+      
+      // Validate profileId is not a literal string "undefined"
+      if (profileId === 'undefined' || profileId === 'null') {
+        throw new Error('Invalid profile ID');
+      }
+
       if (profileId) {
         const { data, error } = await supabase
           .from('profiles')
@@ -37,7 +47,8 @@ function usePublicProfile(profileId: string | undefined, username: string | unde
       }
       throw new Error('Profile ID or username required');
     },
-    enabled: !!profileId || !!username,
+    enabled: (!!profileId && profileId !== 'undefined' && profileId !== 'null') || !!username,
+    retry: false, // Don't retry on invalid profile
   });
 }
 

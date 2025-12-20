@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,32 @@ import { Mic, Square, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { WaveformPlayer } from './WaveformPlayer';
+import { audioManager } from '@/lib/audioManager';
 
 interface VoiceReplyButtonProps {
   noteId: string;
   authorId: string;
   onSuccess: () => void;
+}
+
+// Get supported mime type for mobile compatibility
+function getSupportedMimeType(): string {
+  const types = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/ogg',
+    'audio/mp4',
+    'audio/mpeg',
+    'audio/wav',
+  ];
+  
+  for (const type of types) {
+    if (MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return '';
 }
 
 export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButtonProps) {
@@ -21,40 +42,128 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [replyTitle, setReplyTitle] = useState('');
+  const [elapsedTime, setElapsedTime] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      // Pause any playing audio before recording
+      audioManager.pauseAll();
+      audioManager.setRecording(true);
+
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        }
+      });
+      
+      streamRef.current = stream;
+      
+      const mimeType = getSupportedMimeType();
+      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
+      
+      const mediaRecorder = new MediaRecorder(stream, options);
+      console.log('[VoiceReplyButton] Using mimeType:', mediaRecorder.mimeType || mimeType);
+      
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      startTimeRef.current = Date.now();
+      setElapsedTime(0);
+
+      // Start timer
+      timerRef.current = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }, 1000);
 
       mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
+        console.log('[VoiceReplyButton] dataavailable, size:', e.data?.size);
+        if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
-        stream.getTracks().forEach(track => track.stop());
+        console.log('[VoiceReplyButton] onstop, chunks:', chunksRef.current.length);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        
+        audioManager.setRecording(false);
+        
+        const actualMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm';
+        const blob = new Blob(chunksRef.current, { type: actualMimeType });
+        console.log('[VoiceReplyButton] final blob size:', blob.size, 'type:', blob.type);
+        
+        if (blob.size > 0) {
+          setAudioBlob(blob);
+          setAudioUrl(URL.createObjectURL(blob));
+        } else {
+          toast.error('Recording was empty. Please try again.');
+        }
+        
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
       };
 
-      mediaRecorder.start();
+      mediaRecorder.onerror = (event) => {
+        console.error('[VoiceReplyButton] MediaRecorder error:', event);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        audioManager.setRecording(false);
+        toast.error('Recording failed. Please try again.');
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        setIsRecording(false);
+      };
+
+      // Use timeslice to get data more frequently (helps with screen lock)
+      mediaRecorder.start(1000);
       setIsRecording(true);
     } catch (error) {
-      console.error('Error starting recording:', error);
-      toast.error('Could not access microphone');
+      console.error('[VoiceReplyButton] Error starting recording:', error);
+      audioManager.setRecording(false);
+      toast.error('Could not access microphone. Please check permissions.');
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.error('[VoiceReplyButton] Error stopping recorder:', e);
+      }
       setIsRecording(false);
     }
   };
@@ -64,12 +173,19 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
 
     setIsUploading(true);
     try {
+      // Determine file extension from mime type
+      const mimeType = audioBlob.type;
+      let ext = 'webm';
+      if (mimeType.includes('mp4')) ext = 'm4a';
+      else if (mimeType.includes('ogg')) ext = 'ogg';
+      else if (mimeType.includes('wav')) ext = 'wav';
+      
       // Upload audio to storage
-      const fileName = `voice-reply-${Date.now()}.webm`;
+      const fileName = `voice-reply-${Date.now()}.${ext}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('practice-media')
         .upload(`voice-replies/${fileName}`, audioBlob, {
-          contentType: 'audio/webm',
+          contentType: mimeType,
         });
 
       if (uploadError) throw uploadError;
@@ -96,7 +212,7 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
       resetState();
       onSuccess();
     } catch (error) {
-      console.error('Error sending voice reply:', error);
+      console.error('[VoiceReplyButton] Error sending voice reply:', error);
       toast.error('Failed to send voice reply');
     } finally {
       setIsUploading(false);
@@ -111,11 +227,22 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
     }
     setIsRecording(false);
     setReplyTitle('');
+    setElapsedTime(0);
+    
+    // Cleanup any lingering stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
   };
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
+      // Stop recording if closing dialog while recording
+      if (isRecording) {
+        stopRecording();
+      }
       resetState();
     }
   };
@@ -151,6 +278,12 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
                   <Mic className="w-8 h-8" />
                 )}
               </Button>
+              {isRecording && (
+                <div className="flex items-center gap-2 text-destructive">
+                  <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                  <span className="font-mono">{formatTime(elapsedTime)}</span>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground">
                 {isRecording ? 'Recording... Tap to stop' : 'Tap to start recording'}
               </p>
