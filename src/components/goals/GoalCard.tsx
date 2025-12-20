@@ -61,8 +61,8 @@ export const GoalCard = memo(function GoalCard({
   return (
     <div 
       className={cn(
-        "group relative rounded-xl border bg-card/50 backdrop-blur-sm transition-all duration-200 cursor-pointer",
-        "hover:bg-card hover:shadow-md hover:border-primary/20",
+        "group relative rounded-xl border bg-muted/40 backdrop-blur-sm transition-all duration-200 cursor-pointer",
+        "hover:bg-muted/60 hover:shadow-md hover:border-primary/20",
         goal.is_completed && "bg-primary/5 border-primary/20 hover:bg-primary/10",
         showConfetti && "ring-2 ring-primary ring-offset-2 ring-offset-background"
       )}
@@ -82,24 +82,24 @@ export const GoalCard = memo(function GoalCard({
         <div className="flex items-start gap-3">
           {/* Reorder buttons */}
           {showReorder && !goal.is_completed && (
-            <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col gap-0 opacity-0 group-hover:opacity-100 transition-opacity -my-1" onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 hover:bg-primary/10"
+                className="h-5 w-5 hover:bg-primary/10"
                 onClick={onMoveUp}
                 disabled={isFirst}
               >
-                <ChevronUp className="w-4 h-4" />
+                <ChevronUp className="w-3 h-3" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 hover:bg-primary/10"
+                className="h-5 w-5 hover:bg-primary/10"
                 onClick={onMoveDown}
                 disabled={isLast}
               >
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="w-3 h-3" />
               </Button>
             </div>
           )}
