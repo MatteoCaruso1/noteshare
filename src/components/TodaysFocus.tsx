@@ -26,7 +26,7 @@ export function TodaysFocus() {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.max(60, textareaRef.current.scrollHeight)}px`;
+      textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
     }
   }, [text]);
 
@@ -258,8 +258,8 @@ export function TodaysFocus() {
             handleBlur();
           }}
           placeholder="What will you work on today?"
-          className="min-h-[60px] resize-none text-sm"
-          rows={2}
+          className="min-h-[36px] resize-none text-sm"
+          rows={1}
         />
       </div>
     </Card>
