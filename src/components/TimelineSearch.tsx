@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import type { SelectSingleEventHandler } from 'react-day-picker';
 
 interface TimelineSearchProps {
   onSearch: (query: string) => void;
@@ -15,6 +16,7 @@ interface TimelineSearchProps {
 
 export function TimelineSearch({ onSearch, onFocusDateFilter, focusDate }: TimelineSearchProps) {
   const [query, setQuery] = useState('');
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const handleChange = (value: string) => {
     setQuery(value);
@@ -54,7 +56,7 @@ export function TimelineSearch({ onSearch, onFocusDateFilter, focusDate }: Timel
       </div>
       
       {/* Date Filter */}
-      <Popover>
+      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
@@ -71,7 +73,10 @@ export function TimelineSearch({ onSearch, onFocusDateFilter, focusDate }: Timel
           <CalendarComponent
             mode="single"
             selected={focusDate}
-            onSelect={onFocusDateFilter}
+            onSelect={(date) => {
+              onFocusDateFilter?.(date);
+              setCalendarOpen(false);
+            }}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />
