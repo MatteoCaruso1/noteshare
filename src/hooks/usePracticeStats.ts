@@ -208,6 +208,13 @@ export function usePracticeStats(profileId: string | undefined) {
         .slice(0, 5)
         .map(([tag, count]) => ({ tag, count }));
 
+      // Update current_streak in profile (fire and forget)
+      supabase
+        .from('profiles')
+        .update({ current_streak: currentStreak })
+        .eq('id', profileId)
+        .then(() => {});
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,

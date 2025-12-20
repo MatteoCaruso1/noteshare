@@ -9,9 +9,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Music2, Disc3, Users, MapPin } from 'lucide-react';
+import { ArrowLeft, User, Music2, Disc3, Users, MapPin, Zap } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline } from '@/components/Timeline';
+import { StreakTintedName } from '@/components/StreakTintedName';
+import { getStreakTier } from '@/lib/streakUtils';
 
 function usePublicProfile(profileId: string | undefined, username: string | undefined) {
   return useQuery({
@@ -137,7 +139,11 @@ const PublicProfile = () => {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold truncate">{profile.name}</h1>
+              <StreakTintedName 
+                name={profile.name}
+                streakDays={profile.current_streak || 0}
+                className="text-xl font-bold truncate block"
+              />
               <p className="text-sm text-muted-foreground">@{profile.username}</p>
               {profile.location && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
@@ -146,6 +152,16 @@ const PublicProfile = () => {
               )}
             </div>
           </div>
+
+          {/* Streak Display */}
+          {(profile.current_streak || 0) > 0 && (
+            <div className={`flex items-center gap-2 p-3 rounded-lg border mb-4 ${getStreakTier(profile.current_streak || 0).bgColorClass || 'bg-muted/50'}`}>
+              <Zap className={`w-4 h-4 ${getStreakTier(profile.current_streak || 0).colorClass || 'text-green-500'}`} />
+              <span className={`text-sm font-medium ${getStreakTier(profile.current_streak || 0).textColorClass || ''}`}>
+                {profile.current_streak}d streak
+              </span>
+            </div>
+          )}
 
           {/* Open to Collaborate */}
           {profile.open_to_collaborate && (

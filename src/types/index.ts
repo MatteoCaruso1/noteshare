@@ -25,6 +25,7 @@ export interface Profile {
   open_to_collaborate: boolean;
   followers_count: number;
   following_count: number;
+  current_streak: number;
   created_at: string;
   updated_at: string;
 }

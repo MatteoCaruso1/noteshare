@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
-import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 
@@ -38,9 +37,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
   
-  // Get streak for own notes to apply tint
-  const { data: ownStats } = usePracticeStats(isOwner ? profile?.id : undefined);
-  const streakDays = isOwner ? (ownStats?.currentStreak || 0) : 0;
+  // Get streak from author's profile for tint display
+  const streakDays = note.author?.current_streak || 0;
 
   const handleVisibilityChange = useCallback((value: string) => {
     updateVisibility.mutate({

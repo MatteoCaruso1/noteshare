@@ -477,6 +477,7 @@ export type Database = {
           avatar: string | null
           bio: string | null
           created_at: string
+          current_streak: number
           followers_count: number
           following_count: number
           genres: string[] | null
@@ -494,6 +495,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          current_streak?: number
           followers_count?: number
           following_count?: number
           genres?: string[] | null
@@ -511,6 +513,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          current_streak?: number
           followers_count?: number
           following_count?: number
           genres?: string[] | null
