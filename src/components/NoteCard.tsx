@@ -10,7 +10,7 @@ import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility } from '@/hooks/useUpdateNote';
@@ -237,6 +237,16 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         <div className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg">
           <Target className="w-4 h-4 text-primary" />
           <span className="text-sm text-primary truncate">{goalName}</span>
+        </div>
+      )}
+
+      {/* Focus Date Badge */}
+      {note.focus_date && (
+        <div className="flex items-center gap-2 mb-3">
+          <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+            <Crosshair className="w-3 h-3 mr-1" />
+            {new Date(note.focus_date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })} Focus
+          </Badge>
         </div>
       )}
 

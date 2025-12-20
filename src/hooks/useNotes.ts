@@ -129,6 +129,9 @@ export function useCreateNote() {
       projectId,
       goalId,
       visibility = 'friends',
+      focusEntryId,
+      focusDate,
+      focusTextSnapshot,
     }: {
       authorId: string;
       textContent?: string;
@@ -141,6 +144,9 @@ export function useCreateNote() {
       projectId?: string;
       goalId?: string;
       visibility?: 'private' | 'friends';
+      focusEntryId?: string;
+      focusDate?: string;
+      focusTextSnapshot?: string;
     }) => {
       const { data, error } = await supabase
         .from('notes')
@@ -156,6 +162,9 @@ export function useCreateNote() {
           project_id: projectId,
           goal_id: goalId,
           visibility,
+          focus_entry_id: focusEntryId,
+          focus_date: focusDate,
+          focus_text_snapshot: focusTextSnapshot,
         })
         .select()
         .single();
