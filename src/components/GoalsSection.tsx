@@ -8,6 +8,21 @@ import { GoalCard } from './goals/GoalCard';
 import { GoalFormDialog } from './goals/GoalFormDialog';
 import { CompletionDialog } from './goals/CompletionDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  TouchSensor,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface GoalsSectionProps {
   profileId: string;
@@ -55,6 +70,42 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     [goals]
   );
 
+  // DnD sensors with touch support
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = activeGoals.findIndex(g => g.id === active.id);
+      const newIndex = activeGoals.findIndex(g => g.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const movedGoal = activeGoals[oldIndex];
+        const targetGoal = activeGoals[newIndex];
+        
+        // Swap priorities
+        reorderGoal.mutate({ goalId: movedGoal.id, newPriority: targetGoal.priority });
+        reorderGoal.mutate({ goalId: targetGoal.id, newPriority: movedGoal.priority });
+      }
+    }
+  }, [activeGoals, reorderGoal]);
+
   const handleAddGoal = useCallback(() => {
     // Unified: always create as 'long-term' to get full functionality
     setFormGoalType('long-term');
@@ -84,20 +135,6 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
       });
     }
   }, [createGoal, updateGoal, profileId, formGoalType]);
-
-  const handleMoveGoal = useCallback((goal: Goal, direction: 'up' | 'down') => {
-    // Unified: reorder across all active goals
-    const currentIndex = activeGoals.findIndex(g => g.id === goal.id);
-    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
-    if (targetIndex < 0 || targetIndex >= activeGoals.length) return;
-
-    const targetGoal = activeGoals[targetIndex];
-    
-    // Swap priorities
-    reorderGoal.mutate({ goalId: goal.id, newPriority: targetGoal.priority });
-    reorderGoal.mutate({ goalId: targetGoal.id, newPriority: goal.priority });
-  }, [activeGoals, reorderGoal]);
 
   const handleCompleteGoal = (goal: Goal) => {
     // Unified: always show completion dialog for reflection
@@ -132,22 +169,30 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   const renderGoalList = () => {
     return (
       <div className="space-y-2">
-        {activeGoals.map((goal, index) => (
-          <GoalCard
-            key={goal.id}
-            goal={goal}
-            onEdit={() => handleEditGoal(goal)}
-            onDelete={() => deleteGoal.mutate(goal.id)}
-            onMoveUp={() => handleMoveGoal(goal, 'up')}
-            onMoveDown={() => handleMoveGoal(goal, 'down')}
-            onIncrementProgress={() => handleIncrementProgress(goal)}
-            onDecrementProgress={() => handleDecrementProgress(goal)}
-            onSetProgress={(value) => handleSetProgress(goal, value)}
-            onComplete={() => handleCompleteGoal(goal)}
-            isFirst={index === 0}
-            isLast={index === activeGoals.length - 1}
-          />
-        ))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={activeGoals.map(g => g.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {activeGoals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onEdit={() => handleEditGoal(goal)}
+                onDelete={() => deleteGoal.mutate(goal.id)}
+                onIncrementProgress={() => handleIncrementProgress(goal)}
+                onDecrementProgress={() => handleDecrementProgress(goal)}
+                onSetProgress={(value) => handleSetProgress(goal, value)}
+                onComplete={() => handleCompleteGoal(goal)}
+                isDraggable={true}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
         <Button
           variant="outline"
           size="sm"
@@ -211,7 +256,7 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
                       onDecrementProgress={() => {}}
                       onComplete={() => {}}
                       onRestore={() => handleRestoreGoal(goal)}
-                      showReorder={false}
+                      isDraggable={false}
                     />
                   ))}
                 </CollapsibleContent>
