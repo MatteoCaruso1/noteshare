@@ -320,8 +320,8 @@ export function PracticeControls() {
                 </Popover>
               )}
 
-              {/* Focus toggle - inline */}
-              {currentFocus && currentFocus.focus_text && (
+              {/* Focus toggle - inline, show if focus exists with text */}
+              {currentFocus?.focus_text && (
                 <div className="flex items-center gap-2 ml-auto">
                   <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Label htmlFor="attach-focus-session" className="text-xs cursor-pointer text-muted-foreground">
