@@ -220,11 +220,11 @@ export function TodaysFocus() {
 
   return (
     <Card className="p-4 bg-card border-border">
-      <div className="flex items-center gap-2 mb-3">
-        <Crosshair className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
-        <h2 className="font-semibold">Today's Focus</h2>
-      </div>
-      <div className="space-y-2">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Crosshair className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
+          <h2 className="font-semibold">Today's Focus</h2>
+        </div>
         <div className="flex gap-1">
           <Button
             type="button"
@@ -247,21 +247,21 @@ export function TodaysFocus() {
             <ListOrdered className="w-4 h-4" />
           </Button>
         </div>
-        <Textarea
-          ref={textareaRef}
-          value={text}
-          onChange={(e) => handleTextChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false);
-            handleBlur();
-          }}
-          placeholder="What will you work on today?"
-          className="min-h-[36px] resize-none text-sm"
-          rows={1}
-        />
       </div>
+      <Textarea
+        ref={textareaRef}
+        value={text}
+        onChange={(e) => handleTextChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          handleBlur();
+        }}
+        placeholder="What will you work on today?"
+        className="min-h-[36px] resize-none text-sm"
+        rows={1}
+      />
     </Card>
   );
 }

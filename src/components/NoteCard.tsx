@@ -131,7 +131,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
       {/* Type Badge Row - includes focus tag */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         {isPracticeSession ? (
-          <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 text-xs">
+          <Badge variant="secondary" className="text-xs">
             <Clock className="w-3 h-3 mr-1" />
             Practice Session
             {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
