@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useId } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Mic, Loader2, GripHorizontal } from 'lucide-react';
+import { Play, Pause, Mic, Loader2 } from 'lucide-react';
 import { audioManager } from '@/lib/audioManager';
 
 interface WaveformPlayerProps {
@@ -265,13 +265,6 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
             style={{ cursor: isReady ? 'pointer' : 'default' }}
             onClick={(e) => e.stopPropagation()}
           />
-          {/* Scrub hint for mobile */}
-          {isReady && !isLoading && (
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 text-[10px] text-muted-foreground/60 pointer-events-none md:hidden">
-              <GripHorizontal className="w-3 h-3" />
-              <span>drag to scrub</span>
-            </div>
-          )}
         </div>
 
         <div className="text-xs text-muted-foreground flex-shrink-0 min-w-[70px] text-right font-mono">

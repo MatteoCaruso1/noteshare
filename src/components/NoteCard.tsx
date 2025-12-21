@@ -5,13 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus } from '@/hooks/useUpdateNote';
@@ -198,72 +199,70 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
           </p>
         </div>
 
-        {/* Visibility Toggle and Delete for Owner - only show in expanded/detail view */}
+        {/* Settings Menu for Owner - only show in expanded/detail view */}
         {isOwner && expanded && (
-          <div className="flex items-center gap-2">
-            <Select
-              value={note.visibility}
-              onValueChange={handleVisibilityChange}
-            >
-              <SelectTrigger
-                className="w-auto h-7 px-2 text-xs border-none bg-transparent hover:bg-muted/50"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center gap-1">
-                  {note.visibility === 'private' ? (
-                    <Lock className="w-3 h-3 text-muted-foreground" />
-                  ) : (
-                    <Users className="w-3 h-3 text-muted-foreground" />
-                  )}
-                </div>
-              </SelectTrigger>
-              <SelectContent onClick={(e) => e.stopPropagation()}>
-                <SelectItem value="private">
-                  <div className="flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> Private
-                  </div>
-                </SelectItem>
-                <SelectItem value="friends">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3 h-3" /> Friends
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {isPracticeSession ? 'Delete Practice Session?' : 'Delete Note?'}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {isPracticeSession 
-                      ? 'This will permanently delete this practice session and its note. This action cannot be undone.'
-                      : 'This will permanently delete this note. This action cannot be undone.'}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                <Settings className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem
+                onClick={() => handleVisibilityChange(note.visibility === 'private' ? 'friends' : 'private')}
+                className="cursor-pointer"
+              >
+                {note.visibility === 'private' ? (
+                  <>
+                    <Users className="w-4 h-4 mr-2" />
+                    Make visible to friends
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Make private
+                  </>
+                )}
+              </DropdownMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer text-destructive focus:text-destructive"
                   >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete {isPracticeSession ? 'Session' : 'Note'}
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {isPracticeSession ? 'Delete Practice Session?' : 'Delete Note?'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {isPracticeSession 
+                        ? 'This will permanently delete this practice session and its note. This action cannot be undone.'
+                        : 'This will permanently delete this note. This action cannot be undone.'}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 

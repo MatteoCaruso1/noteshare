@@ -103,7 +103,15 @@ export function GoalFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-md max-h-[90vh] overflow-y-auto"
+        onOpenAutoFocus={(e) => {
+          // Prevent auto-focus on mobile to avoid keyboard popup
+          if (window.innerWidth < 640) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {goal ? 'Edit Goal' : 'Add Goal'}
@@ -123,6 +131,7 @@ export function GoalFormDialog({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What do you want to achieve?"
               required
+              autoFocus={false}
             />
           </div>
 
