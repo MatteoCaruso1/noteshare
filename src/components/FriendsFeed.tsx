@@ -4,35 +4,50 @@ import { NoteCard } from './NoteCard';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Sparkles } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface FriendsFeedProps {
   searchQuery?: string;
+  focusDateFilter?: Date;
 }
 
 const INITIAL_LIMIT = 10;
 const LOAD_MORE_COUNT = 10;
 
-export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '' }: FriendsFeedProps) {
+export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
   const { data: notes, isLoading } = useFriendsNotes();
   const [displayCount, setDisplayCount] = useState(INITIAL_LIMIT);
 
-  // Filter notes based on search query
+  // Filter notes based on search query and focus date
   const filteredNotes = useMemo(() => {
-    if (!notes || !searchQuery.trim()) return notes || [];
+    if (!notes) return [];
     
-    const query = searchQuery.toLowerCase();
-    return notes.filter((note) => {
-      // Search by text content
-      if (note.text_content?.toLowerCase().includes(query)) return true;
-      // Search by tags
-      if (note.tags.some(tag => tag.toLowerCase().includes(query))) return true;
-      // Search by audio file names
-      if (note.audio_file_names?.some(name => name?.toLowerCase().includes(query))) return true;
-      // Search by author name
-      if (note.author?.name?.toLowerCase().includes(query)) return true;
-      return false;
-    });
-  }, [notes, searchQuery]);
+    let filtered = notes;
+    
+    // Filter by focus date if set
+    if (focusDateFilter) {
+      const filterDateStr = format(focusDateFilter, 'yyyy-MM-dd');
+      filtered = filtered.filter((note) => note.focus_date === filterDateStr);
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((note) => {
+        // Search by text content
+        if (note.text_content?.toLowerCase().includes(query)) return true;
+        // Search by tags
+        if (note.tags.some(tag => tag.toLowerCase().includes(query))) return true;
+        // Search by audio file names
+        if (note.audio_file_names?.some(name => name?.toLowerCase().includes(query))) return true;
+        // Search by author name
+        if (note.author?.name?.toLowerCase().includes(query)) return true;
+        return false;
+      });
+    }
+    
+    return filtered;
+  }, [notes, searchQuery, focusDateFilter]);
 
   const displayedNotes = useMemo(() => 
     filteredNotes.slice(0, displayCount),
@@ -77,10 +92,10 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '' }: Frien
     );
   }
 
-  if (searchQuery && filteredNotes.length === 0) {
+  if ((searchQuery || focusDateFilter) && filteredNotes.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <p>No results for "{searchQuery}"</p>
+        <p>No results found</p>
       </div>
     );
   }
