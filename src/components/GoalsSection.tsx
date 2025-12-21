@@ -118,9 +118,13 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
         // Trigger haptic on successful reorder
         triggerHapticFeedback();
         
-        // Swap priorities
-        reorderGoal.mutate({ goalId: movedGoal.id, newPriority: targetGoal.priority });
-        reorderGoal.mutate({ goalId: targetGoal.id, newPriority: movedGoal.priority });
+        // Single mutation that swaps both priorities with optimistic update
+        reorderGoal.mutate({ 
+          goalId: movedGoal.id, 
+          targetGoalId: targetGoal.id,
+          newPriority: targetGoal.priority,
+          targetNewPriority: movedGoal.priority,
+        });
       }
     }
   }, [activeGoals, reorderGoal]);

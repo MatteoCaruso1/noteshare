@@ -160,19 +160,70 @@ export function useReorderGoal() {
   return useMutation({
     mutationFn: async ({
       goalId,
+      targetGoalId,
       newPriority,
+      targetNewPriority,
     }: {
       goalId: string;
+      targetGoalId: string;
       newPriority: number;
+      targetNewPriority: number;
     }) => {
-      const { error } = await supabase
-        .from('goals')
-        .update({ priority: newPriority } as Record<string, unknown>)
-        .eq('id', goalId);
+      // Update both goals in parallel
+      const [result1, result2] = await Promise.all([
+        supabase
+          .from('goals')
+          .update({ priority: newPriority } as Record<string, unknown>)
+          .eq('id', goalId),
+        supabase
+          .from('goals')
+          .update({ priority: targetNewPriority } as Record<string, unknown>)
+          .eq('id', targetGoalId),
+      ]);
 
-      if (error) throw error;
+      if (result1.error) throw result1.error;
+      if (result2.error) throw result2.error;
     },
-    onSuccess: () => {
+    onMutate: async ({ goalId, targetGoalId, newPriority, targetNewPriority }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['goals'] });
+
+      // Snapshot the previous value
+      const previousGoals = queryClient.getQueriesData<Goal[]>({ queryKey: ['goals'] });
+
+      // Optimistically update the cache
+      queryClient.setQueriesData<Goal[]>(
+        { queryKey: ['goals'] },
+        (old) => {
+          if (!old) return old;
+          return old.map(goal => {
+            if (goal.id === goalId) {
+              return { ...goal, priority: newPriority };
+            }
+            if (goal.id === targetGoalId) {
+              return { ...goal, priority: targetNewPriority };
+            }
+            return goal;
+          }).sort((a, b) => {
+            if (a.priority !== b.priority) return a.priority - b.priority;
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          });
+        }
+      );
+
+      return { previousGoals };
+    },
+    onError: (error, _, context) => {
+      // Rollback on error
+      if (context?.previousGoals) {
+        context.previousGoals.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      console.error('Error reordering goal:', error);
+    },
+    onSettled: () => {
+      // Sync with server after mutation settles
       queryClient.invalidateQueries({ queryKey: ['goals'] });
     },
   });
