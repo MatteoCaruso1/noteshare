@@ -18,6 +18,7 @@ const FriendsJournals = () => {
   const location = useLocation();
   const { data: friends } = useFriends();
   const [feedSearchQuery, setFeedSearchQuery] = useState('');
+  const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
@@ -70,7 +71,11 @@ const FriendsJournals = () => {
           <div className="flex items-center justify-between gap-4 mb-4">
             <h2 className="text-lg font-semibold">Friends' Notes</h2>
             <div className="flex-1 max-w-xs">
-              <TimelineSearch onSearch={setFeedSearchQuery} />
+              <TimelineSearch 
+                onSearch={setFeedSearchQuery} 
+                onFocusDateFilter={setFocusDateFilter}
+                focusDate={focusDateFilter}
+              />
             </div>
           </div>
           {feedSearchQuery && (
@@ -78,7 +83,7 @@ const FriendsJournals = () => {
               Searching for "{feedSearchQuery}"
             </p>
           )}
-          <FriendsFeed searchQuery={feedSearchQuery} />
+          <FriendsFeed searchQuery={feedSearchQuery} focusDateFilter={focusDateFilter} />
         </div>
       </main>
 

@@ -11,10 +11,13 @@ interface DailyFocus {
   updated_at: string;
 }
 
-// Get the user's local date as YYYY-MM-DD
+// Get the user's local date as YYYY-MM-DD (timezone-safe)
 function getLocalDateString(): string {
   const now = new Date();
-  return now.toISOString().split('T')[0];
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function useTodaysFocus() {
@@ -106,6 +109,7 @@ export function useTodaysFocus() {
 }
 
 // Hook to get the current focus entry for attaching to notes/sessions
+// Returns today's focus OR the most recent carried-forward focus with text
 export function useCurrentFocusEntry() {
   const { profile } = useAuth();
 
@@ -116,15 +120,37 @@ export function useCurrentFocusEntry() {
 
       const today = getLocalDateString();
 
-      const { data, error } = await supabase
+      // First try to get today's focus
+      const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
         .select('*')
         .eq('user_id', profile.id)
         .eq('focus_date', today)
         .maybeSingle();
 
-      if (error) throw error;
-      return data as DailyFocus | null;
+      if (todayError) throw todayError;
+
+      if (todayFocus) {
+        return todayFocus as DailyFocus;
+      }
+
+      // If no entry for today, get the most recent focus (for display purposes)
+      const { data: recentFocus, error: recentError } = await supabase
+        .from('daily_focus')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('focus_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (recentError) throw recentError;
+
+      // Return the recent focus if it has text
+      if (recentFocus && recentFocus.focus_text) {
+        return recentFocus as DailyFocus;
+      }
+
+      return null;
     },
     enabled: !!profile?.id,
   });
