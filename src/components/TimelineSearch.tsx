@@ -100,15 +100,14 @@ export function TimelineSearch({
           </PopoverTrigger>
           <PopoverContent className="w-56 p-3 bg-popover" align="end">
             <div className="space-y-3">
-              {/* Search within tags */}
-              {availableTags.length > 5 && (
-                <Input
-                  placeholder="Search tags..."
-                  value={tagSearchQuery}
-                  onChange={(e) => setTagSearchQuery(e.target.value)}
-                  className="h-8 text-sm"
-                />
-              )}
+              {/* Always show search input for discoverability */}
+              <Input
+                placeholder="Search tags..."
+                value={tagSearchQuery}
+                onChange={(e) => setTagSearchQuery(e.target.value)}
+                className="h-8 text-sm"
+                autoFocus
+              />
               
               {/* Tag list */}
               <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto">
@@ -129,7 +128,9 @@ export function TimelineSearch({
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-xs text-muted-foreground">No tags found</p>
+                  <p className="text-xs text-muted-foreground">
+                    {tagSearchQuery ? 'No matching tags' : 'No tags yet'}
+                  </p>
                 )}
               </div>
             </div>

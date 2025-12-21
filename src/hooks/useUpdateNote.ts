@@ -101,3 +101,63 @@ export function useRemoveNoteFocus() {
     },
   });
 }
+
+export function useUpdateNoteTags() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      noteId,
+      tags,
+    }: {
+      noteId: string;
+      tags: string[];
+    }) => {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ tags, updated_at: new Date().toISOString() })
+        .eq('id', noteId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    // Optimistic update for instant UI feedback
+    onMutate: async ({ noteId, tags }) => {
+      await queryClient.cancelQueries({ queryKey: ['note', noteId] });
+      await queryClient.cancelQueries({ queryKey: ['notes'] });
+
+      const previousNote = queryClient.getQueryData<NoteWithAuthor>(['note', noteId]);
+
+      if (previousNote) {
+        queryClient.setQueryData<NoteWithAuthor>(['note', noteId], {
+          ...previousNote,
+          tags,
+        });
+      }
+
+      queryClient.setQueriesData<NoteWithAuthor[]>(
+        { queryKey: ['notes'], exact: false },
+        (old) => old?.map(note => 
+          note.id === noteId ? { ...note, tags } : note
+        )
+      );
+
+      return { previousNote };
+    },
+    onError: (error, { noteId }, context) => {
+      if (context?.previousNote) {
+        queryClient.setQueryData(['note', noteId], context.previousNote);
+      }
+      console.error('Error updating tags:', error);
+      toast.error('Failed to update tags');
+    },
+    onSuccess: (_, { noteId }) => {
+      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      queryClient.invalidateQueries({ queryKey: ['recent-tags'] });
+    },
+  });
+}

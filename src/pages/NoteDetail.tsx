@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNotification } from '@/hooks/useNotifications';
+import { useUpdateNoteTags } from '@/hooks/useUpdateNote';
+import { useRecentTags } from '@/hooks/useRecentTags';
 import { BottomNav } from '@/components/BottomNav';
 import { NoteCard } from '@/components/NoteCard';
+import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,8 +32,17 @@ const NoteDetail = () => {
   const createComment = useCreateNoteComment();
   const deleteComment = useDeleteNoteComment();
   const createNotification = useCreateNotification();
+  const updateTags = useUpdateNoteTags();
+  const recentTags = useRecentTags();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
+  
+  const isOwner = profile?.id === note?.author_id;
+  
+  const handleTagsChange = useCallback((newTags: string[]) => {
+    if (!id) return;
+    updateTags.mutate({ noteId: id, tags: newTags });
+  }, [id, updateTags]);
   
   // Check if we came from the Friends tab
   const fromFriends = location.state?.fromFriends;
@@ -165,6 +177,19 @@ const NoteDetail = () => {
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         <NoteCard note={note} expanded />
+
+        {/* Tag Editing - subtle, only for owner */}
+        {isOwner && (
+          <div className="flex items-center gap-2">
+            <TagInput
+              tags={note.tags || []}
+              onChange={handleTagsChange}
+              recentTags={recentTags}
+              iconOnly
+            />
+            <span className="text-xs text-muted-foreground">Edit tags</span>
+          </div>
+        )}
 
         {/* Comments Section */}
         <section>
