@@ -46,9 +46,13 @@ export function TimelineSearch({
   };
 
   const handleSelectTag = (tag: string) => {
-    onTagFilter?.(tag);
+    // Close popover first, then apply filter to avoid UI jump
     setTagFilterOpen(false);
     setTagSearchQuery('');
+    // Small delay to let popover close smoothly before filter applies
+    requestAnimationFrame(() => {
+      onTagFilter?.(tag);
+    });
   };
 
   const handleClearTag = () => {

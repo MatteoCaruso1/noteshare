@@ -8,7 +8,7 @@ import { useUpdateNoteTags } from '@/hooks/useUpdateNote';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { BottomNav } from '@/components/BottomNav';
 import { NoteCard } from '@/components/NoteCard';
-import { TagInput } from '@/components/TagInput';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -176,20 +176,12 @@ const NoteDetail = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <NoteCard note={note} expanded />
-
-        {/* Tag Editing - subtle, only for owner */}
-        {isOwner && (
-          <div className="flex items-center gap-2">
-            <TagInput
-              tags={note.tags || []}
-              onChange={handleTagsChange}
-              recentTags={recentTags}
-              iconOnly
-            />
-            <span className="text-xs text-muted-foreground">Edit tags</span>
-          </div>
-        )}
+        <NoteCard 
+          note={note} 
+          expanded 
+          onTagsChange={isOwner ? handleTagsChange : undefined}
+          recentTags={isOwner ? recentTags : undefined}
+        />
 
         {/* Comments Section */}
         <section>

@@ -4,15 +4,17 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus } from '@/hooks/useUpdateNote';
@@ -25,9 +27,11 @@ interface NoteCardProps {
   note: NoteWithAuthor;
   expanded?: boolean;
   fromFriends?: boolean;
+  onTagsChange?: (tags: string[]) => void;
+  recentTags?: string[];
 }
 
-export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: NoteCardProps) {
+export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, onTagsChange, recentTags = [] }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
@@ -37,6 +41,27 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
   const prefetchNote = usePrefetchNote();
   const prefetchComments = usePrefetchNoteComments();
   const [focusDialogOpen, setFocusDialogOpen] = useState(false);
+  const [tagInputOpen, setTagInputOpen] = useState(false);
+  const [newTagValue, setNewTagValue] = useState('');
+
+  const canEditTags = expanded && onTagsChange;
+
+  const handleAddTag = useCallback((tag: string) => {
+    const trimmedTag = tag.trim().toLowerCase();
+    if (trimmedTag && !note.tags?.includes(trimmedTag) && onTagsChange) {
+      onTagsChange([...(note.tags || []), trimmedTag]);
+    }
+    setNewTagValue('');
+    setTagInputOpen(false);
+  }, [note.tags, onTagsChange]);
+
+  const handleRemoveTag = useCallback((tagToRemove: string) => {
+    if (onTagsChange) {
+      onTagsChange((note.tags || []).filter(t => t !== tagToRemove));
+    }
+  }, [note.tags, onTagsChange]);
+
+  const availableRecentTags = recentTags.filter(t => !note.tags?.includes(t));
 
   const handleRemoveFocus = useCallback(() => {
     removeNoteFocus.mutate(note.id);
@@ -149,11 +174,70 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
           <Badge 
             key={tag}
             variant="secondary" 
-            className="text-xs bg-secondary text-secondary-foreground"
+            className="text-xs bg-secondary text-secondary-foreground group/tag"
           >
             {tag}
+            {canEditTags && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveTag(tag);
+                }}
+                className="ml-1 opacity-0 group-hover/tag:opacity-100 hover:text-destructive transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
           </Badge>
         ))}
+        
+        {/* Add Tag Button - only in expanded view for owner */}
+        {canEditTags && (
+          <Popover open={tagInputOpen} onOpenChange={setTagInputOpen}>
+            <PopoverTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="h-5 w-5 rounded-full bg-secondary/50 hover:bg-secondary flex items-center justify-center transition-colors"
+              >
+                <Plus className="w-3 h-3 text-muted-foreground" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-3 bg-popover" align="start" onClick={(e) => e.stopPropagation()}>
+              <div className="space-y-3">
+                <Input
+                  placeholder="Add tag..."
+                  value={newTagValue}
+                  onChange={(e) => setNewTagValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newTagValue.trim()) {
+                      e.preventDefault();
+                      handleAddTag(newTagValue);
+                    }
+                  }}
+                  className="h-8 text-sm"
+                  autoFocus
+                />
+                {availableRecentTags.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Recent</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {availableRecentTags.slice(0, 6).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-xs px-2 py-0.5 cursor-pointer hover:bg-secondary transition-colors"
+                          onClick={() => handleAddTag(tag)}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
         
         {/* Focus Date Badge - now inline with type badge and tags */}
         {note.focus_date && (
