@@ -26,8 +26,14 @@ export function FocusViewDialog({
   onRemove,
   canRemove = false,
 }: FocusViewDialogProps) {
+  // Parse date parts directly to avoid timezone conversion issues
   const formattedDate = focusDate 
-    ? format(new Date(focusDate), 'MMMM d, yyyy')
+    ? (() => {
+        const [year, month, day] = focusDate.split('-').map(Number);
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+        return `${months[month - 1]} ${day}, ${year}`;
+      })()
     : 'Unknown date';
 
   const handleRemove = () => {

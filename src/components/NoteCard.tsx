@@ -154,7 +154,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
             }}
           >
             <Crosshair className="w-3 h-3 mr-1" />
-            {new Date(note.focus_date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })} Focus
+            {/* Parse date parts directly to avoid timezone conversion issues */}
+            {(() => {
+              const [year, month, day] = note.focus_date.split('-').map(Number);
+              return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
+            })()} Focus
           </Badge>
         )}
       </div>
