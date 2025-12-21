@@ -4,10 +4,12 @@ import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
+import { useRecentTags } from '@/hooks/useRecentTags';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextEditor } from '@/components/RichTextEditor';
+import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -34,6 +36,7 @@ export function QuickNoteCapture() {
   const { data: currentFocus } = useCurrentFocusEntry();
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
+  const recentTags = useRecentTags();
 
   const [isOpen, setIsOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
@@ -42,6 +45,7 @@ export function QuickNoteCapture() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [attachFocus, setAttachFocus] = useState(true);
+  const [tags, setTags] = useState<string[]>([]);
 
   if (!profile) return null;
 
@@ -80,7 +84,7 @@ export function QuickNoteCapture() {
         audioFiles: audioFiles.map(a => a.url),
         audioFileNames: audioFiles.map(a => a.name),
         imageFiles,
-        tags: [],
+        tags,
         projectId: selectedProjectId || undefined,
         visibility,
         // Attach focus if toggle is on and focus exists - always use today's date
@@ -96,6 +100,7 @@ export function QuickNoteCapture() {
           setSelectedProjectId('');
           setVisibility('friends');
           setAttachFocus(true);
+          setTags([]);
           setIsOpen(false);
         },
       }
@@ -202,6 +207,14 @@ export function QuickNoteCapture() {
                   </PopoverContent>
                 </Popover>
               )}
+
+              {/* Tags (icon dropdown) */}
+              <TagInput
+                tags={tags}
+                onChange={setTags}
+                recentTags={recentTags}
+                iconOnly
+              />
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (

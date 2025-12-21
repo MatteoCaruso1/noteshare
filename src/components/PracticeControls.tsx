@@ -6,11 +6,13 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals, useIncrementProgress } from '@/hooks/useGoals';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
+import { useRecentTags } from '@/hooks/useRecentTags';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
 import { RichTextEditor } from '@/components/RichTextEditor';
+import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +42,7 @@ export function PracticeControls() {
   const { data: goals } = useGoals(profile?.id);
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
+  const recentTags = useRecentTags();
   const startSession = useStartSession();
   const endSession = useEndSession();
   const createNote = useCreateNote();
@@ -53,6 +56,7 @@ export function PracticeControls() {
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [attachFocus, setAttachFocus] = useState(true);
+  const [tags, setTags] = useState<string[]>([]);
 
   if (!profile) return null;
 
@@ -118,7 +122,7 @@ export function PracticeControls() {
                 audioFiles: audioFiles.map(a => a.url),
                 audioFileNames: audioFiles.map(a => a.name),
                 imageFiles,
-                tags: [],
+                tags,
                 sessionId: activeSession.id,
                 projectId: selectedProjectId || undefined,
                 goalId: selectedGoalId || undefined,
@@ -136,6 +140,7 @@ export function PracticeControls() {
                   setSelectedGoalId('');
                   setVisibility('friends');
                   setAttachFocus(true);
+                  setTags([]);
                 },
               }
             );
@@ -328,6 +333,14 @@ export function PracticeControls() {
                   </PopoverContent>
                 </Popover>
               )}
+
+              {/* Tags (icon dropdown) */}
+              <TagInput
+                tags={tags}
+                onChange={setTags}
+                recentTags={recentTags}
+                iconOnly
+              />
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (

@@ -24,6 +24,7 @@ const Index = () => {
   const { data: notes, isLoading: notesLoading } = useNotes();
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
+  const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
 
   // Practice section collapsible state - default collapsed
   const [isPracticeExpanded, setIsPracticeExpanded] = useState(() => {
@@ -35,7 +36,17 @@ const Index = () => {
     localStorage.setItem(PRACTICE_EXPANDED_KEY, String(isPracticeExpanded));
   }, [isPracticeExpanded]);
 
-  // Filter notes based on search query and date
+  // Collect all unique tags from notes
+  const availableTags = useMemo(() => {
+    if (!notes) return [];
+    const tagSet = new Set<string>();
+    notes.forEach(note => {
+      note.tags.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [notes]);
+
+  // Filter notes based on search query, date, and tag
   const filteredNotes = useMemo(() => {
     if (!notes) return [];
     
@@ -48,6 +59,11 @@ const Index = () => {
         const noteDate = format(new Date(note.created_at), 'yyyy-MM-dd');
         return noteDate === filterDateStr;
       });
+    }
+    
+    // Filter by tag
+    if (tagFilter) {
+      filtered = filtered.filter((note) => note.tags.includes(tagFilter));
     }
     
     // Filter by search query
@@ -65,7 +81,7 @@ const Index = () => {
     }
     
     return filtered;
-  }, [notes, searchQuery, focusDateFilter]);
+  }, [notes, searchQuery, focusDateFilter, tagFilter]);
 
   if (loading) {
     return (
@@ -140,12 +156,16 @@ const Index = () => {
               onSearch={setSearchQuery} 
               onFocusDateFilter={setFocusDateFilter}
               focusDate={focusDateFilter}
+              onTagFilter={setTagFilter}
+              selectedTag={tagFilter}
+              availableTags={availableTags}
             />
           </div>
-          {(searchQuery || focusDateFilter) && (
+          {(searchQuery || focusDateFilter || tagFilter) && (
             <p className="text-sm text-muted-foreground mb-3">
               {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
               {searchQuery && ` for "${searchQuery}"`}
+              {tagFilter && ` tagged "${tagFilter}"`}
               {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
             </p>
           )}
