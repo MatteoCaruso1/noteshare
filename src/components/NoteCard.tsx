@@ -201,7 +201,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
 
         {/* Settings Menu for Owner - only show in expanded/detail view */}
         {isOwner && expanded && (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
