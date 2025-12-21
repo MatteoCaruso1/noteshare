@@ -142,7 +142,20 @@ const NoteDetail = () => {
       <header className="sticky top-0 z-40 bg-background">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => {
+                // Use explicit navigation to avoid history stack issues
+                if (fromFriends) {
+                  navigate('/friends');
+                } else if (window.history.length > 2) {
+                  navigate(-1);
+                } else {
+                  navigate('/');
+                }
+              }}
+            >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-lg font-semibold">Note</h1>
