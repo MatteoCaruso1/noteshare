@@ -39,22 +39,10 @@ export function FocusViewDialog({
     <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between gap-4">
-            <DialogTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              Focus for {formattedDate}
-            </DialogTitle>
-            {canRemove && onRemove && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0 mr-6"
-                onClick={handleRemove}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            Focus for {formattedDate}
+          </DialogTitle>
           <DialogDescription className="sr-only">
             View the focus text that was saved with this note
           </DialogDescription>
@@ -66,6 +54,18 @@ export function FocusViewDialog({
             </p>
           </div>
         </div>
+        {canRemove && onRemove && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button
+              variant="outline"
+              className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+              onClick={handleRemove}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Remove Focus
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

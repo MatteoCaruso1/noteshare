@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Target, Crosshair } from 'lucide-react';
 import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { AudioFileWithName } from '@/types';
 
@@ -196,39 +196,35 @@ export function PracticeControls() {
           {/* Compact toolbar row: Settings, Upload, Project, Goal, Focus toggle */}
           <TooltipProvider delayDuration={1000}>
             <div className="flex items-center gap-2 flex-wrap mb-4">
-              {/* Settings */}
+              {/* Visibility (subtle icon only) */}
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Settings className="w-4 h-4 text-muted-foreground" />
-                      </Button>
+                      <button className="p-1 rounded hover:bg-muted/50 transition-colors">
+                        {visibility === 'private' ? (
+                          <Lock className="w-3.5 h-3.5 text-muted-foreground/60" />
+                        ) : (
+                          <Users className="w-3.5 h-3.5 text-muted-foreground/60" />
+                        )}
+                      </button>
                     </PopoverTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>Visibility settings</TooltipContent>
+                  <TooltipContent>{visibility === 'private' ? 'Private' : 'Friends only'}</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground px-2">Visibility</p>
-                    <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                      <SelectTrigger className="w-full h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="private">
-                          <div className="flex items-center gap-2">
-                            <Lock className="w-3 h-3" /> Private
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="friends">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-3 h-3" /> Friends
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <PopoverContent className="w-40 p-1 bg-popover" align="start">
+                  <button 
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-muted/50 ${visibility === 'private' ? 'text-primary' : ''}`}
+                    onClick={() => setVisibility('private')}
+                  >
+                    <Lock className="w-3 h-3" /> Private
+                  </button>
+                  <button 
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-muted/50 ${visibility === 'friends' ? 'text-primary' : ''}`}
+                    onClick={() => setVisibility('friends')}
+                  >
+                    <Users className="w-3 h-3" /> Friends
+                  </button>
                 </PopoverContent>
               </Popover>
 
