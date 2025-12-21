@@ -220,7 +220,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
                 {note.visibility === 'private' ? (
                   <>
                     <Users className="w-4 h-4 mr-2" />
-                    Make visible to friends
+                    Make viewable
                   </>
                 ) : (
                   <>
