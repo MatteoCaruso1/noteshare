@@ -133,17 +133,17 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         {/* Current Streak, Best Streak & Best Week */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-            <Zap className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 ${getStreakTier(stats.currentStreak).colorClass || 'text-green-500'}`} />
+            <Zap className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-primary" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Streak</p>
           </div>
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-            <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 mb-1" />
+            <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
           </div>
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mb-1" />
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Top Wk</p>
           </div>
