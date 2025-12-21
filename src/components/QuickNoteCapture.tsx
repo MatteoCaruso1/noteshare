@@ -19,6 +19,15 @@ import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Setting
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AudioFileWithName } from '@/types';
 
+// Get today's date as YYYY-MM-DD in local timezone
+function getTodayLocalDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function QuickNoteCapture() {
   const { profile } = useAuth();
   const { data: projects } = useProjects();
@@ -74,9 +83,9 @@ export function QuickNoteCapture() {
         tags: [],
         projectId: selectedProjectId || undefined,
         visibility,
-        // Attach focus if toggle is on and focus exists
+        // Attach focus if toggle is on and focus exists - always use today's date
         focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
-        focusDate: attachFocus && currentFocus ? currentFocus.focus_date : undefined,
+        focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
         focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
       },
       {
