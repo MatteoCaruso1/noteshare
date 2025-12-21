@@ -196,16 +196,22 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
 
         {/* Visibility Toggle and Delete for Owner - only show in expanded/detail view */}
         {isOwner && expanded && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Select
               value={note.visibility}
               onValueChange={handleVisibilityChange}
             >
               <SelectTrigger
-                className="w-24 sm:w-28 h-8 text-xs"
+                className="w-auto h-7 px-2 text-xs border-none bg-transparent hover:bg-muted/50"
                 onClick={(e) => e.stopPropagation()}
               >
-                <SelectValue />
+                <div className="flex items-center gap-1">
+                  {note.visibility === 'private' ? (
+                    <Lock className="w-3 h-3 text-muted-foreground" />
+                  ) : (
+                    <Users className="w-3 h-3 text-muted-foreground" />
+                  )}
+                </div>
               </SelectTrigger>
               <SelectContent onClick={(e) => e.stopPropagation()}>
                 <SelectItem value="private">
