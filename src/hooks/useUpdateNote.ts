@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { NoteWithAuthor } from '@/types';
 
 export function useUpdateNoteVisibility() {
   const queryClient = useQueryClient();
@@ -23,14 +24,47 @@ export function useUpdateNoteVisibility() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    // Optimistic update for instant UI feedback
+    onMutate: async ({ noteId, visibility }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['note', noteId] });
+      await queryClient.cancelQueries({ queryKey: ['notes'] });
+
+      // Snapshot the previous value
+      const previousNote = queryClient.getQueryData<NoteWithAuthor>(['note', noteId]);
+
+      // Optimistically update the single note query
+      if (previousNote) {
+        queryClient.setQueryData<NoteWithAuthor>(['note', noteId], {
+          ...previousNote,
+          visibility,
+        });
+      }
+
+      // Optimistically update notes in lists
+      queryClient.setQueriesData<NoteWithAuthor[]>(
+        { queryKey: ['notes'], exact: false },
+        (old) => old?.map(note => 
+          note.id === noteId ? { ...note, visibility } : note
+        )
+      );
+
+      return { previousNote };
+    },
+    onError: (error, { noteId }, context) => {
+      // Roll back on error
+      if (context?.previousNote) {
+        queryClient.setQueryData(['note', noteId], context.previousNote);
+      }
+      console.error('Error updating visibility:', error);
+      toast.error('Failed to update visibility');
+    },
+    onSuccess: (_, { noteId }) => {
+      // Invalidate to ensure consistency with server
+      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
       toast.success('Visibility updated');
-    },
-    onError: (error) => {
-      console.error('Error updating visibility:', error);
-      toast.error('Failed to update visibility');
     },
   });
 }
