@@ -171,7 +171,6 @@ const NoteDetail = () => {
           <div className="flex items-center gap-2 mb-4">
             <MessageCircle className="w-5 h-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold">Comments</h2>
-            {comments && <span className="text-sm text-muted-foreground">({comments.length})</span>}
           </div>
 
           {/* Comment Input */}
