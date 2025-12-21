@@ -161,9 +161,9 @@ const NoteDetail = () => {
                 // Use explicit navigation to avoid history stack issues
                 if (fromFriends) {
                   navigate('/friends');
-                } else if (window.history.length > 2) {
-                  navigate(-1);
                 } else {
+                  // Always go home - more reliable than navigate(-1) which can get stuck
+                  // if mutations or other actions have affected history
                   navigate('/');
                 }
               }}
