@@ -78,7 +78,7 @@ export const GoalCard = memo(function GoalCard({
         "hover:bg-muted/60 hover:shadow-md hover:border-primary/20",
         goal.is_completed && "bg-primary/5 border-primary/20 hover:bg-primary/10",
         showConfetti && "ring-2 ring-primary ring-offset-2 ring-offset-background",
-        isDragging && "opacity-50 shadow-lg z-50"
+        isDragging && "opacity-70 scale-105 shadow-xl z-50 ring-2 ring-primary/50 rotate-1"
       )}
     >
       {showConfetti && (
@@ -91,28 +91,28 @@ export const GoalCard = memo(function GoalCard({
         </div>
       )}
 
-      <div className="p-4">
-        <div className="flex items-center gap-3">
+      <div className="px-3 py-3">
+        <div className="flex items-center gap-2">
           {/* Drag handle - only for non-completed goals */}
           {!goal.is_completed && isDraggable && (
             <div 
-              className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors"
               {...attributes}
               {...listeners}
             >
-              <GripVertical className="w-5 h-5" />
+              <GripVertical className="w-4 h-4" />
             </div>
           )}
 
-          {/* Main content - centered */}
+          {/* Main content - fills available space */}
           <div 
-            className="flex-1 min-w-0 space-y-3 cursor-pointer"
+            className="flex-1 min-w-0 space-y-2 cursor-pointer"
             onClick={onEdit}
           >
             {/* Header row - centered */}
-            <div className="text-center">
+            <div className="text-center px-1">
               <h4 className={cn(
-                "font-semibold text-base leading-tight",
+                "font-semibold text-sm leading-snug",
                 goal.is_completed && "line-through text-muted-foreground"
               )}>
                 {goal.title || goal.content}
@@ -120,38 +120,36 @@ export const GoalCard = memo(function GoalCard({
               
               {/* Target date */}
               {goal.target_date && !goal.is_completed && (
-                <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{format(new Date(goal.target_date), 'MMM d, yyyy')}</span>
+                <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{format(new Date(goal.target_date), 'MMM d')}</span>
                 </div>
               )}
               
               {/* Completion date */}
               {goal.is_completed && goal.completed_at && (
-                <div className="flex items-center justify-center gap-1.5 text-xs text-primary mt-1.5">
-                  <Trophy className="w-3.5 h-3.5" />
-                  <span>Completed {format(new Date(goal.completed_at), 'MMM d, yyyy')}</span>
+                <div className="flex items-center justify-center gap-1 text-xs text-primary mt-1">
+                  <Trophy className="w-3 h-3" />
+                  <span>Completed {format(new Date(goal.completed_at), 'MMM d')}</span>
                 </div>
               )}
             </div>
 
-            {/* Progress section - centered */}
-            <div onClick={(e) => e.stopPropagation()} className="flex justify-center">
-              <div className="w-full max-w-xs">
-                <GoalProgressBar
-                  goal={goal}
-                  onIncrement={handleIncrement}
-                  onDecrement={onDecrementProgress}
-                  onSetProgress={onSetProgress}
-                  onComplete={handleComplete}
-                  showControls={!goal.is_completed}
-                />
-              </div>
+            {/* Progress section - full width */}
+            <div onClick={(e) => e.stopPropagation()}>
+              <GoalProgressBar
+                goal={goal}
+                onIncrement={handleIncrement}
+                onDecrement={onDecrementProgress}
+                onSetProgress={onSetProgress}
+                onComplete={handleComplete}
+                showControls={!goal.is_completed}
+              />
             </div>
 
             {/* Reflection for completed goals */}
             {goal.is_completed && goal.reflection && (
-              <p className="text-sm text-muted-foreground italic border-l-2 border-primary/30 pl-3 py-1 text-center">
+              <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-2 py-0.5 text-left">
                 "{goal.reflection}"
               </p>
             )}
@@ -159,26 +157,26 @@ export const GoalCard = memo(function GoalCard({
 
           {/* Action buttons for completed goals */}
           {goal.is_completed && (
-            <div className="flex flex-col items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-center gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
               {onRestore && (
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-7 w-7 hover:bg-primary/10" 
+                  className="h-6 w-6 hover:bg-primary/10" 
                   onClick={onRestore}
                   title="Restore to in-progress"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3 h-3" />
                 </Button>
               )}
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10" 
                 onClick={onDelete}
                 title="Delete goal"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3" />
               </Button>
             </div>
           )}

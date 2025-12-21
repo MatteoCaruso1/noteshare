@@ -17,12 +17,21 @@ import {
   useSensors,
   DragEndEvent,
   TouchSensor,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+
+// Haptic feedback utility
+const triggerHapticFeedback = () => {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(50);
+  }
+};
 
 interface GoalsSectionProps {
   profileId: string;
@@ -54,8 +63,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [completionGoal, setCompletionGoal] = useState<Goal | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Persist expanded state
+
   useEffect(() => {
     localStorage.setItem(GOALS_EXPANDED_KEY, String(isExpanded));
   }, [isExpanded]);
@@ -88,8 +98,14 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     })
   );
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+    triggerHapticFeedback();
+  }, []);
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
     
     if (over && active.id !== over.id) {
       const oldIndex = activeGoals.findIndex(g => g.id === active.id);
@@ -98,6 +114,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
       if (oldIndex !== -1 && newIndex !== -1) {
         const movedGoal = activeGoals[oldIndex];
         const targetGoal = activeGoals[newIndex];
+        
+        // Trigger haptic on successful reorder
+        triggerHapticFeedback();
         
         // Swap priorities
         reorderGoal.mutate({ goalId: movedGoal.id, newPriority: targetGoal.priority });
@@ -166,12 +185,18 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
     restoreGoal.mutate({ goalId: goal.id, goalType: goal.goal_type });
   };
 
+  const activeGoal = useMemo(() => 
+    activeGoals.find(g => g.id === activeId),
+    [activeGoals, activeId]
+  );
+
   const renderGoalList = () => {
     return (
       <div className="space-y-2">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
@@ -179,19 +204,38 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
             strategy={verticalListSortingStrategy}
           >
             {activeGoals.map((goal) => (
-              <GoalCard
+              <div 
                 key={goal.id}
-                goal={goal}
-                onEdit={() => handleEditGoal(goal)}
-                onDelete={() => deleteGoal.mutate(goal.id)}
-                onIncrementProgress={() => handleIncrementProgress(goal)}
-                onDecrementProgress={() => handleDecrementProgress(goal)}
-                onSetProgress={(value) => handleSetProgress(goal, value)}
-                onComplete={() => handleCompleteGoal(goal)}
-                isDraggable={true}
-              />
+                className={activeId && activeId !== goal.id ? 'transition-transform duration-200' : ''}
+              >
+                <GoalCard
+                  goal={goal}
+                  onEdit={() => handleEditGoal(goal)}
+                  onDelete={() => deleteGoal.mutate(goal.id)}
+                  onIncrementProgress={() => handleIncrementProgress(goal)}
+                  onDecrementProgress={() => handleDecrementProgress(goal)}
+                  onSetProgress={(value) => handleSetProgress(goal, value)}
+                  onComplete={() => handleCompleteGoal(goal)}
+                  isDraggable={true}
+                />
+              </div>
             ))}
           </SortableContext>
+          <DragOverlay>
+            {activeGoal ? (
+              <div className="opacity-90 shadow-2xl scale-105 rotate-2">
+                <GoalCard
+                  goal={activeGoal}
+                  onEdit={() => {}}
+                  onDelete={() => {}}
+                  onIncrementProgress={() => {}}
+                  onDecrementProgress={() => {}}
+                  onComplete={() => {}}
+                  isDraggable={false}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
         <Button
           variant="outline"
