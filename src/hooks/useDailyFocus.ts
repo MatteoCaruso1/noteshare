@@ -97,6 +97,7 @@ export function useTodaysFocus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-focus', profile?.id] });
+      queryClient.invalidateQueries({ queryKey: ['current-focus-entry', profile?.id] });
     },
   });
 
