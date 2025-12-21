@@ -330,8 +330,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
         </div>
       )}
 
-      {/* Voice Reply Button */}
-      {profile && !expanded && (
+      {/* Voice Reply Button - hidden on homepage for cleaner UI */}
+      {/* Keeping functionality intact - can be re-enabled by removing the false && check */}
+      {false && profile && !expanded && (
         <div className="flex items-center gap-2 pt-2 border-t border-border">
           <VoiceReplyButton
             noteId={note.id}
