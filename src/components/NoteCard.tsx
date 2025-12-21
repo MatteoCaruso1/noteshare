@@ -129,7 +129,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}
     >
-      {/* Type Badge Row - includes focus tag */}
+      {/* Type Badge Row - includes tags and focus tag */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         {isPracticeSession ? (
           <Badge variant="secondary" className="text-xs">
@@ -144,7 +144,18 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends }: 
           </Badge>
         )}
         
-        {/* Focus Date Badge - now inline with type badge */}
+        {/* Custom Tags - appear left of Focus badge */}
+        {note.tags && note.tags.length > 0 && note.tags.map((tag) => (
+          <Badge 
+            key={tag}
+            variant="secondary" 
+            className="text-xs bg-secondary text-secondary-foreground"
+          >
+            {tag}
+          </Badge>
+        ))}
+        
+        {/* Focus Date Badge - now inline with type badge and tags */}
         {note.focus_date && (
           <Badge 
             variant="outline" 
