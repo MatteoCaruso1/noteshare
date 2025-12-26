@@ -116,7 +116,7 @@ const Index = () => {
         <section>
           <div className="flex items-center justify-between gap-4 mb-4">
             <h2 className="text-lg font-semibold">Notes</h2>
-            <div className="flex-1 max-w-xs">
+            <div className="flex items-center gap-2 flex-1 justify-end">
               <TimelineSearch 
                 onSearch={setSearchQuery} 
                 onFocusDateFilter={setFocusDateFilter}
