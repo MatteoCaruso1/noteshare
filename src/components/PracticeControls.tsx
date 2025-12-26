@@ -204,56 +204,21 @@ export function PracticeControls() {
 
   return (
     <div className="space-y-4">
-      {/* Session Control */}
-      <Card className="p-6 bg-card border-border">
-        {activeSession ? (
-          <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
-            <div>
-              <p className="font-medium">
-                {isPaused ? 'Session Paused' : 'Session Active'}
-              </p>
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {sessionDuration}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold mb-2">Start a Practice Session</h2>
-              <p className="text-sm text-muted-foreground">
-                Track your practice time and capture notes as you go
-              </p>
-            </div>
-            <Button
-              className="w-full bg-gradient-primary text-primary-foreground"
-              onClick={handleStartSession}
-              disabled={startSession.isPending}
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Start Session
-            </Button>
-            
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">or</span>
-              </div>
-            </div>
-            
-            <OfflineSessionInput />
-          </div>
-        )}
-      </Card>
+      {/* Start Session Button - only shown when no active session */}
+      {!activeSession && (
+        <Button
+          className="w-full bg-gradient-primary text-primary-foreground"
+          onClick={handleStartSession}
+          disabled={startSession.isPending}
+        >
+          <Play className="w-4 h-4 mr-2" />
+          Start practice session
+        </Button>
+      )}
 
       {/* Note Capture - Only shown when session is active */}
       {activeSession && (
         <Card className="p-6 bg-card border-border">
-          <h2 className="text-lg font-semibold mb-4">Capture Session Notes</h2>
 
           {/* Compact toolbar row: Settings, Upload, Project, Goal, Focus toggle */}
           <TooltipProvider delayDuration={1000}>
@@ -481,7 +446,7 @@ export function PracticeControls() {
               disabled={createNote.isPending || uploading || endSession.isPending}
             >
               <Square className="w-4 h-4 mr-2" />
-              Save & End
+              End session
             </Button>
           </div>
         </Card>
