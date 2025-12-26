@@ -395,13 +395,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       {note.text_content && (
         <RichTextContent 
           content={note.text_content} 
-          className="mb-3"
+          className={`${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}
           lineClamp={!expanded ? 3 : undefined}
         />
       )}
 
       {note.audio_files.length > 0 && (
-        <div className="space-y-2 mb-3">
+        <div className={`space-y-2 ${note.image_files.length > 0 ? 'mb-3' : ''}`}>
           {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
             <WaveformPlayer 
               key={i}
@@ -416,7 +416,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       )}
 
       {note.image_files.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2">
           {(expanded ? note.image_files : note.image_files.slice(0, 4)).map((url, i) => (
             <img
               key={i}
