@@ -75,7 +75,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
       });
 
       toast({
-        title: "Thanks — your feedback helps shape noteshare.",
+        title: "Thanks — your feedback helps shape Noteshare.",
         description: "We truly appreciate you taking the time.",
       });
 
@@ -102,7 +102,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
         <DialogHeader>
           <div className="flex items-center gap-2">
             <MessageSquareHeart className="w-5 h-5 text-primary" />
-            <DialogTitle>Help Shape noteshare</DialogTitle>
+            <DialogTitle>Help Shape Noteshare</DialogTitle>
           </div>
           <DialogDescription>
             Your thoughts help us build something musicians actually want. Thanks for being part of this.
@@ -113,7 +113,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {/* Question 1 - Required */}
           <div className="space-y-2">
             <Label htmlFor="like-most" className="text-sm font-medium">
-              What do you like most about noteshare? <span className="text-destructive">*</span>
+              What do you like most about Noteshare? <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="like-most"
@@ -145,7 +145,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {/* Question 3 - NPS Score */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">
-              How likely are you to recommend noteshare to a fellow musician?
+              How likely are you to recommend Noteshare to a fellow musician?
             </Label>
             <div className="grid grid-cols-10 gap-1">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (

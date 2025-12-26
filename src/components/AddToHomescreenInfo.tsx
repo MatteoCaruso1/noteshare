@@ -21,9 +21,9 @@ export function AddToHomescreenInfo() {
           <Smartphone className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm mb-1">Add noteshare to your Home Screen</h3>
+          <h3 className="font-medium text-sm mb-1">Add Noteshare to your Home Screen</h3>
           <p className="text-xs text-muted-foreground mb-2">
-            Access noteshare instantly, just like a real app!
+            Access Noteshare instantly, just like a real app!
           </p>
           {isIOS ? (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">

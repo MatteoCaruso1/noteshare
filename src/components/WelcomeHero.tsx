@@ -10,8 +10,8 @@ export function WelcomeHero() {
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-primary mb-6">
         <Music className="w-10 h-10 text-primary-foreground" />
       </div>
-      <h1 className="text-3xl font-semibold mb-2">noteshare</h1>
-      <p className="text-xl font-medium mb-1">Shape your practice. Grow together.</p>
+      <h1 className="text-3xl font-semibold mb-2">Noteshare</h1>
+      <p className="text-xl font-medium mb-1">Helping musicians practice smarter</p>
       <p className="text-sm text-muted-foreground mb-8">by musicians, for musicians</p>
       <Button
         size="lg"

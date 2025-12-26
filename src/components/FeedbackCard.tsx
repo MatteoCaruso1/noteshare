@@ -17,7 +17,7 @@ export function FeedbackCard() {
             <MessageSquareHeart className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm">Help shape noteshare</h3>
+            <h3 className="font-medium text-sm">Help shape Noteshare</h3>
             <p className="text-xs text-muted-foreground">
               Share what's working and what's not
             </p>
