@@ -1,13 +1,24 @@
-import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 const scrollPositions = new Map<string, number>();
 
 export function useScrollRestoration(key: string) {
-  const location = useLocation();
   const isRestoring = useRef(false);
 
-  // Save scroll position before navigating away
+  // Restore scroll position synchronously before paint
+  useLayoutEffect(() => {
+    const savedPosition = scrollPositions.get(key);
+    if (savedPosition !== undefined && savedPosition > 0) {
+      isRestoring.current = true;
+      window.scrollTo({ top: savedPosition, behavior: 'instant' });
+      // Reset restoring flag after a short delay
+      setTimeout(() => {
+        isRestoring.current = false;
+      }, 50);
+    }
+  }, [key]);
+
+  // Save scroll position continuously
   useEffect(() => {
     const handleScroll = () => {
       if (!isRestoring.current) {
@@ -18,20 +29,4 @@ export function useScrollRestoration(key: string) {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [key]);
-
-  // Restore scroll position when coming back
-  useEffect(() => {
-    const savedPosition = scrollPositions.get(key);
-    if (savedPosition !== undefined && savedPosition > 0) {
-      isRestoring.current = true;
-      // Use requestAnimationFrame to ensure DOM has rendered
-      requestAnimationFrame(() => {
-        window.scrollTo(0, savedPosition);
-        // Reset restoring flag after a short delay
-        setTimeout(() => {
-          isRestoring.current = false;
-        }, 100);
-      });
-    }
-  }, [key, location.key]);
 }
