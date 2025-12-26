@@ -106,7 +106,7 @@ const Profile = () => {
       {/* Page Title - consistent with other pages */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg sm:text-xl font-semibold">Profile & Stats</h1>
+          <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
           <Button variant="ghost" size="icon" onClick={signOut}>
             <LogOut className="w-5 h-5" />
           </Button>

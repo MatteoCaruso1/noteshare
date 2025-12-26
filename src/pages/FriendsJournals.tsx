@@ -52,12 +52,12 @@ const FriendsJournals = () => {
     <div className="min-h-screen bg-background pb-20">
       {/* Page Header with Search */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+        <h1 className="text-lg sm:text-xl font-semibold mb-3">Friends</h1>
         <div className="flex items-center justify-between gap-3">
           <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-            <div className="cursor-pointer transition-opacity group flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-semibold">Friends</h1>
+            <div className="cursor-pointer transition-opacity group flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border hover:border-primary/50">
               <Users className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-primary" />
-              <span className="text-xs text-muted-foreground">({friends?.length || 0})</span>
+              <span className="text-sm text-muted-foreground group-hover:text-foreground">({friends?.length || 0})</span>
             </div>
           </FriendsList>
           
