@@ -293,61 +293,63 @@ export function PracticeControls() {
                   <TooltipContent>Settings</TooltipContent>
                 </Tooltip>
                 <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground px-2">Visibility</p>
-                      <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                        <SelectTrigger className="w-full h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="private">
-                            <div className="flex items-center gap-2">
-                              <Lock className="w-3 h-3" /> Private
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="friends">
-                            <div className="flex items-center gap-2">
-                              <Users className="w-3 h-3" /> Friends
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* Delete Session inside settings */}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete session
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete session?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will discard the session and any unsaved notes.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDeleteSession}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground px-2">Visibility</p>
+                    <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
+                      <SelectTrigger className="w-full h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-3 h-3" /> Private
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="friends">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-3 h-3" /> Friends
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </PopoverContent>
               </Popover>
+
+              {/* Delete Session - separate button */}
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete session</TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete session?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will discard the session and any unsaved notes.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteSession}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               {/* Upload Media (icon only) */}
               <MediaUploadButton

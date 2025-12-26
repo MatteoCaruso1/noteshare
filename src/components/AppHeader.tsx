@@ -49,12 +49,10 @@ export function AppHeader() {
 
     // Initialize immediately
     updateElapsed();
-    // Only update every second if not paused
-    if (!isPaused) {
-      const interval = setInterval(updateElapsed, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [activeSession, isPaused]);
+    // Update every second when not paused
+    const interval = setInterval(updateElapsed, 1000);
+    return () => clearInterval(interval);
+  }, [activeSession?.id, activeSession?.started_at, activeSession?.paused_at, activeSession?.paused_duration_ms]);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
