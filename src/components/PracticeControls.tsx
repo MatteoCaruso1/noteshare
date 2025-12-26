@@ -58,6 +58,7 @@ export function PracticeControls() {
   const [attachFocus, setAttachFocus] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
+  const [showSessionChoice, setShowSessionChoice] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   // Wake lock management
@@ -253,28 +254,55 @@ export function PracticeControls() {
 
   const sessionDuration = getSessionDuration();
 
-  // Handle practice dropdown open - start session immediately
+  // Handle practice dropdown open - show session choice instead of starting immediately
   const handlePracticeOpen = (open: boolean) => {
-    if (open && !activeSession && !startSession.isPending) {
-      startSession.mutate({ userId: profile.id });
+    if (!activeSession) {
+      setShowSessionChoice(open);
     }
   };
 
+  const handleStartLiveSession = () => {
+    if (!startSession.isPending) {
+      startSession.mutate({ userId: profile.id });
+      setShowSessionChoice(false);
+    }
+  };
+
+  // Determine if we should show the collapsible content
+  const isExpanded = !!activeSession || showSessionChoice;
+
   return (
     <Card className="bg-card border-border">
-      <Collapsible open={!!activeSession} onOpenChange={handlePracticeOpen}>
+      <Collapsible open={isExpanded} onOpenChange={handlePracticeOpen}>
         <CollapsibleTrigger asChild>
           <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group ${activeSession ? '' : ''}`}>
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Start Practice Session</h2>
             </div>
-            {!activeSession && (
+            {!activeSession && !showSessionChoice && (
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             )}
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
+          {/* Session Choice Step - shown when no active session */}
+          {!activeSession && showSessionChoice && (
+            <div className="px-4 pb-4 space-y-3">
+              <Button
+                className="w-full bg-gradient-primary text-primary-foreground"
+                onClick={handleStartLiveSession}
+                disabled={startSession.isPending}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start Live Session
+              </Button>
+              <OfflineSessionInput />
+            </div>
+          )}
+
+          {/* Active Session Content */}
+          {activeSession && (
           <div className="px-4 pb-4 space-y-4">
 
           {/* Compact toolbar row: Settings, Upload, Project, Goal, Focus toggle */}
@@ -517,6 +545,7 @@ export function PracticeControls() {
             </Button>
           </div>
           </div>
+          )}
         </CollapsibleContent>
       </Collapsible>
     </Card>
