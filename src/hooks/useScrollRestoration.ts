@@ -7,6 +7,11 @@ interface StoredState {
 
 const storedStates = new Map<string, StoredState>();
 
+// Clear saved state for a route (used when navigating via nav bar)
+export function clearScrollState(key: string) {
+  storedStates.delete(key);
+}
+
 export function useScrollRestoration(key: string, initialDisplayCount: number = 10) {
   const isRestoring = useRef(false);
   const savedState = storedStates.get(key);
@@ -18,12 +23,14 @@ export function useScrollRestoration(key: string, initialDisplayCount: number = 
 
   // Restore scroll position synchronously before paint
   useLayoutEffect(() => {
-    if (savedState && savedState.scrollY > 0) {
+    // Re-check savedState here since it may have been cleared
+    const currentSavedState = storedStates.get(key);
+    if (currentSavedState && currentSavedState.scrollY > 0) {
       isRestoring.current = true;
       // Small delay to allow content to render with restored displayCount
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          window.scrollTo({ top: savedState.scrollY, behavior: 'instant' });
+          window.scrollTo({ top: currentSavedState.scrollY, behavior: 'instant' });
           setTimeout(() => {
             isRestoring.current = false;
           }, 50);

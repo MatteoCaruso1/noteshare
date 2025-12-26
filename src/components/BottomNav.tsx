@@ -1,33 +1,22 @@
-import { useLayoutEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
+import { clearScrollState } from '@/hooks/useScrollRestoration';
 
 interface BottomNavProps {
   overrideActiveRoute?: string;
 }
 
+// Map routes to their scroll restoration keys
+const routeScrollKeys: Record<string, string> = {
+  '/': 'index-timeline',
+  '/friends': 'friends-feed',
+};
+
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
   const { data: unreadCount } = useUnreadNotificationCount();
-  const prevPathRef = useRef(location.pathname);
-
-  // Only scroll to top when navigating via bottom nav (not back button)
-  // We track if the path changed to a main route (not a detail page)
-  useLayoutEffect(() => {
-    const mainRoutes = ['/', '/projects', '/gigs', '/friends', '/profile'];
-    const isMainRoute = mainRoutes.includes(location.pathname);
-    const wasMainRoute = mainRoutes.includes(prevPathRef.current);
-    
-    // Only scroll to top if navigating between different main routes via nav
-    // Don't scroll if coming back from a detail page (handled by scroll restoration)
-    if (isMainRoute && wasMainRoute && location.pathname !== prevPathRef.current) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    }
-    
-    prevPathRef.current = location.pathname;
-  }, [location.pathname]);
 
   const links = [
     { to: '/', icon: Home, label: 'My Practice' },
@@ -45,6 +34,16 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   
   // Determine current path - allow override for nested routes
   const currentPath = overrideActiveRoute || location.pathname;
+
+  const handleNavClick = (to: string) => {
+    // Clear scroll state for the destination so it starts at top
+    const scrollKey = routeScrollKeys[to];
+    if (scrollKey) {
+      clearScrollState(scrollKey);
+    }
+    // Scroll to top instantly
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
@@ -66,6 +65,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
               <NavLink
                 key={to}
                 to={to}
+                onClick={() => handleNavClick(to)}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
