@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
@@ -21,8 +21,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight, Smartphone } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
+import { toast } from 'sonner';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -54,7 +55,57 @@ export function PracticeControls() {
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [attachFocus, setAttachFocus] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
+  const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
+  // Wake lock management
+  const requestWakeLock = useCallback(async () => {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        setWakeLockEnabled(true);
+        toast.success('Screen will stay unlocked');
+        
+        wakeLockRef.current.addEventListener('release', () => {
+          setWakeLockEnabled(false);
+        });
+      } catch (err) {
+        console.error('Wake lock request failed:', err);
+        toast.error('Could not keep screen unlocked');
+      }
+    } else {
+      toast.error('Screen lock prevention not supported on this device');
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(async () => {
+    if (wakeLockRef.current) {
+      await wakeLockRef.current.release();
+      wakeLockRef.current = null;
+      setWakeLockEnabled(false);
+      toast.success('Screen lock resumed');
+    }
+  }, []);
+
+  const toggleWakeLock = useCallback(async () => {
+    if (wakeLockEnabled) {
+      await releaseWakeLock();
+    } else {
+      await requestWakeLock();
+    }
+  }, [wakeLockEnabled, requestWakeLock, releaseWakeLock]);
+
+  // Release wake lock when session ends or component unmounts
+  useEffect(() => {
+    if (!activeSession && wakeLockRef.current) {
+      releaseWakeLock();
+    }
+    return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+      }
+    };
+  }, [activeSession, releaseWakeLock]);
   // Live-updating timer - must be before early return
   const [, setTick] = useState(0);
   const isPaused = !!activeSession?.paused_at;
@@ -298,6 +349,23 @@ export function PracticeControls() {
                 recentTags={recentTags}
                 iconOnly
               />
+
+              {/* Wake Lock toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-8 w-8 ${wakeLockEnabled ? 'text-primary' : ''}`}
+                    onClick={toggleWakeLock}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {wakeLockEnabled ? 'Screen staying unlocked' : 'Keep screen unlocked'}
+                </TooltipContent>
+              </Tooltip>
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
