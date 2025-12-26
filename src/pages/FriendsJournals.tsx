@@ -10,18 +10,30 @@ import { FriendsList } from '@/components/FriendsList';
 import { NotificationsList } from '@/components/NotificationsList';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { useFriends } from '@/hooks/useFriendships';
-import { Users } from 'lucide-react';
+import { useUnreadNotificationCount, useNotifications } from '@/hooks/useNotifications';
+import { useConversations } from '@/hooks/useMessages';
+import { Users, Bell, MessageCircle, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const FriendsJournals = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { data: friends } = useFriends();
+  const { data: unreadNotificationCount } = useUnreadNotificationCount();
+  const { data: conversations } = useConversations();
   const [feedSearchQuery, setFeedSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
+  
+  // Calculate unread messages count
+  const unreadMessagesCount = conversations?.reduce((sum, c) => sum + c.unreadCount, 0) || 0;
   
   useEffect(() => {
     if (location.state?.openFriendsList) {
@@ -38,33 +50,68 @@ const FriendsJournals = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Page Header - Clickable to see friends list */}
+      {/* Page Header with Search */}
       <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-          <div className="cursor-pointer transition-opacity group">
-            <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
+            <div className="cursor-pointer transition-opacity group flex items-center gap-2">
               <h1 className="text-lg sm:text-xl font-semibold">Friends</h1>
-              <Users className="w-5 h-5 text-muted-foreground transition-colors group-hover:text-primary" />
+              <Users className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-primary" />
+              <span className="text-xs text-muted-foreground">({friends?.length || 0})</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {friends?.length || 0} friends · Tap to view
-            </p>
+          </FriendsList>
+          
+          <div className="flex-1 max-w-[200px]">
+            <UserSearch compact />
           </div>
-        </FriendsList>
+        </div>
       </div>
 
-      <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
         {/* Pending Friend Requests */}
         <PendingFriendRequests />
 
-        {/* User Search */}
-        <UserSearch />
+        {/* Notifications Dropdown */}
+        <Collapsible open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between h-10">
+              <div className="flex items-center gap-2">
+                <Bell className={`w-4 h-4 ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : ''}`} />
+                <span>Notifications</span>
+                {unreadNotificationCount && unreadNotificationCount > 0 && (
+                  <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+                    {unreadNotificationCount}
+                  </Badge>
+                )}
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform ${notificationsOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <NotificationsList embedded />
+          </CollapsibleContent>
+        </Collapsible>
 
-        {/* Notifications (Mentions appear here) */}
-        <NotificationsList />
-
-        {/* Direct Messages */}
-        <DirectMessages />
+        {/* Messages Dropdown */}
+        <Collapsible open={messagesOpen} onOpenChange={setMessagesOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between h-10">
+              <div className="flex items-center gap-2">
+                <MessageCircle className={`w-4 h-4 ${unreadMessagesCount > 0 ? 'text-primary' : ''}`} />
+                <span>Messages</span>
+                {unreadMessagesCount > 0 && (
+                  <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+                    {unreadMessagesCount}
+                  </Badge>
+                )}
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform ${messagesOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <DirectMessages embedded />
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Friends Feed */}
         <div className="pt-2">

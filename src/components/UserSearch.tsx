@@ -35,7 +35,11 @@ const ReasonBadge = ({ reason, matchingGenres }: { reason: SuggestionReason; mat
   }
 };
 
-export function UserSearch() {
+interface UserSearchProps {
+  compact?: boolean;
+}
+
+export function UserSearch({ compact }: UserSearchProps = {}) {
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const navigate = useNavigate();
@@ -168,12 +172,12 @@ export function UserSearch() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search musicians by name or @handle"
+          placeholder={compact ? "Search musicians" : "Search musicians by name or @handle"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          className="pl-9"
+          className={compact ? "pl-9 h-9 text-sm" : "pl-9"}
         />
       </div>
       

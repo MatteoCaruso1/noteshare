@@ -12,7 +12,11 @@ import { MessageCircle, Send, ArrowLeft, Users, List, ListOrdered } from 'lucide
 import { format } from 'date-fns';
 import { Profile } from '@/types';
 
-export function DirectMessages() {
+interface DirectMessagesProps {
+  embedded?: boolean;
+}
+
+export function DirectMessages({ embedded }: DirectMessagesProps = {}) {
   const { profile } = useAuth();
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: friends } = useFriends();
@@ -39,6 +43,65 @@ export function DirectMessages() {
         }}
         onBack={() => setShowNewMessage(false)}
       />
+    );
+  }
+
+  // When embedded in dropdown, use a more compact layout
+  if (embedded) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-4">
+        <div className="flex justify-end mb-3">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setShowNewMessage(true)}
+            className="text-xs h-7"
+          >
+            New message
+          </Button>
+        </div>
+        {convsLoading ? (
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            Loading...
+          </div>
+        ) : conversations && conversations.length > 0 ? (
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {conversations.slice(0, 5).map((conv) => (
+              <div
+                key={conv.friendId}
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => setSelectedFriend(conv.friend)}
+              >
+                <ClickableAvatar
+                  profileId={conv.friendId}
+                  avatar={conv.friend.avatar}
+                  name={conv.friend.name}
+                  size="sm"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-xs truncate">{conv.friend.name}</p>
+                    {conv.unreadCount > 0 && (
+                      <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px]">
+                        {conv.unreadCount}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {conv.lastMessage.sender_id === profile?.id ? 'You: ' : ''}
+                    {conv.lastMessage.content}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-4 text-muted-foreground">
+            <MessageCircle className="w-6 h-6 mx-auto mb-1 opacity-50" />
+            <p className="text-xs">No messages yet</p>
+          </div>
+        )}
+      </div>
     );
   }
 
