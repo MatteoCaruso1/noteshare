@@ -83,7 +83,11 @@ export function AppHeader() {
             <span className="font-semibold text-foreground">noteshare</span>
           </Link>
           
-          {/* Session Timer Indicator */}
+        </div>
+        
+        {/* Timer & Streak Indicator */}
+        <div className="flex items-center gap-2">
+          {/* Session Timer Indicator - moved to right side */}
           {user && (
             <Popover>
               <PopoverTrigger asChild>
@@ -95,7 +99,7 @@ export function AppHeader() {
                   }`}
                   disabled={!isSessionActive}
                 >
-                  <div className={`relative ${isSessionActive ? '' : ''}`}>
+                  <div className="relative">
                     <Clock className="h-4 w-4" />
                     {isSessionActive && (
                       <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
@@ -110,7 +114,7 @@ export function AppHeader() {
                 </button>
               </PopoverTrigger>
               {isSessionActive && (
-                <PopoverContent className="w-48 p-3" align="start">
+                <PopoverContent className="w-48 p-3" align="end">
                   <div className="space-y-3">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground mb-1">Session Active</p>
@@ -141,15 +145,7 @@ export function AppHeader() {
               )}
             </Popover>
           )}
-        </div>
-        
-        {/* Streak Indicator & Slogan */}
-        <div className="flex items-center gap-3">
           {user && <StreakIndicator />}
-          <div className="text-right flex-shrink-0">
-            <p className="text-[10px] sm:text-xs font-medium text-foreground leading-tight">Shape your practice.</p>
-            <p className="text-[8px] sm:text-[10px] text-muted-foreground leading-tight">Grow together.</p>
-          </div>
         </div>
       </div>
     </header>
