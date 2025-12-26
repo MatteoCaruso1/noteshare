@@ -27,11 +27,13 @@ interface NoteCardProps {
   note: NoteWithAuthor;
   expanded?: boolean;
   fromFriends?: boolean;
+  fromProject?: string;
+  fromGig?: string;
   onTagsChange?: (tags: string[]) => void;
   recentTags?: string[];
 }
 
-export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, onTagsChange, recentTags = [] }: NoteCardProps) {
+export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig, onTagsChange, recentTags = [] }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
@@ -122,8 +124,15 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, on
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    navigate(`/notes/${note.id}`, { state: fromFriends ? { fromFriends: true } : undefined });
-  }, [navigate, note.id, fromFriends]);
+    const navState = fromFriends 
+      ? { fromFriends: true } 
+      : fromProject 
+        ? { fromProject } 
+        : fromGig 
+          ? { fromGig } 
+          : undefined;
+    navigate(`/notes/${note.id}`, { state: navState });
+  }, [navigate, note.id, fromFriends, fromProject, fromGig]);
 
   const handleNavigateToProject = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();

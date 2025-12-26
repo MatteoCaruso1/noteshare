@@ -22,7 +22,7 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
       markRead.mutate(notification.id);
     }
     if (notification.note_id) {
-      navigate(`/notes/${notification.note_id}`);
+      navigate(`/notes/${notification.note_id}`, { state: { fromFriends: true } });
     }
   };
 

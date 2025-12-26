@@ -45,8 +45,10 @@ const NoteDetail = () => {
     updateTags.mutate({ noteId: id, tags: newTags });
   }, [id, updateTags]);
   
-  // Check if we came from the Friends tab
+  // Check where we came from for proper back navigation
   const fromFriends = location.state?.fromFriends;
+  const fromProject = location.state?.fromProject;
+  const fromGig = location.state?.fromGig;
 
   // Scroll to top instantly on mount
   useInstantScrollToTop([id]);
@@ -117,7 +119,7 @@ const NoteDetail = () => {
             <div className="h-24 bg-card rounded-lg animate-pulse" />
           </div>
         </main>
-        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : undefined} />
+        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
       </div>
     );
   }
@@ -143,7 +145,7 @@ const NoteDetail = () => {
             </Button>
           </div>
         </main>
-        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : undefined} />
+        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
       </div>
     );
   }
@@ -160,6 +162,10 @@ const NoteDetail = () => {
                 // Use explicit navigation to avoid history stack issues
                 if (fromFriends) {
                   navigate('/friends');
+                } else if (fromProject) {
+                  navigate(`/projects/${fromProject}`);
+                } else if (fromGig) {
+                  navigate(`/gigs/${fromGig}`);
                 } else {
                   // Always go home - more reliable than navigate(-1) which can get stuck
                   // if mutations or other actions have affected history
@@ -303,7 +309,7 @@ const NoteDetail = () => {
         </section>
       </main>
 
-      <BottomNav overrideActiveRoute={fromFriends ? '/friends' : undefined} />
+      <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
     </div>
   );
 };

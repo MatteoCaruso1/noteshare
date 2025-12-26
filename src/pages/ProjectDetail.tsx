@@ -275,7 +275,7 @@ const ProjectDetail = () => {
           ) : notes && notes.length > 0 ? (
             <div className="space-y-4">
               {notes.map((note) => (
-                <NoteCard key={note.id} note={note} />
+                <NoteCard key={note.id} note={note} fromProject={id} />
               ))}
             </div>
           ) : (
