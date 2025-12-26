@@ -337,12 +337,10 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, on
                 <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      {isPracticeSession ? 'Delete Practice Session?' : 'Delete Note?'}
+                      Delete {isPracticeSession ? 'session' : 'note'}?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      {isPracticeSession 
-                        ? 'This will permanently delete this practice session and its note. This action cannot be undone.'
-                        : 'This will permanently delete this note. This action cannot be undone.'}
+                      This cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

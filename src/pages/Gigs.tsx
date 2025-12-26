@@ -194,9 +194,9 @@ const Gigs = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Gig</AlertDialogTitle>
+                    <AlertDialogTitle>Delete gig?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to delete "{post.title}"? This action cannot be undone.
+                      "{post.title}" will be permanently deleted.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

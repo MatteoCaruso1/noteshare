@@ -481,10 +481,9 @@ const GigDetail = () => {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Gig?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete gig?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete "{gig.title}" and cannot be undone.
-                    Notes attached to this gig will not be deleted but will no longer be associated with a gig.
+                    "{gig.title}" will be deleted. Attached notes will remain.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
