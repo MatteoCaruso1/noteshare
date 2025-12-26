@@ -57,9 +57,9 @@ const FriendsJournals = () => {
           <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends</h1>
           <div className="flex items-center gap-2 flex-1 justify-end">
             <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-              <div className="cursor-pointer transition-opacity group flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border hover:border-primary/50 shrink-0">
-                <Users className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-primary" />
-                <span className="text-sm text-muted-foreground group-hover:text-foreground">({friends?.length || 0})</span>
+              <div className="cursor-pointer transition-opacity group flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 shrink-0">
+                <Users className="w-4 h-4 text-primary" />
+                <span className="text-sm text-primary">({friends?.length || 0})</span>
               </div>
             </FriendsList>
             <div className="flex-1 max-w-xs">
