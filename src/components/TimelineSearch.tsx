@@ -67,13 +67,13 @@ export function TimelineSearch({
   return (
     <div className="flex items-center gap-2">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder="..."
           value={query}
           onChange={(e) => handleChange(e.target.value)}
-          className="pl-9 pr-9 h-9 bg-primary/10 border-primary/20 placeholder:text-primary/60"
+          className="pl-9 pr-9 h-9 bg-secondary/50 border-border placeholder:text-muted-foreground"
         />
         {query && (
           <Button
