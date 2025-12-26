@@ -14,7 +14,7 @@ import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus } from '@/hooks/useUpdateNote';
@@ -287,7 +287,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, on
               streakDays={streakDays}
               className="text-sm font-medium truncate"
             />
-            {visibilityIcon}
+            <div className="flex items-center gap-0.5">
+              <Flame className={`w-3 h-3 ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`} />
+              <span className={`text-xs font-medium ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`}>
+                {streakDays}
+              </span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             {format(new Date(note.created_at), 'MMM d, yyyy · h:mm a')}
