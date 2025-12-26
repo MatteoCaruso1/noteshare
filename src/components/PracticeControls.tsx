@@ -61,9 +61,17 @@ export function PracticeControls() {
   const [attachFocus, setAttachFocus] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
 
-  if (!profile) return null;
-
+  // Live-updating timer - must be before early return
+  const [, setTick] = useState(0);
   const isPaused = !!activeSession?.paused_at;
+  
+  useEffect(() => {
+    if (!activeSession || isPaused) return;
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, [activeSession, isPaused]);
+
+  if (!profile) return null;
 
   const handleStartSession = () => {
     startSession.mutate({ userId: profile.id });
@@ -192,14 +200,6 @@ export function PracticeControls() {
     }
     return `${minutes}m`;
   };
-
-  // Live-updating timer
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    if (!activeSession || isPaused) return;
-    const interval = setInterval(() => setTick(t => t + 1), 60000); // Update every minute
-    return () => clearInterval(interval);
-  }, [activeSession, isPaused]);
 
   const sessionDuration = getSessionDuration();
 
