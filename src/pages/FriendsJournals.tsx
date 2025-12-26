@@ -15,6 +15,7 @@ import { useConversations } from '@/hooks/useMessages';
 import { Users, Bell, MessageCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const FriendsJournals = () => {
@@ -73,46 +74,50 @@ const FriendsJournals = () => {
         <PendingFriendRequests />
 
         {/* Notifications Dropdown */}
-        <Collapsible open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" className="w-full justify-between h-10">
-              <div className="flex items-center gap-2">
-                <Bell className={`w-4 h-4 ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : ''}`} />
-                <span>Notifications</span>
-                {unreadNotificationCount && unreadNotificationCount > 0 && (
-                  <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-                    {unreadNotificationCount}
-                  </Badge>
-                )}
-              </div>
-              <ChevronDown className={`w-4 h-4 transition-transform ${notificationsOpen ? 'rotate-180' : ''}`} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <NotificationsList embedded />
-          </CollapsibleContent>
-        </Collapsible>
+        <Card className="bg-card border-border">
+          <Collapsible open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+            <CollapsibleTrigger asChild>
+              <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+                <div className="flex items-center gap-2">
+                  <Bell className={`w-5 h-5 transition-colors ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                  <span className="font-semibold">Notifications</span>
+                  {unreadNotificationCount && unreadNotificationCount > 0 && (
+                    <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+                      {unreadNotificationCount}
+                    </Badge>
+                  )}
+                </div>
+                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${notificationsOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <NotificationsList embedded />
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
 
         {/* Messages Dropdown */}
-        <Collapsible open={messagesOpen} onOpenChange={setMessagesOpen}>
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" className="w-full justify-between h-10">
-              <div className="flex items-center gap-2">
-                <MessageCircle className={`w-4 h-4 ${unreadMessagesCount > 0 ? 'text-primary' : ''}`} />
-                <span>Messages</span>
-                {unreadMessagesCount > 0 && (
-                  <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-                    {unreadMessagesCount}
-                  </Badge>
-                )}
-              </div>
-              <ChevronDown className={`w-4 h-4 transition-transform ${messagesOpen ? 'rotate-180' : ''}`} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <DirectMessages embedded />
-          </CollapsibleContent>
-        </Collapsible>
+        <Card className="bg-card border-border">
+          <Collapsible open={messagesOpen} onOpenChange={setMessagesOpen}>
+            <CollapsibleTrigger asChild>
+              <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className={`w-5 h-5 transition-colors ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                  <span className="font-semibold">Messages</span>
+                  {unreadMessagesCount > 0 && (
+                    <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+                      {unreadMessagesCount}
+                    </Badge>
+                  )}
+                </div>
+                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${messagesOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <DirectMessages embedded />
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
 
         {/* Friends Feed */}
         <div className="pt-2">
