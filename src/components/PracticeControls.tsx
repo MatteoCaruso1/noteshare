@@ -404,10 +404,10 @@ export function PracticeControls() {
                   <TooltipContent>Delete session</TooltipContent>
                 </Tooltip>
                 <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this session?</AlertDialogTitle>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete session?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete this practice session and any unsaved notes. This action cannot be undone.
+                      This will discard the session and any unsaved notes.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

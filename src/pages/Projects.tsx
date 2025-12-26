@@ -268,9 +268,9 @@ const Projects = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                            <AlertDialogTitle>Delete project?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to delete "{project.title}"? This action cannot be undone.
+                              "{project.title}" will be permanently deleted.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

@@ -373,10 +373,9 @@ const ProjectDetail = () => {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete project?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete "{project.title}" and cannot be undone.
-                    Notes attached to this project will not be deleted but will no longer be associated with a project.
+                    "{project.title}" will be deleted. Attached notes will remain.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

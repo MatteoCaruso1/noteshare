@@ -228,9 +228,9 @@ export function GoalFormDialog({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Goal</AlertDialogTitle>
+                    <AlertDialogTitle>Delete goal?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to delete this goal? This action cannot be undone.
+                      This cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
