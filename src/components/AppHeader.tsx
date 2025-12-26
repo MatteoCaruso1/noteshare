@@ -1,4 +1,4 @@
-import { Music, Clock, Square } from 'lucide-react';
+import { Music, Clock, Square, Pause } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useActiveSession, useEndSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
@@ -17,6 +17,8 @@ export function AppHeader() {
   const createNote = useCreateNote();
   const [elapsed, setElapsed] = useState('0:00');
 
+  const isPaused = !!activeSession?.paused_at;
+
   useEffect(() => {
     if (!activeSession) {
       setElapsed('0:00');
@@ -26,7 +28,13 @@ export function AppHeader() {
     const updateElapsed = () => {
       const start = new Date(activeSession.started_at).getTime();
       const now = Date.now();
-      const diff = Math.max(0, Math.floor((now - start) / 1000));
+      const pausedMs = activeSession.paused_duration_ms || 0;
+      // If currently paused, add the current pause duration
+      const currentPauseMs = activeSession.paused_at 
+        ? now - new Date(activeSession.paused_at).getTime() 
+        : 0;
+      const activeDurationMs = now - start - pausedMs - currentPauseMs;
+      const diff = Math.max(0, Math.floor(activeDurationMs / 1000));
       
       const hours = Math.floor(diff / 3600);
       const minutes = Math.floor((diff % 3600) / 60);
@@ -41,9 +49,12 @@ export function AppHeader() {
 
     // Initialize immediately
     updateElapsed();
-    const interval = setInterval(updateElapsed, 1000);
-    return () => clearInterval(interval);
-  }, [activeSession]);
+    // Only update every second if not paused
+    if (!isPaused) {
+      const interval = setInterval(updateElapsed, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [activeSession, isPaused]);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
@@ -87,12 +98,15 @@ export function AppHeader() {
                   <div className={`relative ${isSessionActive ? '' : ''}`}>
                     <Clock className="h-4 w-4" />
                     {isSessionActive && (
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 recording-pulse" />
+                      <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
                     )}
                   </div>
-                  <span className={`text-xs font-mono ${isSessionActive ? 'timer-tick' : ''}`}>
+                  <span className={`text-xs font-mono ${isSessionActive && !isPaused ? 'timer-tick' : ''}`}>
                     {isSessionActive ? elapsed : '--:--'}
                   </span>
+                  {isPaused && (
+                    <Pause className="h-3 w-3 text-amber-500" />
+                  )}
                 </button>
               </PopoverTrigger>
               {isSessionActive && (
