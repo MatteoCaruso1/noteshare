@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { useFriends } from '@/hooks/useFriendships';
-import { Users, Music, Handshake, Guitar } from 'lucide-react';
+import { Users, Music, Handshake, Guitar, Flame } from 'lucide-react';
 
 interface FriendsListProps {
   children: React.ReactNode;
@@ -68,7 +68,15 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
                     size="lg"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{friend.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm truncate">{friend.name}</p>
+                      <div className="flex items-center gap-0.5">
+                        <Flame className={`w-3.5 h-3.5 ${(friend.current_streak || 0) > 0 ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                        <span className={`text-xs font-medium ${(friend.current_streak || 0) > 0 ? 'text-primary' : 'text-muted-foreground/40'}`}>
+                          {friend.current_streak || 0}
+                        </span>
+                      </div>
+                    </div>
                     <p className="text-xs text-muted-foreground truncate mb-2">@{friend.username}</p>
                     
                     <div className="flex flex-wrap gap-1">
