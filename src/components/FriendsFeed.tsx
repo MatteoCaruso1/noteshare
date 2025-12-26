@@ -1,22 +1,22 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 
 interface FriendsFeedProps {
   searchQuery?: string;
   focusDateFilter?: Date;
 }
 
-const INITIAL_LIMIT = 10;
 const LOAD_MORE_COUNT = 10;
 
 export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
   const { data: notes, isLoading } = useFriendsNotes();
-  const [displayCount, setDisplayCount] = useState(INITIAL_LIMIT);
+  const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
 
   // Filter notes based on search query and focus date
   const filteredNotes = useMemo(() => {

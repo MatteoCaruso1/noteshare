@@ -13,6 +13,8 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 
+const LOAD_MORE_COUNT = 10;
+
 const Index = () => {
   const { user, profile, loading } = useAuth();
   const { data: notes, isLoading: notesLoading } = useNotes();
@@ -20,7 +22,11 @@ const Index = () => {
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
   
-  useScrollRestoration('index-timeline');
+  const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
+  
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + LOAD_MORE_COUNT);
+  };
 
   // Collect all unique tags from notes
   const availableTags = useMemo(() => {
@@ -129,7 +135,12 @@ const Index = () => {
               {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
             </p>
           )}
-          <Timeline notes={filteredNotes} loading={notesLoading} />
+          <Timeline 
+            notes={filteredNotes} 
+            loading={notesLoading} 
+            displayCount={displayCount}
+            onLoadMore={handleLoadMore}
+          />
         </section>
       </main>
 

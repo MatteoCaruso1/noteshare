@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Music2, Disc3, Users, MapPin, Flame } from 'lucide-react';
 import { Profile } from '@/types';
-import { Timeline } from '@/components/Timeline';
+import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
 
 
@@ -61,6 +61,11 @@ const PublicProfile = () => {
   const { profile: myProfile } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
+  const [displayCount, setDisplayCount] = useState(10);
+  
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + LOAD_MORE_COUNT);
+  };
   
   // Scroll to top on mount
   useEffect(() => {
@@ -215,7 +220,12 @@ const PublicProfile = () => {
         {/* User's Notes */}
         <section>
           <h2 className="text-lg font-semibold mb-4">{profile.name}'s Notes</h2>
-          <Timeline notes={notes || []} loading={notesLoading} />
+          <Timeline 
+            notes={notes || []} 
+            loading={notesLoading} 
+            displayCount={displayCount}
+            onLoadMore={handleLoadMore}
+          />
         </section>
       </div>
 
