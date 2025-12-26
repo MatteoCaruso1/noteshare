@@ -22,6 +22,7 @@ export function AppHeader() {
   useEffect(() => {
     if (!activeSession) {
       setElapsed('--:--');
+      document.title = 'Noteshare | Practice Smarter';
       return;
     }
 
@@ -40,18 +41,26 @@ export function AppHeader() {
       const minutes = Math.floor((diff % 3600) / 60);
       const seconds = diff % 60;
       
+      let timeStr: string;
       if (hours > 0) {
-        setElapsed(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        timeStr = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       } else {
-        setElapsed(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
       }
+      
+      setElapsed(timeStr);
+      // Update browser tab with timer
+      document.title = `${timeStr} | Noteshare`;
     };
 
     // Initialize immediately
     updateElapsed();
     // Update every second
     const interval = setInterval(updateElapsed, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      document.title = 'Noteshare | Practice Smarter';
+    };
   }, [activeSession]);
   
   // Don't show on auth page
