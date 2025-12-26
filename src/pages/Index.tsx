@@ -78,8 +78,6 @@ const Index = () => {
     return <WelcomeHero />;
   }
 
-  const firstName = profile?.name?.split(' ')[0] || 'Your';
-  const timelineTitle = `${firstName}'s Notes`;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -107,18 +105,18 @@ const Index = () => {
 
         {/* Timeline */}
         <section>
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold">{timelineTitle}</h2>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <h2 className="text-lg font-semibold">Notes</h2>
+            <div className="flex-1 max-w-xs">
+              <TimelineSearch 
+                onSearch={setSearchQuery} 
+                onFocusDateFilter={setFocusDateFilter}
+                focusDate={focusDateFilter}
+                onTagFilter={setTagFilter}
+                selectedTag={tagFilter}
+                availableTags={availableTags}
+              />
             </div>
-            <TimelineSearch 
-              onSearch={setSearchQuery} 
-              onFocusDateFilter={setFocusDateFilter}
-              focusDate={focusDateFilter}
-              onTagFilter={setTagFilter}
-              selectedTag={tagFilter}
-              availableTags={availableTags}
-            />
           </div>
           {(searchQuery || focusDateFilter || tagFilter) && (
             <p className="text-sm text-muted-foreground mb-3">
