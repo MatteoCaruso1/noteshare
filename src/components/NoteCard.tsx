@@ -303,9 +303,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               </span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {format(new Date(note.created_at), 'MMM d, yyyy · h:mm a')}
-          </p>
+          {/* Short date in timeline, full date in expanded view */}
+          {!expanded ? (
+            <p className="text-xs text-muted-foreground">
+              {format(new Date(note.created_at), 'MMM d')}
+            </p>
+          ) : null}
         </div>
 
         {/* Settings Menu for Owner - only show in expanded/detail view */}
@@ -435,6 +438,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             </div>
           )}
         </div>
+      )}
+
+      {/* Full timestamp at bottom in expanded view */}
+      {expanded && (
+        <p className="text-xs text-muted-foreground/60 mt-4 pt-3 border-t border-border/50">
+          {format(new Date(note.created_at), 'h:mm a · MMM d, yyyy')}
+        </p>
       )}
 
       {/* Voice Reply Button - hidden on homepage for cleaner UI */}
