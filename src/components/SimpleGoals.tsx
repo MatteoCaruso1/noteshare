@@ -79,12 +79,17 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
 
   const canAddMore = activeGoals.length < MAX_GOALS;
 
+  const hasGoals = activeGoals.length > 0 || isAdding;
+
   return (
     <div className="rounded-lg border border-border bg-card p-3">
-      <div className="flex items-center justify-between mb-2">
+      <div className={cn(
+        "flex items-center",
+        hasGoals ? "justify-between mb-2" : "justify-center"
+      )}>
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-foreground" />
-          <span className="text-sm font-medium text-foreground">My Musical Goals</span>
+          <Target className="w-4 h-4 text-primary" />
+          <span className="text-base font-medium text-foreground">Musical Goals</span>
         </div>
         {canAddMore && !isAdding && (
           <button
@@ -96,72 +101,74 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         )}
       </div>
       
-      <div className="space-y-1.5">
-        {activeGoals.map((goal, index) => (
-          <div key={goal.id} className="group flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground text-xs font-medium flex items-center justify-center flex-shrink-0">
-              {index + 1}
-            </span>
-            
-            {editingId === goal.id ? (
+      {hasGoals && (
+        <div className="space-y-1.5">
+          {activeGoals.map((goal, index) => (
+            <div key={goal.id} className="group flex items-center gap-2">
+              <span className="w-4 text-primary text-xs font-semibold flex-shrink-0">
+                {index + 1}.
+              </span>
+              
+              {editingId === goal.id ? (
+                <Input
+                  autoFocus
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  onBlur={() => handleSaveEdit(goal.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveEdit(goal.id);
+                    if (e.key === 'Escape') handleCancelEdit();
+                  }}
+                  className="h-6 text-sm py-0 px-1.5 flex-1"
+                  maxLength={80}
+                />
+              ) : (
+                <>
+                  <span
+                    onClick={() => handleStartEdit(goal.id, goal.title || goal.content)}
+                    className="text-sm cursor-pointer hover:text-primary transition-colors flex-1 truncate"
+                  >
+                    {goal.title || goal.content}
+                  </span>
+                  <button
+                    onClick={() => handleDeleteGoal(goal.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+          
+          {isAdding && (
+            <div className="flex items-center gap-2">
+              <span className="w-4 text-primary text-xs font-semibold flex-shrink-0">
+                {activeGoals.length + 1}.
+              </span>
               <Input
                 autoFocus
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                onBlur={() => handleSaveEdit(goal.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSaveEdit(goal.id);
-                  if (e.key === 'Escape') handleCancelEdit();
+                value={newGoalText}
+                onChange={(e) => setNewGoalText(e.target.value)}
+                onBlur={() => {
+                  if (newGoalText.trim()) handleAddGoal();
+                  else setIsAdding(false);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddGoal();
+                  if (e.key === 'Escape') {
+                    setIsAdding(false);
+                    setNewGoalText('');
+                  }
+                }}
+                placeholder={examplePlaceholder}
                 className="h-6 text-sm py-0 px-1.5 flex-1"
                 maxLength={80}
               />
-            ) : (
-              <>
-                <span
-                  onClick={() => handleStartEdit(goal.id, goal.title || goal.content)}
-                  className="text-sm cursor-pointer hover:text-primary transition-colors flex-1 truncate"
-                >
-                  {goal.title || goal.content}
-                </span>
-                <button
-                  onClick={() => handleDeleteGoal(goal.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-destructive"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </>
-            )}
-          </div>
-        ))}
-        
-        {isAdding && (
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground text-xs font-medium flex items-center justify-center flex-shrink-0">
-              {activeGoals.length + 1}
-            </span>
-            <Input
-              autoFocus
-              value={newGoalText}
-              onChange={(e) => setNewGoalText(e.target.value)}
-              onBlur={() => {
-                if (newGoalText.trim()) handleAddGoal();
-                else setIsAdding(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddGoal();
-                if (e.key === 'Escape') {
-                  setIsAdding(false);
-                  setNewGoalText('');
-                }
-              }}
-              placeholder={examplePlaceholder}
-              className="h-6 text-sm py-0 px-1.5 flex-1"
-              maxLength={80}
-            />
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
