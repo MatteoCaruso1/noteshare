@@ -18,19 +18,23 @@ export function useSessions() {
   });
 }
 
-export function useActiveSession() {
+export function useActiveSession(profileId?: string) {
   return useQuery({
-    queryKey: ['active-session'],
+    queryKey: ['active-session', profileId],
     queryFn: async () => {
+      if (!profileId) return null;
+
       const { data, error } = await supabase
         .from('practice_sessions')
         .select('*')
+        .eq('user_id', profileId)
         .eq('is_active', true)
         .maybeSingle();
 
       if (error) throw error;
       return data as PracticeSession | null;
     },
+    enabled: !!profileId,
   });
 }
 
@@ -112,11 +116,13 @@ export function useStartSession() {
       return data as PracticeSession;
     },
     onMutate: async ({ userId, goals }) => {
+      const key = ['active-session', userId] as const;
+
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['active-session'] });
+      await queryClient.cancelQueries({ queryKey: key });
 
       // Snapshot the previous value
-      const previousSession = queryClient.getQueryData(['active-session']);
+      const previousSession = queryClient.getQueryData(key);
 
       // Optimistically set the new session immediately
       const optimisticSession: PracticeSession = {
@@ -132,20 +138,21 @@ export function useStartSession() {
         paused_duration_ms: 0,
       };
 
-      queryClient.setQueryData(['active-session'], optimisticSession);
+      queryClient.setQueryData(key, optimisticSession);
 
-      return { previousSession };
+      return { previousSession, key };
     },
-    onSuccess: (data) => {
+    onSuccess: (data, { userId }) => {
+      const key = ['active-session', userId] as const;
       // Replace optimistic data with real data
-      queryClient.setQueryData(['active-session'], data);
+      queryClient.setQueryData(key, data);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast.success('Practice session started!');
     },
     onError: (error, variables, context) => {
       // Rollback on error
-      if (context?.previousSession !== undefined) {
-        queryClient.setQueryData(['active-session'], context.previousSession);
+      if (context?.key && context?.previousSession !== undefined) {
+        queryClient.setQueryData(context.key, context.previousSession);
       }
       console.error('Error starting session:', error);
       toast.error('Failed to start session');
@@ -157,7 +164,15 @@ export function useEndSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ sessionId, notesSummary }: { sessionId: string; notesSummary?: string }) => {
+    mutationFn: async ({
+      sessionId,
+      userId,
+      notesSummary,
+    }: {
+      sessionId: string;
+      userId: string;
+      notesSummary?: string;
+    }) => {
       const { data, error } = await supabase
         .from('practice_sessions')
         .update({
@@ -173,28 +188,30 @@ export function useEndSession() {
       if (error) throw error;
       return data as PracticeSession;
     },
-    onMutate: async () => {
+    onMutate: async ({ userId }) => {
+      const key = ['active-session', userId] as const;
+
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['active-session'] });
+      await queryClient.cancelQueries({ queryKey: key });
 
       // Snapshot the previous value
-      const previousSession = queryClient.getQueryData(['active-session']);
+      const previousSession = queryClient.getQueryData(key);
 
       // Optimistically set active session to null immediately
-      queryClient.setQueryData(['active-session'], null);
+      queryClient.setQueryData(key, null);
 
-      return { previousSession };
+      return { previousSession, key };
     },
-    onSuccess: () => {
+    onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+      queryClient.invalidateQueries({ queryKey: ['active-session', userId] });
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       toast.success('Practice session ended!');
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       // Rollback on error
-      if (context?.previousSession !== undefined) {
-        queryClient.setQueryData(['active-session'], context.previousSession);
+      if (context?.key && context?.previousSession !== undefined) {
+        queryClient.setQueryData(context.key, context.previousSession);
       }
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
@@ -345,7 +362,7 @@ export function useDeleteSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (sessionId: string) => {
+    mutationFn: async ({ sessionId }: { sessionId: string; userId: string }) => {
       const { error } = await supabase
         .from('practice_sessions')
         .delete()
@@ -353,29 +370,31 @@ export function useDeleteSession() {
 
       if (error) throw error;
     },
-    onMutate: async () => {
+    onMutate: async ({ userId }) => {
+      const key = ['active-session', userId] as const;
+
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['active-session'] });
+      await queryClient.cancelQueries({ queryKey: key });
 
       // Snapshot the previous value
-      const previousSession = queryClient.getQueryData(['active-session']);
+      const previousSession = queryClient.getQueryData(key);
 
       // Optimistically set active session to null immediately
-      queryClient.setQueryData(['active-session'], null);
+      queryClient.setQueryData(key, null);
 
-      return { previousSession };
+      return { previousSession, key };
     },
-    onSuccess: () => {
+    onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+      queryClient.invalidateQueries({ queryKey: ['active-session', userId] });
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast.success('Session deleted');
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       // Rollback on error
-      if (context?.previousSession !== undefined) {
-        queryClient.setQueryData(['active-session'], context.previousSession);
+      if (context?.key && context?.previousSession !== undefined) {
+        queryClient.setQueryData(context.key, context.previousSession);
       }
       console.error('Error deleting session:', error);
       toast.error('Failed to delete session');
