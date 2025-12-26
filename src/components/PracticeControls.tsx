@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes } from '@/hooks/useSessions';
+import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useGoals, useIncrementProgress } from '@/hooks/useGoals';
@@ -22,8 +22,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair } from 'lucide-react';
-import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
+import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair, Pause } from 'lucide-react';
+import { differenceInMinutes } from 'date-fns';
 import { AudioFileWithName } from '@/types';
 
 // Get today's date as YYYY-MM-DD in local timezone
@@ -45,6 +45,8 @@ export function PracticeControls() {
   const recentTags = useRecentTags();
   const startSession = useStartSession();
   const endSession = useEndSession();
+  const pauseSession = usePauseSession();
+  const resumeSession = useResumeSession();
   const createNote = useCreateNote();
   const incrementProgress = useIncrementProgress();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
@@ -60,8 +62,22 @@ export function PracticeControls() {
 
   if (!profile) return null;
 
+  const isPaused = !!activeSession?.paused_at;
+
   const handleStartSession = () => {
     startSession.mutate({ userId: profile.id });
+  };
+
+  const handlePauseSession = () => {
+    if (activeSession) {
+      pauseSession.mutate(activeSession.id);
+    }
+  };
+
+  const handleResumeSession = () => {
+    if (activeSession) {
+      resumeSession.mutate(activeSession.id);
+    }
   };
 
   const handleAudioRecorded = async (blob: Blob, duration: number) => {
@@ -93,11 +109,15 @@ export function PracticeControls() {
 
   const handleSaveNoteAndEndSession = () => {
     if (activeSession) {
-      // Calculate session duration in minutes
-      const sessionDurationMinutes = differenceInMinutes(
-        new Date(),
-        new Date(activeSession.started_at)
-      );
+      // Calculate session duration in minutes (accounting for paused time)
+      const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
+      const pausedMs = activeSession.paused_duration_ms || 0;
+      // If currently paused, add the current pause duration
+      const currentPauseMs = activeSession.paused_at 
+        ? Date.now() - new Date(activeSession.paused_at).getTime() 
+        : 0;
+      const activeDurationMs = totalElapsedMs - pausedMs - currentPauseMs;
+      const sessionDurationMinutes = Math.floor(activeDurationMs / 60000);
 
       endSession.mutate(
         { sessionId: activeSession.id },
@@ -150,9 +170,37 @@ export function PracticeControls() {
     }
   };
 
-  const sessionDuration = activeSession
-    ? formatDistanceToNow(new Date(activeSession.started_at), { addSuffix: false })
-    : null;
+  // Calculate active session duration (excluding paused time)
+  const getSessionDuration = () => {
+    if (!activeSession) return null;
+    
+    const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
+    const pausedMs = activeSession.paused_duration_ms || 0;
+    // If currently paused, add the current pause duration
+    const currentPauseMs = activeSession.paused_at 
+      ? Date.now() - new Date(activeSession.paused_at).getTime() 
+      : 0;
+    const activeDurationMs = totalElapsedMs - pausedMs - currentPauseMs;
+    
+    const totalMinutes = Math.floor(activeDurationMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
+  // Live-updating timer
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!activeSession || isPaused) return;
+    const interval = setInterval(() => setTick(t => t + 1), 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, [activeSession, isPaused]);
+
+  const sessionDuration = getSessionDuration();
 
   return (
     <div className="space-y-4">
@@ -161,15 +209,35 @@ export function PracticeControls() {
         {activeSession ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-green-500 recording-pulse" />
+              <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
               <div>
-                <p className="font-medium">Session Active</p>
+                <p className="font-medium">
+                  {isPaused ? 'Session Paused' : 'Session Active'}
+                </p>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {sessionDuration}
                 </p>
               </div>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={isPaused ? handleResumeSession : handlePauseSession}
+              disabled={pauseSession.isPending || resumeSession.isPending}
+            >
+              {isPaused ? (
+                <>
+                  <Play className="w-4 h-4 mr-1" />
+                  Resume
+                </>
+              ) : (
+                <>
+                  <Pause className="w-4 h-4 mr-1" />
+                  Pause
+                </>
+              )}
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">

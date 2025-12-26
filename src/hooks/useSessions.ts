@@ -132,6 +132,7 @@ export function useEndSession() {
           is_active: false,
           ended_at: new Date().toISOString(),
           notes_summary: notesSummary,
+          paused_at: null, // Clear pause state when ending
         })
         .eq('id', sessionId)
         .select()
@@ -149,6 +150,77 @@ export function useEndSession() {
     onError: (error) => {
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
+    },
+  });
+}
+
+export function usePauseSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { data, error } = await supabase
+        .from('practice_sessions')
+        .update({
+          paused_at: new Date().toISOString(),
+        })
+        .eq('id', sessionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as PracticeSession;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+      toast.success('Session paused');
+    },
+    onError: (error) => {
+      console.error('Error pausing session:', error);
+      toast.error('Failed to pause session');
+    },
+  });
+}
+
+export function useResumeSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      // First get the current session to calculate paused duration
+      const { data: session, error: fetchError } = await supabase
+        .from('practice_sessions')
+        .select('paused_at, paused_duration_ms')
+        .eq('id', sessionId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Calculate additional paused time
+      const pausedAt = session?.paused_at ? new Date(session.paused_at) : null;
+      const additionalPausedMs = pausedAt ? Date.now() - pausedAt.getTime() : 0;
+      const newPausedDurationMs = (session?.paused_duration_ms || 0) + additionalPausedMs;
+
+      const { data, error } = await supabase
+        .from('practice_sessions')
+        .update({
+          paused_at: null,
+          paused_duration_ms: newPausedDurationMs,
+        })
+        .eq('id', sessionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as PracticeSession;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+      toast.success('Session resumed');
+    },
+    onError: (error) => {
+      console.error('Error resuming session:', error);
+      toast.error('Failed to resume session');
     },
   });
 }

@@ -38,6 +38,8 @@ export interface PracticeSession {
   goals: string | null;
   notes_summary: string | null;
   is_active: boolean;
+  paused_at: string | null;
+  paused_duration_ms: number;
   created_at: string;
 }
 

@@ -483,6 +483,8 @@ export type Database = {
           id: string
           is_active: boolean | null
           notes_summary: string | null
+          paused_at: string | null
+          paused_duration_ms: number | null
           started_at: string
           user_id: string
         }
@@ -497,6 +499,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           notes_summary?: string | null
+          paused_at?: string | null
+          paused_duration_ms?: number | null
           started_at?: string
           user_id: string
         }
@@ -511,6 +515,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           notes_summary?: string | null
+          paused_at?: string | null
+          paused_duration_ms?: number | null
           started_at?: string
           user_id?: string
         }
