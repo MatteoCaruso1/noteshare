@@ -66,10 +66,13 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const canAddMore = activeGoals.length < MAX_GOALS;
 
   return (
-    <div className="flex items-start gap-2 py-2">
-      <Target className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+    <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Target className="w-4 h-4 text-primary flex-shrink-0" />
+        <span className="text-xs font-medium text-primary uppercase tracking-wide">Goals</span>
+      </div>
       
-      <div className="flex-1 min-w-0">
+      <div className="space-y-1.5">
         {activeGoals.length === 0 && !isAdding ? (
           <button 
             onClick={() => setIsAdding(true)}
@@ -78,10 +81,10 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
             + Add a goal
           </button>
         ) : (
-          <div className="space-y-1">
-            {activeGoals.map((goal, index) => (
-              <div key={goal.id} className="group flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground w-4">{index + 1}.</span>
+          <>
+            {activeGoals.map((goal) => (
+              <div key={goal.id} className="group flex items-center gap-2">
+                <Target className="w-3 h-3 text-primary/60 flex-shrink-0" />
                 
                 {editingId === goal.id ? (
                   <Input
@@ -116,8 +119,8 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
             ))}
             
             {isAdding ? (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground w-4">{activeGoals.length + 1}.</span>
+              <div className="flex items-center gap-2">
+                <Target className="w-3 h-3 text-primary/60 flex-shrink-0" />
                 <Input
                   autoFocus
                   value={newGoalText}
@@ -147,7 +150,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
                 Add
               </button>
             ) : null}
-          </div>
+          </>
         )}
       </div>
     </div>
