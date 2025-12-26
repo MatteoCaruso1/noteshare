@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { UserSearch } from '@/components/UserSearch';
 import { FriendsFeed } from '@/components/FriendsFeed';
@@ -31,6 +32,8 @@ const FriendsJournals = () => {
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
+  
+  useScrollRestoration('friends-feed');
   
   // Calculate unread messages count
   const unreadMessagesCount = conversations?.reduce((sum, c) => sum + c.unreadCount, 0) || 0;

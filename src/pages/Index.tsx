@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { Timeline } from '@/components/Timeline';
 import { WelcomeHero } from '@/components/WelcomeHero';
@@ -18,6 +19,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
+  
+  useScrollRestoration('index-timeline');
 
   // Collect all unique tags from notes
   const availableTags = useMemo(() => {
