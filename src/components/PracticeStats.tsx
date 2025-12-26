@@ -46,43 +46,50 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`;
   };
 
+  // Set to true to show session/minutes stats cards
+  const SHOW_SESSION_STATS = false;
+
   return (
     <div className="space-y-4">
-      {/* Section 1: Number of sessions */}
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Number of sessions</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-primary">{stats.sessionsThisWeek}</p>
-            <p className="text-xs text-muted-foreground">This week</p>
+      {/* Section 1: Number of sessions (hidden - set SHOW_SESSION_STATS to true to restore) */}
+      {SHOW_SESSION_STATS && (
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Number of sessions</h3>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">{stats.sessionsThisMonth}</p>
-            <p className="text-xs text-muted-foreground">This month</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{stats.sessionsThisWeek}</p>
+              <p className="text-xs text-muted-foreground">This week</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{stats.sessionsThisMonth}</p>
+              <p className="text-xs text-muted-foreground">This month</p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
-      {/* Section 2: Minutes practiced */}
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Minutes practiced</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-primary">{formatMinutes(stats.totalMinutesThisWeek)}</p>
-            <p className="text-xs text-muted-foreground">This week</p>
+      {/* Section 2: Minutes practiced (hidden - set SHOW_SESSION_STATS to true to restore) */}
+      {SHOW_SESSION_STATS && (
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Minutes practiced</h3>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">{formatMinutes(stats.totalMinutesThisMonth)}</p>
-            <p className="text-xs text-muted-foreground">This month</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{formatMinutes(stats.totalMinutesThisWeek)}</p>
+              <p className="text-xs text-muted-foreground">This week</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{formatMinutes(stats.totalMinutesThisMonth)}</p>
+              <p className="text-xs text-muted-foreground">This month</p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       {/* Section 3: Progress */}
       <Card className="p-4 bg-card border-border">
