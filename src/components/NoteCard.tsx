@@ -164,107 +164,179 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       onTouchStart={handlePrefetch}
     >
       {/* Type Badge Row - includes tags and focus tag */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
-        {isPracticeSession ? (
-          <Badge variant="secondary" className="text-xs">
-            <Clock className="w-3 h-3 mr-1" />
-            Practice Session
-            {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="text-xs">
-            <Music className="w-3 h-3 mr-1" />
-            Quick Note
-          </Badge>
-        )}
-        
-        {/* Custom Tags - appear left of Focus badge */}
-        {note.tags && note.tags.length > 0 && note.tags.map((tag) => (
-          <Badge 
-            key={tag}
-            variant="secondary" 
-            className="text-xs bg-secondary text-secondary-foreground group/tag"
-          >
-            {tag}
-            {canEditTags && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveTag(tag);
-                }}
-                className="ml-1 opacity-0 group-hover/tag:opacity-100 hover:text-destructive transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </Badge>
-        ))}
-        
-        {/* Add Tag Button - only in expanded view for owner */}
-        {canEditTags && (
-          <Popover open={tagInputOpen} onOpenChange={setTagInputOpen}>
-            <PopoverTrigger asChild>
-              <button
-                onClick={(e) => e.stopPropagation()}
-                className="h-5 w-5 rounded-full bg-secondary/50 hover:bg-secondary flex items-center justify-center transition-colors"
-              >
-                <Plus className="w-3 h-3 text-muted-foreground" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-3 bg-popover" align="start" onClick={(e) => e.stopPropagation()}>
-              <div className="space-y-3">
-                <Input
-                  placeholder="Add tag..."
-                  value={newTagValue}
-                  onChange={(e) => setNewTagValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newTagValue.trim()) {
-                      e.preventDefault();
-                      handleAddTag(newTagValue);
-                    }
+      <div className="flex items-start gap-2 mb-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap flex-1">
+          {isPracticeSession ? (
+            <Badge variant="secondary" className="text-xs">
+              <Clock className="w-3 h-3 mr-1" />
+              Practice Session
+              {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="text-xs">
+              <Music className="w-3 h-3 mr-1" />
+              Quick Note
+            </Badge>
+          )}
+          
+          {/* Custom Tags - appear left of Focus badge */}
+          {note.tags && note.tags.length > 0 && note.tags.map((tag) => (
+            <Badge 
+              key={tag}
+              variant="secondary" 
+              className="text-xs bg-secondary text-secondary-foreground group/tag"
+            >
+              {tag}
+              {canEditTags && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveTag(tag);
                   }}
-                  className="h-8 text-sm"
-                  autoFocus
-                />
-                {availableRecentTags.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Recent</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {availableRecentTags.slice(0, 6).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="text-xs px-2 py-0.5 cursor-pointer hover:bg-secondary transition-colors"
-                          onClick={() => handleAddTag(tag)}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
+                  className="ml-1 opacity-0 group-hover/tag:opacity-100 hover:text-destructive transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </Badge>
+          ))}
+          
+          {/* Add Tag Button - only in expanded view for owner */}
+          {canEditTags && (
+            <Popover open={tagInputOpen} onOpenChange={setTagInputOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-5 w-5 rounded-full bg-secondary/50 hover:bg-secondary flex items-center justify-center transition-colors"
+                >
+                  <Plus className="w-3 h-3 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3 bg-popover" align="start" onClick={(e) => e.stopPropagation()}>
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Add tag..."
+                    value={newTagValue}
+                    onChange={(e) => setNewTagValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newTagValue.trim()) {
+                        e.preventDefault();
+                        handleAddTag(newTagValue);
+                      }
+                    }}
+                    className="h-8 text-sm"
+                    autoFocus
+                  />
+                  {availableRecentTags.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">Recent</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {availableRecentTags.slice(0, 6).map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-xs px-2 py-0.5 cursor-pointer hover:bg-secondary transition-colors"
+                            onClick={() => handleAddTag(tag)}
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-        
-        {/* Focus Date Badge - now inline with type badge and tags */}
-        {note.focus_date && (
-          <Badge 
-            variant="outline" 
-            className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFocusDialogOpen(true);
-            }}
-          >
-            <Crosshair className="w-3 h-3 mr-1" />
-            {/* Parse date parts directly to avoid timezone conversion issues */}
-            {(() => {
-              const [year, month, day] = note.focus_date.split('-').map(Number);
-              return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
-            })()} Focus
-          </Badge>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          
+          {/* Focus Date Badge - now inline with type badge and tags */}
+          {note.focus_date && (
+            <Badge 
+              variant="outline" 
+              className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setFocusDialogOpen(true);
+              }}
+            >
+              <Crosshair className="w-3 h-3 mr-1" />
+              {/* Parse date parts directly to avoid timezone conversion issues */}
+              {(() => {
+                const [year, month, day] = note.focus_date.split('-').map(Number);
+                return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
+              })()} Focus
+            </Badge>
+          )}
+        </div>
+
+        {/* Delete & Settings buttons - top-aligned with tags */}
+        {isOwner && expanded && (
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Delete Button - standalone grey button */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-muted-foreground hover:bg-muted"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete {isPracticeSession ? 'session' : 'note'}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Settings Menu */}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem
+                  onClick={() => handleVisibilityChange(note.visibility === 'private' ? 'friends' : 'private')}
+                  className="cursor-pointer"
+                >
+                  {note.visibility === 'private' ? (
+                    <>
+                      <Users className="w-4 h-4 mr-2" />
+                      Make viewable
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Make private
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
@@ -312,69 +384,6 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           )}
         </div>
 
-        {/* Settings Menu for Owner - only show in expanded/detail view */}
-        {isOwner && expanded && (
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem
-                onClick={() => handleVisibilityChange(note.visibility === 'private' ? 'friends' : 'private')}
-                className="cursor-pointer"
-              >
-                {note.visibility === 'private' ? (
-                  <>
-                    <Users className="w-4 h-4 mr-2" />
-                    Make viewable
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Make private
-                  </>
-                )}
-              </DropdownMenuItem>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete {isPracticeSession ? 'Session' : 'Note'}
-                  </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Delete {isPracticeSession ? 'session' : 'note'}?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
       </div>
 
 
