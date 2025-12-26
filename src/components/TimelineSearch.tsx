@@ -72,7 +72,7 @@ export function TimelineSearch({
           <PopoverTrigger asChild>
             <div
               className={cn(
-                "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/50 border border-border transition-colors hover:bg-secondary",
+                "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/30 border border-border transition-colors hover:bg-secondary/50",
                 selectedTag && "text-primary bg-primary/10 border-primary/20"
               )}
             >
@@ -137,7 +137,7 @@ export function TimelineSearch({
         <PopoverTrigger asChild>
           <div
             className={cn(
-              "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/50 border border-border transition-colors hover:bg-secondary",
+              "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/30 border border-border transition-colors hover:bg-secondary/50",
               focusDate && "text-primary bg-primary/10 border-primary/20"
             )}
           >
@@ -177,7 +177,7 @@ export function TimelineSearch({
           placeholder="..."
           value={query}
           onChange={(e) => handleChange(e.target.value)}
-          className="pl-9 pr-9 h-9 bg-secondary/50 border-border placeholder:text-muted-foreground"
+          className="pl-9 pr-9 h-9 bg-secondary/30 border-border placeholder:text-muted-foreground"
         />
         {query && (
           <Button
