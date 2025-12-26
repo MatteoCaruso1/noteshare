@@ -66,43 +66,20 @@ export function TimelineSearch({
 
   return (
     <div className="flex items-center gap-2">
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="..."
-          value={query}
-          onChange={(e) => handleChange(e.target.value)}
-          className="pl-9 pr-9 h-9 bg-secondary/50 border-border placeholder:text-muted-foreground"
-        />
-        {query && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-            onClick={handleClear}
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-      
-      {/* Tag Filter */}
+      {/* Tag Filter - moved to left */}
       {availableTags.length > 0 && (
         <Popover open={tagFilterOpen} onOpenChange={setTagFilterOpen}>
           <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
+            <div
               className={cn(
-                "h-9 w-9 shrink-0",
-                selectedTag && "text-primary bg-primary/10"
+                "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/50 border border-border transition-colors hover:bg-secondary",
+                selectedTag && "text-primary bg-primary/10 border-primary/20"
               )}
             >
               <Tag className="w-4 h-4" />
-            </Button>
+            </div>
           </PopoverTrigger>
-          <PopoverContent className="w-56 p-3 bg-popover" align="end">
+          <PopoverContent className="w-56 p-3 bg-popover" align="start">
             <div className="space-y-3">
               {/* Always show search input for discoverability */}
               <Input
@@ -155,21 +132,19 @@ export function TimelineSearch({
         </Button>
       )}
       
-      {/* Date Filter */}
+      {/* Date Filter - moved to left */}
       <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
+          <div
             className={cn(
-              "h-9 w-9 shrink-0",
-              focusDate && "text-primary bg-primary/10"
+              "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/50 border border-border transition-colors hover:bg-secondary",
+              focusDate && "text-primary bg-primary/10 border-primary/20"
             )}
           >
             <Calendar className="w-4 h-4" />
-          </Button>
+          </div>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent className="w-auto p-0" align="start">
           <CalendarComponent
             mode="single"
             selected={focusDate}
@@ -193,6 +168,28 @@ export function TimelineSearch({
           <X className="w-3 h-3 ml-1" />
         </Button>
       )}
+
+      {/* Search bar - now on the right */}
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="..."
+          value={query}
+          onChange={(e) => handleChange(e.target.value)}
+          className="pl-9 pr-9 h-9 bg-secondary/50 border-border placeholder:text-muted-foreground"
+        />
+        {query && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+            onClick={handleClear}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
