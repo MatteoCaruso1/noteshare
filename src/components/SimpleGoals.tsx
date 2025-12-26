@@ -82,13 +82,16 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const hasGoals = activeGoals.length > 0 || isAdding;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3">
+    <div className={cn(
+      "rounded-lg border border-border bg-card p-3",
+      !hasGoals && "flex items-center"
+    )}>
       <div className={cn(
         "flex items-center",
-        hasGoals ? "justify-between mb-2" : "justify-center"
+        hasGoals ? "justify-between mb-2" : "justify-between w-full"
       )}>
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-primary" />
+          <Target className="w-4 h-4 text-muted-foreground" />
           <span className="text-base font-medium text-foreground">Musical Goals</span>
         </div>
         {canAddMore && !isAdding && (
@@ -105,7 +108,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         <div className="space-y-1.5">
           {activeGoals.map((goal, index) => (
             <div key={goal.id} className="group flex items-center gap-2">
-              <span className="w-4 text-primary text-xs font-semibold flex-shrink-0">
+              <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0">
                 {index + 1}.
               </span>
               
@@ -143,7 +146,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           
           {isAdding && (
             <div className="flex items-center gap-2">
-              <span className="w-4 text-primary text-xs font-semibold flex-shrink-0">
+              <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0">
                 {activeGoals.length + 1}.
               </span>
               <Input
