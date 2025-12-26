@@ -432,6 +432,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, on
           <VoiceReplyButton
             noteId={note.id}
             authorId={profile.id}
+            noteOwnerId={note.author_id}
             onSuccess={handleInvalidateComments}
           />
           <Button

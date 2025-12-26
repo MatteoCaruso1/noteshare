@@ -60,12 +60,15 @@ export function useCreateNoteComment() {
       authorId,
       content,
       audioUrl,
+      noteOwnerId,
     }: {
       noteId: string;
       authorId: string;
       content: string;
       audioUrl?: string;
+      noteOwnerId: string;
     }) => {
+      // Create the comment
       const { data, error } = await supabase
         .from('note_comments')
         .insert({
@@ -78,10 +81,30 @@ export function useCreateNoteComment() {
         .single();
 
       if (error) throw error;
+
+      // Create notification for the note owner (if not commenting on own note)
+      if (noteOwnerId && noteOwnerId !== authorId) {
+        const truncatedContent = content.length > 50 
+          ? content.substring(0, 50) + '...' 
+          : content;
+        
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: noteOwnerId,
+            type: 'comment',
+            content: `replied to your note: "${truncatedContent}"`,
+            note_id: noteId,
+            from_user_id: authorId,
+          });
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['note-comments', variables.noteId] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
       toast.success('Comment added');
     },
     onError: (error) => {

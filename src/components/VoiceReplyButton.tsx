@@ -12,6 +12,7 @@ import { audioManager } from '@/lib/audioManager';
 interface VoiceReplyButtonProps {
   noteId: string;
   authorId: string;
+  noteOwnerId: string;
   onSuccess: () => void;
 }
 
@@ -35,7 +36,7 @@ function getSupportedMimeType(): string {
   return '';
 }
 
-export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButtonProps) {
+export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: VoiceReplyButtonProps) {
   const [open, setOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -206,6 +207,19 @@ export function VoiceReplyButton({ noteId, authorId, onSuccess }: VoiceReplyButt
         });
 
       if (commentError) throw commentError;
+
+      // Create notification for note owner (if not replying to own note)
+      if (noteOwnerId && noteOwnerId !== authorId) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: noteOwnerId,
+            type: 'comment',
+            content: `sent a voice reply to your note`,
+            note_id: noteId,
+            from_user_id: authorId,
+          });
+      }
 
       toast.success('Voice reply sent');
       setOpen(false);
