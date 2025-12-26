@@ -73,7 +73,7 @@ export function TimelineSearch({
           placeholder="Search notes..."
           value={query}
           onChange={(e) => handleChange(e.target.value)}
-          className="pl-9 pr-9 h-9 bg-muted/50 border-border"
+          className="pl-9 pr-9 h-9"
         />
         {query && (
           <Button
