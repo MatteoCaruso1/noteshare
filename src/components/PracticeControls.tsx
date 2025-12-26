@@ -37,7 +37,7 @@ function getTodayLocalDate(): string {
 
 export function PracticeControls() {
   const { profile } = useAuth();
-  const { data: activeSession } = useActiveSession();
+  const { data: activeSession } = useActiveSession(profile?.id);
   const { data: projects } = useProjects();
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
@@ -150,7 +150,7 @@ export function PracticeControls() {
       setImageFiles([]);
       setSelectedProjectId('');
       setTags([]);
-      deleteSession.mutate(activeSession.id);
+      deleteSession.mutate({ sessionId: activeSession.id, userId: profile.id });
     }
   };
 
@@ -193,7 +193,7 @@ export function PracticeControls() {
       const sessionDurationMinutes = Math.floor(activeDurationMs / 60000);
 
       endSession.mutate(
-        { sessionId: activeSession.id },
+        { sessionId: activeSession.id, userId: profile.id },
         {
           onSuccess: () => {
             createNote.mutate(

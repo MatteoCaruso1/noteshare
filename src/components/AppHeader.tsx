@@ -12,7 +12,7 @@ export function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { data: activeSession } = useActiveSession();
+  const { data: activeSession } = useActiveSession(profile?.id);
   const endSession = useEndSession();
   const createNote = useCreateNote();
   const [elapsed, setElapsed] = useState('0:00');
@@ -61,8 +61,8 @@ export function AppHeader() {
 
   const handleEndSession = async () => {
     if (!activeSession || !profile) return;
-    
-    await endSession.mutateAsync({ sessionId: activeSession.id });
+
+    await endSession.mutateAsync({ sessionId: activeSession.id, userId: profile.id });
     createNote.mutate({
       authorId: profile.id,
       sessionId: activeSession.id,
