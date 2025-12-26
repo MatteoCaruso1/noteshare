@@ -21,7 +21,7 @@ export function AppHeader() {
 
   useEffect(() => {
     if (!activeSession) {
-      setElapsed('0:00');
+      setElapsed('--:--');
       return;
     }
 
@@ -49,10 +49,10 @@ export function AppHeader() {
 
     // Initialize immediately
     updateElapsed();
-    // Update every second when not paused
+    // Update every second
     const interval = setInterval(updateElapsed, 1000);
     return () => clearInterval(interval);
-  }, [activeSession?.id, activeSession?.started_at, activeSession?.paused_at, activeSession?.paused_duration_ms]);
+  }, [activeSession]);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
@@ -107,7 +107,7 @@ export function AppHeader() {
                     )}
                   </div>
                   <span className={`text-xs font-mono ${isSessionActive && !isPaused ? 'timer-tick' : ''}`}>
-                    {isSessionActive ? elapsed : '--:--'}
+                    {elapsed}
                   </span>
                   {isPaused && (
                     <Pause className="h-3 w-3 text-amber-500" />
