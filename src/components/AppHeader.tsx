@@ -80,7 +80,10 @@ export function AppHeader() {
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-foreground">noteshare</span>
+            <div className="flex flex-col">
+              <span className="font-semibold text-foreground leading-tight">noteshare</span>
+              <span className="text-[10px] text-muted-foreground leading-tight">Practice Smarter</span>
+            </div>
           </Link>
           
         </div>
