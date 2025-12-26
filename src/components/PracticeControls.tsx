@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession } from '@/hooks/useSessions';
+import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession, useDeleteSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -21,9 +21,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight, Smartphone } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight, Smartphone, Trash2 } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
 import { toast } from 'sonner';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -43,6 +44,7 @@ export function PracticeControls() {
   const recentTags = useRecentTags();
   const startSession = useStartSession();
   const endSession = useEndSession();
+  const deleteSession = useDeleteSession();
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
   const createNote = useCreateNote();
@@ -131,6 +133,24 @@ export function PracticeControls() {
   const handleResumeSession = () => {
     if (activeSession) {
       resumeSession.mutate(activeSession.id);
+    }
+  };
+
+  const handleDeleteSession = () => {
+    if (activeSession) {
+      // Release wake lock if active
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        setWakeLockEnabled(false);
+      }
+      // Clear form state
+      setNoteText('');
+      setAudioFiles([]);
+      setImageFiles([]);
+      setSelectedProjectId('');
+      setTags([]);
+      deleteSession.mutate(activeSession.id);
     }
   };
 
@@ -366,6 +386,41 @@ export function PracticeControls() {
                   {wakeLockEnabled ? 'Screen staying unlocked' : 'Keep screen unlocked'}
                 </TooltipContent>
               </Tooltip>
+
+              {/* Delete Session */}
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete session</TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this session?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete this practice session and any unsaved notes. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteSession}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
