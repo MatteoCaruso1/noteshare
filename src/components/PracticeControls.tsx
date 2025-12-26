@@ -3,7 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
-import { useGoals, useIncrementProgress } from '@/hooks/useGoals';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
@@ -15,7 +14,6 @@ import { RichTextEditor } from '@/components/RichTextEditor';
 import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -23,8 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair, Pause, ChevronDown, ChevronRight } from 'lucide-react';
-import { differenceInMinutes } from 'date-fns';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
 
 // Get today's date as YYYY-MM-DD in local timezone
@@ -40,7 +37,6 @@ export function PracticeControls() {
   const { profile } = useAuth();
   const { data: activeSession } = useActiveSession();
   const { data: projects } = useProjects();
-  const { data: goals } = useGoals(profile?.id);
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
   const recentTags = useRecentTags();
@@ -49,14 +45,12 @@ export function PracticeControls() {
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
   const createNote = useCreateNote();
-  const incrementProgress = useIncrementProgress();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
   const [noteText, setNoteText] = useState('');
   const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [attachFocus, setAttachFocus] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
@@ -132,18 +126,6 @@ export function PracticeControls() {
         { sessionId: activeSession.id },
         {
           onSuccess: () => {
-            // If a time-based goal is linked, auto-increment its progress
-            if (selectedGoalId) {
-              const linkedGoal = goals?.find(g => g.id === selectedGoalId);
-              if (linkedGoal && linkedGoal.progress_type === 'time' && !linkedGoal.is_completed) {
-                incrementProgress.mutate({
-                  goalId: selectedGoalId,
-                  field: 'current_minutes',
-                  amount: sessionDurationMinutes,
-                });
-              }
-            }
-
             createNote.mutate(
               {
                 authorId: profile.id,
@@ -154,7 +136,6 @@ export function PracticeControls() {
                 tags,
                 sessionId: activeSession.id,
                 projectId: selectedProjectId || undefined,
-                goalId: selectedGoalId || undefined,
                 visibility,
                 focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
                 focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
@@ -166,7 +147,6 @@ export function PracticeControls() {
                   setAudioFiles([]);
                   setImageFiles([]);
                   setSelectedProjectId('');
-                  setSelectedGoalId('');
                   setVisibility('friends');
                   setAttachFocus(true);
                   setTags([]);
@@ -307,51 +287,6 @@ export function PracticeControls() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </PopoverContent>
-                </Popover>
-              )}
-
-              {/* Goal (icon dropdown) */}
-              {goals && goals.filter(g => !g.is_completed).length > 0 && (
-                <Popover>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <PopoverTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={`h-8 w-8 ${selectedGoalId ? 'text-primary' : ''}`}
-                        >
-                          <Target className="w-4 h-4" />
-                        </Button>
-                      </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Link to goal</TooltipContent>
-                  </Tooltip>
-                  <PopoverContent className="w-56 p-2 bg-popover" align="start">
-                    <Select value={selectedGoalId || "none"} onValueChange={(v) => setSelectedGoalId(v === "none" ? "" : v)}>
-                      <SelectTrigger className="w-full h-8">
-                        <SelectValue placeholder="No goal" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No goal</SelectItem>
-                        {goals.filter(g => !g.is_completed).map((goal) => (
-                          <SelectItem key={goal.id} value={goal.id}>
-                            <div className="flex items-center gap-2">
-                              <span>{goal.title || goal.content}</span>
-                              {goal.progress_type === 'time' && (
-                                <Badge variant="outline" className="text-xs ml-1">+time</Badge>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedGoalId && goals?.find(g => g.id === selectedGoalId)?.progress_type === 'time' && (
-                      <p className="text-xs text-muted-foreground mt-2 px-1">
-                        Session time auto-adds to goal
-                      </p>
-                    )}
                   </PopoverContent>
                 </Popover>
               )}
