@@ -34,7 +34,8 @@ export function AppHeader() {
         ? now - new Date(activeSession.paused_at).getTime() 
         : 0;
       const activeDurationMs = now - start - pausedMs - currentPauseMs;
-      const diff = Math.max(0, Math.floor(activeDurationMs / 1000));
+      // Use ceil so the UI flips to 0:01 almost immediately after start (no long "0" stall)
+      const diff = Math.max(0, Math.ceil(activeDurationMs / 1000));
       
       const hours = Math.floor(diff / 3600);
       const minutes = Math.floor((diff % 3600) / 60);
