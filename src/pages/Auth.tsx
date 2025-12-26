@@ -216,7 +216,7 @@ const Auth = () => {
             {mode === 'signin' && (
               <button
                 type="button"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full"
+                className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full"
                 onClick={() => setMode('forgot')}
               >
                 Forgot password?
@@ -224,7 +224,7 @@ const Auth = () => {
             )}
             <button
               type="button"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full"
+              className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full"
               onClick={() => setMode(mode === 'signup' ? 'signin' : mode === 'forgot' ? 'signin' : 'signup')}
             >
               {mode === 'signup'
