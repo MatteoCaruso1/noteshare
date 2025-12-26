@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useUpdateNoteTags } from '@/hooks/useUpdateNote';
 import { useRecentTags } from '@/hooks/useRecentTags';
+import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { BottomNav } from '@/components/BottomNav';
 import { NoteCard } from '@/components/NoteCard';
 
@@ -47,10 +48,8 @@ const NoteDetail = () => {
   // Check if we came from the Friends tab
   const fromFriends = location.state?.fromFriends;
 
-  // Scroll to top on mount
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
+  // Scroll to top instantly on mount
+  useInstantScrollToTop([id]);
 
   const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
