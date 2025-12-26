@@ -22,7 +22,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair, Pause } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Play, Square, Clock, X, Folder, Lock, Users, Target, Settings, Crosshair, Pause, ChevronDown, ChevronRight } from 'lucide-react';
 import { differenceInMinutes } from 'date-fns';
 import { AudioFileWithName } from '@/types';
 
@@ -202,23 +203,31 @@ export function PracticeControls() {
 
   const sessionDuration = getSessionDuration();
 
-  return (
-    <div className="space-y-4">
-      {/* Start Session Button - only shown when no active session */}
-      {!activeSession && (
-        <Button
-          className="w-full bg-gradient-primary text-primary-foreground"
-          onClick={handleStartSession}
-          disabled={startSession.isPending}
-        >
-          <Play className="w-4 h-4 mr-2" />
-          Start practice session
-        </Button>
-      )}
+  // Handle practice dropdown open - start session immediately
+  const handlePracticeOpen = (open: boolean) => {
+    if (open && !activeSession && !startSession.isPending) {
+      startSession.mutate({ userId: profile.id });
+    }
+  };
 
-      {/* Note Capture - Only shown when session is active */}
-      {activeSession && (
-        <Card className="p-6 bg-card border-border">
+  return (
+    <Card className="bg-card border-border">
+      <Collapsible open={!!activeSession} onOpenChange={handlePracticeOpen}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+            <div className="flex items-center gap-2">
+              <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+              <h2 className="font-semibold">{activeSession ? 'Practice Session' : 'Start Practice Session'}</h2>
+            </div>
+            {activeSession ? (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-4 space-y-4">
 
           {/* Compact toolbar row: Settings, Upload, Project, Goal, Focus toggle */}
           <TooltipProvider delayDuration={1000}>
@@ -449,8 +458,9 @@ export function PracticeControls() {
               End session
             </Button>
           </div>
-        </Card>
-      )}
-    </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   );
 }
