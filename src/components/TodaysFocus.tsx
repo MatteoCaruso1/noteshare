@@ -302,7 +302,7 @@ export function TodaysFocus() {
             className="flex-1"
           >
             <Archive className="w-4 h-4 mr-2" />
-            Save to backlog
+            Save to Backlog
           </Button>
           <Button
             type="button"
@@ -312,7 +312,7 @@ export function TodaysFocus() {
             className="flex-1"
           >
             <FolderOpen className="w-4 h-4 mr-2" />
-            View backlog
+            View Backlog
           </Button>
         </div>
       </Card>

@@ -513,7 +513,7 @@ export function PracticeControls() {
               disabled={createNote.isPending || uploading || endSession.isPending}
             >
               <Square className="w-4 h-4 mr-2" />
-              End session
+              End Session
             </Button>
           </div>
           </div>

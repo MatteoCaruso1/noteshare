@@ -74,7 +74,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
             <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              We encountered an unexpected error. This has been logged and we're working on a fix.
+              We're working on a fix. Please try refreshing the page.
             </p>
             <div className="flex gap-2 justify-center">
               <Button variant="outline" onClick={this.handleReset}>
@@ -86,11 +86,6 @@ export class ErrorBoundary extends Component<Props, State> {
                 Go Home
               </Button>
             </div>
-            {this.state.errorCount >= 3 && (
-              <p className="text-xs text-muted-foreground mt-4">
-                If this keeps happening, try refreshing the page.
-              </p>
-            )}
           </Card>
         </div>
       );
