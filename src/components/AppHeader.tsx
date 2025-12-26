@@ -81,7 +81,7 @@ export function AppHeader() {
           <Link to="/" className="flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
-              <span className="font-semibold text-foreground leading-tight">noteshare</span>
+              <span className="font-semibold text-foreground leading-tight">Noteshare</span>
               <span className="text-[9px] text-muted-foreground leading-tight">Practice Smarter</span>
             </div>
           </Link>
