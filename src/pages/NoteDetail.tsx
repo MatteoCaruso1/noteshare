@@ -60,7 +60,7 @@ const NoteDetail = () => {
     
     // Create comment
     createComment.mutate(
-      { noteId: id, authorId: profile.id, content: newComment },
+      { noteId: id, authorId: profile.id, content: newComment, noteOwnerId: note?.author_id || '' },
       {
         onSuccess: async () => {
           setNewComment('');
@@ -219,6 +219,7 @@ const NoteDetail = () => {
                     <VoiceReplyButton
                       noteId={id!}
                       authorId={profile.id}
+                      noteOwnerId={note?.author_id || ''}
                       onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
                     />
                   </div>

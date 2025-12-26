@@ -28,10 +28,12 @@ export function NotificationsList() {
     <div className="pt-2">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Bell className="w-5 h-5" />
+          <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-primary' : ''}`} />
           <span>Notifications</span>
           {unreadCount > 0 && (
-            <Badge className="h-5 px-1.5 text-xs">{unreadCount}</Badge>
+            <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+              {unreadCount}
+            </Badge>
           )}
         </h2>
         {unreadCount > 0 && (
