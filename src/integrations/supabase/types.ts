@@ -113,6 +113,33 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_backlog: {
+        Row: {
+          created_at: string
+          focus_text: string
+          id: string
+          original_focus_date: string | null
+          saved_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          focus_text: string
+          id?: string
+          original_focus_date?: string | null
+          saved_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          focus_text?: string
+          id?: string
+          original_focus_date?: string | null
+          saved_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       followers: {
         Row: {
           approved: boolean | null
