@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,9 +67,9 @@ const PublicProfile = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
   
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  // Scroll to top instantly on mount
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [id, username]);
   
   // Check if we came from the friends list or a note detail page

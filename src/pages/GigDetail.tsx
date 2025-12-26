@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -134,9 +134,9 @@ const GigDetail = () => {
   const updateGig = useUpdatePromoPost();
   const deleteGig = useDeletePromoPost();
 
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  // Scroll to top instantly on mount
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [id]);
   
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);

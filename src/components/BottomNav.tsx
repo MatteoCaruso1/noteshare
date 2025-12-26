@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,10 +11,22 @@ interface BottomNavProps {
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
   const { data: unreadCount } = useUnreadNotificationCount();
+  const prevPathRef = useRef(location.pathname);
 
-  // Scroll to top on route change
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  // Only scroll to top when navigating via bottom nav (not back button)
+  // We track if the path changed to a main route (not a detail page)
+  useLayoutEffect(() => {
+    const mainRoutes = ['/', '/projects', '/gigs', '/friends', '/profile'];
+    const isMainRoute = mainRoutes.includes(location.pathname);
+    const wasMainRoute = mainRoutes.includes(prevPathRef.current);
+    
+    // Only scroll to top if navigating between different main routes via nav
+    // Don't scroll if coming back from a detail page (handled by scroll restoration)
+    if (isMainRoute && wasMainRoute && location.pathname !== prevPathRef.current) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    
+    prevPathRef.current = location.pathname;
   }, [location.pathname]);
 
   const links = [
