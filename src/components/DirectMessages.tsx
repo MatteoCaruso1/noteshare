@@ -49,15 +49,15 @@ export function DirectMessages({ embedded }: DirectMessagesProps = {}) {
   // When embedded in dropdown, use a more compact layout
   if (embedded) {
     return (
-      <div className="bg-card border border-border rounded-lg p-4">
-        <div className="flex justify-end mb-3">
+      <div className="bg-card border border-border rounded-lg p-3">
+        <div className="flex justify-end mb-2">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => setShowNewMessage(true)}
-            className="text-xs h-7"
+            className="text-[10px] h-6 px-2"
           >
-            New message
+            + New
           </Button>
         </div>
         {convsLoading ? (

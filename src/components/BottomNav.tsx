@@ -61,7 +61,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
               >
                 <div className="relative">
                   <Icon className="w-5 h-5" />
-                  {showBadge && unreadCount && unreadCount > 0 && (
+                  {showBadge && typeof unreadCount === 'number' && unreadCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>

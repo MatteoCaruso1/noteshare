@@ -49,14 +49,12 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
           <div className="text-center py-4 text-muted-foreground text-sm">
             Loading...
           </div>
-        ) : notifications && notifications.length > 0 ? (
+        ) : unreadCount > 0 ? (
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {notifications.slice(0, 10).map((notification) => (
+            {notifications?.filter(n => !n.read).slice(0, 10).map((notification) => (
               <div
                 key={notification.id}
-                className={`flex items-start gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                  notification.read ? 'hover:bg-muted/50' : 'bg-primary/5 hover:bg-primary/10'
-                }`}
+                className={`flex items-start gap-3 p-2 rounded-lg cursor-pointer transition-colors bg-primary/5 hover:bg-primary/10`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 {notification.from_user ? (
@@ -82,16 +80,14 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
                     {format(new Date(notification.created_at), 'MMM d, h:mm a')}
                   </p>
                 </div>
-                {!notification.read && (
-                  <div className="w-2 h-2 rounded-full bg-primary mt-1" />
-                )}
+                <div className="w-2 h-2 rounded-full bg-primary mt-1" />
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-4 text-muted-foreground">
             <Bell className="w-6 h-6 mx-auto mb-1 opacity-50" />
-            <p className="text-xs">No notifications</p>
+            <p className="text-xs">No new notifications</p>
           </div>
         )}
       </div>
