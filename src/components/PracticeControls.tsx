@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight, Smartphone, Trash2 } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronRight, Smartphone, Trash2, LockOpen } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -264,14 +264,12 @@ export function PracticeControls() {
     <Card className="bg-card border-border">
       <Collapsible open={!!activeSession} onOpenChange={handlePracticeOpen}>
         <CollapsibleTrigger asChild>
-          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+          <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group ${activeSession ? '' : ''}`}>
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-              <h2 className="font-semibold">{activeSession ? 'Practice Session' : 'Start Practice Session'}</h2>
+              <h2 className="font-semibold">Start Practice Session</h2>
             </div>
-            {activeSession ? (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            ) : (
+            {!activeSession && (
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             )}
           </button>
@@ -292,28 +290,61 @@ export function PracticeControls() {
                       </Button>
                     </PopoverTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>Visibility settings</TooltipContent>
+                  <TooltipContent>Settings</TooltipContent>
                 </Tooltip>
                 <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground px-2">Visibility</p>
-                    <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                      <SelectTrigger className="w-full h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="private">
-                          <div className="flex items-center gap-2">
-                            <Lock className="w-3 h-3" /> Private
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="friends">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-3 h-3" /> Friends
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground px-2">Visibility</p>
+                      <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
+                        <SelectTrigger className="w-full h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="private">
+                            <div className="flex items-center gap-2">
+                              <Lock className="w-3 h-3" /> Private
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="friends">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-3 h-3" /> Friends
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Delete Session inside settings */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete session
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete session?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will discard the session and any unsaved notes.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteSession}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </PopoverContent>
               </Popover>
@@ -369,57 +400,25 @@ export function PracticeControls() {
                 iconOnly
               />
 
-              {/* Wake Lock toggle */}
+              {/* Wake Lock toggle - with unlock icon for clarity */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 ${wakeLockEnabled ? 'text-primary' : ''}`}
+                    className={`h-8 w-8 active:bg-transparent ${wakeLockEnabled ? 'text-primary' : ''}`}
                     onClick={toggleWakeLock}
                   >
-                    <Smartphone className="w-4 h-4" />
+                    <div className="relative">
+                      <Smartphone className="w-4 h-4" />
+                      <LockOpen className="w-2.5 h-2.5 absolute -top-1 -right-1" />
+                    </div>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   {wakeLockEnabled ? 'Screen staying unlocked' : 'Keep screen unlocked'}
                 </TooltipContent>
               </Tooltip>
-
-              {/* Delete Session */}
-              <AlertDialog>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>Delete session</TooltipContent>
-                </Tooltip>
-                <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Delete session?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will discard the session and any unsaved notes.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteSession}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
@@ -442,7 +441,7 @@ export function PracticeControls() {
           {/* Text Content - with list formatting support */}
           <div className="mb-4">
             <RichTextEditor
-              placeholder="What did you practice?"
+              placeholder="What are you practicing?"
               value={noteText}
               onChange={setNoteText}
               minHeight="36px"
