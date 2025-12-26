@@ -102,6 +102,8 @@ export function useStartSession() {
           user_id: userId,
           goals,
           is_active: true,
+          // Use client time so the UI timer starts immediately (avoids server/client clock skew)
+          started_at: new Date().toISOString(),
         })
         .select()
         .single();
