@@ -170,14 +170,14 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           placeholder="..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          className={`bg-primary/10 border-primary/20 placeholder:text-primary/60 ${compact ? "pl-9 h-9 text-sm" : "pl-9"}`}
+          className={`bg-secondary/50 border-border placeholder:text-muted-foreground ${compact ? "pl-9 h-9 text-sm" : "pl-9"}`}
         />
       </div>
       
