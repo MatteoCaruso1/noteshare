@@ -1,4 +1,4 @@
-import { memo, useState, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { NoteCard } from './NoteCard';
 import { Button } from '@/components/ui/button';
@@ -6,15 +6,13 @@ import { Button } from '@/components/ui/button';
 interface TimelineProps {
   notes: NoteWithAuthor[];
   loading?: boolean;
-  initialLimit?: number;
+  displayCount: number;
+  onLoadMore: () => void;
 }
 
 const LOAD_MORE_COUNT = 10;
 
-export const Timeline = memo(function Timeline({ notes, loading, initialLimit = 10 }: TimelineProps) {
-  const [displayCount, setDisplayCount] = useState(initialLimit);
-
-  // Reset display count when notes change significantly (e.g., search filter)
+export const Timeline = memo(function Timeline({ notes, loading, displayCount, onLoadMore }: TimelineProps) {
   const displayedNotes = useMemo(() => 
     notes.slice(0, displayCount), 
     [notes, displayCount]
@@ -40,10 +38,6 @@ export const Timeline = memo(function Timeline({ notes, loading, initialLimit = 
 
   const hasMore = displayCount < notes.length;
 
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + LOAD_MORE_COUNT);
-  };
-
   return (
     <div className="space-y-4">
       {displayedNotes.map((note) => (
@@ -53,7 +47,7 @@ export const Timeline = memo(function Timeline({ notes, loading, initialLimit = 
         <Button 
           variant="outline" 
           className="w-full" 
-          onClick={handleLoadMore}
+          onClick={onLoadMore}
         >
           Load more ({notes.length - displayCount} remaining)
         </Button>
@@ -61,3 +55,5 @@ export const Timeline = memo(function Timeline({ notes, loading, initialLimit = 
     </div>
   );
 });
+
+export { LOAD_MORE_COUNT };
