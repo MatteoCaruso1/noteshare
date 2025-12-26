@@ -105,20 +105,22 @@ const Auth = () => {
       case 'forgot': return 'Reset your password';
       case 'signup': return 'Create your account';
       case 'update-password': return 'Set new password';
-      default: return 'Welcome back';
+      default: return null;
     }
   };
+
+  const title = getTitle();
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 bg-card border-border">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-4">
-            <Music className="w-8 h-8 text-primary-foreground" />
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-primary mb-3">
+            <Music className="w-7 h-7 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-semibold">Noteshare</h1>
           <p className="text-sm text-muted-foreground mt-1">Helping musicians practice smarter</p>
-          <p className="text-muted-foreground mt-3">{getTitle()}</p>
+          {title && <p className="text-muted-foreground mt-2 text-sm">{title}</p>}
         </div>
 
         {mode === 'update-password' ? (
@@ -189,7 +191,7 @@ const Auth = () => {
                   onCheckedChange={(checked) => setRememberMe(checked === true)}
                 />
                 <Label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
-                  Stay signed in on this device
+                  Stay signed in
                 </Label>
               </div>
             )}
@@ -210,14 +212,14 @@ const Auth = () => {
         )}
 
         {mode !== 'update-password' && (
-          <div className="mt-6 text-center space-y-2">
+          <div className="mt-4 text-center space-y-1">
             {mode === 'signin' && (
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full"
                 onClick={() => setMode('forgot')}
               >
-                Forgot your password?
+                Forgot password?
               </button>
             )}
             <button
@@ -226,10 +228,10 @@ const Auth = () => {
               onClick={() => setMode(mode === 'signup' ? 'signin' : mode === 'forgot' ? 'signin' : 'signup')}
             >
               {mode === 'signup'
-                ? 'Already have an account? Sign in'
+                ? 'Sign in'
                 : mode === 'forgot'
                   ? 'Back to sign in'
-                  : "Don't have an account? Sign up"}
+                  : 'Sign up'}
             </button>
           </div>
         )}
