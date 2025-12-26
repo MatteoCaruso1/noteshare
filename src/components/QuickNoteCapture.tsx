@@ -116,7 +116,7 @@ export function QuickNoteCapture() {
           <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
             <div className="flex items-center gap-2">
               <Music className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-              <h2 className="font-semibold">Capture a Quick Note</h2>
+              <h2 className="font-semibold">Capture Quick Note</h2>
             </div>
             {isOpen ? (
               <ChevronDown className="w-5 h-5 text-muted-foreground" />

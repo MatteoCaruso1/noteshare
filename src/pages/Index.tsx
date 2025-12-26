@@ -13,11 +13,6 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 // import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
-import { Card } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, ChevronDown, ChevronRight } from 'lucide-react';
-
-const PRACTICE_EXPANDED_KEY = 'noteshare_practice_expanded';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -25,16 +20,6 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
-
-  // Practice section collapsible state - default collapsed
-  const [isPracticeExpanded, setIsPracticeExpanded] = useState(() => {
-    const stored = localStorage.getItem(PRACTICE_EXPANDED_KEY);
-    return stored === 'true';
-  });
-
-  useEffect(() => {
-    localStorage.setItem(PRACTICE_EXPANDED_KEY, String(isPracticeExpanded));
-  }, [isPracticeExpanded]);
 
   // Collect all unique tags from notes
   const availableTags = useMemo(() => {
@@ -114,28 +99,7 @@ const Index = () => {
         {/* <FeedProjectsGigs /> */}
 
         {/* Practice Controls (Collapsible) */}
-        <Card className="bg-card border-border">
-          <Collapsible open={isPracticeExpanded} onOpenChange={setIsPracticeExpanded}>
-            <CollapsibleTrigger asChild>
-              <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
-                <div className="flex items-center gap-2">
-                  <Play className={`w-5 h-5 transition-colors ${isPracticeExpanded ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                  <h2 className="font-semibold">Practice Session</h2>
-                </div>
-                {isPracticeExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                )}
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="px-4 pb-4">
-                <PracticeControls />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
+        <PracticeControls />
 
         {/* Quick Note Capture */}
         <QuickNoteCapture />
