@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/useGoals';
-import { Target, X, Plus } from 'lucide-react';
+import { Target, X, Plus, ChevronRight, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface SimpleGoalsProps {
   profileId: string;
@@ -32,6 +33,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
     .sort((a, b) => a.priority - b.priority)
     .slice(0, MAX_GOALS);
 
+  const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -79,99 +81,113 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
 
   const canAddMore = activeGoals.length < MAX_GOALS;
 
-  const hasGoals = activeGoals.length > 0 || isAdding;
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsOpen(true);
+    setIsAdding(true);
+  };
 
   return (
-    <div className={cn(
-      "rounded-lg border border-border bg-card p-3",
-      !hasGoals && "flex items-center"
-    )}>
-      <div className={cn(
-        "flex items-center",
-        hasGoals ? "justify-between mb-2" : "justify-between w-full"
-      )}>
-        <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-muted-foreground" />
-          <span className="text-base font-medium text-foreground">Musical Goals</span>
-        </div>
-        {canAddMore && !isAdding && (
-          <button
-            onClick={() => setIsAdding(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Plus className="w-4 h-4" />
+    <Card className="bg-card border-border">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+            <div className="flex items-center gap-2">
+              <Target className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+              <h2 className="font-semibold">Musical Goals</h2>
+            </div>
+            {canAddMore && !isOpen ? (
+              <Plus 
+                className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" 
+                onClick={handleAddClick}
+              />
+            ) : isOpen ? (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            )}
           </button>
-        )}
-      </div>
-      
-      {hasGoals && (
-        <div className="space-y-1.5">
-          {activeGoals.map((goal, index) => (
-            <div key={goal.id} className="group flex items-center gap-2">
-              <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0">
-                {index + 1}.
-              </span>
-              
-              {editingId === goal.id ? (
+        </CollapsibleTrigger>
+        <CollapsibleContent className="px-4 pb-4">
+          <div className="space-y-1.5">
+            {activeGoals.map((goal, index) => (
+              <div key={goal.id} className="group flex items-center gap-2">
+                <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0">
+                  {index + 1}.
+                </span>
+                
+                {editingId === goal.id ? (
+                  <Input
+                    autoFocus
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={() => handleSaveEdit(goal.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveEdit(goal.id);
+                      if (e.key === 'Escape') handleCancelEdit();
+                    }}
+                    className="h-6 text-sm py-0 px-1.5 flex-1"
+                    maxLength={80}
+                  />
+                ) : (
+                  <>
+                    <span
+                      onClick={() => handleStartEdit(goal.id, goal.title || goal.content)}
+                      className="text-sm cursor-pointer hover:text-primary transition-colors flex-1 truncate"
+                    >
+                      {goal.title || goal.content}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteGoal(goal.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-destructive"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+            
+            {isAdding && (
+              <div className="flex items-center gap-2">
+                <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0">
+                  {activeGoals.length + 1}.
+                </span>
                 <Input
                   autoFocus
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  onBlur={() => handleSaveEdit(goal.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSaveEdit(goal.id);
-                    if (e.key === 'Escape') handleCancelEdit();
+                  value={newGoalText}
+                  onChange={(e) => setNewGoalText(e.target.value)}
+                  onBlur={() => {
+                    if (newGoalText.trim()) handleAddGoal();
+                    else setIsAdding(false);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddGoal();
+                    if (e.key === 'Escape') {
+                      setIsAdding(false);
+                      setNewGoalText('');
+                    }
+                  }}
+                  placeholder={examplePlaceholder}
                   className="h-6 text-sm py-0 px-1.5 flex-1"
                   maxLength={80}
                 />
-              ) : (
-                <>
-                  <span
-                    onClick={() => handleStartEdit(goal.id, goal.title || goal.content)}
-                    className="text-sm cursor-pointer hover:text-primary transition-colors flex-1 truncate"
-                  >
-                    {goal.title || goal.content}
-                  </span>
-                  <button
-                    onClick={() => handleDeleteGoal(goal.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-          
-          {isAdding && (
-            <div className="flex items-center gap-2">
-              <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0">
-                {activeGoals.length + 1}.
-              </span>
-              <Input
-                autoFocus
-                value={newGoalText}
-                onChange={(e) => setNewGoalText(e.target.value)}
-                onBlur={() => {
-                  if (newGoalText.trim()) handleAddGoal();
-                  else setIsAdding(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddGoal();
-                  if (e.key === 'Escape') {
-                    setIsAdding(false);
-                    setNewGoalText('');
-                  }
-                }}
-                placeholder={examplePlaceholder}
-                className="h-6 text-sm py-0 px-1.5 flex-1"
-                maxLength={80}
-              />
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+              </div>
+            )}
+
+            {/* Add button when expanded */}
+            {canAddMore && !isAdding && (
+              <button
+                onClick={() => setIsAdding(true)}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mt-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add goal
+              </button>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   );
 }
