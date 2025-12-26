@@ -1,16 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
+import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Crosshair, List, ListOrdered } from 'lucide-react';
+import { Crosshair, List, ListOrdered, Archive, FolderOpen } from 'lucide-react';
+import { FocusBacklogDialog } from './FocusBacklogDialog';
+import { toast } from 'sonner';
 
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
+  const { saveToBacklog, isSaving } = useFocusBacklog();
   const [text, setText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -218,50 +223,104 @@ export function TodaysFocus() {
     );
   }
 
+  const handleSaveToBacklog = () => {
+    if (!text.trim()) {
+      toast.error('Nothing to save');
+      return;
+    }
+    
+    saveToBacklog(
+      { 
+        focusText: text, 
+        originalFocusDate: focus?.focus_date 
+      },
+      {
+        onSuccess: () => {
+          toast.success('Saved to backlog');
+        },
+        onError: () => {
+          toast.error('Failed to save to backlog');
+        },
+      }
+    );
+  };
+
   return (
-    <Card className="p-4 bg-card border-border">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Crosshair className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
-          <h2 className="font-semibold">Today's Focus</h2>
+    <>
+      <Card className="p-4 bg-card border-border">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Crosshair className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
+            <h2 className="font-semibold">Today's Focus</h2>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => insertListPrefix('• ')}
+              title="Bullet list"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => insertListPrefix('1. ')}
+              title="Numbered list"
+            >
+              <ListOrdered className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-1">
+        <Textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => handleTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false);
+            handleBlur();
+          }}
+          placeholder="What will you work on today?"
+          className="min-h-[36px] resize-none text-sm"
+          rows={1}
+        />
+        
+        {/* Backlog Buttons */}
+        <div className="flex gap-2 mt-3">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => insertListPrefix('• ')}
-            title="Bullet list"
+            onClick={handleSaveToBacklog}
+            disabled={isSaving || !text.trim()}
+            className="flex-1"
           >
-            <List className="w-4 h-4" />
+            <Archive className="w-4 h-4 mr-2" />
+            Save to backlog
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => insertListPrefix('1. ')}
-            title="Numbered list"
+            onClick={() => setIsBacklogOpen(true)}
+            className="flex-1"
           >
-            <ListOrdered className="w-4 h-4" />
+            <FolderOpen className="w-4 h-4 mr-2" />
+            View backlog
           </Button>
         </div>
-      </div>
-      <Textarea
-        ref={textareaRef}
-        value={text}
-        onChange={(e) => handleTextChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => {
-          setIsFocused(false);
-          handleBlur();
-        }}
-        placeholder="What will you work on today?"
-        className="min-h-[36px] resize-none text-sm"
-        rows={1}
+      </Card>
+
+      <FocusBacklogDialog 
+        open={isBacklogOpen} 
+        onOpenChange={setIsBacklogOpen} 
       />
-    </Card>
+    </>
   );
 }
