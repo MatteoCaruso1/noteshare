@@ -15,7 +15,7 @@ import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
@@ -158,7 +158,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   return (
     <Card
-      className={`p-3 sm:p-4 bg-card border-border ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
+      className={`p-3 sm:p-4 bg-card border-border relative ${!expanded ? 'cursor-pointer hover:border-primary/50' : ''} transition-colors`}
       onClick={!expanded ? handleNavigateToNote : undefined}
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}
@@ -282,19 +282,20 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </div>
       )}
 
-      <div className="flex items-start gap-3 mb-3">
-        <ClickableAvatar
-          profileId={note.author_id}
-          avatar={note.author?.avatar}
-          name={note.author?.name}
-          size="md"
-        />
-        <div className="flex-1 min-w-0">
+      {/* Author info - centered in expanded view, left-aligned in timeline */}
+      {expanded ? (
+        <div className="flex flex-col items-center gap-2 mb-3">
+          <ClickableAvatar
+            profileId={note.author_id}
+            avatar={note.author?.avatar}
+            name={note.author?.name}
+            size="md"
+          />
           <div className="flex items-center gap-2">
             <StreakTintedName 
               name={note.author?.name || 'Unknown'} 
               streakDays={streakDays}
-              className="text-sm font-medium truncate"
+              className="text-sm font-medium"
             />
             <div className="flex items-center gap-0.5">
               <Flame className={`w-3 h-3 ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`} />
@@ -303,78 +304,101 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               </span>
             </div>
           </div>
-          {/* Short date in timeline, full date in expanded view */}
-          {!expanded ? (
-            <p className="text-xs text-muted-foreground">
-              {format(new Date(note.created_at), 'MMM d')}
-            </p>
-          ) : null}
-        </div>
-
-        {/* Settings Menu for Owner - only show in expanded/detail view */}
-        {isOwner && expanded && (
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem
-                onClick={() => handleVisibilityChange(note.visibility === 'private' ? 'friends' : 'private')}
-                className="cursor-pointer"
-              >
-                {note.visibility === 'private' ? (
-                  <>
-                    <Users className="w-4 h-4 mr-2" />
-                    Make viewable
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Make private
-                  </>
-                )}
-              </DropdownMenuItem>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    className="cursor-pointer text-destructive focus:text-destructive"
+          {/* Settings Menu for Owner - positioned after centered content */}
+          {isOwner && (
+            <div className="absolute top-3 right-3">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete {isPracticeSession ? 'Session' : 'Note'}
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem
+                    onClick={() => handleVisibilityChange(note.visibility === 'private' ? 'friends' : 'private')}
+                    className="cursor-pointer"
+                  >
+                    {note.visibility === 'private' ? (
+                      <>
+                        <Users className="w-4 h-4 mr-2" />
+                        Make viewable
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 mr-2" />
+                        Make private
+                      </>
+                    )}
                   </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Delete {isPracticeSession ? 'session' : 'note'}?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="cursor-pointer text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete {isPracticeSession ? 'Session' : 'Note'}
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Delete {isPracticeSession ? 'session' : 'note'}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDelete}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-start gap-3 mb-3">
+          <ClickableAvatar
+            profileId={note.author_id}
+            avatar={note.author?.avatar}
+            name={note.author?.name}
+            size="md"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <StreakTintedName 
+                name={note.author?.name || 'Unknown'} 
+                streakDays={streakDays}
+                className="text-sm font-medium truncate"
+              />
+              <div className="flex items-center gap-0.5">
+                <Flame className={`w-3 h-3 ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                <span className={`text-xs font-medium ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`}>
+                  {streakDays}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {isToday(new Date(note.created_at)) ? 'Today' : format(new Date(note.created_at), 'MMM d')}
+            </p>
+          </div>
+        </div>
+      )}
+
 
       {/* Linked Project */}
       {note.project_id && (
