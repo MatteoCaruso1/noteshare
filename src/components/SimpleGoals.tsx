@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/useGoals';
 import { Target, X, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface SimpleGoalsProps {
@@ -10,6 +9,16 @@ interface SimpleGoalsProps {
 }
 
 const MAX_GOALS = 3;
+
+const EXAMPLE_GOALS = [
+  "Play 10 jazz standards from memory",
+  "Release my first album before 2027",
+  "Perform 10 live shows in 2026",
+  "Develop my recognizable sound in 2026",
+  "Write and produce 10 original songs",
+  "Practice intentionally for 300 hours in 2026",
+  "Play at the Emmet Ray Jam before winter ends",
+];
 
 export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const { data: goals = [] } = useGoals(profileId);
@@ -27,6 +36,11 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const [editText, setEditText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [newGoalText, setNewGoalText] = useState('');
+
+  // Pick a random example goal when adding starts
+  const examplePlaceholder = useMemo(() => {
+    return `e.g., ${EXAMPLE_GOALS[Math.floor(Math.random() * EXAMPLE_GOALS.length)]}`;
+  }, [isAdding]);
 
   const handleStartEdit = (goalId: string, currentText: string) => {
     setEditingId(goalId);
@@ -67,19 +81,23 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
 
   return (
     <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-      <div className="flex items-center gap-2 mb-2">
-        <Target className="w-4 h-4 text-primary flex-shrink-0" />
-        <span className="text-xs font-medium text-primary uppercase tracking-wide">Goals</span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-medium text-primary">My Musical Goals</span>
+        {canAddMore && !isAdding && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="text-primary/60 hover:text-primary transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
       </div>
       
       <div className="space-y-1.5">
         {activeGoals.length === 0 && !isAdding ? (
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            + Add a goal
-          </button>
+          <p className="text-sm text-muted-foreground italic">
+            No goals yet. Tap + to add one.
+          </p>
         ) : (
           <>
             {activeGoals.map((goal) => (
@@ -118,7 +136,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
               </div>
             ))}
             
-            {isAdding ? (
+            {isAdding && (
               <div className="flex items-center gap-2">
                 <Target className="w-3 h-3 text-primary/60 flex-shrink-0" />
                 <Input
@@ -136,20 +154,12 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
                       setNewGoalText('');
                     }
                   }}
-                  placeholder="What's your goal?"
+                  placeholder={examplePlaceholder}
                   className="h-6 text-sm py-0 px-1.5 flex-1"
                   maxLength={80}
                 />
               </div>
-            ) : canAddMore ? (
-              <button
-                onClick={() => setIsAdding(true)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 ml-5"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </button>
-            ) : null}
+            )}
           </>
         )}
       </div>
