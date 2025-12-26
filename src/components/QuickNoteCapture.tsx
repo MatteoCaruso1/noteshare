@@ -52,15 +52,14 @@ export function QuickNoteCapture() {
   const handleAudioRecorded = async (blob: Blob, duration: number) => {
     const url = await uploadAudio(blob, profile.id);
     if (url) {
-      const name = `Recording ${audioFiles.length + 1}`;
-      setAudioFiles([...audioFiles, { url, name, duration }]);
+      setAudioFiles([...audioFiles, { url, name: '', duration }]);
     }
   };
 
   const handleAudioFileUpload = async (file: File) => {
     const url = await uploadFile(file, profile.id, 'audio');
     if (url) {
-      const name = file.name.replace(/\.[^/.]+$/, '') || `Recording ${audioFiles.length + 1}`;
+      const name = file.name.replace(/\.[^/.]+$/, '') || '';
       setAudioFiles([...audioFiles, { url, name }]);
     }
   };
