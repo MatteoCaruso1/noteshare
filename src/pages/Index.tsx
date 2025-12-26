@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
@@ -6,11 +6,9 @@ import { BottomNav } from '@/components/BottomNav';
 import { Timeline } from '@/components/Timeline';
 import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
-import { GoalsSection } from '@/components/GoalsSection';
+import { SimpleGoals } from '@/components/SimpleGoals';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
-// FeedProjectsGigs hidden from Home - component preserved for reversibility
-// import { FeedProjectsGigs } from '@/components/FeedProjectsGigs';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 
@@ -92,11 +90,8 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4 sm:space-y-6">
-        {/* Goals Section (Collapsible) */}
-        {profile && <GoalsSection profileId={profile.id} />}
-
-        {/* Projects & Gigs hidden from Home - pages still accessible via navigation */}
-        {/* <FeedProjectsGigs /> */}
+        {/* Simple Goals - always visible at top */}
+        {profile && <SimpleGoals profileId={profile.id} />}
 
         {/* Practice Controls (Collapsible) */}
         <PracticeControls />
