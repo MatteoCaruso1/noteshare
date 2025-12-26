@@ -11,8 +11,7 @@ export function WelcomeHero() {
         <Music className="w-10 h-10 text-primary-foreground" />
       </div>
       <h1 className="text-3xl font-semibold mb-2">Noteshare</h1>
-      <p className="text-xl font-medium mb-1">Helping musicians practice smarter</p>
-      <p className="text-sm text-muted-foreground mb-8">by musicians, for musicians</p>
+      <p className="text-xl font-medium mb-8">Helping musicians practice smarter</p>
       <Button
         size="lg"
         className="bg-gradient-primary text-primary-foreground"
