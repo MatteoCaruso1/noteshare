@@ -177,7 +177,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          className={`bg-secondary/50 border-border placeholder:text-muted-foreground ${compact ? "pl-9 h-9 text-sm" : "pl-9"}`}
+          className={`bg-secondary/30 border-border placeholder:text-muted-foreground ${compact ? "pl-9 h-9 text-sm" : "pl-9"}`}
         />
       </div>
       
