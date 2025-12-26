@@ -109,12 +109,42 @@ export function useStartSession() {
       if (error) throw error;
       return data as PracticeSession;
     },
-    onSuccess: () => {
+    onMutate: async ({ userId, goals }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['active-session'] });
+
+      // Snapshot the previous value
+      const previousSession = queryClient.getQueryData(['active-session']);
+
+      // Optimistically set the new session immediately
+      const optimisticSession: PracticeSession = {
+        id: 'optimistic-' + Date.now(),
+        user_id: userId,
+        started_at: new Date().toISOString(),
+        ended_at: null,
+        goals: goals || null,
+        notes_summary: null,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        paused_at: null,
+        paused_duration_ms: 0,
+      };
+
+      queryClient.setQueryData(['active-session'], optimisticSession);
+
+      return { previousSession };
+    },
+    onSuccess: (data) => {
+      // Replace optimistic data with real data
+      queryClient.setQueryData(['active-session'], data);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['active-session'] });
       toast.success('Practice session started!');
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousSession !== undefined) {
+        queryClient.setQueryData(['active-session'], context.previousSession);
+      }
       console.error('Error starting session:', error);
       toast.error('Failed to start session');
     },
