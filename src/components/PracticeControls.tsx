@@ -207,37 +207,17 @@ export function PracticeControls() {
       {/* Session Control */}
       <Card className="p-6 bg-card border-border">
         {activeSession ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
-              <div>
-                <p className="font-medium">
-                  {isPaused ? 'Session Paused' : 'Session Active'}
-                </p>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {sessionDuration}
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
+            <div>
+              <p className="font-medium">
+                {isPaused ? 'Session Paused' : 'Session Active'}
+              </p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {sessionDuration}
+              </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={isPaused ? handleResumeSession : handlePauseSession}
-              disabled={pauseSession.isPending || resumeSession.isPending}
-            >
-              {isPaused ? (
-                <>
-                  <Play className="w-4 h-4 mr-1" />
-                  Resume
-                </>
-              ) : (
-                <>
-                  <Pause className="w-4 h-4 mr-1" />
-                  Pause
-                </>
-              )}
-            </Button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -475,15 +455,35 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Save and End Session Button */}
-          <Button
-            className="w-full bg-gradient-primary text-primary-foreground"
-            onClick={handleSaveNoteAndEndSession}
-            disabled={createNote.isPending || uploading || endSession.isPending}
-          >
-            <Square className="w-4 h-4 mr-2" />
-            Save Note and End Session
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={isPaused ? handleResumeSession : handlePauseSession}
+              disabled={pauseSession.isPending || resumeSession.isPending}
+            >
+              {isPaused ? (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Resume Session
+                </>
+              ) : (
+                <>
+                  <Pause className="w-4 h-4 mr-2" />
+                  Pause Session
+                </>
+              )}
+            </Button>
+            <Button
+              className="flex-1 bg-gradient-primary text-primary-foreground"
+              onClick={handleSaveNoteAndEndSession}
+              disabled={createNote.isPending || uploading || endSession.isPending}
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Save & End
+            </Button>
+          </div>
         </Card>
       )}
     </div>
