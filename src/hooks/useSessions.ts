@@ -173,13 +173,29 @@ export function useEndSession() {
       if (error) throw error;
       return data as PracticeSession;
     },
+    onMutate: async () => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['active-session'] });
+
+      // Snapshot the previous value
+      const previousSession = queryClient.getQueryData(['active-session']);
+
+      // Optimistically set active session to null immediately
+      queryClient.setQueryData(['active-session'], null);
+
+      return { previousSession };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['active-session'] });
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       toast.success('Practice session ended!');
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousSession !== undefined) {
+        queryClient.setQueryData(['active-session'], context.previousSession);
+      }
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
     },
@@ -337,6 +353,18 @@ export function useDeleteSession() {
 
       if (error) throw error;
     },
+    onMutate: async () => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['active-session'] });
+
+      // Snapshot the previous value
+      const previousSession = queryClient.getQueryData(['active-session']);
+
+      // Optimistically set active session to null immediately
+      queryClient.setQueryData(['active-session'], null);
+
+      return { previousSession };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['active-session'] });
@@ -344,7 +372,11 @@ export function useDeleteSession() {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast.success('Session deleted');
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousSession !== undefined) {
+        queryClient.setQueryData(['active-session'], context.previousSession);
+      }
       console.error('Error deleting session:', error);
       toast.error('Failed to delete session');
     },
