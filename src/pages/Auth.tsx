@@ -117,7 +117,8 @@ const Auth = () => {
             <Music className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-semibold">noteshare</h1>
-          <p className="text-muted-foreground mt-1">{getTitle()}</p>
+          <p className="text-sm text-muted-foreground mt-1">helping musicians practice smarter</p>
+          <p className="text-muted-foreground mt-3">{getTitle()}</p>
         </div>
 
         {mode === 'update-password' ? (
