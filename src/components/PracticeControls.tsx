@@ -324,7 +324,7 @@ export function PracticeControls() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-muted-foreground hover:text-muted-foreground hover:bg-muted"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
