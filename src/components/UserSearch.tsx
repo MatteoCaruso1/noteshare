@@ -168,11 +168,11 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
   const showSearchResults = query.length >= 2;
 
   return (
-    <div className="space-y-3">
+    <div className="relative">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
         <Input
-          placeholder={compact ? "Search musicians" : "Search musicians by name or @handle"}
+          placeholder="..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
@@ -183,7 +183,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
       
       {/* Suggested Musicians (when focused but no search query) */}
       {showSuggestions && (
-        <Card className="p-3 bg-card border-border">
+        <Card className="absolute top-full left-0 right-0 mt-2 p-3 bg-card border-border z-50 shadow-lg">
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Suggested for you</span>
@@ -229,7 +229,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
 
       {/* Loading suggestions */}
       {isFocused && query.length < 2 && suggestionsLoading && (
-        <Card className="p-4 bg-card border-border">
+        <Card className="absolute top-full left-0 right-0 mt-2 p-4 bg-card border-border z-50 shadow-lg">
           <div className="text-center text-muted-foreground text-sm">
             Finding suggestions...
           </div>
@@ -238,7 +238,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
 
       {/* Search Results */}
       {showSearchResults && (
-        <Card className="p-2 bg-card border-border divide-y divide-border">
+        <Card className="absolute top-full left-0 right-0 mt-2 p-2 bg-card border-border divide-y divide-border z-50 shadow-lg">
           {isLoading ? (
             <div className="py-4 text-center text-muted-foreground text-sm">
               Searching...
