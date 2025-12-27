@@ -243,7 +243,7 @@ const Profile = () => {
 
           {/* Practice Stats */}
           {!editing && profile && <div className="pt-4">
-              <h2 className="text-lg font-semibold mb-4">Your Practice Stats</h2>
+              <h2 className="text-lg font-semibold mb-4">Your Stats</h2>
               <PracticeStats profileId={profile.id} />
             </div>}
 
