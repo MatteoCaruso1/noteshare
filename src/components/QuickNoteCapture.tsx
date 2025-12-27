@@ -5,6 +5,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
+import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
@@ -20,7 +21,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Crosshair } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { AudioFileWithName } from '@/types';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -40,13 +40,24 @@ export function QuickNoteCapture() {
   const recentTags = useRecentTags();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
-  const [imageFiles, setImageFiles] = useState<string[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [attachFocus, setAttachFocus] = useState(true);
-  const [tags, setTags] = useState<string[]>([]);
+
+  // Use persistent state for note content that survives navigation
+  const {
+    noteText,
+    setNoteText,
+    audioFiles,
+    setAudioFiles,
+    imageFiles,
+    setImageFiles,
+    tags,
+    setTags,
+    selectedProjectId,
+    setSelectedProjectId,
+    visibility,
+    setVisibility,
+    clearState,
+  } = usePersistentNoteState('quick_note', profile?.id);
 
   if (!profile) return null;
 
@@ -94,13 +105,8 @@ export function QuickNoteCapture() {
       },
       {
         onSuccess: () => {
-          setNoteText('');
-          setAudioFiles([]);
-          setImageFiles([]);
-          setSelectedProjectId('');
-          setVisibility('friends');
+          clearState();
           setAttachFocus(true);
-          setTags([]);
           setIsOpen(false);
         },
       }

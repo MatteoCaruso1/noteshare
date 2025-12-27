@@ -6,6 +6,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
+import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
@@ -23,7 +24,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronRight, Smartphone, Trash2, LockOpen } from 'lucide-react';
-import { AudioFileWithName } from '@/types';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -51,13 +51,24 @@ export function PracticeControls() {
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
 
-  const [noteText, setNoteText] = useState('');
-  const [audioFiles, setAudioFiles] = useState<AudioFileWithName[]>([]);
-  const [imageFiles, setImageFiles] = useState<string[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
+  // Use persistent state for note content that survives navigation
+  const {
+    noteText,
+    setNoteText,
+    audioFiles,
+    setAudioFiles,
+    imageFiles,
+    setImageFiles,
+    tags,
+    setTags,
+    selectedProjectId,
+    setSelectedProjectId,
+    visibility,
+    setVisibility,
+    clearState,
+  } = usePersistentNoteState('practice_session', profile?.id);
+
   const [attachFocus, setAttachFocus] = useState(true);
-  const [tags, setTags] = useState<string[]>([]);
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -146,12 +157,8 @@ export function PracticeControls() {
         wakeLockRef.current = null;
         setWakeLockEnabled(false);
       }
-      // Clear form state
-      setNoteText('');
-      setAudioFiles([]);
-      setImageFiles([]);
-      setSelectedProjectId('');
-      setTags([]);
+      // Clear form state (including localStorage)
+      clearState();
       deleteSession.mutate({ sessionId: activeSession.id, userId: profile.id });
     }
   };
@@ -215,13 +222,8 @@ export function PracticeControls() {
               },
               {
                 onSuccess: () => {
-                  setNoteText('');
-                  setAudioFiles([]);
-                  setImageFiles([]);
-                  setSelectedProjectId('');
-                  setVisibility('friends');
+                  clearState();
                   setAttachFocus(true);
-                  setTags([]);
                 },
               }
             );
