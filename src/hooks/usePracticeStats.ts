@@ -180,6 +180,35 @@ export function usePracticeStats(profileId: string | undefined) {
       // Keyword extraction from text content (this month only)
       const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'i', 'my', 'me', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'these', 'those', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'would', 'could', 'should', 'might', 'must', 'shall', 'today', 'session', 'practice', 'practiced', 'working', 'worked', 'focus', 'want', 'going', 'like']);
 
+      // Basic stemming to normalize similar words (e.g., chord/chords, play/playing)
+      const stemWord = (word: string): string => {
+        // Handle common suffixes - order matters (check longer suffixes first)
+        if (word.endsWith('ies') && word.length > 4) return word.slice(0, -3) + 'y';
+        if (word.endsWith('ches') || word.endsWith('shes') || word.endsWith('sses') || word.endsWith('xes') || word.endsWith('zes')) return word.slice(0, -2);
+        if (word.endsWith('ing') && word.length > 5) {
+          const stem = word.slice(0, -3);
+          // Handle doubled consonants (e.g., running -> run)
+          if (stem.length > 2 && stem[stem.length - 1] === stem[stem.length - 2]) {
+            return stem.slice(0, -1);
+          }
+          return stem;
+        }
+        if (word.endsWith('ed') && word.length > 4) {
+          const stem = word.slice(0, -2);
+          if (stem.length > 2 && stem[stem.length - 1] === stem[stem.length - 2]) {
+            return stem.slice(0, -1);
+          }
+          return stem;
+        }
+        if (word.endsWith('ly') && word.length > 4) return word.slice(0, -2);
+        if (word.endsWith('es') && word.length > 4) return word.slice(0, -2);
+        if (word.endsWith('s') && !word.endsWith('ss') && word.length > 4) return word.slice(0, -1);
+        return word;
+      };
+      
+      // Track original words for display (use most common form)
+      const stemToOriginals: Record<string, Record<string, number>> = {};
+
       // Helper to extract keywords from text
       const extractKeywords = (text: string, keywords: Record<string, number>, stopWords: Set<string>) => {
         const words = text
@@ -189,7 +218,13 @@ export function usePracticeStats(profileId: string | undefined) {
           .filter(word => word.length > 3 && !stopWords.has(word));
         
         words.forEach(word => {
-          keywords[word] = (keywords[word] || 0) + 1;
+          const stem = stemWord(word);
+          if (!stopWords.has(stem) && stem.length > 2) {
+            keywords[stem] = (keywords[stem] || 0) + 1;
+            // Track original word forms
+            if (!stemToOriginals[stem]) stemToOriginals[stem] = {};
+            stemToOriginals[stem][word] = (stemToOriginals[stem][word] || 0) + 1;
+          }
         });
       };
 
@@ -239,7 +274,13 @@ export function usePracticeStats(profileId: string | undefined) {
       const topKeywordsThisMonth = Object.entries(keywords)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([keyword, count]) => ({ keyword, count }));
+        .map(([stem, count]) => {
+          // Use the most commonly seen original word form for display
+          const originals = stemToOriginals[stem] || {};
+          const displayWord = Object.entries(originals)
+            .sort((a, b) => b[1] - a[1])[0]?.[0] || stem;
+          return { keyword: displayWord, count };
+        });
 
       const topTagsThisMonth = Object.entries(tags)
         .sort((a, b) => b[1] - a[1])
