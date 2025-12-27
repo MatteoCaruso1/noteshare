@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface PageTransitionProps {
@@ -7,35 +7,34 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
-  const [isVisible, setIsVisible] = useState(true);
-  const [displayedChildren, setDisplayedChildren] = useState(children);
+  const [opacity, setOpacity] = useState(1);
+  const prevPathRef = useRef(location.pathname);
 
   useEffect(() => {
-    // When route changes, fade out briefly
-    setIsVisible(false);
-    
-    // After fade out, swap content and fade back in
-    const timeout = setTimeout(() => {
-      setDisplayedChildren(children);
-      setIsVisible(true);
-    }, 75); // Half of the transition for smooth feel
-
-    return () => clearTimeout(timeout);
-  }, [location.pathname]);
-
-  // Update children immediately if they change for same route
-  useEffect(() => {
-    if (isVisible) {
-      setDisplayedChildren(children);
+    // Only trigger fade on actual route changes
+    if (location.pathname !== prevPathRef.current) {
+      prevPathRef.current = location.pathname;
+      
+      // Start at 0 opacity and fade in
+      setOpacity(0);
+      
+      // Use requestAnimationFrame to ensure the opacity:0 is painted first
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setOpacity(1);
+        });
+      });
     }
-  }, [children, isVisible]);
+  }, [location.pathname]);
 
   return (
     <div
-      className="transition-opacity duration-150 ease-out"
-      style={{ opacity: isVisible ? 1 : 0 }}
+      style={{
+        opacity,
+        transition: 'opacity 150ms ease-out',
+      }}
     >
-      {displayedChildren}
+      {children}
     </div>
   );
 }
