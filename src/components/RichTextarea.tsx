@@ -176,21 +176,44 @@ export function RichTextarea({
   const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;
     let newValue = textarea.value;
-    const cursorPos = textarea.selectionStart;
+    let cursorPos = textarea.selectionStart;
     
-    // Check for ".- " shortcut to create bullet (mobile-friendly)
-    const info = getLineInfo();
-    if (info) {
-      const lineBeforeCursor = newValue.substring(info.lineStart, cursorPos);
-      if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
-        // Replace ".- " with bullet
-        newValue = newValue.substring(0, info.lineStart) + '• ' + newValue.substring(cursorPos);
-        onChange(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = info.lineStart + 2;
-        }, 0);
-        return;
-      }
+    // Find current line info
+    let lineStart = cursorPos;
+    while (lineStart > 0 && newValue[lineStart - 1] !== '\n') {
+      lineStart--;
+    }
+    const lineBeforeCursor = newValue.substring(lineStart, cursorPos);
+    
+    // Auto-convert "- " at line start to bullet
+    if (lineBeforeCursor === '- ' || lineBeforeCursor.match(/^\s+- $/)) {
+      const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
+      newValue = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
+      cursorPos = lineStart + indent.length + 2;
+      
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      }, 0);
+      return;
+    }
+    
+    // Mobile shortcut: ".- " creates a bullet
+    if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
+      newValue = newValue.substring(0, lineStart) + '• ' + newValue.substring(cursorPos);
+      cursorPos = lineStart + 2;
+      
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      }, 0);
+      return;
+    }
+    
+    // Auto-convert "1. " at line start - just renumber
+    const numberStartMatch = lineBeforeCursor.match(/^(\s*)(\d+)\.\s$/);
+    if (numberStartMatch) {
+      newValue = renumberList(newValue);
     }
     
     // Auto-capitalize first letter after list prefix
@@ -200,7 +223,7 @@ export function RichTextarea({
     const finalValue = renumberList(capitalizedText);
     
     onChange(finalValue);
-  }, [onChange, getLineInfo, autoCapitalizeAfterPrefix, renumberList]);
+  }, [onChange, autoCapitalizeAfterPrefix, renumberList]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
