@@ -198,7 +198,6 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
         <Button
           variant="outline"
           onClick={startRecording}
-          disabled={processing}
           className="flex-1"
         >
           {processing ? (
