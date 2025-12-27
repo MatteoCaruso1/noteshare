@@ -448,7 +448,8 @@ export function TodaysFocus() {
             handleBlur();
           }}
           placeholder="What will you work on today?"
-          className="min-h-[36px] resize-none text-sm"
+          className={`min-h-[36px] resize-none text-sm ${isFocused ? 'overflow-auto' : 'overflow-hidden touch-none'}`}
+          style={{ overscrollBehavior: 'contain' }}
           rows={1}
         />
       </Card>
