@@ -456,25 +456,25 @@ export function PracticeControls() {
                 iconOnly
               />
 
-              {/* Wake Lock toggle - with unlock icon for clarity */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={`h-8 w-8 hover:bg-transparent active:bg-transparent ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
-                    onClick={toggleWakeLock}
-                  >
-                    <div className="relative">
-                      <Smartphone className="w-4 h-4" />
-                      <LockOpen className="w-2.5 h-2.5 absolute -top-1 -right-1" />
-                    </div>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {wakeLockEnabled ? 'Screen staying unlocked' : 'Keep screen unlocked'}
-                </TooltipContent>
-              </Tooltip>
+              {/* Wake Lock toggle - tap only, no tooltip (prevents sticky iOS hover) */}
+              <Button
+                type="button"
+                variant={wakeLockEnabled ? "default" : "outline"}
+                size="icon"
+                aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
+                title={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
+                className={
+                  wakeLockEnabled
+                    ? "h-8 w-8 bg-primary text-primary-foreground hover:bg-primary active:bg-primary shadow-none hover:shadow-none"
+                    : "h-8 w-8 bg-background text-foreground border border-input hover:bg-background active:bg-background shadow-none"
+                }
+                onClick={toggleWakeLock}
+              >
+                <div className="relative">
+                  <Smartphone className="w-4 h-4" />
+                  <LockOpen className="w-2.5 h-2.5 absolute -top-1 -right-1" />
+                </div>
+              </Button>
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (

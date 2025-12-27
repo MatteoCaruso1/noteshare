@@ -198,7 +198,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
         <Button
           variant="outline"
           onClick={startRecording}
-          className="flex-1 hover:bg-transparent active:bg-transparent"
+          className="flex-1 bg-background hover:bg-background active:bg-background"
         >
           {processing ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
