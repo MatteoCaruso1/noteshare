@@ -172,9 +172,10 @@ export function useCreateNote() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      toast.success('Note saved!');
+      // Show appropriate message based on whether this is a session note
+      toast.success(variables.sessionId ? 'Practice session saved' : 'Note saved!');
     },
     onError: (error) => {
       console.error('Error creating note:', error);
