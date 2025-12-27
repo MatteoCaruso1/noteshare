@@ -69,7 +69,7 @@ const FriendsJournals = () => {
         </div>
       </div>
 
-      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
+      <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
         {/* Pending Friend Requests */}
         <PendingFriendRequests />
 

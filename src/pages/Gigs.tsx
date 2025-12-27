@@ -404,7 +404,7 @@ const Gigs = () => {
         </div>
       </div>
 
-      <main className="container max-w-2xl mx-auto px-4 py-4">
+      <main className="container max-w-2xl mx-auto px-4 py-2">
         <Tabs defaultValue="my" className="w-full">
           <TabsList className="w-full mb-4">
             <TabsTrigger value="my" className="flex-1">My Gigs</TabsTrigger>
