@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { BottomNav } from '@/components/BottomNav';
@@ -16,6 +16,29 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
 import { FeedbackCard } from '@/components/FeedbackCard';
 import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
+import { StreakBadges } from '@/components/StreakBadges';
+import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
+import { usePracticeStats } from '@/hooks/usePracticeStats';
+import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+
+const MILESTONE_STORAGE_KEY = 'noteshare_celebrated_milestones';
+
+function getCelebratedMilestones(): number[] {
+  try {
+    const stored = localStorage.getItem(MILESTONE_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setCelebratedMilestone(days: number) {
+  const milestones = getCelebratedMilestones();
+  if (!milestones.includes(days)) {
+    milestones.push(days);
+    localStorage.setItem(MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
+  }
+}
 
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -30,6 +53,32 @@ const Profile = () => {
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
   const [openToCollaborate, setOpenToCollaborate] = useState(profile?.open_to_collaborate || false);
   const [saving, setSaving] = useState(false);
+  
+  // Streak milestone dialog state
+  const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
+  const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
+  
+  const { data: practiceStats } = usePracticeStats(profile?.id);
+  
+  // Check for new streak milestones
+  useEffect(() => {
+    if (!practiceStats?.currentStreak) return;
+    
+    const currentStreak = practiceStats.currentStreak;
+    const currentTier = getStreakTier(currentStreak);
+    
+    // Only celebrate actual tier achievements (not 'none')
+    if (currentTier.tier === 'none') return;
+    
+    const celebratedMilestones = getCelebratedMilestones();
+    
+    // Check if user just hit this milestone and hasn't celebrated it
+    if (currentStreak >= currentTier.minDays && !celebratedMilestones.includes(currentTier.minDays)) {
+      setCelebratingTier(currentTier);
+      setMilestoneDialogOpen(true);
+      setCelebratedMilestone(currentTier.minDays);
+    }
+  }, [practiceStats?.currentStreak]);
 
   if (!user) {
     navigate('/auth');
@@ -152,10 +201,16 @@ const Profile = () => {
                 />
               </div>
             ) : (
-              <>
+              <div className="space-y-1">
                 <h2 className="text-xl font-semibold">{profile?.name}</h2>
                 <p className="text-sm text-muted-foreground">@{profile?.username}</p>
-              </>
+                {practiceStats && (
+                  <StreakBadges 
+                    currentStreak={practiceStats.currentStreak} 
+                    bestStreak={practiceStats.bestDailyStreak} 
+                  />
+                )}
+              </div>
             )}
           </div>
           {!editing && (
@@ -286,6 +341,17 @@ const Profile = () => {
       </main>
 
       <BottomNav />
+      
+      {/* Streak Milestone Celebration Dialog */}
+      {celebratingTier && (
+        <StreakMilestoneDialog
+          open={milestoneDialogOpen}
+          onOpenChange={setMilestoneDialogOpen}
+          tier={celebratingTier}
+          streakDays={practiceStats?.currentStreak || celebratingTier.minDays}
+          hasNextMilestone={celebratingTier.tier !== 'gold'}
+        />
+      )}
     </div>
   );
 };
