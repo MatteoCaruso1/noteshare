@@ -67,6 +67,10 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const currentPath = overrideActiveRoute || location.pathname;
 
   const handleNavClick = (to: string) => {
+    // On iOS Safari, scroll can momentarily carry over during SPA nav.
+    // Reset scroll immediately on tap to prevent a visible "jump".
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+
     // Clear scroll state for the destination so it starts at top
     const scrollKey = routeScrollKeys[to];
     if (scrollKey) {
@@ -102,7 +106,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
               <NavLink
                 key={to}
                 to={to}
-                onClick={() => handleNavClick(to)}
+                onPointerDown={() => handleNavClick(to)}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
