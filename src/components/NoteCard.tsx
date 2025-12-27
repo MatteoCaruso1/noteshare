@@ -363,7 +363,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       )}
 
       {/* Author info - text vertically centered with avatar */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-2">
         <ClickableAvatar
           profileId={note.author_id}
           avatar={note.author?.avatar}
