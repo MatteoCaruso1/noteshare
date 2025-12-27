@@ -5,6 +5,7 @@ import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProje
 import { useNotes } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -229,60 +230,64 @@ const ProjectDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Header */}
-      <CollectionDetailHeader
-        backPath={backPath}
-        title={project.title}
-        date={project.release_date || ''}
-        dateLabel="Expected release"
-        authorName={project.owner?.name}
-        authorUsername={project.owner?.username}
-        authorAvatar={project.owner?.avatar}
-        coverImage={project.cover_image}
-        coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
-        showSettings={isOwner}
-        onSettingsClick={openSettings}
-      />
+      <PageHeader>
+        <CollectionDetailHeader
+          backPath={backPath}
+          title={project.title}
+          date={project.release_date || ''}
+          dateLabel="Expected release"
+          authorName={project.owner?.name}
+          authorUsername={project.owner?.username}
+          authorAvatar={project.owner?.avatar}
+          coverImage={project.cover_image}
+          coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+          showSettings={isOwner}
+          onSettingsClick={openSettings}
+        />
+      </PageHeader>
 
-      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-        {/* Project Description */}
-        {project.description && (
-          <div className="p-4 bg-card rounded-lg border border-border">
-            <p className="text-sm text-muted-foreground">{project.description}</p>
-          </div>
-        )}
-
-        {/* Notes Section */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Project Notes</h2>
-            {canAddNotes && profile && (
-              <AddNoteDialog
-                open={isAddNoteOpen}
-                onOpenChange={setIsAddNoteOpen}
-                onSubmit={handleAddNote}
-                isSubmitting={addNote.isPending}
-                title="Add Note to Project"
-                contextLabel="this project"
-                profileId={profile.id}
-              />
-            )}
-          </div>
-
-          {notesLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
-          ) : notes && notes.length > 0 ? (
-            <div className="space-y-4">
-              {notes.map((note) => (
-                <NoteCard key={note.id} note={note} fromProject={id} />
-              ))}
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
+          {/* Project Description */}
+          {project.description && (
+            <div className="p-4 bg-card rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground">{project.description}</p>
             </div>
-          ) : (
-            <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this project" />
           )}
-        </section>
-      </main>
+
+          {/* Notes Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Project Notes</h2>
+              {canAddNotes && profile && (
+                <AddNoteDialog
+                  open={isAddNoteOpen}
+                  onOpenChange={setIsAddNoteOpen}
+                  onSubmit={handleAddNote}
+                  isSubmitting={addNote.isPending}
+                  title="Add Note to Project"
+                  contextLabel="this project"
+                  profileId={profile.id}
+                />
+              )}
+            </div>
+
+            {notesLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            ) : notes && notes.length > 0 ? (
+              <div className="space-y-4">
+                {notes.map((note) => (
+                  <NoteCard key={note.id} note={note} fromProject={id} />
+                ))}
+              </div>
+            ) : (
+              <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this project" />
+            )}
+          </section>
+        </main>
+      </PageBody>
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
@@ -394,7 +399,7 @@ const ProjectDetail = () => {
       </Dialog>
 
       <BottomNav overrideActiveRoute={fromNotes ? '/' : undefined} />
-    </div>
+    </PageLayout>
   );
 };
 

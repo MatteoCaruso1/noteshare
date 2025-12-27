@@ -152,194 +152,198 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Page Title - consistent with other pages */}
-      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
-          <Button variant="ghost" size="icon" onClick={signOut}>
-            <LogOut className="w-5 h-5" />
-          </Button>
-        </div>
-      </div>
-
-      <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
-        {/* Profile Header */}
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={avatar || ''} />
-              <AvatarFallback>
-                <User className="w-8 h-8" />
-              </AvatarFallback>
-            </Avatar>
-            {editing && (
-              <label className="absolute bottom-0 right-0 bg-background/80 rounded-full p-1 cursor-pointer border border-border">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-                <Camera className="w-4 h-4 text-muted-foreground" />
-              </label>
-            )}
-          </div>
-          <div className="flex-1">
-            {editing ? (
-              <div className="space-y-2">
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="text-lg font-semibold"
-                  placeholder="Full name"
-                />
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="text-sm"
-                  placeholder="Handle (e.g., matteo_caruso)"
-                />
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold">{profile?.name}</h2>
-                <p className="text-sm text-muted-foreground">@{profile?.username}</p>
-                {practiceStats && (
-                  <StreakBadges 
-                    currentStreak={practiceStats.currentStreak} 
-                    bestStreak={practiceStats.bestDailyStreak} 
-                  />
-                )}
-              </div>
-            )}
-          </div>
-          {!editing && (
-            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-              <Settings className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-          )}
-        </div>
-
-        {/* Bio */}
-        <Card className="p-4 bg-card border-border">
-          <h3 className="font-medium mb-2">About</h3>
-          {editing ? (
-            <Textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell others about yourself and your musical journey..."
-              rows={3}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {profile?.bio || 'No bio yet. Add one to help others get to know you!'}
-            </p>
-          )}
-        </Card>
-
-        {/* Instruments */}
-        <Card className="p-4 bg-card border-border">
-          <h3 className="font-medium mb-3">Instruments</h3>
-          <div className="flex flex-wrap gap-2">
-            {(editing ? INSTRUMENTS : profile?.instruments || []).map((instrument) => (
-              <Badge
-                key={instrument}
-                variant={instruments.includes(instrument) ? 'default' : 'secondary'}
-                className={editing ? 'cursor-pointer' : ''}
-                onClick={editing ? () => toggleInstrument(instrument) : undefined}
-              >
-                {instrument}
-              </Badge>
-            ))}
-          </div>
-        </Card>
-
-        {/* Genres */}
-        <Card className="p-4 bg-card border-border">
-          <h3 className="font-medium mb-3">Genres</h3>
-          <div className="flex flex-wrap gap-2">
-            {(editing ? GENRES : profile?.genres || []).map((genre) => (
-              <Badge
-                key={genre}
-                variant={genres.includes(genre) ? 'default' : 'secondary'}
-                className={editing ? 'cursor-pointer' : ''}
-                onClick={editing ? () => toggleGenre(genre) : undefined}
-              >
-                {genre}
-              </Badge>
-            ))}
-          </div>
-        </Card>
-
-        {/* Collaboration */}
-        <Card className="p-4 bg-card border-border">
+      <PageHeader>
+        <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Open to Collaborate</h3>
-              <p className="text-sm text-muted-foreground">
-                Let others know you're looking for collaborators
-              </p>
+            <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
+            <Button variant="ghost" size="icon" onClick={signOut}>
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </PageHeader>
+
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
+          {/* Profile Header */}
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={avatar || ''} />
+                <AvatarFallback>
+                  <User className="w-8 h-8" />
+                </AvatarFallback>
+              </Avatar>
+              {editing && (
+                <label className="absolute bottom-0 right-0 bg-background/80 rounded-full p-1 cursor-pointer border border-border">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <Camera className="w-4 h-4 text-muted-foreground" />
+                </label>
+              )}
             </div>
-            {editing ? (
-              <Button
-                variant={openToCollaborate ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setOpenToCollaborate(!openToCollaborate)}
-              >
-                {openToCollaborate ? 'Yes' : 'No'}
+            <div className="flex-1">
+              {editing ? (
+                <div className="space-y-2">
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="text-lg font-semibold"
+                    placeholder="Full name"
+                  />
+                  <Input
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="text-sm"
+                    placeholder="Handle (e.g., matteo_caruso)"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <h2 className="text-xl font-semibold">{profile?.name}</h2>
+                  <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+                  {practiceStats && (
+                    <StreakBadges 
+                      currentStreak={practiceStats.currentStreak} 
+                      bestStreak={practiceStats.bestDailyStreak} 
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+            {!editing && (
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                <Settings className="w-4 h-4 mr-2" />
+                Edit
               </Button>
-            ) : (
-              <Badge variant={profile?.open_to_collaborate ? 'default' : 'secondary'}>
-                {profile?.open_to_collaborate ? 'Yes' : 'No'}
-              </Badge>
             )}
           </div>
-        </Card>
 
-        {/* Save/Cancel Buttons */}
-        {editing && (
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setEditing(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="flex-1 bg-gradient-primary text-primary-foreground"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              Save Changes
-            </Button>
-          </div>
-        )}
+          {/* Bio */}
+          <Card className="p-4 bg-card border-border">
+            <h3 className="font-medium mb-2">About</h3>
+            {editing ? (
+              <Textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell others about yourself and your musical journey..."
+                rows={3}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {profile?.bio || 'No bio yet. Add one to help others get to know you!'}
+              </p>
+            )}
+          </Card>
 
-        {/* Practice Stats */}
-        {!editing && profile && (
-          <div className="pt-4">
-            <h2 className="text-lg font-semibold mb-4">Your Practice Stats</h2>
-            <PracticeStats profileId={profile.id} />
-          </div>
-        )}
+          {/* Instruments */}
+          <Card className="p-4 bg-card border-border">
+            <h3 className="font-medium mb-3">Instruments</h3>
+            <div className="flex flex-wrap gap-2">
+              {(editing ? INSTRUMENTS : profile?.instruments || []).map((instrument) => (
+                <Badge
+                  key={instrument}
+                  variant={instruments.includes(instrument) ? 'default' : 'secondary'}
+                  className={editing ? 'cursor-pointer' : ''}
+                  onClick={editing ? () => toggleInstrument(instrument) : undefined}
+                >
+                  {instrument}
+                </Badge>
+              ))}
+            </div>
+          </Card>
 
-        {/* Feedback Section */}
-        {!editing && (
-          <div className="pt-4">
-            <FeedbackCard />
-          </div>
-        )}
+          {/* Genres */}
+          <Card className="p-4 bg-card border-border">
+            <h3 className="font-medium mb-3">Genres</h3>
+            <div className="flex flex-wrap gap-2">
+              {(editing ? GENRES : profile?.genres || []).map((genre) => (
+                <Badge
+                  key={genre}
+                  variant={genres.includes(genre) ? 'default' : 'secondary'}
+                  className={editing ? 'cursor-pointer' : ''}
+                  onClick={editing ? () => toggleGenre(genre) : undefined}
+                >
+                  {genre}
+                </Badge>
+              ))}
+            </div>
+          </Card>
 
-        {/* Add to Home Screen Info */}
-        {!editing && (
-          <div className="pt-2">
-            <AddToHomescreenInfo />
-          </div>
-        )}
-      </main>
+          {/* Collaboration */}
+          <Card className="p-4 bg-card border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium">Open to Collaborate</h3>
+                <p className="text-sm text-muted-foreground">
+                  Let others know you're looking for collaborators
+                </p>
+              </div>
+              {editing ? (
+                <Button
+                  variant={openToCollaborate ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setOpenToCollaborate(!openToCollaborate)}
+                >
+                  {openToCollaborate ? 'Yes' : 'No'}
+                </Button>
+              ) : (
+                <Badge variant={profile?.open_to_collaborate ? 'default' : 'secondary'}>
+                  {profile?.open_to_collaborate ? 'Yes' : 'No'}
+                </Badge>
+              )}
+            </div>
+          </Card>
+
+          {/* Save/Cancel Buttons */}
+          {editing && (
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-gradient-primary text-primary-foreground"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                Save Changes
+              </Button>
+            </div>
+          )}
+
+          {/* Practice Stats */}
+          {!editing && profile && (
+            <div className="pt-4">
+              <h2 className="text-lg font-semibold mb-4">Your Practice Stats</h2>
+              <PracticeStats profileId={profile.id} />
+            </div>
+          )}
+
+          {/* Feedback Section */}
+          {!editing && (
+            <div className="pt-4">
+              <FeedbackCard />
+            </div>
+          )}
+
+          {/* Add to Home Screen Info */}
+          {!editing && (
+            <div className="pt-2">
+              <AddToHomescreenInfo />
+            </div>
+          )}
+        </main>
+      </PageBody>
 
       <BottomNav />
       
@@ -353,7 +357,7 @@ const Profile = () => {
           hasNextMilestone={celebratingTier.tier !== 'gold'}
         />
       )}
-    </div>
+    </PageLayout>
   );
 };
 
