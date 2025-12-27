@@ -7,22 +7,39 @@ interface StoredState {
 
 const storedStates = new Map<string, StoredState>();
 
+// Track which keys have been cleared (reset on next hook mount)
+const clearedKeys = new Set<string>();
+
 // Clear saved state for a route (used when navigating via nav bar)
 export function clearScrollState(key: string) {
   storedStates.delete(key);
+  clearedKeys.add(key);
 }
 
 export function useScrollRestoration(key: string, initialDisplayCount: number = 10) {
   const isRestoring = useRef(false);
   const savedState = storedStates.get(key);
+  const wasCleared = clearedKeys.has(key);
   
   // Initialize displayCount from saved state or default
+  // If the key was cleared, use initial value
   const [displayCount, setDisplayCount] = useState(
-    savedState?.displayCount ?? initialDisplayCount
+    wasCleared ? initialDisplayCount : (savedState?.displayCount ?? initialDisplayCount)
   );
+
+  // Reset displayCount if key was cleared (handles React state initialization race)
+  useLayoutEffect(() => {
+    if (wasCleared) {
+      clearedKeys.delete(key);
+      setDisplayCount(initialDisplayCount);
+    }
+  }, [key, wasCleared, initialDisplayCount]);
 
   // Restore scroll position synchronously before paint
   useLayoutEffect(() => {
+    // Don't restore if the state was just cleared
+    if (wasCleared) return;
+    
     // Re-check savedState here since it may have been cleared
     const currentSavedState = storedStates.get(key);
     if (currentSavedState && currentSavedState.scrollY > 0) {
@@ -37,7 +54,7 @@ export function useScrollRestoration(key: string, initialDisplayCount: number = 
         });
       });
     }
-  }, [key]);
+  }, [key, wasCleared]);
 
   // Save scroll position and displayCount continuously
   useEffect(() => {
