@@ -372,3 +372,45 @@ textarea {
 textarea::-webkit-scrollbar {
   display: none;
 }
+
+/* Mobile keyboard handling - prevent jarring scroll on input focus */
+@supports (height: 100dvh) {
+  html {
+    height: 100dvh;
+  }
+}
+
+/* Prevent body scroll when input is focused on mobile */
+html {
+  overflow-x: hidden;
+  scroll-behavior: auto;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+/* Ensure fixed elements stay in place when keyboard opens */
+@media (max-width: 768px) {
+  /* Reduce scroll margin to prevent excessive jumping */
+  input:focus, textarea:focus, [contenteditable]:focus {
+    scroll-margin-top: 60px;
+    scroll-margin-bottom: 80px;
+  }
+  
+  /* Keep header fixed when keyboard is open */
+  header.sticky {
+    position: sticky;
+    top: 0;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Keep bottom nav stable */
+  nav.fixed {
+    position: fixed;
+    bottom: 0;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+}
