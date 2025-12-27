@@ -190,35 +190,35 @@ const NoteDetail = () => {
 
         {/* Comments Section */}
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <MessageCircle className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Comments</h2>
+          <div className="flex items-center gap-1.5 mb-3">
+            <MessageCircle className="w-4 h-4 text-muted-foreground" />
+            <h2 className="text-sm font-medium text-muted-foreground">Comments</h2>
           </div>
 
           {/* Comment Input */}
           {profile && (
-            <Card className="p-4 bg-card border-border mb-4">
-              <div className="flex gap-3">
-                <Avatar className="w-8 h-8">
+            <Card className="p-3 bg-card border-border mb-4">
+              <div className="flex gap-2">
+                <Avatar className="w-6 h-6">
                   <AvatarImage src={profile.avatar || ''} />
-                  <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                  <AvatarFallback><User className="w-3 h-3" /></AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-2">
                   <MentionInput
-                    placeholder="Add a comment... Use @ to mention someone"
+                    placeholder="Use @ to mention someone"
                     value={newComment}
                     onChange={setNewComment}
-                    rows={2}
-                    className="resize-none"
+                    rows={1}
+                    className="resize-none text-sm min-h-[32px]"
                   />
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
-                      className="bg-gradient-primary text-primary-foreground"
+                      className="h-7 text-xs bg-gradient-primary text-primary-foreground"
                       onClick={handleAddComment}
                       disabled={createComment.isPending || !newComment.trim()}
                     >
-                      <Send className="w-4 h-4 mr-1" />
+                      <Send className="w-3 h-3 mr-1" />
                       Comment
                     </Button>
                     <VoiceReplyButton
@@ -235,7 +235,7 @@ const NoteDetail = () => {
 
           {/* Comments List */}
           {commentsLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading comments...</div>
+            <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>
           ) : comments && comments.length > 0 ? (
             <div className="space-y-3">
               {comments.map((comment) => {
@@ -301,11 +301,7 @@ const NoteDetail = () => {
                 );
               })}
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No comments yet. Be the first to comment!
-            </div>
-          )}
+          ) : null}
         </section>
       </main>
 
