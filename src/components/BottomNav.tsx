@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
 import { markScrollToTop } from '@/components/ScrollToTop';
+
 interface BottomNavProps {
   overrideActiveRoute?: string;
 }
@@ -17,6 +19,31 @@ const routeScrollKeys: Record<string, string> = {
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
   const { data: unreadCount } = useUnreadNotificationCount();
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  // Detect keyboard open/close on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      // On mobile, when keyboard opens, the visual viewport height shrinks significantly
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        // If viewport is significantly smaller than window, keyboard is likely open
+        setIsKeyboardOpen(windowHeight - viewportHeight > 150);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      handleResize(); // Check initial state
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   const links = [
     { to: '/', icon: Home, label: 'My Practice' },
@@ -48,6 +75,11 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
     // Mark this navigation to scroll to top after route change
     markScrollToTop(to);
   };
+
+  // Hide bottom nav when keyboard is open on mobile
+  if (isKeyboardOpen) {
+    return null;
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
