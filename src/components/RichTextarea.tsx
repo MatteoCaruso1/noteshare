@@ -90,18 +90,20 @@ export function RichTextarea({
   const insertListPrefix = useCallback((prefix: string) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-    
+
+    const currentValue = textarea.value;
+
     const info = getLineInfo();
     if (!info) return;
-    
+
     const { lineStart, lineEnd, line } = info;
-    
+
     // Check if line already has a list prefix
     const bulletMatch = line.match(/^(\s*)([-•]\s)/);
     const numberMatch = line.match(/^(\s*)(\d+\.\s)/);
-    
+
     let newLine: string;
-    
+
     if (prefix === '• ') {
       if (bulletMatch) {
         // Remove bullet
@@ -126,23 +128,23 @@ export function RichTextarea({
         newLine = '1. ' + line;
       }
     }
-    
-    let newValue = value.substring(0, lineStart) + newLine + value.substring(lineEnd);
-    
+
+    let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(lineEnd);
+
     // Renumber if it's a numbered list
     if (prefix !== '• ') {
       newValue = renumberList(newValue);
     }
-    
+
     onChange(newValue);
-    
+
     // Position cursor at the end of the line (after the content)
     setTimeout(() => {
       const newCursorPos = lineStart + newLine.length;
       textarea.selectionStart = textarea.selectionEnd = newCursorPos;
       textarea.focus();
     }, 0);
-  }, [value, onChange, getLineInfo, renumberList]);
+  }, [onChange, getLineInfo, renumberList]);
 
   // Auto-capitalize the first letter after a list prefix
   const autoCapitalizeAfterPrefix = useCallback((text: string, cursorPos: number): { text: string; newCursorPos: number } => {
@@ -230,42 +232,43 @@ export function RichTextarea({
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
+    const currentValue = textarea.value;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    
+
     // Allow native undo/redo (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z)
     if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'y')) {
       return; // Let the browser handle undo/redo natively
     }
-    
+
     // Ctrl+Shift+L or Cmd+Shift+L for bullet list
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'l') {
       e.preventDefault();
       insertListPrefix('• ');
       return;
     }
-    
+
     // Ctrl+Shift+O or Cmd+Shift+O for numbered list
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'o') {
       e.preventDefault();
       insertListPrefix('1. ');
       return;
     }
-    
+
     if (e.key === 'Tab') {
       e.preventDefault();
-      
+
       // Find current line
       const info = getLineInfo();
       if (!info) return;
-      
+
       const { lineStart, line } = info;
       const indent = '  ';
-      
+
       if (e.shiftKey) {
         // Un-indent: remove leading spaces
         if (line.startsWith(indent)) {
-          let newValue = value.substring(0, lineStart) + line.substring(indent.length) + value.substring(info.lineEnd);
+          let newValue = currentValue.substring(0, lineStart) + line.substring(indent.length) + currentValue.substring(info.lineEnd);
           newValue = renumberList(newValue);
           onChange(newValue);
           setTimeout(() => {
@@ -274,7 +277,7 @@ export function RichTextarea({
         }
       } else {
         // Indent: add spaces at line start
-        let newValue = value.substring(0, lineStart) + indent + value.substring(lineStart);
+        let newValue = currentValue.substring(0, lineStart) + indent + currentValue.substring(lineStart);
         newValue = renumberList(newValue);
         onChange(newValue);
         setTimeout(() => {
@@ -283,63 +286,60 @@ export function RichTextarea({
       }
       return;
     }
-    
+
     if (e.key === 'Enter') {
       const info = getLineInfo();
       if (!info) return;
-      
-      const { line } = info;
-      
+
+      const { line, lineStart, lineEnd } = info;
+
       // Check for list patterns
       const bulletMatch = line.match(/^(\s*)([-•])\s/);
       const numberMatch = line.match(/^(\s*)(\d+)\.\s/);
-      
+
       if (bulletMatch || numberMatch) {
         // Check if line is empty (just the prefix)
-        const contentAfterPrefix = bulletMatch 
+        const contentAfterPrefix = bulletMatch
           ? line.replace(/^(\s*)[-•]\s/, '')
           : line.replace(/^(\s*)\d+\.\s/, '');
-        
+
         if (contentAfterPrefix.trim() === '') {
           // Empty list item - end the list
           e.preventDefault();
-          const info = getLineInfo();
-          if (info) {
-            const newValue = value.substring(0, info.lineStart) + '\n' + value.substring(info.lineEnd);
-            onChange(newValue);
-            setTimeout(() => {
-              textarea.selectionStart = textarea.selectionEnd = info.lineStart + 1;
-            }, 0);
-          }
+          const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
+          onChange(newValue);
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = lineStart + 1;
+          }, 0);
           return;
         }
-        
+
         e.preventDefault();
-        
+
         // Continue list on new line
         const indent = bulletMatch ? bulletMatch[1] : numberMatch![1];
         let prefix: string;
-        
+
         if (bulletMatch) {
           prefix = indent + bulletMatch[2] + ' ';
         } else {
-          const num = parseInt(numberMatch![2]) + 1;
+          const num = parseInt(numberMatch![2], 10) + 1;
           prefix = indent + num + '. ';
         }
-        
-        let newValue = value.substring(0, start) + '\n' + prefix + value.substring(end);
+
+        let newValue = currentValue.substring(0, start) + '\n' + prefix + currentValue.substring(end);
         // Renumber if it's a numbered list
         if (numberMatch) {
           newValue = renumberList(newValue);
         }
         onChange(newValue);
-        
+
         setTimeout(() => {
           textarea.selectionStart = textarea.selectionEnd = start + 1 + prefix.length;
         }, 0);
       }
     }
-  }, [value, onChange, getLineInfo, insertListPrefix, renumberList]);
+  }, [onChange, getLineInfo, insertListPrefix, renumberList]);
 
   return (
     <div className="space-y-1">
