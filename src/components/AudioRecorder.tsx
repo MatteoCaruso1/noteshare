@@ -199,7 +199,8 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           variant="outline"
           onClick={startRecording}
           disabled={processing}
-          className="flex-1 active:scale-[0.98] touch-manipulation"
+          className="flex-1 touch-manipulation focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           {processing ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
