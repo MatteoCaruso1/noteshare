@@ -17,7 +17,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { data: notes, isLoading: notesLoading } = useNotes();
+  const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   const isNotesBootstrapping = !!user && !profile;
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
@@ -139,6 +139,7 @@ const Index = () => {
           <Timeline 
             notes={filteredNotes} 
             loading={notesLoading || isNotesBootstrapping} 
+            isRefetching={notesRefetching}
             displayCount={displayCount}
             onLoadMore={handleLoadMore}
           />

@@ -6,19 +6,21 @@ import { Button } from '@/components/ui/button';
 interface TimelineProps {
   notes: NoteWithAuthor[];
   loading?: boolean;
+  isRefetching?: boolean;
   displayCount: number;
   onLoadMore: () => void;
 }
 
 const LOAD_MORE_COUNT = 10;
 
-export const Timeline = memo(function Timeline({ notes, loading, displayCount, onLoadMore }: TimelineProps) {
+export const Timeline = memo(function Timeline({ notes, loading, isRefetching, displayCount, onLoadMore }: TimelineProps) {
   const displayedNotes = useMemo(() => 
     notes.slice(0, displayCount), 
     [notes, displayCount]
   );
 
-  if (loading) {
+  // Show skeleton only on initial load, not during refetch
+  if (loading && notes.length === 0) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
@@ -28,10 +30,23 @@ export const Timeline = memo(function Timeline({ notes, loading, displayCount, o
     );
   }
 
-  if (notes.length === 0) {
+  // Only show empty state if we're definitely done loading and have no notes
+  // Don't show if we're refetching (might just be slow network)
+  if (notes.length === 0 && !loading && !isRefetching) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <p>No notes yet. Start practicing to capture your first note!</p>
+      </div>
+    );
+  }
+
+  // If we have no notes but are still loading/refetching, show skeleton
+  if (notes.length === 0) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-32 bg-card rounded-lg animate-pulse" />
+        ))}
       </div>
     );
   }

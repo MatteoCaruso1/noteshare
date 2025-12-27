@@ -3,6 +3,38 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PracticeSession } from '@/types';
 
+const ACTIVE_SESSION_STORAGE_KEY = 'noteshare_active_session';
+
+// Persist active session to localStorage for instant restore on app resume
+function persistActiveSession(session: PracticeSession | null, profileId?: string) {
+  if (!profileId) return;
+  
+  if (session) {
+    localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify({ session, profileId }));
+  } else {
+    localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
+  }
+}
+
+// Get persisted active session from localStorage
+function getPersistedActiveSession(profileId?: string): PracticeSession | null {
+  if (!profileId) return null;
+  
+  try {
+    const stored = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+    if (!stored) return null;
+    
+    const { session, profileId: storedProfileId } = JSON.parse(stored);
+    // Only return if it matches current profile and is active
+    if (storedProfileId === profileId && session?.is_active) {
+      return session as PracticeSession;
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
 export function useSessions() {
   return useQuery({
     queryKey: ['sessions'],
@@ -19,6 +51,8 @@ export function useSessions() {
 }
 
 export function useActiveSession(profileId?: string) {
+  const queryClient = useQueryClient();
+  
   return useQuery({
     queryKey: ['active-session', profileId],
     queryFn: async () => {
@@ -32,9 +66,22 @@ export function useActiveSession(profileId?: string) {
         .maybeSingle();
 
       if (error) throw error;
+      
+      // Persist to localStorage for instant restore
+      persistActiveSession(data as PracticeSession | null, profileId);
+      
       return data as PracticeSession | null;
     },
     enabled: !!profileId,
+    // Use persisted session as initial data for instant display
+    initialData: () => getPersistedActiveSession(profileId),
+    // Keep data fresh but don't throw away stale data while refetching
+    staleTime: 60 * 1000, // Consider fresh for 1 minute
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    // Refetch on window focus to sync with server
+    refetchOnWindowFocus: true,
+    // Don't refetch on mount if we have data (prevents flicker)
+    refetchOnMount: (query) => query.state.data === undefined,
   });
 }
 
@@ -139,6 +186,8 @@ export function useStartSession() {
       };
 
       queryClient.setQueryData(key, optimisticSession);
+      // Also persist optimistically
+      persistActiveSession(optimisticSession, userId);
 
       return { previousSession, key };
     },
@@ -146,6 +195,8 @@ export function useStartSession() {
       const key = ['active-session', userId] as const;
       // Replace optimistic data with real data
       queryClient.setQueryData(key, data);
+      // Persist real session to localStorage
+      persistActiveSession(data, userId);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast.success('Practice session started!');
     },
@@ -153,6 +204,7 @@ export function useStartSession() {
       // Rollback on error
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
+        persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
       }
       console.error('Error starting session:', error);
       toast.error('Failed to start session');
@@ -199,6 +251,8 @@ export function useEndSession() {
 
       // Optimistically set active session to null immediately
       queryClient.setQueryData(key, null);
+      // Clear from localStorage
+      persistActiveSession(null, userId);
 
       return { previousSession, key };
     },
@@ -208,10 +262,12 @@ export function useEndSession() {
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       // Note: Don't show toast here - the note creation will show "Practice session saved"
     },
-    onError: (error, _variables, context) => {
+    onError: (error, variables, context) => {
       // Rollback on error
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
+        // Restore to localStorage
+        persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
       }
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
@@ -381,6 +437,8 @@ export function useDeleteSession() {
 
       // Optimistically set active session to null immediately
       queryClient.setQueryData(key, null);
+      // Clear from localStorage
+      persistActiveSession(null, userId);
 
       return { previousSession, key };
     },
@@ -391,10 +449,12 @@ export function useDeleteSession() {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast.success('Session deleted');
     },
-    onError: (error, _variables, context) => {
+    onError: (error, variables, context) => {
       // Rollback on error
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
+        // Restore to localStorage
+        persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
       }
       console.error('Error deleting session:', error);
       toast.error('Failed to delete session');
