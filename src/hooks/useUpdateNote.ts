@@ -157,7 +157,66 @@ export function useUpdateNoteTags() {
       queryClient.invalidateQueries({ queryKey: ['note', noteId] });
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
-      queryClient.invalidateQueries({ queryKey: ['recent-tags'] });
-    },
-  });
+    queryClient.invalidateQueries({ queryKey: ['recent-tags'] });
+  },
+});
+}
+
+export function useUpdateNoteAudioNames() {
+const queryClient = useQueryClient();
+
+return useMutation({
+  mutationFn: async ({
+    noteId,
+    audioFileNames,
+  }: {
+    noteId: string;
+    audioFileNames: string[];
+  }) => {
+    const { data, error } = await supabase
+      .from('notes')
+      .update({ audio_file_names: audioFileNames, updated_at: new Date().toISOString() })
+      .eq('id', noteId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+  // Optimistic update for instant UI feedback
+  onMutate: async ({ noteId, audioFileNames }) => {
+    await queryClient.cancelQueries({ queryKey: ['note', noteId] });
+    await queryClient.cancelQueries({ queryKey: ['notes'] });
+
+    const previousNote = queryClient.getQueryData<NoteWithAuthor>(['note', noteId]);
+
+    if (previousNote) {
+      queryClient.setQueryData<NoteWithAuthor>(['note', noteId], {
+        ...previousNote,
+        audio_file_names: audioFileNames,
+      });
+    }
+
+    queryClient.setQueriesData<NoteWithAuthor[]>(
+      { queryKey: ['notes'], exact: false },
+      (old) => old?.map(note => 
+        note.id === noteId ? { ...note, audio_file_names: audioFileNames } : note
+      )
+    );
+
+    return { previousNote };
+  },
+  onError: (error, { noteId }, context) => {
+    if (context?.previousNote) {
+      queryClient.setQueryData(['note', noteId], context.previousNote);
+    }
+    console.error('Error updating audio names:', error);
+    toast.error('Failed to rename audio');
+  },
+  onSuccess: (_, { noteId }) => {
+    queryClient.invalidateQueries({ queryKey: ['note', noteId] });
+    queryClient.invalidateQueries({ queryKey: ['notes'] });
+    queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+  },
+});
 }

@@ -18,7 +18,7 @@ import { SignedImage } from '@/components/SignedImage';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateNoteVisibility, useRemoveNoteFocus } from '@/hooks/useUpdateNote';
+import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -38,6 +38,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const navigate = useNavigate();
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
+  const updateAudioNames = useUpdateNoteAudioNames();
   const removeNoteFocus = useRemoveNoteFocus();
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
@@ -69,6 +70,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const handleRemoveFocus = useCallback(() => {
     removeNoteFocus.mutate(note.id);
   }, [removeNoteFocus, note.id]);
+
+  const handleRenameAudio = useCallback((index: number, newName: string) => {
+    const newNames = [...(note.audio_file_names || note.audio_files.map(() => ''))];
+    newNames[index] = newName;
+    updateAudioNames.mutate({ noteId: note.id, audioFileNames: newNames });
+  }, [note.id, note.audio_file_names, note.audio_files, updateAudioNames]);
 
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
@@ -384,9 +391,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             </p>
           )}
         </div>
-
       </div>
-
 
       {/* Linked Project */}
       {note.project_id && (
@@ -422,6 +427,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               key={i}
               src={url} 
               title={note.audio_file_names?.[i]}
+              onRename={expanded && isOwner ? (newName) => handleRenameAudio(i, newName) : undefined}
             />
           ))}
           {!expanded && note.audio_files.length > 1 && (
@@ -454,7 +460,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
       {/* Full timestamp at bottom in expanded view */}
       {expanded && (
-        <p className="text-xs text-muted-foreground/60 mt-4">
+        <p className="text-xs text-muted-foreground/60 mt-3">
           {format(new Date(note.created_at), 'h:mm a · MMM d, yyyy')}
         </p>
       )}
