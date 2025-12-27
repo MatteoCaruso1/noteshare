@@ -90,7 +90,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Focus Backlog</DialogTitle>
         </DialogHeader>
@@ -124,7 +124,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
         </div>
 
         {/* Entries List */}
-        <ScrollArea className="flex-1 -mx-6 px-6">
+        <ScrollArea className="flex-1 -mx-6 px-6 min-h-0 overflow-y-auto">
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
