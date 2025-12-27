@@ -235,7 +235,7 @@ const Profile = () => {
 
           {/* Save/Cancel Buttons */}
           {editing && <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => setEditing(false)}>
+              <Button variant="outline" className="flex-1" onClick={() => { setEditing(false); window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }}>
                 Cancel
               </Button>
               <Button className="flex-1 bg-gradient-primary text-primary-foreground" onClick={handleSave} disabled={saving}>
