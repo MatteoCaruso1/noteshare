@@ -73,27 +73,39 @@ export function PracticeControls() {
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
+  // Track whether wake lock should be active (user intent)
+  const wakeLockIntentRef = useRef(false);
+
   // Wake lock management
-  const requestWakeLock = useCallback(async () => {
+  const requestWakeLock = useCallback(async (showToast = true) => {
     if ('wakeLock' in navigator) {
       try {
         wakeLockRef.current = await navigator.wakeLock.request('screen');
         setWakeLockEnabled(true);
-        toast.success('Screen will stay unlocked during session');
+        if (showToast) {
+          toast.success('Screen will stay unlocked during session');
+        }
         
         wakeLockRef.current.addEventListener('release', () => {
+          // Only update state if user didn't intend to release
+          // The lock may be released by system (visibility change, etc)
           setWakeLockEnabled(false);
         });
       } catch (err) {
         console.error('Wake lock request failed:', err);
-        toast.error('Could not keep screen unlocked');
+        if (showToast) {
+          toast.error('Could not keep screen unlocked');
+        }
       }
     } else {
-      toast.error('Screen lock prevention not supported on this device');
+      if (showToast) {
+        toast.error('Screen lock prevention not supported on this device');
+      }
     }
   }, []);
 
   const releaseWakeLock = useCallback(async () => {
+    wakeLockIntentRef.current = false;
     if (wakeLockRef.current) {
       await wakeLockRef.current.release();
       wakeLockRef.current = null;
@@ -106,13 +118,30 @@ export function PracticeControls() {
     if (wakeLockEnabled) {
       await releaseWakeLock();
     } else {
+      wakeLockIntentRef.current = true;
       await requestWakeLock();
     }
   }, [wakeLockEnabled, requestWakeLock, releaseWakeLock]);
 
+  // Re-acquire wake lock when page becomes visible again (if user had it enabled)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && wakeLockIntentRef.current && !wakeLockRef.current) {
+        // Re-acquire wake lock silently
+        await requestWakeLock(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [requestWakeLock]);
+
   // Release wake lock when session ends or component unmounts
   useEffect(() => {
     if (!activeSession && wakeLockRef.current) {
+      wakeLockIntentRef.current = false;
       releaseWakeLock();
     }
     return () => {
@@ -441,7 +470,7 @@ export function PracticeControls() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 active:bg-transparent ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                    className={`h-8 w-8 active:scale-95 active:bg-transparent touch-manipulation ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                     onClick={toggleWakeLock}
                   >
                     <div className="relative">

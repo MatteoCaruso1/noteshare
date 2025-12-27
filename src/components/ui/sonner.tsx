@@ -8,15 +8,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
   const isMobile = useIsMobile();
 
-  // On mobile, position toasts above the bottom navigation bar (nav is ~64px + safe area)
-  const mobileOffset = 80;
-
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position={isMobile ? "bottom-center" : "bottom-right"}
-      offset={mobileOffset}
+      offset={isMobile ? 80 : 16}
       toastOptions={{
         classNames: {
           toast:
