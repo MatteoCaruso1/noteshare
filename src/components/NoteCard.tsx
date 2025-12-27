@@ -14,6 +14,7 @@ import { RichTextContent } from '@/components/RichTextContent';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
+import { SignedImage } from '@/components/SignedImage';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -432,7 +433,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       {note.image_files.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {(expanded ? note.image_files : note.image_files.slice(0, 4)).map((url, i) => (
-            <img
+            <SignedImage
               key={i}
               src={url}
               alt=""
