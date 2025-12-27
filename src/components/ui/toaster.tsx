@@ -1,8 +1,15 @@
 import { useToast } from "@/hooks/use-toast";
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function Toaster() {
   const { toasts } = useToast();
+  const isMobile = useIsMobile();
+
+  // Hide toasts on mobile to avoid covering bottom nav
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <ToastProvider>
