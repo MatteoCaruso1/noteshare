@@ -62,7 +62,8 @@ export function RichTextarea({
     let inNumberedList = false;
     
     return lines.map(line => {
-      const numberMatch = line.match(/^(\s*)(\d+)\.\s(.*)$/);
+      // Match numbered list item - content after space is optional
+      const numberMatch = line.match(/^(\s*)(\d+)\.\s?(.*)$/);
       if (numberMatch) {
         const indent = numberMatch[1];
         const content = numberMatch[3];
@@ -72,10 +73,12 @@ export function RichTextarea({
         } else {
           currentNumber++;
         }
+        // Always include space after number, even if content is empty
         return `${indent}${currentNumber}. ${content}`;
       } else {
-        // Reset numbering when we exit the list
-        if (!line.match(/^\s*$/)) {
+        // Reset numbering when we exit the list (non-empty, non-whitespace line that isn't a list)
+        const isBullet = line.match(/^(\s*)[-•]\s/);
+        if (!line.match(/^\s*$/) && !isBullet) {
           inNumberedList = false;
           currentNumber = 0;
         }
@@ -175,8 +178,8 @@ export function RichTextarea({
 
   const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;
-    let newValue = textarea.value;
-    let cursorPos = textarea.selectionStart;
+    const newValue = textarea.value;
+    const cursorPos = textarea.selectionStart;
     
     // Find current line info
     let lineStart = cursorPos;
@@ -188,42 +191,42 @@ export function RichTextarea({
     // Auto-convert "- " at line start to bullet
     if (lineBeforeCursor === '- ' || lineBeforeCursor.match(/^\s+- $/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
-      newValue = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
-      cursorPos = lineStart + indent.length + 2;
+      const transformed = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
+      const newCursor = lineStart + indent.length + 2;
       
-      onChange(newValue);
+      onChange(transformed);
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        textarea.selectionStart = textarea.selectionEnd = newCursor;
       }, 0);
       return;
     }
     
     // Mobile shortcut: ".- " creates a bullet
     if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
-      newValue = newValue.substring(0, lineStart) + '• ' + newValue.substring(cursorPos);
-      cursorPos = lineStart + 2;
+      const transformed = newValue.substring(0, lineStart) + '• ' + newValue.substring(cursorPos);
+      const newCursor = lineStart + 2;
       
-      onChange(newValue);
+      onChange(transformed);
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        textarea.selectionStart = textarea.selectionEnd = newCursor;
       }, 0);
       return;
     }
     
-    // Auto-convert "1. " at line start - just renumber
-    const numberStartMatch = lineBeforeCursor.match(/^(\s*)(\d+)\.\s$/);
-    if (numberStartMatch) {
-      newValue = renumberList(newValue);
+    // Auto-capitalize first letter after list prefix (only if just typed a lowercase letter after prefix)
+    const { text: capitalizedText, newCursorPos } = autoCapitalizeAfterPrefix(newValue, cursorPos);
+    
+    if (capitalizedText !== newValue) {
+      onChange(capitalizedText);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
+      return;
     }
     
-    // Auto-capitalize first letter after list prefix
-    const { text: capitalizedText } = autoCapitalizeAfterPrefix(newValue, cursorPos);
-    
-    // Renumber lists if needed
-    const finalValue = renumberList(capitalizedText);
-    
-    onChange(finalValue);
-  }, [onChange, autoCapitalizeAfterPrefix, renumberList]);
+    // Otherwise, just pass through the value unchanged (preserves undo history)
+    onChange(newValue);
+  }, [onChange, autoCapitalizeAfterPrefix]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
