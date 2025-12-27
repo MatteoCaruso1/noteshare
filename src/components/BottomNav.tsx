@@ -3,7 +3,7 @@ import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
-
+import { markScrollToTop } from '@/components/ScrollToTop';
 interface BottomNavProps {
   overrideActiveRoute?: string;
 }
@@ -41,8 +41,8 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
     if (scrollKey) {
       clearScrollState(scrollKey);
     }
-    // Scroll to top instantly
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Mark this navigation to scroll to top after route change
+    markScrollToTop(to);
   };
 
   return (

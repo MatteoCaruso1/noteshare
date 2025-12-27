@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -48,6 +49,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <FloatingInstruments />
             <AppHeader />
             <GlobalSessionBanner />
