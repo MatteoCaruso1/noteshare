@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Smartphone, Share, Plus, X } from 'lucide-react';
+import { Smartphone, Share, Plus } from 'lucide-react';
 
-const HOMESCREEN_PROMPT_KEY = 'noteshare_homescreen_prompt_shown';
+const HOMESCREEN_PROMPT_KEY = 'noteshare_homescreen_prompt_dismissed_v2';
 
 export function AddToHomescreenPrompt() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Check if already shown
-    const alreadyShown = localStorage.getItem(HOMESCREEN_PROMPT_KEY);
-    if (alreadyShown) return;
+    // Check if already dismissed - use a versioned key to ensure it's only shown once
+    const alreadyDismissed = localStorage.getItem(HOMESCREEN_PROMPT_KEY);
+    if (alreadyDismissed === 'true') return;
 
     // Detect mobile device
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -48,10 +48,10 @@ export function AddToHomescreenPrompt() {
             </div>
           </div>
           <DialogTitle className="text-center text-xl">
-            Add noteshare to your Home Screen
+            Add Noteshare to Home Screen
           </DialogTitle>
           <DialogDescription className="text-center">
-            We don't have a mobile app yet, but you know what's almost as good? Adding noteshare to your home screen!
+            Get the app-like experience in just 3 taps.
           </DialogDescription>
         </DialogHeader>
 
@@ -62,9 +62,9 @@ export function AddToHomescreenPrompt() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-primary">1</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Tap the Share button</p>
-                  <p className="text-xs text-muted-foreground">It's the square with an arrow at the bottom of Safari</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Tap Share</p>
+                  <p className="text-xs text-muted-foreground">Bottom of Safari</p>
                 </div>
                 <Share className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               </div>
@@ -73,9 +73,9 @@ export function AddToHomescreenPrompt() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-primary">2</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Scroll and tap "Add to Home Screen"</p>
-                  <p className="text-xs text-muted-foreground">You may need to scroll down to find it</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">"Add to Home Screen"</p>
+                  <p className="text-xs text-muted-foreground">Scroll down if needed</p>
                 </div>
                 <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               </div>
@@ -84,9 +84,9 @@ export function AddToHomescreenPrompt() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-primary">3</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Tap "Add" in the top right</p>
-                  <p className="text-xs text-muted-foreground">noteshare will appear on your home screen!</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Tap "Add"</p>
+                  <p className="text-xs text-muted-foreground">Top right corner</p>
                 </div>
               </div>
             </div>
@@ -98,9 +98,9 @@ export function AddToHomescreenPrompt() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-primary">1</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Tap the menu (⋮) button</p>
-                  <p className="text-xs text-muted-foreground">It's in the top-right corner of your browser</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Tap ⋮ menu</p>
+                  <p className="text-xs text-muted-foreground">Top right of browser</p>
                 </div>
               </div>
               
@@ -108,9 +108,9 @@ export function AddToHomescreenPrompt() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-primary">2</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Tap "Add to Home screen"</p>
-                  <p className="text-xs text-muted-foreground">Or "Install app" depending on your browser</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">"Add to Home screen"</p>
+                  <p className="text-xs text-muted-foreground">Or "Install app"</p>
                 </div>
               </div>
               
@@ -118,9 +118,9 @@ export function AddToHomescreenPrompt() {
                 <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-primary">3</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Confirm by tapping "Add"</p>
-                  <p className="text-xs text-muted-foreground">noteshare will appear on your home screen!</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Tap "Add"</p>
+                  <p className="text-xs text-muted-foreground">Confirm to install</p>
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ export function AddToHomescreenPrompt() {
 
           {!isIOS && !isAndroid && (
             <p className="text-sm text-center text-muted-foreground">
-              Look for "Add to Home Screen" in your browser's menu to install noteshare.
+              Look for "Add to Home Screen" in your browser menu.
             </p>
           )}
         </div>
