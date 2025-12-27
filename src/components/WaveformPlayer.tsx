@@ -260,7 +260,6 @@ export function WaveformPlayer({ src, title, onRename, onError }: WaveformPlayer
         <div className="px-3 pt-2 pb-0">
           {isEditing ? (
             <div className="flex items-center gap-1">
-              <span className="text-xs">🎵</span>
               <Input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
@@ -284,14 +283,14 @@ export function WaveformPlayer({ src, title, onRename, onError }: WaveformPlayer
               className={`text-xs text-muted-foreground truncate ${onRename ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
               onClick={onRename ? handleStartEdit : undefined}
             >
-              🎵 {displayTitle}
+              {displayTitle}
             </p>
           ) : onRename ? (
             <p 
               className="text-xs text-muted-foreground/60 italic cursor-pointer hover:text-muted-foreground transition-colors"
               onClick={handleStartEdit}
             >
-              🎵 Tap to name recording...
+              Tap to name recording...
             </p>
           ) : null}
         </div>
