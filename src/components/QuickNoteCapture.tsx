@@ -10,6 +10,7 @@ import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { TagInput } from '@/components/TagInput';
+import { SignedImage } from '@/components/SignedImage';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -264,7 +265,7 @@ export function QuickNoteCapture() {
             <div className="flex flex-wrap gap-2">
               {imageFiles.map((url, i) => (
                 <div key={i} className="relative">
-                  <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                  <SignedImage src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
                   <Button
                     variant="destructive"
                     size="icon"

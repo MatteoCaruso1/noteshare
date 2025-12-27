@@ -3,6 +3,7 @@ import WaveSurfer from 'wavesurfer.js';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Mic, Loader2 } from 'lucide-react';
 import { audioManager } from '@/lib/audioManager';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface WaveformPlayerProps {
   src: string;
@@ -39,6 +40,9 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  
+  // Get signed URL for private bucket access
+  const { signedUrl, loading: urlLoading } = useSignedUrl(src);
 
   const formatTime = (seconds: number): string => {
     if (!isFinite(seconds) || isNaN(seconds)) return '--:--';
@@ -78,7 +82,7 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   }, [isReady]);
 
   useEffect(() => {
-    if (!containerRef.current || !src) return;
+    if (!containerRef.current || !signedUrl || urlLoading) return;
 
     let isMounted = true;
     setIsLoading(true);
@@ -168,9 +172,9 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
       }
     });
 
-    // Load with error handling
+    // Load with error handling - use signed URL
     try {
-      wavesurfer.load(src);
+      wavesurfer.load(signedUrl);
     } catch (e) {
       console.error('[WaveformPlayer] Error initiating load:', e);
       if (isMounted) {
@@ -192,15 +196,15 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
         // Ignore destroy errors (e.g., AbortError when unmounting during load)
       }
     };
-  }, [src, onError, instanceId]);
+  }, [signedUrl, urlLoading, onError, instanceId]);
 
   // Fallback to native audio if waveform fails
-  if (error) {
+  if (error && signedUrl) {
     return (
       <div className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
         <Mic className="w-4 h-4 text-primary flex-shrink-0" />
         <audio
-          src={src}
+          src={signedUrl}
           controls
           preload="metadata"
           className="flex-1 h-8 min-w-0"

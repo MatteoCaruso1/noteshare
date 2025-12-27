@@ -191,9 +191,12 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
 
       if (uploadError) throw uploadError;
 
-      const { data: publicUrl } = supabase.storage
+      // Get signed URL for private bucket
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('practice-media')
-        .getPublicUrl(uploadData.path);
+        .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7); // 7 day expiry
+
+      if (signedUrlError) throw signedUrlError;
 
       // Create comment with audio - use custom title or default
       const displayTitle = replyTitle.trim() || '🎤 Voice reply';
@@ -203,7 +206,7 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
           note_id: noteId,
           author_id: authorId,
           content: displayTitle,
-          audio_url: publicUrl.publicUrl,
+          audio_url: signedUrlData.signedUrl,
         });
 
       if (commentError) throw commentError;

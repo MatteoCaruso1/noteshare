@@ -2,6 +2,30 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// Helper to get a signed URL for private bucket access
+export async function getSignedUrl(path: string): Promise<string | null> {
+  // Extract the file path from a full URL if needed
+  let filePath = path;
+  if (path.includes('/storage/v1/object/')) {
+    // Extract path after 'practice-media/'
+    const match = path.match(/practice-media\/(.+)/);
+    if (match) {
+      filePath = match[1];
+    }
+  }
+  
+  const { data, error } = await supabase.storage
+    .from('practice-media')
+    .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 day expiry
+    
+  if (error) {
+    console.error('[MediaUpload] Error creating signed URL:', error);
+    return null;
+  }
+  
+  return data.signedUrl;
+}
+
 export function useMediaUpload() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -27,12 +51,11 @@ export function useMediaUpload() {
 
       if (error) throw error;
 
-      const { data: urlData } = supabase.storage
-        .from('practice-media')
-        .getPublicUrl(data.path);
-
+      // Use signed URL for private bucket
+      const signedUrl = await getSignedUrl(data.path);
+      
       setProgress(100);
-      return urlData.publicUrl;
+      return signedUrl;
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload file');
@@ -95,6 +118,7 @@ export function useMediaUpload() {
   const uploadVideo = async (file: File, userId: string): Promise<string | null> => {
     return uploadFile(file, userId, 'video');
   };
+
   return {
     uploading,
     progress,
@@ -102,5 +126,6 @@ export function useMediaUpload() {
     uploadAudio,
     uploadImage,
     uploadVideo,
+    getSignedUrl,
   };
 }
