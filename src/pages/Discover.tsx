@@ -95,7 +95,7 @@ const Discover = () => {
         </div>
       </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-6">
+      <main className="container max-w-2xl mx-auto px-4 py-2">
         {isLoading ? (
           <div className="text-center text-muted-foreground py-12">Loading...</div>
         ) : filteredMusicians && filteredMusicians.length > 0 ? (
