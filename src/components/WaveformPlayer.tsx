@@ -1,35 +1,37 @@
 import { useEffect, useRef, useState, useCallback, useId } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Mic, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Play, Pause, Mic, Loader2, Check } from 'lucide-react';
 import { audioManager } from '@/lib/audioManager';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface WaveformPlayerProps {
   src: string;
   title?: string;
+  onRename?: (newName: string) => void;
   onError?: () => void;
 }
 
-// Extract filename from URL for display
+// Extract filename from URL for display - returns empty string for timestamp-only filenames
 function extractFilename(url: string): string {
   try {
     const pathname = new URL(url).pathname;
     const filename = pathname.split('/').pop();
-    if (!filename) return 'Audio Recording';
+    if (!filename) return '';
     // Remove timestamp prefix if present (e.g., 1765730706098.webm -> audio)
     const decoded = decodeURIComponent(filename);
     // Remove file extension
     const withoutExt = decoded.replace(/\.[^/.]+$/, '');
-    // If it's just a timestamp, return default name
-    if (/^\d+$/.test(withoutExt)) return 'Audio Recording';
+    // If it's just a timestamp, return empty string (no name)
+    if (/^\d+$/.test(withoutExt)) return '';
     return withoutExt;
   } catch {
-    return 'Audio Recording';
+    return '';
   }
 }
 
-export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
+export function WaveformPlayer({ src, title, onRename, onError }: WaveformPlayerProps) {
   const instanceId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -40,6 +42,8 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
   
   // Get signed URL for private bucket access
   const { signedUrl, loading: urlLoading } = useSignedUrl(src);
@@ -225,16 +229,71 @@ export function WaveformPlayer({ src, title, onError }: WaveformPlayerProps) {
 
   const displayTitle = title || extractFilename(src);
 
+  const handleStartEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onRename) return;
+    setEditName(displayTitle);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (onRename) {
+      onRename(editName.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+    }
+  };
+
   return (
     <div 
       className="bg-secondary/50 rounded-lg w-full"
       onClick={(e) => e.stopPropagation()}
     >
-      {displayTitle && (
+      {(displayTitle || onRename) && (
         <div className="px-3 pt-2 pb-0">
-          <p className="text-xs text-muted-foreground truncate">
-            🎵 {displayTitle}
-          </p>
+          {isEditing ? (
+            <div className="flex items-center gap-1">
+              <span className="text-xs">🎵</span>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={handleSaveEdit}
+                className="h-6 text-xs py-0 px-1 flex-1"
+                placeholder="Recording name..."
+                autoFocus
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 flex-shrink-0"
+                onClick={handleSaveEdit}
+              >
+                <Check className="w-3 h-3" />
+              </Button>
+            </div>
+          ) : displayTitle ? (
+            <p 
+              className={`text-xs text-muted-foreground truncate ${onRename ? 'cursor-pointer hover:text-foreground transition-colors' : ''}`}
+              onClick={onRename ? handleStartEdit : undefined}
+            >
+              🎵 {displayTitle}
+            </p>
+          ) : onRename ? (
+            <p 
+              className="text-xs text-muted-foreground/60 italic cursor-pointer hover:text-muted-foreground transition-colors"
+              onClick={handleStartEdit}
+            >
+              🎵 Tap to name recording...
+            </p>
+          ) : null}
         </div>
       )}
       <div className="flex items-center gap-3 p-3 pt-2">
