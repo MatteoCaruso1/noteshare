@@ -258,7 +258,7 @@ const Gigs = () => {
       {/* Page Header */}
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">Gigs</h1>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
