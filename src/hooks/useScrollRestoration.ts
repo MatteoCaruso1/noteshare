@@ -30,7 +30,7 @@ export function useScrollRestoration(key: string, initialDisplayCount: number = 
       // Small delay to allow content to render with restored displayCount
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          window.scrollTo({ top: currentSavedState.scrollY, behavior: 'instant' });
+          window.scrollTo({ top: currentSavedState.scrollY, left: 0, behavior: 'auto' });
           setTimeout(() => {
             isRestoring.current = false;
           }, 50);

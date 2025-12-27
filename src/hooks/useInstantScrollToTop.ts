@@ -6,6 +6,6 @@ import { useLayoutEffect } from 'react';
  */
 export function useInstantScrollToTop(deps: React.DependencyList = []) {
   useLayoutEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, deps);
 }

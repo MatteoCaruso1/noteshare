@@ -36,11 +36,15 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const currentPath = overrideActiveRoute || location.pathname;
 
   const handleNavClick = (to: string) => {
+    // Always start at the top when using bottom nav
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+
     // Clear scroll state for the destination so it starts at top
     const scrollKey = routeScrollKeys[to];
     if (scrollKey) {
       clearScrollState(scrollKey);
     }
+
     // Mark this navigation to scroll to top after route change
     markScrollToTop(to);
   };

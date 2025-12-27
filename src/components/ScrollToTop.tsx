@@ -17,18 +17,18 @@ export function ScrollToTop() {
     // or if we're navigating from a different base route
     if (shouldScrollToTop.has(pathname)) {
       shouldScrollToTop.delete(pathname);
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     } else if (prevPathname.current !== pathname) {
       // Check if it's a different "section" (different base path)
       const prevBase = prevPathname.current.split('/')[1];
       const currentBase = pathname.split('/')[1];
-      
+
       // If navigating between main sections, scroll to top
       if (prevBase !== currentBase) {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       }
     }
-    
+
     prevPathname.current = pathname;
   }, [pathname]);
 
