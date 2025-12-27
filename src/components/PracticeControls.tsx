@@ -465,8 +465,8 @@ export function PracticeControls() {
                 title={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
                 className={
                   wakeLockEnabled
-                    ? "h-8 w-8 bg-primary text-primary-foreground hover:bg-primary active:bg-primary shadow-none hover:shadow-none"
-                    : "h-8 w-8 bg-background text-foreground border border-input hover:bg-background active:bg-background shadow-none"
+                    ? "h-8 w-8 bg-primary text-primary-foreground hover:bg-primary active:bg-primary shadow-none hover:shadow-none border-none outline-none ring-0"
+                    : "h-8 w-8 bg-transparent text-muted-foreground hover:bg-muted/50 active:bg-muted/50 shadow-none border-none outline-none ring-0"
                 }
                 onClick={toggleWakeLock}
               >
