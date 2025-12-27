@@ -7,6 +7,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -93,6 +104,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
+              autoFocus={false}
             />
           </div>
           <Select value={dateFilter} onValueChange={setDateFilter}>
@@ -154,12 +166,7 @@ function BacklogEntryCard({ entry, onCopy, onDelete }: BacklogEntryCardProps) {
     <Card className="p-3">
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="text-xs text-muted-foreground">
-          Saved {format(parseISO(entry.saved_at), 'MMM d, yyyy · h:mm a')}
-          {entry.original_focus_date && (
-            <span className="ml-1">
-              (from {format(parseISO(entry.original_focus_date), 'MMM d')})
-            </span>
-          )}
+          Saved {format(parseISO(entry.saved_at), 'MMM d')}
         </div>
         <div className="flex gap-1">
           <Button
@@ -171,15 +178,35 @@ function BacklogEntryCard({ entry, onCopy, onDelete }: BacklogEntryCardProps) {
           >
             <Copy className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-            onClick={onDelete}
-            title="Delete entry"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-muted-foreground"
+                title="Delete entry"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
       <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed">
