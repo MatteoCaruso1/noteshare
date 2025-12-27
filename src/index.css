@@ -414,3 +414,10 @@ body {
     -webkit-transform: translateZ(0);
   }
 }
+
+/* Position Sonner toasts above bottom nav on mobile */
+@media (max-width: 768px) {
+  [data-sonner-toaster] {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
