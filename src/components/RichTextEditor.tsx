@@ -6,46 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Bold, Italic, Underline as UnderlineIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
-import { Extension, InputRule } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Extension } from '@tiptap/core';
 
-// Removes the extra empty paragraph TipTap often keeps *after* a list.
-// This runs as an appendTransaction so it won't cascade into repeated input-rule runs.
-const TrailingParagraphCleanup = Extension.create({
-  name: 'trailingParagraphCleanup',
-
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        key: new PluginKey('trailingParagraphCleanup'),
-        appendTransaction: (_transactions, _oldState, newState) => {
-          const { doc } = newState;
-          if (doc.childCount < 2) return null;
-
-          const last = doc.child(doc.childCount - 1);
-          const secondLast = doc.child(doc.childCount - 2);
-
-          const lastIsEmptyParagraph = last.type.name === 'paragraph' && last.content.size === 0;
-          const secondLastIsList =
-            secondLast.type.name === 'bulletList' || secondLast.type.name === 'orderedList';
-
-          if (!lastIsEmptyParagraph || !secondLastIsList) return null;
-
-          const endPos = doc.content.size;
-          const startPos = endPos - last.nodeSize;
-
-          // If selection is *inside* that trailing paragraph, keep it (user may be typing there).
-          const sel = newState.selection;
-          if (sel.from >= startPos && sel.to <= endPos) return null;
-
-          return newState.tr.delete(startPos, endPos);
-        },
-      }),
-    ];
-  },
-});
-
-// Custom extension for keyboard shortcuts and input rules
+// Custom extension for keyboard shortcuts
 const ListShortcuts = Extension.create({
   name: 'listShortcuts',
 
@@ -62,39 +25,6 @@ const ListShortcuts = Extension.create({
         return true;
       },
     };
-  },
-
-  addInputRules() {
-    const toggleBullet = (range: { from: number; to: number }) => {
-      this.editor.chain().focus().deleteRange(range).toggleBulletList().run();
-    };
-
-    const toggleOrdered = (range: { from: number; to: number }) => {
-      this.editor.chain().focus().deleteRange(range).toggleOrderedList().run();
-    };
-
-    return [
-      // "- " at start of line converts to bullet list
-      new InputRule({
-        find: /^-\s$/,
-        handler: ({ range }) => toggleBullet(range),
-      }),
-      // "• " at start of line converts to bullet list
-      new InputRule({
-        find: /^•\s$/,
-        handler: ({ range }) => toggleBullet(range),
-      }),
-      // "1. " at start of line converts to ordered list
-      new InputRule({
-        find: /^1\.\s$/,
-        handler: ({ range }) => toggleOrdered(range),
-      }),
-      // ".- " mobile shortcut converts to bullet list
-      new InputRule({
-        find: /^\.-\s$/,
-        handler: ({ range }) => toggleBullet(range),
-      }),
-    ];
   },
 });
 
@@ -132,8 +62,6 @@ export function RichTextEditor({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
-      // Must run after StarterKit lists
-      TrailingParagraphCleanup,
       ListShortcuts,
     ],
     content: value,
