@@ -8,15 +8,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
   const isMobile = useIsMobile();
 
-  // Hide toasts on mobile to avoid covering bottom nav
-  if (isMobile) {
-    return null;
-  }
-
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      position={isMobile ? "bottom-center" : "bottom-right"}
+      offset={isMobile ? 80 : undefined}
       toastOptions={{
         classNames: {
           toast:

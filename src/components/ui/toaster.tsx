@@ -6,11 +6,6 @@ export function Toaster() {
   const { toasts } = useToast();
   const isMobile = useIsMobile();
 
-  // Hide toasts on mobile to avoid covering bottom nav
-  if (isMobile) {
-    return null;
-  }
-
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
@@ -25,7 +20,7 @@ export function Toaster() {
           </Toast>
         );
       })}
-      <ToastViewport />
+      <ToastViewport className={isMobile ? "bottom-20" : ""} />
     </ToastProvider>
   );
 }

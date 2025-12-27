@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronRight, Smartphone, Trash2, LockOpen } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, Smartphone, Trash2, LockOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -278,14 +278,12 @@ export function PracticeControls() {
     <Card className="bg-card border-border">
       <Collapsible open={isExpanded} onOpenChange={handlePracticeOpen}>
         <CollapsibleTrigger asChild>
-          <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group ${activeSession ? '' : ''}`}>
+          <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Start Practice Session</h2>
             </div>
-            {!activeSession && !showSessionChoice && (
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            )}
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -439,7 +437,7 @@ export function PracticeControls() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 active:bg-transparent ${wakeLockEnabled ? 'text-primary' : ''}`}
+                    className={`h-8 w-8 ${wakeLockEnabled ? 'text-primary' : ''}`}
                     onClick={toggleWakeLock}
                   >
                     <div className="relative">
