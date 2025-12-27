@@ -6,69 +6,80 @@ import { Button } from '@/components/ui/button';
 import { Bold, Italic, Underline as UnderlineIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
-import { Extension } from '@tiptap/core';
-import { InputRule } from '@tiptap/core';
+import { Extension, InputRule } from '@tiptap/core';
+import type { Editor } from '@tiptap/core';
+
+function cleanupTrailingEmptyParagraphAfterList(editor: Editor) {
+  const { state, view } = editor;
+  const doc = state.doc;
+
+  if (doc.childCount < 2) return;
+
+  const last = doc.child(doc.childCount - 1);
+  const secondLast = doc.child(doc.childCount - 2);
+
+  const lastIsEmptyParagraph = last.type.name === 'paragraph' && last.content.size === 0;
+  const secondLastIsList = secondLast.type.name === 'bulletList' || secondLast.type.name === 'orderedList';
+
+  if (!lastIsEmptyParagraph || !secondLastIsList) return;
+
+  const endPos = doc.content.size;
+  const startPos = endPos - last.nodeSize;
+  view.dispatch(state.tr.delete(startPos, endPos));
+}
 
 // Custom extension for keyboard shortcuts and input rules
 const ListShortcuts = Extension.create({
   name: 'listShortcuts',
-  
+
   addKeyboardShortcuts() {
     return {
       // Ctrl+Shift+L for bullet list
       'Mod-Shift-l': () => {
         this.editor.chain().focus().toggleBulletList().run();
+        cleanupTrailingEmptyParagraphAfterList(this.editor);
         return true;
       },
       // Ctrl+Shift+O for ordered list
       'Mod-Shift-o': () => {
         this.editor.chain().focus().toggleOrderedList().run();
+        cleanupTrailingEmptyParagraphAfterList(this.editor);
         return true;
       },
     };
   },
-  
+
   addInputRules() {
+    const toggleBullet = (range: { from: number; to: number }) => {
+      this.editor.chain().focus().deleteRange(range).toggleBulletList().run();
+      cleanupTrailingEmptyParagraphAfterList(this.editor);
+    };
+
+    const toggleOrdered = (range: { from: number; to: number }) => {
+      this.editor.chain().focus().deleteRange(range).toggleOrderedList().run();
+      cleanupTrailingEmptyParagraphAfterList(this.editor);
+    };
+
     return [
       // "- " at start of line converts to bullet list
       new InputRule({
         find: /^-\s$/,
-        handler: ({ state, range, chain }) => {
-          chain()
-            .deleteRange(range)
-            .toggleBulletList()
-            .run();
-        },
+        handler: ({ range }) => toggleBullet(range),
       }),
       // "• " at start of line converts to bullet list
       new InputRule({
         find: /^•\s$/,
-        handler: ({ state, range, chain }) => {
-          chain()
-            .deleteRange(range)
-            .toggleBulletList()
-            .run();
-        },
+        handler: ({ range }) => toggleBullet(range),
       }),
       // "1. " at start of line converts to ordered list
       new InputRule({
         find: /^1\.\s$/,
-        handler: ({ state, range, chain }) => {
-          chain()
-            .deleteRange(range)
-            .toggleOrderedList()
-            .run();
-        },
+        handler: ({ range }) => toggleOrdered(range),
       }),
       // ".- " mobile shortcut converts to bullet list
       new InputRule({
         find: /^\.-\s$/,
-        handler: ({ state, range, chain }) => {
-          chain()
-            .deleteRange(range)
-            .toggleBulletList()
-            .run();
-        },
+        handler: ({ range }) => toggleBullet(range),
       }),
     ];
   },
