@@ -4,7 +4,7 @@ import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Crosshair, List, ListOrdered, Archive, FolderOpen } from 'lucide-react';
+import { Crosshair, List, ListOrdered, Save, FolderOpen } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { toast } from 'sonner';
 
@@ -274,6 +274,28 @@ export function TodaysFocus() {
             >
               <ListOrdered className="w-4 h-4" />
             </Button>
+            <div className="w-px h-5 bg-border mx-1 self-center" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={handleSaveToBacklog}
+              disabled={isSaving || !text.trim()}
+              title="Save to backlog"
+            >
+              <Save className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => setIsBacklogOpen(true)}
+              title="View backlog"
+            >
+              <FolderOpen className="w-4 h-4" />
+            </Button>
           </div>
         </div>
         <Textarea
@@ -290,31 +312,6 @@ export function TodaysFocus() {
           className="min-h-[36px] resize-none text-sm"
           rows={1}
         />
-        
-        {/* Backlog Buttons */}
-        <div className="flex gap-2 mt-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleSaveToBacklog}
-            disabled={isSaving || !text.trim()}
-            className="flex-1"
-          >
-            <Archive className="w-4 h-4 mr-2" />
-            Save to Backlog
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsBacklogOpen(true)}
-            className="flex-1"
-          >
-            <FolderOpen className="w-4 h-4 mr-2" />
-            View Backlog
-          </Button>
-        </div>
       </Card>
 
       <FocusBacklogDialog 
