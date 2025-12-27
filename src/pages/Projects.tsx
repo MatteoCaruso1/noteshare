@@ -296,7 +296,7 @@ const Projects = () => {
                 <CollectionEmptyState
                   icon={Disc3}
                   title="No projects yet"
-                  subtitle="Create your first project to organize your practice notes around a goal"
+                  subtitle="Create a project to organize your notes around a goal"
                   actionLabel="Create First Project"
                   onAction={() => setIsDialogOpen(true)}
                 />
