@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,39 +42,49 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <FloatingInstruments />
-            <AppHeader />
-            <GlobalSessionBanner />
-            <AddToHomescreenPrompt />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/projects/:id" element={<ProjectDetail />} />
-              <Route path="/notes/:id" element={<NoteDetail />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/user/:id" element={<PublicProfile />} />
-              <Route path="/profile/:username" element={<PublicProfile />} />
-              <Route path="/discover" element={<Discover />} />
-              <Route path="/gigs" element={<Gigs />} />
-              <Route path="/gigs/:id" element={<GigDetail />} />
-              <Route path="/friends" element={<FriendsJournals />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+function AppInner() {
+  useEffect(() => {
+    // Prevent mobile browsers from trying to restore scroll positions on SPA navigations.
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
 
-export default App;
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <FloatingInstruments />
+              <AppHeader />
+              <GlobalSessionBanner />
+              <AddToHomescreenPrompt />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:id" element={<ProjectDetail />} />
+                <Route path="/notes/:id" element={<NoteDetail />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/user/:id" element={<PublicProfile />} />
+                <Route path="/profile/:username" element={<PublicProfile />} />
+                <Route path="/discover" element={<Discover />} />
+                <Route path="/gigs" element={<Gigs />} />
+                <Route path="/gigs/:id" element={<GigDetail />} />
+                <Route path="/friends" element={<FriendsJournals />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default AppInner;
+

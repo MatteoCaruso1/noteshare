@@ -14,6 +14,10 @@ interface BottomNavProps {
 const routeScrollKeys: Record<string, string> = {
   '/': 'index-timeline',
   '/friends': 'friends-feed',
+  // Other tabs should always open at top (no restoration yet)
+  '/projects': 'projects-top',
+  '/gigs': 'gigs-top',
+  '/profile': 'profile-top',
 };
 
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
