@@ -6,6 +6,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// HTML escape function to prevent XSS in email content
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -72,22 +82,22 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Build email content with server-verified user info
+    // Build email content with HTML-escaped user inputs
     const emailHtml = `
       <h2>New Feedback from noteshare</h2>
-      <p><strong>From:</strong> ${userName} (${userEmail})</p>
-      <p><strong>User ID:</strong> ${user.id}</p>
+      <p><strong>From:</strong> ${escapeHtml(userName)} (${escapeHtml(userEmail)})</p>
+      <p><strong>User ID:</strong> ${escapeHtml(user.id)}</p>
       <p><strong>Submitted:</strong> ${new Date().toISOString()}</p>
       <hr/>
       
       <h3>1. What do you like most about noteshare?</h3>
-      <p>${likeMost}</p>
+      <p>${escapeHtml(likeMost)}</p>
       
       <h3>2. What do you dislike or find confusing?</h3>
-      <p>${dislikeMost || "<em>No response</em>"}</p>
+      <p>${dislikeMost ? escapeHtml(dislikeMost) : "<em>No response</em>"}</p>
       
       <h3>3. NPS Score (1-10)</h3>
-      <p>${npsScore || "<em>Not provided</em>"}</p>
+      <p>${npsScore ? escapeHtml(String(npsScore)) : "<em>Not provided</em>"}</p>
       
       <hr/>
       <p><em>End of feedback</em></p>
