@@ -415,6 +415,11 @@ body {
   }
 }
 
+/* Prevent scroll position flash during SPA navigation */
+html {
+  scroll-behavior: auto !important;
+}
+
 /* Position Sonner toasts above bottom nav on mobile */
 @media (max-width: 768px) {
   [data-sonner-toaster] {
