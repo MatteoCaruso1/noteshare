@@ -9,15 +9,31 @@ export function markScrollToTop(path: string) {
 }
 
 function hardScrollToTop() {
-  // iOS Safari sometimes "restores" scroll after route change; do a hardened reset.
-  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
+  // iOS Safari sometimes "restores" scroll after route change or after focus changes.
+  // Do a hardened reset in multiple phases.
 
-  requestAnimationFrame(() => {
+  // Prevent focus-driven scroll restoration (common on mobile)
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+
+  const scrollNow = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+  };
+
+  // 1) immediate
+  scrollNow();
+
+  // 2) next paint
+  requestAnimationFrame(() => {
+    scrollNow();
+
+    // 3) small delay (catches late iOS restoration)
+    setTimeout(() => {
+      scrollNow();
+    }, 120);
   });
 }
 
