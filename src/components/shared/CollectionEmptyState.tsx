@@ -23,7 +23,7 @@ export const CollectionEmptyState = ({
         <Icon className="w-8 h-8 text-muted-foreground" />
       </div>
       <h3 className="text-lg font-medium mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">{subtitle}</p>
+      <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6 whitespace-pre-line">{subtitle}</p>
       {actionLabel && onAction && (
         <Button
           className="bg-gradient-primary text-primary-foreground"
