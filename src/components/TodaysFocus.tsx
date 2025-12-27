@@ -312,58 +312,49 @@ export function TodaysFocus() {
     }
   }, [text, getLineInfo, insertListPrefix, renumberList]);
 
-  // Handle input for mobile shortcut and auto-capitalization
+  // Handle input for auto-conversion and auto-capitalization
   const handleInput = useCallback((e: React.FormEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
     let value = textarea.value;
     let cursorPos = textarea.selectionStart;
     
+    // Find current line info
+    let lineStart = cursorPos;
+    while (lineStart > 0 && value[lineStart - 1] !== '\n') {
+      lineStart--;
+    }
+    const lineBeforeCursor = value.substring(lineStart, cursorPos);
+    
+    // Auto-convert "- " at line start to bullet
+    if (lineBeforeCursor === '- ' || lineBeforeCursor.match(/^\s+- $/)) {
+      const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
+      value = value.substring(0, lineStart) + indent + '• ' + value.substring(cursorPos);
+      cursorPos = lineStart + indent.length + 2;
+      
+      handleTextChange(value);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      }, 0);
+      return;
+    }
+    
     // Mobile shortcut: ".- " creates a bullet
-    const mobileShortcutMatch = value.match(/(\.\-\s)$/);
-    if (mobileShortcutMatch) {
-      const matchStart = value.length - 3;
+    if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
+      const indent = '';
+      value = value.substring(0, lineStart) + indent + '• ' + value.substring(cursorPos);
+      cursorPos = lineStart + indent.length + 2;
       
-      // Find line start
-      let lineStart = matchStart;
-      while (lineStart > 0 && value[lineStart - 1] !== '\n') {
-        lineStart--;
-      }
-      
-      const beforeShortcut = value.substring(lineStart, matchStart);
-      
-      // Only convert if at line start (possibly with whitespace)
-      if (beforeShortcut.trim() === '') {
-        value = value.substring(0, lineStart) + beforeShortcut + '• ' + value.substring(matchStart + 3);
-        cursorPos = lineStart + beforeShortcut.length + 2;
-        
-        handleTextChange(value);
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = cursorPos;
-        }, 0);
-        return;
-      }
+      handleTextChange(value);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      }, 0);
+      return;
     }
     
-    // Auto-number detection: "1. " at line start creates numbered list
-    const lines = value.split('\n');
-    let charCount = 0;
-    let needsRenumber = false;
-    
-    for (const line of lines) {
-      const lineStart = charCount;
-      charCount += line.length + 1;
-      
-      // Check if this line just got a number prefix
-      if (cursorPos > lineStart && cursorPos <= lineStart + line.length + 1) {
-        const numberStartMatch = line.match(/^(\s*)(\d+)\.\s$/);
-        if (numberStartMatch && cursorPos === lineStart + line.length) {
-          needsRenumber = true;
-          break;
-        }
-      }
-    }
-    
-    if (needsRenumber) {
+    // Auto-convert "1. " at line start to numbered list
+    const numberStartMatch = lineBeforeCursor.match(/^(\s*)(\d+)\.\s$/);
+    if (numberStartMatch) {
+      // Already in correct format, just renumber
       value = renumberList(0, value);
     }
     
