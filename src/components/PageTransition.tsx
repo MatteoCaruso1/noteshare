@@ -31,7 +31,7 @@ export function PageTransition({ children }: PageTransitionProps) {
     <div
       style={{
         opacity,
-        transition: 'opacity 150ms ease-out',
+        transition: 'opacity 100ms ease-out',
       }}
     >
       {children}
