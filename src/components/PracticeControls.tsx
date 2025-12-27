@@ -462,7 +462,7 @@ export function PracticeControls() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                    className={`h-8 w-8 hover:bg-transparent active:bg-transparent ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                     onClick={toggleWakeLock}
                   >
                     <div className="relative">
