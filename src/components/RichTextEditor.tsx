@@ -3,9 +3,30 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, Underline as UnderlineIcon, List, ListOrdered } from 'lucide-react';
+import { Bold, Italic, Underline as UnderlineIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
+import { Extension } from '@tiptap/core';
+
+// Custom extension for keyboard shortcuts
+const ListShortcuts = Extension.create({
+  name: 'listShortcuts',
+  
+  addKeyboardShortcuts() {
+    return {
+      // Ctrl+Shift+L for bullet list
+      'Mod-Shift-l': () => {
+        this.editor.chain().focus().toggleBulletList().run();
+        return true;
+      },
+      // Ctrl+Shift+O for ordered list
+      'Mod-Shift-o': () => {
+        this.editor.chain().focus().toggleOrderedList().run();
+        return true;
+      },
+    };
+  },
+});
 
 interface RichTextEditorProps {
   value: string;
@@ -41,6 +62,7 @@ export function RichTextEditor({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
+      ListShortcuts,
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -55,6 +77,28 @@ export function RichTextEditor({
           '[&_ul]:list-disc [&_ul]:pl-5',
           '[&_ol]:list-decimal [&_ol]:pl-5',
         ),
+      },
+      // Auto-capitalize first letter in list items
+      handleTextInput: (view, from, to, text) => {
+        const { state } = view;
+        const $from = state.doc.resolve(from);
+        
+        // Check if we're in a list item and this is the first character
+        const parentNode = $from.parent;
+        if (parentNode.type.name === 'paragraph') {
+          const grandparent = $from.node(-1);
+          if (grandparent && grandparent.type.name === 'listItem') {
+            // If the paragraph is empty and we're typing a lowercase letter, capitalize it
+            if (parentNode.textContent.length === 0 && /^[a-z]$/.test(text)) {
+              view.dispatch(
+                state.tr.insertText(text.toUpperCase(), from, to)
+              );
+              return true;
+            }
+          }
+        }
+        
+        return false;
       },
     },
   });
@@ -74,26 +118,6 @@ export function RichTextEditor({
     <div className="space-y-1">
       {showToolbar && (
         <div className="flex gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={cn("h-7 w-7 p-0", editor.isActive('bulletList') && "bg-muted")}
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            title="Bullet list"
-          >
-            <List className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={cn("h-7 w-7 p-0", editor.isActive('orderedList') && "bg-muted")}
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            title="Numbered list"
-          >
-            <ListOrdered className="w-4 h-4" />
-          </Button>
           <Button
             type="button"
             variant="ghost"
