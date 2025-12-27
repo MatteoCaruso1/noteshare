@@ -19,12 +19,29 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
     if (typeof window === 'undefined' || !profileId) {
       return getDefaultState();
     }
+
+    const htmlToPlainText = (input: unknown): string => {
+      const s = typeof input === 'string' ? input : '';
+      // If this looks like HTML (old TipTap content), convert to readable plain text
+      if (!/[<>]/.test(s) || !/<\/?[a-z][\s\S]*>/i.test(s)) return s;
+
+      try {
+        const doc = new DOMParser().parseFromString(s, 'text/html');
+        // Turn block elements into newlines by using innerText when available
+        const text = (doc.body as any).innerText ?? doc.body.textContent ?? '';
+        return text.replace(/\n{3,}/g, '\n\n').trim();
+      } catch {
+        // Fallback: strip tags
+        return s.replace(/<[^>]*>/g, '').trim();
+      }
+    };
+
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         return {
-          noteText: parsed.noteText || '',
+          noteText: htmlToPlainText(parsed.noteText || ''),
           audioFiles: parsed.audioFiles || [],
           imageFiles: parsed.imageFiles || [],
           tags: parsed.tags || [],
