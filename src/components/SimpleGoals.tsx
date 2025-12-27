@@ -110,7 +110,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
       <div className="space-y-2">
         {activeGoals.map((goal, index) => (
           <div key={goal.id} className="group flex items-start gap-2">
-            <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0 pt-0.5">
+            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {index + 1}.
             </span>
             
@@ -152,7 +152,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         {/* Optimistic pending goal */}
         {pendingGoal && (
           <div className="flex items-start gap-2 opacity-60">
-            <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0 pt-0.5">
+            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {activeGoals.length + 1}.
             </span>
             <span className="text-sm flex-1 whitespace-pre-wrap break-words">
@@ -163,7 +163,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         
         {isAdding && (
           <div className="flex items-start gap-2">
-            <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0 pt-0.5">
+            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {activeGoals.length + 1}.
             </span>
             <Textarea
