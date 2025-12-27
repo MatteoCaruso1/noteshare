@@ -110,7 +110,7 @@ const NoteDetail = () => {
             </div>
           </div>
         </header>
-        <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
           {/* Note skeleton */}
           <div className="h-48 bg-card rounded-lg animate-pulse" />
           {/* Comments section skeleton */}
@@ -137,7 +137,7 @@ const NoteDetail = () => {
             </div>
           </div>
         </header>
-        <main className="container max-w-2xl mx-auto px-4 py-6">
+        <main className="container max-w-2xl mx-auto px-4 py-2">
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground mb-4">Note not found</p>
             <Button variant="outline" onClick={() => navigate('/')}>
@@ -180,7 +180,7 @@ const NoteDetail = () => {
         </div>
       </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-6">
+      <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
         <NoteCard 
           note={note} 
           expanded 
