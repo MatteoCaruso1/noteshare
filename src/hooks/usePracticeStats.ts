@@ -178,7 +178,13 @@ export function usePracticeStats(profileId: string | undefined) {
       }
 
       // Keyword extraction from text content (this month only)
-      const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'i', 'my', 'me', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'these', 'those', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'would', 'could', 'should', 'might', 'must', 'shall', 'today', 'session', 'practice', 'practiced', 'working', 'worked', 'focus', 'want', 'going', 'like']);
+      // Common English stop words + music-generic terms
+      const stopWords = new Set([
+        // Common English stop words
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'i', 'my', 'me', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'these', 'those', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'would', 'could', 'should', 'might', 'must', 'shall', 'today', 'want', 'going', 'like', 'really', 'also', 'well', 'still', 'even', 'back', 'much', 'good', 'great', 'keep', 'make', 'made', 'feel', 'thing', 'things', 'need', 'start', 'started', 'trying', 'tried',
+        // Music-generic terms (too common to be meaningful themes)
+        'song', 'songs', 'piece', 'pieces', 'music', 'musical', 'measure', 'measures', 'bar', 'bars', 'exercise', 'exercises', 'practice', 'practiced', 'practicing', 'session', 'sessions', 'focus', 'focused', 'work', 'worked', 'working', 'play', 'played', 'playing', 'learn', 'learned', 'learning', 'note', 'notes', 'part', 'parts', 'section', 'sections', 'passage', 'passages', 'line', 'lines', 'phrase', 'phrases', 'time', 'times', 'minute', 'minutes', 'hour', 'hours'
+      ]);
 
       // Basic stemming to normalize similar words (e.g., chord/chords, play/playing)
       const stemWord = (word: string): string => {
