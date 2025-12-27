@@ -21,7 +21,7 @@ interface PageBodyProps {
  */
 export function PageHeader({ children, className = '' }: PageHeaderProps) {
   return (
-    <div className={`page-header ${className}`}>
+    <div className={`page-header min-h-[60px] ${className}`}>
       {children}
     </div>
   );
