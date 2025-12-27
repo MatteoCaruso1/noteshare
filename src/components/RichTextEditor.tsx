@@ -7,8 +7,9 @@ import { Bold, Italic, Underline as UnderlineIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { Extension } from '@tiptap/core';
+import { InputRule } from '@tiptap/core';
 
-// Custom extension for keyboard shortcuts
+// Custom extension for keyboard shortcuts and input rules
 const ListShortcuts = Extension.create({
   name: 'listShortcuts',
   
@@ -25,6 +26,51 @@ const ListShortcuts = Extension.create({
         return true;
       },
     };
+  },
+  
+  addInputRules() {
+    return [
+      // "- " at start of line converts to bullet list
+      new InputRule({
+        find: /^-\s$/,
+        handler: ({ state, range, chain }) => {
+          chain()
+            .deleteRange(range)
+            .toggleBulletList()
+            .run();
+        },
+      }),
+      // "• " at start of line converts to bullet list
+      new InputRule({
+        find: /^•\s$/,
+        handler: ({ state, range, chain }) => {
+          chain()
+            .deleteRange(range)
+            .toggleBulletList()
+            .run();
+        },
+      }),
+      // "1. " at start of line converts to ordered list
+      new InputRule({
+        find: /^1\.\s$/,
+        handler: ({ state, range, chain }) => {
+          chain()
+            .deleteRange(range)
+            .toggleOrderedList()
+            .run();
+        },
+      }),
+      // ".- " mobile shortcut converts to bullet list
+      new InputRule({
+        find: /^\.-\s$/,
+        handler: ({ state, range, chain }) => {
+          chain()
+            .deleteRange(range)
+            .toggleBulletList()
+            .run();
+        },
+      }),
+    ];
   },
 });
 
