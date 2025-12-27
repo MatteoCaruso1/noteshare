@@ -79,7 +79,7 @@ export function PracticeControls() {
       try {
         wakeLockRef.current = await navigator.wakeLock.request('screen');
         setWakeLockEnabled(true);
-        toast.success('Screen will stay unlocked');
+        toast.success('Screen will stay unlocked during session');
         
         wakeLockRef.current.addEventListener('release', () => {
           setWakeLockEnabled(false);
@@ -98,7 +98,7 @@ export function PracticeControls() {
       await wakeLockRef.current.release();
       wakeLockRef.current = null;
       setWakeLockEnabled(false);
-      toast.success('Screen lock resumed');
+      toast.success('Screen unlocked mode disabled');
     }
   }, []);
 
@@ -441,7 +441,7 @@ export function PracticeControls() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 ${wakeLockEnabled ? 'text-primary' : ''}`}
+                    className={`h-8 w-8 active:bg-transparent ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                     onClick={toggleWakeLock}
                   >
                     <div className="relative">
