@@ -60,31 +60,40 @@ export function RichTextarea({
     const lines = text.split('\n');
     let currentNumber = 0;
     let inNumberedList = false;
-    
-    return lines.map(line => {
-      // Match numbered list item - content after space is optional
-      const numberMatch = line.match(/^(\s*)(\d+)\.\s?(.*)$/);
-      if (numberMatch) {
-        const indent = numberMatch[1];
-        const content = numberMatch[3];
-        if (!inNumberedList || indent === '') {
-          currentNumber = 1;
-          inNumberedList = true;
-        } else {
-          currentNumber++;
+    let lastIndent = '';
+
+    return lines
+      .map((line) => {
+        // Match numbered list item - content after space is optional
+        const numberMatch = line.match(/^(\s*)(\d+)\.\s?(.*)$/);
+
+        if (numberMatch) {
+          const indent = numberMatch[1];
+          const content = numberMatch[3];
+
+          // Start (or restart) numbering when entering a list OR when indentation level changes
+          if (!inNumberedList || indent !== lastIndent) {
+            inNumberedList = true;
+            currentNumber = 1;
+            lastIndent = indent;
+          } else {
+            currentNumber++;
+          }
+
+          return `${indent}${currentNumber}. ${content}`;
         }
-        // Always include space after number, even if content is empty
-        return `${indent}${currentNumber}. ${content}`;
-      } else {
+
         // Reset numbering when we exit the list (non-empty, non-whitespace line that isn't a list)
         const isBullet = line.match(/^(\s*)[-•]\s/);
         if (!line.match(/^\s*$/) && !isBullet) {
           inNumberedList = false;
           currentNumber = 0;
+          lastIndent = '';
         }
+
         return line;
-      }
-    }).join('\n');
+      })
+      .join('\n');
   }, []);
 
   const insertListPrefix = useCallback((prefix: string) => {
