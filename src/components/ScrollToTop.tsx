@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// Track which navigations should scroll to top
+// Track which navigations should scroll to top (explicit nav bar clicks)
 const shouldScrollToTop = new Set<string>();
 
 export function markScrollToTop(path: string) {
@@ -9,13 +9,10 @@ export function markScrollToTop(path: string) {
 }
 
 function hardScrollToTop() {
-  // iOS Safari sometimes "restores" scroll after route change or after focus changes.
+  // iOS Safari sometimes "restores" scroll after route change.
   // Do a hardened reset in multiple phases.
-
-  // Prevent focus-driven scroll restoration (common on mobile)
-  if (document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur();
-  }
+  // NOTE: We do NOT blur active elements here as it can interfere with
+  // AlertDialog buttons on mobile (causing delete to fail).
 
   const scrollNow = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -43,17 +40,12 @@ export function ScrollToTop() {
 
   // Use layout effect to avoid visible "jump" on mobile (runs before paint)
   useLayoutEffect(() => {
+    // Only scroll to top if this navigation was explicitly marked (nav bar click)
     if (shouldScrollToTop.has(pathname)) {
       shouldScrollToTop.delete(pathname);
       hardScrollToTop();
-    } else if (prevPathname.current !== pathname) {
-      const prevBase = prevPathname.current.split('/')[1];
-      const currentBase = pathname.split('/')[1];
-
-      if (prevBase !== currentBase) {
-        hardScrollToTop();
-      }
     }
+    // Do NOT auto-scroll on route changes - let scroll restoration handle back navigation
 
     prevPathname.current = pathname;
   }, [pathname]);
