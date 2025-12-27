@@ -199,7 +199,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           variant="outline"
           onClick={startRecording}
           disabled={processing}
-          className="flex-1"
+          className="flex-1 active:scale-[0.98] touch-manipulation"
         >
           {processing ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
