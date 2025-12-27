@@ -4,7 +4,7 @@ import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Crosshair, List, ListOrdered, Save, FolderOpen } from 'lucide-react';
+import { Crosshair, Save, FolderOpen } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { toast } from 'sonner';
 
@@ -91,6 +91,78 @@ export function TodaysFocus() {
     return { lineStart, lineEnd, line, cursorPos: start };
   }, [text]);
 
+  // Renumber all numbered list items from a given position
+  const renumberList = useCallback((fromPos: number, currentText: string): string => {
+    const lines = currentText.split('\n');
+    let charCount = 0;
+    let inNumberedList = false;
+    let currentNumber = 0;
+    let lastIndent = '';
+    
+    const newLines = lines.map((line) => {
+      const lineStart = charCount;
+      charCount += line.length + 1;
+      
+      const numberMatch = line.match(/^(\s*)(\d+)\.\s(.*)$/);
+      
+      if (numberMatch) {
+        const [, indent, , content] = numberMatch;
+        
+        if (!inNumberedList || indent !== lastIndent) {
+          inNumberedList = true;
+          currentNumber = 1;
+          lastIndent = indent;
+        } else {
+          currentNumber++;
+        }
+        
+        return `${indent}${currentNumber}. ${content}`;
+      } else {
+        const bulletMatch = line.match(/^(\s*)[-•]\s/);
+        if (!bulletMatch && line.trim() !== '') {
+          inNumberedList = false;
+          currentNumber = 0;
+        }
+        return line;
+      }
+    });
+    
+    return newLines.join('\n');
+  }, []);
+
+  // Auto-capitalize first letter after bullet/number prefix
+  const autoCapitalizeAfterPrefix = useCallback((value: string, cursorPos: number): { newValue: string; newCursorPos: number } => {
+    const lines = value.split('\n');
+    let charCount = 0;
+    let modified = false;
+    
+    const newLines = lines.map((line) => {
+      const lineStart = charCount;
+      const lineEnd = lineStart + line.length;
+      charCount = lineEnd + 1;
+      
+      // Check if cursor is right after typing a character in this line
+      if (cursorPos > lineStart && cursorPos <= lineEnd) {
+        // Match bullet or number prefix followed by exactly one lowercase letter
+        const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])$/);
+        const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])$/);
+        
+        if (bulletCapMatch) {
+          modified = true;
+          return bulletCapMatch[1] + bulletCapMatch[2].toUpperCase();
+        }
+        if (numberCapMatch) {
+          modified = true;
+          return numberCapMatch[1] + numberCapMatch[2].toUpperCase();
+        }
+      }
+      
+      return line;
+    });
+    
+    return { newValue: newLines.join('\n'), newCursorPos: cursorPos };
+  }, []);
+
   const insertListPrefix = useCallback((prefix: string) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -123,7 +195,13 @@ export function TodaysFocus() {
       }
     }
     
-    const newValue = text.substring(0, lineStart) + newLine + text.substring(lineEnd);
+    let newValue = text.substring(0, lineStart) + newLine + text.substring(lineEnd);
+    
+    // Renumber if we modified a numbered list
+    if (prefix === '1. ' || numberMatch) {
+      newValue = renumberList(lineStart, newValue);
+    }
+    
     handleTextChange(newValue);
     
     setTimeout(() => {
@@ -131,12 +209,26 @@ export function TodaysFocus() {
       textarea.selectionStart = textarea.selectionEnd = newCursorPos;
       textarea.focus();
     }, 0);
-  }, [text, getLineInfo]);
+  }, [text, getLineInfo, renumberList]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    
+    // Keyboard shortcuts for lists
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+      if (e.key === 'L' || e.key === 'l') {
+        e.preventDefault();
+        insertListPrefix('• ');
+        return;
+      }
+      if (e.key === 'O' || e.key === 'o') {
+        e.preventDefault();
+        insertListPrefix('1. ');
+        return;
+      }
+    }
     
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -148,14 +240,16 @@ export function TodaysFocus() {
       
       if (e.shiftKey) {
         if (line.startsWith(indent)) {
-          const newValue = text.substring(0, lineStart) + line.substring(indent.length) + text.substring(info.lineEnd);
+          let newValue = text.substring(0, lineStart) + line.substring(indent.length) + text.substring(info.lineEnd);
+          newValue = renumberList(0, newValue);
           handleTextChange(newValue);
           setTimeout(() => {
             textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - indent.length);
           }, 0);
         }
       } else {
-        const newValue = text.substring(0, lineStart) + indent + text.substring(lineStart);
+        let newValue = text.substring(0, lineStart) + indent + text.substring(lineStart);
+        newValue = renumberList(0, newValue);
         handleTextChange(newValue);
         setTimeout(() => {
           textarea.selectionStart = textarea.selectionEnd = start + indent.length;
@@ -181,7 +275,8 @@ export function TodaysFocus() {
           e.preventDefault();
           const info = getLineInfo();
           if (info) {
-            const newValue = text.substring(0, info.lineStart) + '\n' + text.substring(info.lineEnd);
+            let newValue = text.substring(0, info.lineStart) + '\n' + text.substring(info.lineEnd);
+            newValue = renumberList(0, newValue);
             handleTextChange(newValue);
             setTimeout(() => {
               textarea.selectionStart = textarea.selectionEnd = info.lineStart + 1;
@@ -201,7 +296,13 @@ export function TodaysFocus() {
           prefix = indent + num + '. ';
         }
         
-        const newValue = text.substring(0, start) + '\n' + prefix + text.substring(end);
+        let newValue = text.substring(0, start) + '\n' + prefix + text.substring(end);
+        
+        // Renumber if it's a numbered list
+        if (numberMatch) {
+          newValue = renumberList(0, newValue);
+        }
+        
         handleTextChange(newValue);
         
         setTimeout(() => {
@@ -209,7 +310,75 @@ export function TodaysFocus() {
         }, 0);
       }
     }
-  }, [text, getLineInfo]);
+  }, [text, getLineInfo, insertListPrefix, renumberList]);
+
+  // Handle input for mobile shortcut and auto-capitalization
+  const handleInput = useCallback((e: React.FormEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    let value = textarea.value;
+    let cursorPos = textarea.selectionStart;
+    
+    // Mobile shortcut: ".- " creates a bullet
+    const mobileShortcutMatch = value.match(/(\.\-\s)$/);
+    if (mobileShortcutMatch) {
+      const matchStart = value.length - 3;
+      
+      // Find line start
+      let lineStart = matchStart;
+      while (lineStart > 0 && value[lineStart - 1] !== '\n') {
+        lineStart--;
+      }
+      
+      const beforeShortcut = value.substring(lineStart, matchStart);
+      
+      // Only convert if at line start (possibly with whitespace)
+      if (beforeShortcut.trim() === '') {
+        value = value.substring(0, lineStart) + beforeShortcut + '• ' + value.substring(matchStart + 3);
+        cursorPos = lineStart + beforeShortcut.length + 2;
+        
+        handleTextChange(value);
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        }, 0);
+        return;
+      }
+    }
+    
+    // Auto-number detection: "1. " at line start creates numbered list
+    const lines = value.split('\n');
+    let charCount = 0;
+    let needsRenumber = false;
+    
+    for (const line of lines) {
+      const lineStart = charCount;
+      charCount += line.length + 1;
+      
+      // Check if this line just got a number prefix
+      if (cursorPos > lineStart && cursorPos <= lineStart + line.length + 1) {
+        const numberStartMatch = line.match(/^(\s*)(\d+)\.\s$/);
+        if (numberStartMatch && cursorPos === lineStart + line.length) {
+          needsRenumber = true;
+          break;
+        }
+      }
+    }
+    
+    if (needsRenumber) {
+      value = renumberList(0, value);
+    }
+    
+    // Auto-capitalize
+    const { newValue, newCursorPos } = autoCapitalizeAfterPrefix(value, cursorPos);
+    
+    if (newValue !== textarea.value) {
+      handleTextChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
+    } else {
+      handleTextChange(value);
+    }
+  }, [renumberList, autoCapitalizeAfterPrefix]);
 
   if (isLoading) {
     return (
@@ -258,27 +427,6 @@ export function TodaysFocus() {
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => insertListPrefix('• ')}
-              title="Bullet list"
-            >
-              <List className="w-4 h-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => insertListPrefix('1. ')}
-              title="Numbered list"
-            >
-              <ListOrdered className="w-4 h-4" />
-            </Button>
-            <div className="w-px h-5 bg-border mx-1 self-center" />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
               className="h-7 w-7 p-0 active:bg-transparent"
               onClick={handleSaveToBacklog}
               disabled={isSaving || !text.trim()}
@@ -301,7 +449,7 @@ export function TodaysFocus() {
         <Textarea
           ref={textareaRef}
           value={text}
-          onChange={(e) => handleTextChange(e.target.value)}
+          onInput={handleInput}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => {
