@@ -206,7 +206,7 @@ export function useEndSession() {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['active-session', userId] });
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
-      toast.success('Practice session ended!');
+      // Note: Don't show toast here - the note creation will show "Practice session saved"
     },
     onError: (error, _variables, context) => {
       // Rollback on error

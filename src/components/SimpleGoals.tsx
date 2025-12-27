@@ -90,11 +90,14 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
     setIsAdding(true);
   };
 
+  // Icon should light up when editing or adding
+  const isActive = isAdding || editingId !== null;
+
   return (
     <Card className="bg-card border-border p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-foreground" />
+          <Target className={`w-5 h-5 transition-colors ${isActive ? 'text-primary' : 'text-foreground'}`} />
           <h2 className="font-semibold">Musical Goals</h2>
         </div>
         {canAddMore && !isAdding && (

@@ -181,14 +181,22 @@ export default {
   					transform: 'scale(1)'
   				}
   			},
-  			floatDown: {
-  				'0%': {
-  					transform: 'translateY(-5vh) rotate(0deg)'
-  				},
-  				'100%': {
-  					transform: 'translateY(105vh) rotate(360deg)'
-  				}
-  			}
+			floatDown: {
+				'0%': {
+					transform: 'translateY(-20vh) rotate(0deg)',
+					opacity: '0'
+				},
+				'5%': {
+					opacity: '1'
+				},
+				'95%': {
+					opacity: '1'
+				},
+				'100%': {
+					transform: 'translateY(105vh) rotate(360deg)',
+					opacity: '0'
+				}
+			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
