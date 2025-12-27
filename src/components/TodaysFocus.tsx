@@ -437,21 +437,30 @@ export function TodaysFocus() {
             </Button>
           </div>
         </div>
-        <Textarea
-          ref={textareaRef}
-          value={text}
-          onInput={handleInput}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false);
-            handleBlur();
+        <div 
+          className={isFocused ? '' : 'cursor-text'}
+          onClick={() => {
+            if (!isFocused) {
+              textareaRef.current?.focus();
+            }
           }}
-          placeholder="What will you work on today?"
-          className={`min-h-[36px] resize-none text-sm ${isFocused ? 'overflow-auto' : 'overflow-hidden touch-none'}`}
-          style={{ overscrollBehavior: 'contain' }}
-          rows={1}
-        />
+        >
+          <Textarea
+            ref={textareaRef}
+            value={text}
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => {
+              setIsFocused(false);
+              handleBlur();
+            }}
+            placeholder="What will you work on today?"
+            className={`min-h-[36px] resize-none text-sm ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
+            style={{ overscrollBehavior: 'contain' }}
+            rows={1}
+          />
+        </div>
       </Card>
 
       <FocusBacklogDialog 
