@@ -62,7 +62,13 @@ export function useNotes(projectId?: string) {
       })) as NoteWithAuthor[];
     },
     enabled: projectId ? true : !!profile?.id,
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    // Keep data visible during refetch - prevents "no notes" flash
+    staleTime: 2 * 60 * 1000, // Consider fresh for 2 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    // Keep previous data visible while refetching
+    placeholderData: (previousData) => previousData,
+    // Refetch on focus but don't remove existing data
+    refetchOnWindowFocus: true,
   });
 }
 
