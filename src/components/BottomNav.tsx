@@ -67,9 +67,10 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const currentPath = overrideActiveRoute || location.pathname;
 
   const handleNavClick = (to: string) => {
-    // On iOS Safari, scroll can momentarily carry over during SPA nav.
-    // Reset scroll immediately on tap to prevent a visible "jump".
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    // Only perform scroll actions if we're actually navigating to a different page
+    if (to === location.pathname) {
+      return; // Don't do anything if tapping the current tab
+    }
 
     // Clear scroll state for the destination so it starts at top
     const scrollKey = routeScrollKeys[to];
@@ -78,6 +79,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
     }
 
     // Mark this navigation to scroll to top after route change
+    // The ScrollToTop component will handle the actual scroll
     markScrollToTop(to);
   };
 
