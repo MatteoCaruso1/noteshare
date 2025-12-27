@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -117,223 +118,227 @@ const Projects = () => {
   ) || [];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Page Header */}
-      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg sm:text-xl font-semibold">Projects</h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-gradient-primary text-primary-foreground">
-                <Plus className="w-4 h-4 mr-1" />
-                New
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Project</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                {/* Album Art Upload */}
-                <div className="flex flex-col items-center gap-3">
-                  <div
-                    className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {coverImage ? (
-                      <img src={coverImage} alt="" className="w-full h-full object-cover" />
-                    ) : isUploading ? (
-                      <div className="text-xs text-muted-foreground">Uploading...</div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-1">
-                        <Upload className="w-6 h-6 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Album Art</span>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-
-                <Input
-                  placeholder="Project title (e.g., Jazz Standards Album)"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                />
-                <Textarea
-                  placeholder="Describe your project..."
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  rows={3}
-                />
-
-                {/* Release Date */}
-                <div className="space-y-2">
-                  <Label className="text-sm">Expected Release Date (optional)</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !releaseDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {releaseDate ? format(releaseDate, "MMM d, yyyy") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={releaseDate}
-                        onSelect={setReleaseDate}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                
-                {/* Show on Feed Toggle */}
-                <div className="flex items-center justify-between py-2">
-                  <Label htmlFor="show-feed" className="text-sm">Show on home feed</Label>
-                  <Switch
-                    id="show-feed"
-                    checked={showOnFeed}
-                    onCheckedChange={setShowOnFeed}
-                  />
-                </div>
-
-                {/* Collaborator Picker */}
-                <div className="border-t border-border pt-4">
-                  <CollaboratorPicker
-                    selectedIds={collaboratorIds}
-                    onSelect={setCollaboratorIds}
-                    label="Tag Collaborators"
-                  />
-                </div>
-
-                <Button
-                  className="w-full bg-gradient-primary text-primary-foreground"
-                  onClick={handleCreateProject}
-                  disabled={createProject.isPending || !newTitle.trim() || isUploading}
-                >
-                  Create Project
+      <PageHeader>
+        <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg sm:text-xl font-semibold">Projects</h1>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-gradient-primary text-primary-foreground">
+                  <Plus className="w-4 h-4 mr-1" />
+                  New
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Project</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  {/* Album Art Upload */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div
+                      className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {coverImage ? (
+                        <img src={coverImage} alt="" className="w-full h-full object-cover" />
+                      ) : isUploading ? (
+                        <div className="text-xs text-muted-foreground">Uploading...</div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Upload className="w-6 h-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Album Art</span>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </div>
+
+                  <Input
+                    placeholder="Project title (e.g., Jazz Standards Album)"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                  />
+                  <Textarea
+                    placeholder="Describe your project..."
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    rows={3}
+                  />
+
+                  {/* Release Date */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Expected Release Date (optional)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !releaseDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {releaseDate ? format(releaseDate, "MMM d, yyyy") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={releaseDate}
+                          onSelect={setReleaseDate}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  {/* Show on Feed Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <Label htmlFor="show-feed" className="text-sm">Show on home feed</Label>
+                    <Switch
+                      id="show-feed"
+                      checked={showOnFeed}
+                      onCheckedChange={setShowOnFeed}
+                    />
+                  </div>
+
+                  {/* Collaborator Picker */}
+                  <div className="border-t border-border pt-4">
+                    <CollaboratorPicker
+                      selectedIds={collaboratorIds}
+                      onSelect={setCollaboratorIds}
+                      label="Tag Collaborators"
+                    />
+                  </div>
+
+                  <Button
+                    className="w-full bg-gradient-primary text-primary-foreground"
+                    onClick={handleCreateProject}
+                    disabled={createProject.isPending || !newTitle.trim() || isUploading}
+                  >
+                    Create Project
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      </div>
+      </PageHeader>
 
-      <main className="container max-w-2xl mx-auto px-4 py-2">
-        <Tabs defaultValue="my" className="w-full">
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="my" className="flex-1">My Projects</TabsTrigger>
-            <TabsTrigger value="friends" className="flex-1">Friend's Projects</TabsTrigger>
-          </TabsList>
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-2">
+          <Tabs defaultValue="my" className="w-full">
+            <TabsList className="w-full mb-4">
+              <TabsTrigger value="my" className="flex-1">My Projects</TabsTrigger>
+              <TabsTrigger value="friends" className="flex-1">Friend's Projects</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="my" className="space-y-4">
-            {myLoading ? (
-              <div className="text-center text-muted-foreground py-12">Loading...</div>
-            ) : myProjects && myProjects.length > 0 ? (
-              <div className="space-y-4">
-                {myProjects.map((project) => (
-                  <CollectionCard
-                    key={project.id}
-                    id={project.id}
-                    path="/projects"
-                    title={project.title}
-                    description={project.description}
-                    coverImage={project.cover_image}
-                    coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
-                    date={project.created_at}
-                    releaseDate={project.release_date}
-                    actions={
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete project?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              "{project.title}" will be permanently deleted.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteProject.mutate(project.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            <TabsContent value="my" className="space-y-4">
+              {myLoading ? (
+                <div className="text-center text-muted-foreground py-12">Loading...</div>
+              ) : myProjects && myProjects.length > 0 ? (
+                <div className="space-y-4">
+                  {myProjects.map((project) => (
+                    <CollectionCard
+                      key={project.id}
+                      id={project.id}
+                      path="/projects"
+                      title={project.title}
+                      description={project.description}
+                      coverImage={project.cover_image}
+                      coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+                      date={project.created_at}
+                      releaseDate={project.release_date}
+                      actions={
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
                             >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    }
-                  />
-                ))}
-              </div>
-            ) : (
-              <CollectionEmptyState
-                icon={Disc3}
-                title="No projects yet"
-                subtitle="Create your first project to organize your practice notes around a goal"
-                actionLabel="Create First Project"
-                onAction={() => setIsDialogOpen(true)}
-              />
-            )}
-          </TabsContent>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete project?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                "{project.title}" will be permanently deleted.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteProject.mutate(project.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <CollectionEmptyState
+                  icon={Disc3}
+                  title="No projects yet"
+                  subtitle="Create your first project to organize your practice notes around a goal"
+                  actionLabel="Create First Project"
+                  onAction={() => setIsDialogOpen(true)}
+                />
+              )}
+            </TabsContent>
 
-          <TabsContent value="friends" className="space-y-4">
-            {friendsLoading ? (
-              <div className="text-center text-muted-foreground py-12">Loading...</div>
-            ) : filteredFriendsProjects.length > 0 ? (
-              <div className="space-y-4">
-                {filteredFriendsProjects.map((project: any) => (
-                  <CollectionCard
-                    key={project.id}
-                    id={project.id}
-                    path="/projects"
-                    title={project.title}
-                    description={project.description}
-                    coverImage={project.cover_image}
-                    coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
-                    date={project.created_at}
-                    releaseDate={project.release_date}
-                    showOwner
-                    ownerName={project.owner?.name}
-                    ownerAvatar={project.owner?.avatar}
-                  />
-                ))}
-              </div>
-            ) : (
-              <CollectionEmptyState
-                icon={Disc3}
-                title="No friend's projects"
-                subtitle="Connect with friends to see their projects"
-              />
-            )}
-          </TabsContent>
-        </Tabs>
-      </main>
+            <TabsContent value="friends" className="space-y-4">
+              {friendsLoading ? (
+                <div className="text-center text-muted-foreground py-12">Loading...</div>
+              ) : filteredFriendsProjects.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredFriendsProjects.map((project: any) => (
+                    <CollectionCard
+                      key={project.id}
+                      id={project.id}
+                      path="/projects"
+                      title={project.title}
+                      description={project.description}
+                      coverImage={project.cover_image}
+                      coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+                      date={project.created_at}
+                      releaseDate={project.release_date}
+                      showOwner
+                      ownerName={project.owner?.name}
+                      ownerAvatar={project.owner?.avatar}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <CollectionEmptyState
+                  icon={Disc3}
+                  title="No friend's projects"
+                  subtitle="Connect with friends to see their projects"
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+        </main>
+      </PageBody>
 
       <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

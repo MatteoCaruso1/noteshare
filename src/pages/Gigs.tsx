@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -253,234 +254,229 @@ const Gigs = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Page Header */}
-      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg sm:text-xl font-semibold">Gigs</h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="bg-gradient-primary text-primary-foreground">
-                <Plus className="w-4 h-4 mr-1" />
-                New
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Gig</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                {/* Gig Image Upload */}
-                <div className="flex flex-col items-center gap-3">
-                  <div
-                    className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {gigImage ? (
-                      <img src={gigImage} alt="" className="w-full h-full object-cover" />
-                    ) : isUploading ? (
-                      <div className="text-xs text-muted-foreground">Uploading...</div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-1">
-                        <Upload className="w-6 h-6 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Add Image</span>
-                      </div>
-                    )}
+      <PageHeader>
+        <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg sm:text-xl font-semibold">Gigs</h1>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-gradient-primary text-primary-foreground">
+                  <Plus className="w-4 h-4 mr-1" />
+                  New
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Gig</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  {/* Gig Image Upload */}
+                  <div className="flex flex-col items-center gap-3">
+                    <div
+                      className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {gigImage ? (
+                        <img src={gigImage} alt="" className="w-full h-full object-cover" />
+                      ) : isUploading ? (
+                        <div className="text-xs text-muted-foreground">Uploading...</div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Upload className="w-6 h-6 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Add Image</span>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <span className="text-xs text-muted-foreground">Optional gig image</span>
                   </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <span className="text-xs text-muted-foreground">Optional gig image</span>
-                </div>
 
-                <Input
-                  placeholder="Gig title (e.g., Jazz Night at Blue Note)"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-                <Textarea
-                  placeholder="Describe your gig..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                />
-                <div className="space-y-3">
-                  <Label className="text-sm text-muted-foreground block">
-                    Event Date & Time
-                  </Label>
-                  <div className="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            !eventDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {eventDate ? format(eventDate, "MMM d, yyyy") : "Pick date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={eventDate}
-                          onSelect={setEventDate}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
+                  <Input
+                    placeholder="Gig title (e.g., Jazz Night at Blue Note)"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  <Textarea
+                    placeholder="Describe your gig..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                  />
+                  <div className="space-y-3">
+                    <Label className="text-sm text-muted-foreground block">
+                      Event Date & Time
+                    </Label>
+                    <div className="flex gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "flex-1 justify-start text-left font-normal",
+                              !eventDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {eventDate ? format(eventDate, "MMM d, yyyy") : "Pick date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={eventDate}
+                            onSelect={setEventDate}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          type="time"
+                          value={eventTime}
+                          onChange={(e) => setEventTime(e.target.value)}
+                          className="pl-9 w-[120px]"
+                          placeholder="Time"
                         />
-                      </PopoverContent>
-                    </Popover>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <Input
-                        type="time"
-                        value={eventTime}
-                        onChange={(e) => setEventTime(e.target.value)}
-                        className="pl-9 w-[120px]"
-                        placeholder="Time"
-                      />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <Input
-                  placeholder="Link (optional)"
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                />
-                
-                {/* Show on Feed Toggle */}
-                <div className="flex items-center justify-between py-2">
-                  <Label htmlFor="show-feed-gig" className="text-sm">Show on home feed</Label>
-                  <Switch
-                    id="show-feed-gig"
-                    checked={showOnFeed}
-                    onCheckedChange={setShowOnFeed}
+                  <Input
+                    placeholder="Link (optional)"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
                   />
-                </div>
-
-                {/* Paid Opportunity Toggle */}
-                <div className="flex items-center justify-between py-2 border-t border-border pt-4">
-                  <div>
-                    <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      Paid Opportunity
-                    </Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Mark this as a paid booking for artists to apply
-                    </p>
+                  
+                  {/* Show on Feed Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <Label htmlFor="show-feed-gig" className="text-sm">Show on home feed</Label>
+                    <Switch
+                      id="show-feed-gig"
+                      checked={showOnFeed}
+                      onCheckedChange={setShowOnFeed}
+                    />
                   </div>
-                  <Switch
-                    id="paid-opportunity"
-                    checked={isPaidOpportunity}
-                    onCheckedChange={setIsPaidOpportunity}
-                  />
-                </div>
 
-                {/* Collaborator Picker */}
-                <div className="border-t border-border pt-4">
-                  <CollaboratorPicker
-                    selectedIds={collaboratorIds}
-                    onSelect={setCollaboratorIds}
-                    label="Tag Collaborators"
-                  />
-                </div>
+                  {/* Paid Opportunity Toggle */}
+                  <div className="flex items-center justify-between py-2 border-t border-border pt-4">
+                    <div>
+                      <Label htmlFor="paid-opportunity" className="text-sm flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        Paid Opportunity
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Mark this as a paid booking for artists to apply
+                      </p>
+                    </div>
+                    <Switch
+                      id="paid-opportunity"
+                      checked={isPaidOpportunity}
+                      onCheckedChange={setIsPaidOpportunity}
+                    />
+                  </div>
 
-                <Button
-                  className="w-full bg-gradient-primary text-primary-foreground"
-                  onClick={handleCreate}
-                  disabled={createPromoPost.isPending || isUploading || !title.trim()}
-                >
-                  Create Gig
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+                  {/* Collaborator Picker */}
+                  <div className="border-t border-border pt-4">
+                    <CollaboratorPicker
+                      selectedIds={collaboratorIds}
+                      onSelect={setCollaboratorIds}
+                      label="Tag Collaborators"
+                    />
+                  </div>
+
+                  <Button
+                    className="w-full bg-gradient-primary text-primary-foreground"
+                    onClick={handleCreate}
+                    disabled={createPromoPost.isPending || isUploading || !title.trim()}
+                  >
+                    Create Gig
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      </div>
+      </PageHeader>
 
-      <main className="container max-w-2xl mx-auto px-4 py-2">
-        <Tabs defaultValue="my" className="w-full">
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="my" className="flex-1">My Gigs</TabsTrigger>
-            <TabsTrigger value="friends" className="flex-1">Friend's Gigs</TabsTrigger>
-            <TabsTrigger value="paid" className="flex-1">Paid Gigs</TabsTrigger>
-          </TabsList>
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-2">
+          <Tabs defaultValue="my" className="w-full">
+            <TabsList className="w-full mb-4">
+              <TabsTrigger value="my" className="flex-1">My Gigs</TabsTrigger>
+              <TabsTrigger value="friends" className="flex-1">Friend's Gigs</TabsTrigger>
+              <TabsTrigger value="paid" className="flex-1">Paid Gigs</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="my" className="space-y-4">
-            {myLoading ? (
-              <div className="text-center text-muted-foreground py-12">Loading...</div>
-            ) : myPosts && myPosts.length > 0 ? (
-              <div className="space-y-4">
-                {myPosts.map((post: any) => (
-                  <GigCard key={post.id} post={post} showAuthor={false} showDelete={true} />
-                ))}
-              </div>
-            ) : (
-              <CollectionEmptyState
-                icon={Music2}
-                title="No gigs yet"
-                subtitle="Share your first gig, release, or event with your friends"
-                actionLabel="Create First Gig"
-                onAction={() => setIsDialogOpen(true)}
-              />
-            )}
-          </TabsContent>
+            <TabsContent value="my" className="space-y-4">
+              {myLoading ? (
+                <div className="text-center text-muted-foreground py-12">Loading...</div>
+              ) : myPosts && myPosts.length > 0 ? (
+                <div className="space-y-4">
+                  {myPosts.map((post: any) => (
+                    <GigCard key={post.id} post={post} showAuthor={false} showDelete={true} />
+                  ))}
+                </div>
+              ) : (
+                <CollectionEmptyState
+                  icon={Music2}
+                  title="No gigs yet"
+                  subtitle="Share your first gig, release, or event with your friends"
+                  actionLabel="Create First Gig"
+                  onAction={() => setIsDialogOpen(true)}
+                />
+              )}
+            </TabsContent>
 
-          <TabsContent value="friends" className="space-y-4">
-            {friendsLoading ? (
-              <div className="text-center text-muted-foreground py-12">Loading...</div>
-            ) : filteredFriendsPosts.length > 0 ? (
-              <div className="space-y-4">
-                {filteredFriendsPosts.map((post: any) => (
-                  <GigCard key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <CollectionEmptyState
-                icon={Music2}
-                title="No friend's gigs"
-                subtitle="Connect with friends to see their gigs and releases"
-              />
-            )}
-          </TabsContent>
+            <TabsContent value="friends" className="space-y-4">
+              {friendsLoading ? (
+                <div className="text-center text-muted-foreground py-12">Loading...</div>
+              ) : filteredFriendsPosts.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredFriendsPosts.map((post: any) => (
+                    <GigCard key={post.id} post={post} />
+                  ))}
+                </div>
+              ) : (
+                <CollectionEmptyState
+                  icon={Music2}
+                  title="No friend's gigs"
+                  subtitle="Connect with friends to see their gigs"
+                />
+              )}
+            </TabsContent>
 
-          <TabsContent value="paid" className="space-y-4">
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-2 text-green-400 font-medium mb-1">
-                <Briefcase className="w-4 h-4" />
-                Paid Opportunities
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Browse paid gig opportunities posted by venues and businesses
-              </p>
-            </div>
-            {paidLoading ? (
-              <div className="text-center text-muted-foreground py-12">Loading...</div>
-            ) : paidGigs && paidGigs.length > 0 ? (
-              <div className="space-y-4">
-                {paidGigs.map((post: any) => (
-                  <GigCard key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <CollectionEmptyState
-                icon={Briefcase}
-                title="No paid opportunities"
-                subtitle="No paid opportunities available right now"
-              />
-            )}
-          </TabsContent>
-        </Tabs>
-      </main>
+            <TabsContent value="paid" className="space-y-4">
+              {paidLoading ? (
+                <div className="text-center text-muted-foreground py-12">Loading...</div>
+              ) : paidGigs && paidGigs.length > 0 ? (
+                <div className="space-y-4">
+                  {paidGigs.map((post: any) => (
+                    <GigCard key={post.id} post={post} />
+                  ))}
+                </div>
+              ) : (
+                <CollectionEmptyState
+                  icon={DollarSign}
+                  title="No paid gigs"
+                  subtitle="Paid opportunities from the community will appear here"
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+        </main>
+      </PageBody>
 
       <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 
