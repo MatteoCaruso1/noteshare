@@ -83,8 +83,8 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
-      <div className="container max-w-2xl mx-auto px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-[env(safe-area-inset-bottom)] left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom)]">
+      <div className="container max-w-2xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-around py-2">
           {links.map(({ to, icon: Icon, label, showBadge }) => {
             // Use override if provided, otherwise fall back to standard logic
