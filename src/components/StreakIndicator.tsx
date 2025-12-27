@@ -28,7 +28,7 @@ export function StreakIndicator() {
                   : 'bg-muted/50 text-muted-foreground'
             }`}
           >
-            <Flame className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : tier.tier !== 'none' ? tier.colorClass : 'text-blue-500'}`} />
+            <Flame className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : tier.tier !== 'none' ? tier.colorClass : 'text-primary'}`} />
             <span>{streak}</span>
           </div>
         </TooltipTrigger>
