@@ -73,62 +73,51 @@ export function PracticeControls() {
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
-  // Track whether wake lock should be active (user intent)
-  const wakeLockIntentRef = useRef(false);
-
-  // Wake lock management
-  const requestWakeLock = useCallback(async (showToast = true) => {
-    if ('wakeLock' in navigator) {
-      try {
-        wakeLockRef.current = await navigator.wakeLock.request('screen');
-        setWakeLockEnabled(true);
-        if (showToast) {
+  // Simple wake lock toggle - button state is source of truth
+  const toggleWakeLock = useCallback(async () => {
+    const newState = !wakeLockEnabled;
+    
+    if (newState) {
+      // Turning ON
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLockRef.current = await navigator.wakeLock.request('screen');
+          setWakeLockEnabled(true);
           toast.success('Screen will stay unlocked during session');
-        }
-        
-        wakeLockRef.current.addEventListener('release', () => {
-          // Only update state if user didn't intend to release
-          // The lock may be released by system (visibility change, etc)
-          setWakeLockEnabled(false);
-        });
-      } catch (err) {
-        console.error('Wake lock request failed:', err);
-        if (showToast) {
+        } catch (err) {
+          console.error('Wake lock request failed:', err);
           toast.error('Could not keep screen unlocked');
         }
-      }
-    } else {
-      if (showToast) {
+      } else {
         toast.error('Screen lock prevention not supported on this device');
       }
-    }
-  }, []);
-
-  const releaseWakeLock = useCallback(async () => {
-    wakeLockIntentRef.current = false;
-    if (wakeLockRef.current) {
-      await wakeLockRef.current.release();
-      wakeLockRef.current = null;
+    } else {
+      // Turning OFF
+      if (wakeLockRef.current) {
+        try {
+          await wakeLockRef.current.release();
+        } catch (err) {
+          // Ignore release errors
+        }
+        wakeLockRef.current = null;
+      }
       setWakeLockEnabled(false);
       toast.success('Screen unlocked mode disabled');
     }
-  }, []);
-
-  const toggleWakeLock = useCallback(async () => {
-    if (wakeLockEnabled) {
-      await releaseWakeLock();
-    } else {
-      wakeLockIntentRef.current = true;
-      await requestWakeLock();
-    }
-  }, [wakeLockEnabled, requestWakeLock, releaseWakeLock]);
+  }, [wakeLockEnabled]);
 
   // Re-acquire wake lock when page becomes visible again (if user had it enabled)
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible' && wakeLockIntentRef.current && !wakeLockRef.current) {
+      if (document.visibilityState === 'visible' && wakeLockEnabled && !wakeLockRef.current) {
         // Re-acquire wake lock silently
-        await requestWakeLock(false);
+        if ('wakeLock' in navigator) {
+          try {
+            wakeLockRef.current = await navigator.wakeLock.request('screen');
+          } catch (err) {
+            // Silent fail on re-acquire
+          }
+        }
       }
     };
 
@@ -136,20 +125,21 @@ export function PracticeControls() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [requestWakeLock]);
+  }, [wakeLockEnabled]);
 
   // Release wake lock when session ends or component unmounts
   useEffect(() => {
     if (!activeSession && wakeLockRef.current) {
-      wakeLockIntentRef.current = false;
-      releaseWakeLock();
+      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current = null;
+      setWakeLockEnabled(false);
     }
     return () => {
       if (wakeLockRef.current) {
-        wakeLockRef.current.release();
+        wakeLockRef.current.release().catch(() => {});
       }
     };
-  }, [activeSession, releaseWakeLock]);
+  }, [activeSession]);
   // Live-updating timer - must be before early return
   const [, setTick] = useState(0);
   const isPaused = !!activeSession?.paused_at;
