@@ -18,7 +18,7 @@ export const CollectionEmptyState = ({
   onAction,
 }: CollectionEmptyStateProps) => {
   return (
-    <div className="text-center py-12 px-4">
+    <div className="text-center py-6 px-4">
       <div className="w-16 h-16 mx-auto rounded-full bg-secondary/50 flex items-center justify-center mb-4">
         <Icon className="w-8 h-8 text-muted-foreground" />
       </div>
