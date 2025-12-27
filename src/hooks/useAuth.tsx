@@ -34,23 +34,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isPasswordResetFlow = window.location.search.includes('reset=true') || 
                                  window.location.hash.includes('type=recovery');
     
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       // If there's a session but "Remember me" was not checked and browser was closed
       // BUT skip this check if we're in a password reset flow
       if (session && !rememberMe && !sessionActive && !isPasswordResetFlow) {
         // Sign out the user since they didn't want to be remembered
-        supabase.auth.signOut();
+        await supabase.auth.signOut();
         setSession(null);
         setUser(null);
+        setProfile(null);
         setLoading(false);
         return;
       }
-      
+
       setSession(session);
       setUser(session?.user ?? null);
+
+      // Important: notes depend on profile.id (author_id), so keep the app "loading"
+      // until we have the profile to avoid a long "no notes" flash.
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
       }
+
       setLoading(false);
     });
 
