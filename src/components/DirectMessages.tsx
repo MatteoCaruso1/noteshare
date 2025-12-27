@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { MessageCircle, Send, ArrowLeft, Users, List, ListOrdered } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Users, List, ListOrdered, PenSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { Profile } from '@/types';
 
@@ -53,11 +53,12 @@ export function DirectMessages({ embedded }: DirectMessagesProps = {}) {
         <div className="flex justify-end mb-2">
           <Button 
             variant="ghost" 
-            size="sm"
+            size="icon"
             onClick={() => setShowNewMessage(true)}
-            className="text-[10px] h-6 px-2"
+            className="h-7 w-7"
+            title="New message"
           >
-            + New
+            <PenSquare className="w-4 h-4" />
           </Button>
         </div>
         {convsLoading ? (
@@ -112,11 +113,12 @@ export function DirectMessages({ embedded }: DirectMessagesProps = {}) {
           <span>Messages</span>
         </h2>
         <Button 
-          variant="outline" 
-          size="sm"
+          variant="ghost" 
+          size="icon"
           onClick={() => setShowNewMessage(true)}
+          title="New message"
         >
-          New
+          <PenSquare className="w-5 h-5" />
         </Button>
       </div>
       <Card className="p-4 bg-card border-border">
@@ -477,11 +479,6 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
             onKeyDown={handleKeyDown}
             className="flex-1 min-h-[40px] max-h-[120px] resize-none text-sm"
             rows={1}
-            onFocus={(e) => {
-              setTimeout(() => {
-                e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-              }, 100);
-            }}
           />
           <Button 
             size="icon" 
