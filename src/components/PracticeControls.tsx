@@ -472,7 +472,7 @@ export function PracticeControls() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 touch-manipulation focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                    className={`h-8 w-8 touch-manipulation focus:outline-none focus-visible:outline-none focus-visible:ring-0 hover:bg-transparent active:bg-transparent ${wakeLockEnabled ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     onClick={toggleWakeLock}
                   >

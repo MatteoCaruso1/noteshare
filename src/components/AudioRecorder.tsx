@@ -184,7 +184,8 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           <Button
             variant="destructive"
             onClick={stopRecording}
-            className="flex-1"
+            className="flex-1 touch-manipulation focus:outline-none focus-visible:outline-none focus-visible:ring-0 hover:bg-destructive active:bg-destructive"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <Square className="w-4 h-4 mr-2" />
             Stop Recording
@@ -199,7 +200,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           variant="outline"
           onClick={startRecording}
           disabled={processing}
-          className="flex-1 touch-manipulation focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+          className="flex-1 touch-manipulation focus:outline-none focus-visible:outline-none focus-visible:ring-0 hover:bg-transparent active:bg-transparent"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           {processing ? (
