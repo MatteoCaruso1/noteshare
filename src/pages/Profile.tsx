@@ -106,6 +106,8 @@ const Profile = () => {
       toast.success('Profile updated!');
       await refreshProfile();
       setEditing(false);
+      // Scroll to top after saving
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }
     setSaving(false);
   };
