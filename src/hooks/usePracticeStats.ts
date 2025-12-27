@@ -37,8 +37,8 @@ export function usePracticeStats(profileId: string | undefined) {
       const threeMonthsAgo = subMonths(now, 3);
       const thisMonthStart = startOfMonth(now);
 
-      // Run both queries in parallel for better performance
-      const [sessionsResult, notesResult] = await Promise.all([
+      // Run all queries in parallel for better performance
+      const [sessionsResult, notesResult, focusResult, backlogResult] = await Promise.all([
         supabase
           .from('practice_sessions')
           .select('started_at, ended_at')
@@ -49,14 +49,27 @@ export function usePracticeStats(profileId: string | undefined) {
           .from('notes')
           .select('text_content, tags, created_at')
           .eq('author_id', profileId)
-          .gte('created_at', threeMonthsAgo.toISOString())
+          .gte('created_at', threeMonthsAgo.toISOString()),
+        supabase
+          .from('daily_focus')
+          .select('focus_text, focus_date, created_at')
+          .eq('user_id', profileId)
+          .gte('created_at', threeMonthsAgo.toISOString()),
+        supabase
+          .from('focus_backlog')
+          .select('focus_text, saved_at')
+          .eq('user_id', profileId)
+          .gte('saved_at', threeMonthsAgo.toISOString())
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
       if (notesResult.error) throw notesResult.error;
-
+      // Focus queries are non-critical, don't throw on error
+      
       const sessions = sessionsResult.data || [];
       const notes = notesResult.data || [];
+      const focusEntries = focusResult.data || [];
+      const backlogEntries = backlogResult.data || [];
 
       // Calculate session durations
       const sessionsWithDuration = sessions.map(session => {
@@ -165,7 +178,20 @@ export function usePracticeStats(profileId: string | undefined) {
       }
 
       // Keyword extraction from text content (this month only)
-      const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'i', 'my', 'me', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'these', 'those', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'would', 'could', 'should', 'might', 'must', 'shall', 'today', 'session', 'practice', 'practiced', 'working', 'worked']);
+      const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'i', 'my', 'me', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'these', 'those', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'would', 'could', 'should', 'might', 'must', 'shall', 'today', 'session', 'practice', 'practiced', 'working', 'worked', 'focus', 'want', 'going', 'like']);
+
+      // Helper to extract keywords from text
+      const extractKeywords = (text: string, keywords: Record<string, number>, stopWords: Set<string>) => {
+        const words = text
+          .toLowerCase()
+          .replace(/[^a-z\s]/g, '')
+          .split(/\s+/)
+          .filter(word => word.length > 3 && !stopWords.has(word));
+        
+        words.forEach(word => {
+          keywords[word] = (keywords[word] || 0) + 1;
+        });
+      };
 
       const keywords: Record<string, number> = {};
       const tags: Record<string, number> = {};
@@ -186,15 +212,27 @@ export function usePracticeStats(profileId: string | undefined) {
         
         // Extract from text content for keywords
         if (note.text_content) {
-          const words = note.text_content
-            .toLowerCase()
-            .replace(/[^a-z\s]/g, '')
-            .split(/\s+/)
-            .filter(word => word.length > 3 && !stopWords.has(word));
-          
-          words.forEach(word => {
-            keywords[word] = (keywords[word] || 0) + 1;
-          });
+          extractKeywords(note.text_content, keywords, stopWords);
+        }
+      });
+      
+      // Extract keywords from daily focus entries (this month)
+      const thisMonthFocus = focusEntries.filter(entry => 
+        parseISO(entry.created_at) >= thisMonthStart
+      );
+      thisMonthFocus.forEach(entry => {
+        if (entry.focus_text) {
+          extractKeywords(entry.focus_text, keywords, stopWords);
+        }
+      });
+      
+      // Extract keywords from saved focus backlog (this month)
+      const thisMonthBacklog = backlogEntries.filter(entry => 
+        parseISO(entry.saved_at) >= thisMonthStart
+      );
+      thisMonthBacklog.forEach(entry => {
+        if (entry.focus_text) {
+          extractKeywords(entry.focus_text, keywords, stopWords);
         }
       });
 

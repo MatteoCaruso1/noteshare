@@ -199,7 +199,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <h3 className="font-semibold">Themes</h3>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Themes are based on words and phrases you write in your practice notes.
+          Themes are based on words from your practice notes and daily focus.
         </p>
         
         <div className="space-y-4">
