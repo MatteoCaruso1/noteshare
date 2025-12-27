@@ -7,26 +7,43 @@ import { Bold, Italic, Underline as UnderlineIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { Extension, InputRule } from '@tiptap/core';
-import type { Editor } from '@tiptap/core';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 
-function cleanupTrailingEmptyParagraphAfterList(editor: Editor) {
-  const { state, view } = editor;
-  const doc = state.doc;
+// Removes the extra empty paragraph TipTap often keeps *after* a list.
+// This runs as an appendTransaction so it won't cascade into repeated input-rule runs.
+const TrailingParagraphCleanup = Extension.create({
+  name: 'trailingParagraphCleanup',
 
-  if (doc.childCount < 2) return;
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey('trailingParagraphCleanup'),
+        appendTransaction: (_transactions, _oldState, newState) => {
+          const { doc } = newState;
+          if (doc.childCount < 2) return null;
 
-  const last = doc.child(doc.childCount - 1);
-  const secondLast = doc.child(doc.childCount - 2);
+          const last = doc.child(doc.childCount - 1);
+          const secondLast = doc.child(doc.childCount - 2);
 
-  const lastIsEmptyParagraph = last.type.name === 'paragraph' && last.content.size === 0;
-  const secondLastIsList = secondLast.type.name === 'bulletList' || secondLast.type.name === 'orderedList';
+          const lastIsEmptyParagraph = last.type.name === 'paragraph' && last.content.size === 0;
+          const secondLastIsList =
+            secondLast.type.name === 'bulletList' || secondLast.type.name === 'orderedList';
 
-  if (!lastIsEmptyParagraph || !secondLastIsList) return;
+          if (!lastIsEmptyParagraph || !secondLastIsList) return null;
 
-  const endPos = doc.content.size;
-  const startPos = endPos - last.nodeSize;
-  view.dispatch(state.tr.delete(startPos, endPos));
-}
+          const endPos = doc.content.size;
+          const startPos = endPos - last.nodeSize;
+
+          // If selection is *inside* that trailing paragraph, keep it (user may be typing there).
+          const sel = newState.selection;
+          if (sel.from >= startPos && sel.to <= endPos) return null;
+
+          return newState.tr.delete(startPos, endPos);
+        },
+      }),
+    ];
+  },
+});
 
 // Custom extension for keyboard shortcuts and input rules
 const ListShortcuts = Extension.create({
@@ -37,13 +54,11 @@ const ListShortcuts = Extension.create({
       // Ctrl+Shift+L for bullet list
       'Mod-Shift-l': () => {
         this.editor.chain().focus().toggleBulletList().run();
-        cleanupTrailingEmptyParagraphAfterList(this.editor);
         return true;
       },
       // Ctrl+Shift+O for ordered list
       'Mod-Shift-o': () => {
         this.editor.chain().focus().toggleOrderedList().run();
-        cleanupTrailingEmptyParagraphAfterList(this.editor);
         return true;
       },
     };
@@ -52,12 +67,10 @@ const ListShortcuts = Extension.create({
   addInputRules() {
     const toggleBullet = (range: { from: number; to: number }) => {
       this.editor.chain().focus().deleteRange(range).toggleBulletList().run();
-      cleanupTrailingEmptyParagraphAfterList(this.editor);
     };
 
     const toggleOrdered = (range: { from: number; to: number }) => {
       this.editor.chain().focus().deleteRange(range).toggleOrderedList().run();
-      cleanupTrailingEmptyParagraphAfterList(this.editor);
     };
 
     return [
@@ -119,6 +132,8 @@ export function RichTextEditor({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
+      // Must run after StarterKit lists
+      TrailingParagraphCleanup,
       ListShortcuts,
     ],
     content: value,
