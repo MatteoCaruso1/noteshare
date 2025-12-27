@@ -279,7 +279,7 @@ export function TodaysFocus() {
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-7 w-7 p-0 active:bg-transparent"
               onClick={handleSaveToBacklog}
               disabled={isSaving || !text.trim()}
               title="Save to backlog"
@@ -290,7 +290,7 @@ export function TodaysFocus() {
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-7 w-7 p-0 active:bg-transparent"
               onClick={() => setIsBacklogOpen(true)}
               title="View backlog"
             >
