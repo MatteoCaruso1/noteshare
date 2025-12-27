@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -290,89 +291,93 @@ const GigDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Header */}
-      <CollectionDetailHeader
-        backPath={backPath}
-        title={gig.title}
-        date={gig.event_date || ''}
-        dateLabel="Gig date"
-        authorName={gig.author?.name}
-        authorUsername={gig.author?.username}
-        authorAvatar={gig.author?.avatar}
-        coverImage={gig.image}
-        coverIcon={<Music2 className="w-6 h-6 text-muted-foreground" />}
-        showSettings={isOwner}
-        onSettingsClick={openSettings}
-        badges={
-          gig.is_paid_opportunity ? (
-            <Badge className="text-xs bg-green-600">
-              <DollarSign className="w-3 h-3 mr-1" />
-              Paid
-            </Badge>
-          ) : undefined
-        }
-      />
+      <PageHeader>
+        <CollectionDetailHeader
+          backPath={backPath}
+          title={gig.title}
+          date={gig.event_date || ''}
+          dateLabel="Gig date"
+          authorName={gig.author?.name}
+          authorUsername={gig.author?.username}
+          authorAvatar={gig.author?.avatar}
+          coverImage={gig.image}
+          coverIcon={<Music2 className="w-6 h-6 text-muted-foreground" />}
+          showSettings={isOwner}
+          onSettingsClick={openSettings}
+          badges={
+            gig.is_paid_opportunity ? (
+              <Badge className="text-xs bg-green-600">
+                <DollarSign className="w-3 h-3 mr-1" />
+                Paid
+              </Badge>
+            ) : undefined
+          }
+        />
+      </PageHeader>
 
-      <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-        {/* Gig Details Card - only show if there's content */}
-        {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
-          <Card className="p-4 bg-card border-border">
-            {gig.event_date && (
-              <p className="text-sm text-primary flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4" />
-                {format(new Date(gig.event_date), 'EEEE, MMM d, yyyy · h:mm a')}
-              </p>
-            )}
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
+          {/* Gig Details Card - only show if there's content */}
+          {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
+            <Card className="p-4 bg-card border-border">
+              {gig.event_date && (
+                <p className="text-sm text-primary flex items-center gap-2 mb-3">
+                  <Calendar className="w-4 h-4" />
+                  {format(new Date(gig.event_date), 'EEEE, MMM d, yyyy · h:mm a')}
+                </p>
+              )}
 
-            {gig.description && (
-              <p className="text-sm text-muted-foreground">{gig.description}</p>
-            )}
+              {gig.description && (
+                <p className="text-sm text-muted-foreground">{gig.description}</p>
+              )}
 
-            {gig.links && gig.links.length > 0 && (
-              <a
-                href={gig.links[0]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-3"
-              >
-                <ExternalLink className="w-4 h-4" />
-                View Details
-              </a>
-            )}
-          </Card>
-        )}
-
-        {/* Notes Section */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Gig Notes</h2>
-            {canAddNotes && profile && (
-              <AddNoteDialog
-                open={isAddNoteOpen}
-                onOpenChange={setIsAddNoteOpen}
-                onSubmit={handleAddNote}
-                isSubmitting={addNote.isPending}
-                title="Add Note to Gig"
-                contextLabel="this gig"
-                profileId={profile.id}
-              />
-            )}
-          </div>
-
-          {notesLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
-          ) : notes && notes.length > 0 ? (
-            <div className="space-y-4">
-              {notes.map((note) => (
-                <NoteCard key={note.id} note={note} fromGig={id} />
-              ))}
-            </div>
-          ) : (
-            <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this gig" />
+              {gig.links && gig.links.length > 0 && (
+                <a
+                  href={gig.links[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-3"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View Details
+                </a>
+              )}
+            </Card>
           )}
-        </section>
-      </main>
+
+          {/* Notes Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Gig Notes</h2>
+              {canAddNotes && profile && (
+                <AddNoteDialog
+                  open={isAddNoteOpen}
+                  onOpenChange={setIsAddNoteOpen}
+                  onSubmit={handleAddNote}
+                  isSubmitting={addNote.isPending}
+                  title="Add Note to Gig"
+                  contextLabel="this gig"
+                  profileId={profile.id}
+                />
+              )}
+            </div>
+
+            {notesLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            ) : notes && notes.length > 0 ? (
+              <div className="space-y-4">
+                {notes.map((note) => (
+                  <NoteCard key={note.id} note={note} fromGig={id} />
+                ))}
+              </div>
+            ) : (
+              <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this gig" />
+            )}
+          </section>
+        </main>
+      </PageBody>
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
@@ -502,7 +507,7 @@ const GigDetail = () => {
       </Dialog>
 
       <BottomNav overrideActiveRoute={fromNotes ? '/' : undefined} />
-    </div>
+    </PageLayout>
   );
 };
 

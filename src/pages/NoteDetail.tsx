@@ -8,6 +8,7 @@ import { useUpdateNoteTags } from '@/hooks/useUpdateNote';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 
 import { Button } from '@/components/ui/button';
@@ -99,214 +100,226 @@ const NoteDetail = () => {
   // Show skeleton with navigation while loading - don't block the UI
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
-        <header className="sticky top-0 z-40 bg-background">
-          <div className="container max-w-2xl mx-auto px-4 py-4">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <h1 className="text-lg font-semibold">Note</h1>
+      <PageLayout>
+        <PageHeader>
+          <header className="sticky top-0 z-40 bg-background">
+            <div className="container max-w-2xl mx-auto px-4 py-4">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+                <h1 className="text-lg font-semibold">Note</h1>
+              </div>
             </div>
-          </div>
-        </header>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
-          {/* Note skeleton */}
-          <div className="h-48 bg-card rounded-lg animate-pulse" />
-          {/* Comments section skeleton */}
-          <div className="space-y-4">
-            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
-            <div className="h-24 bg-card rounded-lg animate-pulse" />
-          </div>
-        </main>
+          </header>
+        </PageHeader>
+        <PageBody>
+          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
+            {/* Note skeleton */}
+            <div className="h-48 bg-card rounded-lg animate-pulse" />
+            {/* Comments section skeleton */}
+            <div className="space-y-4">
+              <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+              <div className="h-24 bg-card rounded-lg animate-pulse" />
+            </div>
+          </main>
+        </PageBody>
         <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
-      </div>
+      </PageLayout>
     );
   }
 
   if (!note) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <PageLayout>
+        <PageHeader>
+          <header className="sticky top-0 z-40 bg-background">
+            <div className="container max-w-2xl mx-auto px-4 py-4">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+                <h1 className="text-lg font-semibold">Note</h1>
+              </div>
+            </div>
+          </header>
+        </PageHeader>
+        <PageBody>
+          <main className="container max-w-2xl mx-auto px-4 py-2">
+            <div className="flex flex-col items-center justify-center py-12">
+              <p className="text-muted-foreground mb-4">Note not found</p>
+              <Button variant="outline" onClick={() => navigate('/')}>
+                Back to Home
+              </Button>
+            </div>
+          </main>
+        </PageBody>
+        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
+      </PageLayout>
+    );
+  }
+
+  return (
+    <PageLayout>
+      <PageHeader>
         <header className="sticky top-0 z-40 bg-background">
           <div className="container max-w-2xl mx-auto px-4 py-4">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  // Use explicit navigation to avoid history stack issues
+                  if (fromFriends) {
+                    navigate('/friends');
+                  } else if (fromProject) {
+                    navigate(`/projects/${fromProject}`);
+                  } else if (fromGig) {
+                    navigate(`/gigs/${fromGig}`);
+                  } else {
+                    // Always go home - more reliable than navigate(-1) which can get stuck
+                    // if mutations or other actions have affected history
+                    navigate('/');
+                  }
+                }}
+              >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <h1 className="text-lg font-semibold">Note</h1>
             </div>
           </div>
         </header>
-        <main className="container max-w-2xl mx-auto px-4 py-2">
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">Note not found</p>
-            <Button variant="outline" onClick={() => navigate('/')}>
-              Back to Home
-            </Button>
-          </div>
-        </main>
-        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
-      </div>
-    );
-  }
+      </PageHeader>
 
-  return (
-    <div className="min-h-screen bg-background pb-20">
-      <header className="sticky top-0 z-40 bg-background">
-        <div className="container max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => {
-                // Use explicit navigation to avoid history stack issues
-                if (fromFriends) {
-                  navigate('/friends');
-                } else if (fromProject) {
-                  navigate(`/projects/${fromProject}`);
-                } else if (fromGig) {
-                  navigate(`/gigs/${fromGig}`);
-                } else {
-                  // Always go home - more reliable than navigate(-1) which can get stuck
-                  // if mutations or other actions have affected history
-                  navigate('/');
-                }
-              }}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-lg font-semibold">Note</h1>
-          </div>
-        </div>
-      </header>
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
+          <NoteCard 
+            note={note} 
+            expanded 
+            onTagsChange={isOwner ? handleTagsChange : undefined}
+            recentTags={isOwner ? recentTags : undefined}
+          />
 
-      <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
-        <NoteCard 
-          note={note} 
-          expanded 
-          onTagsChange={isOwner ? handleTagsChange : undefined}
-          recentTags={isOwner ? recentTags : undefined}
-        />
+          {/* Comments Section */}
+          <section>
+            <div className="flex items-center gap-1.5 mb-3">
+              <MessageCircle className="w-4 h-4 text-muted-foreground" />
+              <h2 className="text-sm font-medium text-muted-foreground">Comments</h2>
+            </div>
 
-        {/* Comments Section */}
-        <section>
-          <div className="flex items-center gap-1.5 mb-3">
-            <MessageCircle className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-sm font-medium text-muted-foreground">Comments</h2>
-          </div>
-
-          {/* Comment Input */}
-          {profile && (
-            <Card className="p-3 bg-card border-border mb-4">
-              <div className="flex gap-2">
-                <Avatar className="w-6 h-6">
-                  <AvatarImage src={profile.avatar || ''} />
-                  <AvatarFallback><User className="w-3 h-3" /></AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-2">
-                  <MentionInput
-                    placeholder="Use @ to mention someone"
-                    value={newComment}
-                    onChange={setNewComment}
-                    rows={1}
-                    className="resize-none text-sm min-h-[32px]"
-                  />
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      className="h-7 text-xs bg-gradient-primary text-primary-foreground"
-                      onClick={handleAddComment}
-                      disabled={createComment.isPending || !newComment.trim()}
-                    >
-                      <Send className="w-3 h-3 mr-1" />
-                      Comment
-                    </Button>
-                    <VoiceReplyButton
-                      noteId={id!}
-                      authorId={profile.id}
-                      noteOwnerId={note?.author_id || ''}
-                      onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
+            {/* Comment Input */}
+            {profile && (
+              <Card className="p-3 bg-card border-border mb-4">
+                <div className="flex gap-2">
+                  <Avatar className="w-6 h-6">
+                    <AvatarImage src={profile.avatar || ''} />
+                    <AvatarFallback><User className="w-3 h-3" /></AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-2">
+                    <MentionInput
+                      placeholder="Use @ to mention someone"
+                      value={newComment}
+                      onChange={setNewComment}
+                      rows={1}
+                      className="resize-none text-sm min-h-[32px]"
                     />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        className="h-7 text-xs bg-gradient-primary text-primary-foreground"
+                        onClick={handleAddComment}
+                        disabled={createComment.isPending || !newComment.trim()}
+                      >
+                        <Send className="w-3 h-3 mr-1" />
+                        Comment
+                      </Button>
+                      <VoiceReplyButton
+                        noteId={id!}
+                        authorId={profile.id}
+                        noteOwnerId={note?.author_id || ''}
+                        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          )}
+              </Card>
+            )}
 
-          {/* Comments List */}
-          {commentsLoading ? (
-            <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>
-          ) : comments && comments.length > 0 ? (
-            <div className="space-y-3">
-              {comments.map((comment) => {
-                const isCommentOwner = profile?.id === comment.author_id;
-                return (
-                  <Card key={comment.id} className="p-4 bg-card border-border">
-                    <div className="flex gap-3">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={comment.author?.avatar || ''} />
-                        <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{comment.author?.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {format(new Date(comment.created_at), 'MMM d, h:mm a')}
-                            </span>
-                          </div>
-                          {isCommentOwner && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will permanently delete your comment. This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteComment(comment.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            {/* Comments List */}
+            {commentsLoading ? (
+              <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>
+            ) : comments && comments.length > 0 ? (
+              <div className="space-y-3">
+                {comments.map((comment) => {
+                  const isCommentOwner = profile?.id === comment.author_id;
+                  return (
+                    <Card key={comment.id} className="p-4 bg-card border-border">
+                      <div className="flex gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={comment.author?.avatar || ''} />
+                          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{comment.author?.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+                              </span>
+                            </div>
+                            {isCommentOwner && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
                                   >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete your comment. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteComment(comment.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                          <p className="text-sm mb-2">
+                            <CommentText content={comment.content} />
+                          </p>
+                          {comment.audio_url && (
+                            <WaveformPlayer 
+                              src={comment.audio_url} 
+                              title={comment.content !== '🎤 Voice reply' ? comment.content : 'Voice Reply'} 
+                            />
                           )}
                         </div>
-                        <p className="text-sm mb-2">
-                          <CommentText content={comment.content} />
-                        </p>
-                        {comment.audio_url && (
-                          <WaveformPlayer 
-                            src={comment.audio_url} 
-                            title={comment.content !== '🎤 Voice reply' ? comment.content : 'Voice Reply'} 
-                          />
-                        )}
                       </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : null}
-        </section>
-      </main>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : null}
+          </section>
+        </main>
+      </PageBody>
 
       <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
-    </div>
+    </PageLayout>
   );
 };
 
