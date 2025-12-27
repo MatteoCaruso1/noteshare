@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { UserSearch } from '@/components/UserSearch';
 import { FriendsFeed } from '@/components/FriendsFeed';
 import { PendingFriendRequests } from '@/components/PendingFriendRequests';
@@ -50,98 +51,102 @@ const FriendsJournals = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Page Header with Search */}
-      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends</h1>
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-              <div className="cursor-pointer transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{friends?.length || 0}</span>
+      <PageHeader>
+        <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends</h1>
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
+                <div className="cursor-pointer transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">{friends?.length || 0}</span>
+                </div>
+              </FriendsList>
+              <div className="flex-1 max-w-xs">
+                <UserSearch compact />
               </div>
-            </FriendsList>
-            <div className="flex-1 max-w-xs">
-              <UserSearch compact />
             </div>
           </div>
         </div>
-      </div>
+      </PageHeader>
 
-      <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
-        {/* Pending Friend Requests */}
-        <PendingFriendRequests />
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
+          {/* Pending Friend Requests */}
+          <PendingFriendRequests />
 
-        {/* Notifications Dropdown */}
-        <Card className="bg-card border-border">
-          <Collapsible open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-            <CollapsibleTrigger asChild>
-              <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
-                <div className="flex items-center gap-2">
-                  <Bell className={`w-5 h-5 transition-colors ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                  <span className="font-semibold">Notifications</span>
-                  {unreadNotificationCount && unreadNotificationCount > 0 && (
-                    <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-                      {unreadNotificationCount}
-                    </Badge>
-                  )}
-                </div>
-                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${notificationsOpen ? 'rotate-180' : ''}`} />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="px-4 pb-4">
-              <NotificationsList embedded />
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
+          {/* Notifications Dropdown */}
+          <Card className="bg-card border-border">
+            <Collapsible open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+              <CollapsibleTrigger asChild>
+                <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+                  <div className="flex items-center gap-2">
+                    <Bell className={`w-5 h-5 transition-colors ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                    <span className="font-semibold">Notifications</span>
+                    {unreadNotificationCount && unreadNotificationCount > 0 && (
+                      <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+                        {unreadNotificationCount}
+                      </Badge>
+                    )}
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${notificationsOpen ? 'rotate-180' : ''}`} />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-4 pb-4">
+                <NotificationsList embedded />
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
 
-        {/* Messages Dropdown */}
-        <Card className="bg-card border-border">
-          <Collapsible open={messagesOpen} onOpenChange={setMessagesOpen}>
-            <CollapsibleTrigger asChild>
-              <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className={`w-5 h-5 transition-colors ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                  <span className="font-semibold">Messages</span>
-                  {unreadMessagesCount > 0 && (
-                    <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-                      {unreadMessagesCount}
-                    </Badge>
-                  )}
-                </div>
-                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${messagesOpen ? 'rotate-180' : ''}`} />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="px-4 pb-4">
-              <DirectMessages embedded />
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
+          {/* Messages Dropdown */}
+          <Card className="bg-card border-border">
+            <Collapsible open={messagesOpen} onOpenChange={setMessagesOpen}>
+              <CollapsibleTrigger asChild>
+                <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className={`w-5 h-5 transition-colors ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                    <span className="font-semibold">Messages</span>
+                    {unreadMessagesCount > 0 && (
+                      <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
+                        {unreadMessagesCount}
+                      </Badge>
+                    )}
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${messagesOpen ? 'rotate-180' : ''}`} />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-4 pb-4">
+                <DirectMessages embedded />
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
 
-        {/* Friends Feed */}
-        <div className="pt-2">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg font-semibold">Friends' Notes</h2>
-            <div className="flex-1 max-w-xs">
-              <TimelineSearch 
-                onSearch={setFeedSearchQuery} 
-                onFocusDateFilter={setFocusDateFilter}
-                focusDate={focusDateFilter}
-              />
+          {/* Friends Feed */}
+          <div className="pt-2">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h2 className="text-lg font-semibold">Friends' Notes</h2>
+              <div className="flex-1 max-w-xs">
+                <TimelineSearch 
+                  onSearch={setFeedSearchQuery} 
+                  onFocusDateFilter={setFocusDateFilter}
+                  focusDate={focusDateFilter}
+                />
+              </div>
             </div>
+            {feedSearchQuery && (
+              <p className="text-sm text-muted-foreground mb-3">
+                Searching for "{feedSearchQuery}"
+              </p>
+            )}
+            <FriendsFeed searchQuery={feedSearchQuery} focusDateFilter={focusDateFilter} />
           </div>
-          {feedSearchQuery && (
-            <p className="text-sm text-muted-foreground mb-3">
-              Searching for "{feedSearchQuery}"
-            </p>
-          )}
-          <FriendsFeed searchQuery={feedSearchQuery} focusDateFilter={focusDateFilter} />
-        </div>
-      </main>
+        </main>
+      </PageBody>
 
       <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 

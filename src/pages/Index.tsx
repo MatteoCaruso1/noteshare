@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
+import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
 import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
@@ -90,65 +91,69 @@ const Index = () => {
 
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <PageLayout>
       {/* Page Title */}
-      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
-        <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
-      </div>
+      <PageHeader>
+        <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
+          <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
+        </div>
+      </PageHeader>
 
       {/* Main Content */}
-      <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4 sm:space-y-6">
-        {/* Simple Goals - always visible at top */}
-        {profile && <SimpleGoals profileId={profile.id} />}
+      <PageBody>
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4 sm:space-y-6">
+          {/* Simple Goals - always visible at top */}
+          {profile && <SimpleGoals profileId={profile.id} />}
 
-        {/* Practice Controls (Collapsible) */}
-        <PracticeControls />
+          {/* Practice Controls (Collapsible) */}
+          <PracticeControls />
 
-        {/* Quick Note Capture */}
-        <QuickNoteCapture />
+          {/* Quick Note Capture */}
+          <QuickNoteCapture />
 
-        {/* Today's Focus */}
-        {profile && <TodaysFocus />}
+          {/* Today's Focus */}
+          {profile && <TodaysFocus />}
 
-        {/* Memory Reminder */}
-        <MemoryReminder />
+          {/* Memory Reminder */}
+          <MemoryReminder />
 
-        {/* Timeline */}
-        <section>
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-lg font-semibold">Notes</h2>
-            <div className="flex items-center gap-2 flex-1 justify-end">
-              <TimelineSearch 
-                onSearch={setSearchQuery} 
-                onFocusDateFilter={setFocusDateFilter}
-                focusDate={focusDateFilter}
-                onTagFilter={setTagFilter}
-                selectedTag={tagFilter}
-                availableTags={availableTags}
-              />
+          {/* Timeline */}
+          <section>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h2 className="text-lg font-semibold">Notes</h2>
+              <div className="flex items-center gap-2 flex-1 justify-end">
+                <TimelineSearch 
+                  onSearch={setSearchQuery} 
+                  onFocusDateFilter={setFocusDateFilter}
+                  focusDate={focusDateFilter}
+                  onTagFilter={setTagFilter}
+                  selectedTag={tagFilter}
+                  availableTags={availableTags}
+                />
+              </div>
             </div>
-          </div>
-          {(searchQuery || focusDateFilter || tagFilter) && (
-            <p className="text-sm text-muted-foreground mb-3">
-              {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
-              {searchQuery && ` for "${searchQuery}"`}
-              {tagFilter && ` tagged "${tagFilter}"`}
-              {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
-            </p>
-          )}
-          <Timeline 
-            notes={filteredNotes} 
-            loading={notesLoading || isNotesBootstrapping} 
-            isRefetching={notesRefetching}
-            displayCount={displayCount}
-            onLoadMore={handleLoadMore}
-          />
-        </section>
-      </main>
+            {(searchQuery || focusDateFilter || tagFilter) && (
+              <p className="text-sm text-muted-foreground mb-3">
+                {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
+                {searchQuery && ` for "${searchQuery}"`}
+                {tagFilter && ` tagged "${tagFilter}"`}
+                {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
+              </p>
+            )}
+            <Timeline 
+              notes={filteredNotes} 
+              loading={notesLoading || isNotesBootstrapping} 
+              isRefetching={notesRefetching}
+              displayCount={displayCount}
+              onLoadMore={handleLoadMore}
+            />
+          </section>
+        </main>
+      </PageBody>
 
       {/* Bottom Navigation */}
       <BottomNav />
-    </div>
+    </PageLayout>
   );
 };
 
