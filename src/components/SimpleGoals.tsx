@@ -37,6 +37,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const [editText, setEditText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [newGoalText, setNewGoalText] = useState('');
+  const [pendingGoal, setPendingGoal] = useState<string | null>(null);
 
   // Pick a random example goal when adding starts
   const examplePlaceholder = useMemo(() => {
@@ -63,14 +64,18 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
 
   const handleAddGoal = () => {
     if (newGoalText.trim() && activeGoals.length < MAX_GOALS) {
+      const goalText = newGoalText.trim();
+      setPendingGoal(goalText);
+      setNewGoalText('');
+      setIsAdding(false);
       createGoal.mutate({
         userId: profileId,
         goalType: 'long-term',
-        title: newGoalText.trim(),
+        title: goalText,
         progressType: 'checkbox',
+      }, {
+        onSettled: () => setPendingGoal(null),
       });
-      setNewGoalText('');
-      setIsAdding(false);
     }
   };
 
@@ -89,7 +94,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
     <Card className="bg-card border-border p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-primary" />
+          <Target className="w-5 h-5 text-foreground" />
           <h2 className="font-semibold">Musical Goals</h2>
         </div>
         {canAddMore && !isAdding && (
@@ -143,6 +148,18 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
             )}
           </div>
         ))}
+
+        {/* Optimistic pending goal */}
+        {pendingGoal && (
+          <div className="flex items-start gap-2 opacity-60">
+            <span className="w-4 text-muted-foreground text-xs font-semibold flex-shrink-0 pt-0.5">
+              {activeGoals.length + 1}.
+            </span>
+            <span className="text-sm flex-1 whitespace-pre-wrap break-words">
+              {pendingGoal}
+            </span>
+          </div>
+        )}
         
         {isAdding && (
           <div className="flex items-start gap-2">
