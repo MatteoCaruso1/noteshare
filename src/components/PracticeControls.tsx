@@ -566,14 +566,31 @@ export function PracticeControls() {
                 </>
               )}
             </Button>
-            <Button
-              className="flex-1 bg-gradient-primary text-primary-foreground"
-              onClick={handleSaveNoteAndEndSession}
-              disabled={createNote.isPending || uploading || endSession.isPending}
-            >
-              <Square className="w-4 h-4 mr-2" />
-              End Session
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className="flex-1 bg-gradient-primary text-primary-foreground"
+                  disabled={createNote.isPending || uploading || endSession.isPending}
+                >
+                  <Square className="w-4 h-4 mr-2" />
+                  End Session
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="max-w-xs">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>End session?</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex-row gap-2">
+                  <AlertDialogCancel className="flex-1 mt-0">Back</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleSaveNoteAndEndSession}
+                    className="flex-1 bg-gradient-primary"
+                  >
+                    End
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           </div>
           )}
