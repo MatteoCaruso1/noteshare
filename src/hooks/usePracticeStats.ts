@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfWeek, endOfWeek, subWeeks, subMonths, differenceInMinutes, parseISO, format, startOfMonth, subDays, isWithinInterval } from 'date-fns';
+import { startOfWeek, endOfWeek, subWeeks, subMonths, differenceInMinutes, parseISO, format, startOfMonth, endOfMonth, subDays, isWithinInterval } from 'date-fns';
 
 interface PracticeStats {
   // Number of sessions
@@ -13,6 +13,7 @@ interface PracticeStats {
   
   // Progress
   weeklyMinutesOverTime: { week: string; minutes: number }[];
+  monthlyDaysPracticed: { month: string; days: number }[];
   currentStreak: number;
   bestDailyStreak: number;
   bestWeekMinutes: { week: string; minutes: number } | null;
@@ -114,6 +115,32 @@ export function usePracticeStats(profileId: string | undefined) {
         weeklyMinutesOverTime.push({
           week: format(weekStart, 'MMM d'),
           minutes: weekMinutes
+        });
+      }
+
+      // Monthly days practiced (last 6 months)
+      const monthlyDaysPracticed: { month: string; days: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(now, i));
+        const monthEnd = endOfMonth(subMonths(now, i));
+        
+        // Count unique days with activity in this month
+        const daysInMonth = new Set<string>();
+        sessionsWithDuration.forEach(s => {
+          if (isWithinInterval(s.startDate, { start: monthStart, end: monthEnd })) {
+            daysInMonth.add(format(s.startDate, 'yyyy-MM-dd'));
+          }
+        });
+        notes.forEach(note => {
+          const noteDate = parseISO(note.created_at);
+          if (isWithinInterval(noteDate, { start: monthStart, end: monthEnd })) {
+            daysInMonth.add(format(noteDate, 'yyyy-MM-dd'));
+          }
+        });
+        
+        monthlyDaysPracticed.push({
+          month: format(monthStart, 'MMM'),
+          days: daysInMonth.size
         });
       }
 
@@ -306,6 +333,7 @@ export function usePracticeStats(profileId: string | undefined) {
         totalMinutesThisWeek,
         totalMinutesThisMonth,
         weeklyMinutesOverTime,
+        monthlyDaysPracticed,
         currentStreak,
         bestDailyStreak,
         bestWeekMinutes,
