@@ -456,7 +456,7 @@ export function TodaysFocus() {
               handleBlur();
             }}
             placeholder="What will you work on today?"
-            className={`min-h-[36px] resize-none text-sm ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
+            className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
             style={{ overscrollBehavior: 'contain' }}
             rows={1}
           />
