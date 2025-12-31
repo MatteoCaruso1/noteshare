@@ -137,11 +137,11 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Days Practiced Per Week Bar Chart */}
+        {/* Days Practiced Per Week Line Chart */}
         <p className="text-sm text-muted-foreground mb-2">Days practiced per week</p>
         <div className="h-32 mb-4">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stats.weeklyDaysPracticed}>
+            <LineChart data={stats.weeklyDaysPracticed}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis 
                 dataKey="week" 
@@ -166,12 +166,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
                 formatter={(value: number) => [`${value} day${value !== 1 ? 's' : ''}`, 'Practiced']}
               />
-              <Bar 
+              <Line 
+                type="monotone" 
                 dataKey="days" 
-                fill="hsl(var(--primary))" 
-                radius={[4, 4, 0, 0]}
+                stroke="hsl(var(--primary))" 
+                strokeWidth={2}
+                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                activeDot={{ r: 5 }}
               />
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
