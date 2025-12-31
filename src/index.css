@@ -270,7 +270,7 @@
       hsl(var(--primary) / 0.15),
       transparent
     );
-    animation: glintSweep 3s ease-in-out infinite;
+    animation: glintSweep 4.5s ease-in-out infinite;
   }
 
   .glint-paused::before {
