@@ -62,7 +62,7 @@ const FriendsJournals = () => {
                 <DialogTrigger asChild>
                   <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                     <Bell className={`w-4 h-4 ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
-                    {unreadNotificationCount && unreadNotificationCount > 0 && (
+                    {unreadNotificationCount !== undefined && unreadNotificationCount > 0 && (
                       <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-destructive text-destructive-foreground">
                         {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                       </Badge>
@@ -74,7 +74,7 @@ const FriendsJournals = () => {
                     <DialogTitle className="flex items-center gap-2">
                       <Bell className="w-5 h-5 text-primary" />
                       Notifications
-                      {unreadNotificationCount && unreadNotificationCount > 0 && (
+                      {unreadNotificationCount !== undefined && unreadNotificationCount > 0 && (
                         <Badge className="ml-2 bg-destructive text-destructive-foreground">
                           {unreadNotificationCount}
                         </Badge>
@@ -139,24 +139,7 @@ const FriendsJournals = () => {
           <PendingFriendRequests />
 
           {/* Friends Feed */}
-          <div className="pt-2">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <h2 className="text-lg font-semibold">Friends' Notes</h2>
-              <div className="flex-1 max-w-xs">
-                <TimelineSearch 
-                  onSearch={setFeedSearchQuery} 
-                  onFocusDateFilter={setFocusDateFilter}
-                  focusDate={focusDateFilter}
-                />
-              </div>
-            </div>
-            {feedSearchQuery && (
-              <p className="text-sm text-muted-foreground mb-3">
-                Searching for "{feedSearchQuery}"
-              </p>
-            )}
-            <FriendsFeed searchQuery={feedSearchQuery} focusDateFilter={focusDateFilter} />
-          </div>
+          <FriendsFeed />
         </main>
       </PageBody>
 
