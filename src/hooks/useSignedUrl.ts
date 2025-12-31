@@ -4,76 +4,30 @@ import { supabase } from '@/integrations/supabase/client';
 // Cache for signed URLs to avoid re-fetching
 const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
 
-type ParsedStorageRef = {
-  bucket: string;
-  path: string;
-};
-
 /**
- * Check if a URL is a public Supabase storage URL (these don't need signing)
+ * Check if a URL is an external (non-storage) URL that should pass through
  */
-function isPublicStorageUrl(url: string): boolean {
+function isExternalUrl(url: string): boolean {
   if (!url.startsWith('http')) return false;
+
   try {
     const urlObj = new URL(url);
-    return urlObj.pathname.includes('/storage/v1/object/public/');
+    return !urlObj.pathname.includes('/storage/v1/object/');
   } catch {
     return false;
   }
 }
 
 /**
- * Parse a Supabase storage URL or path into bucket + path.
- * Only returns a ref for URLs that need signing (authenticated/private).
- * Returns null for public URLs (no signing needed).
+ * True if the string looks like a storage URL/path (i.e. could need signing)
  */
-function parseStorageRef(url: string): ParsedStorageRef | null {
-  if (!url) return null;
-
-  // Direct path references (legacy stored paths without full URL)
-  if (!url.startsWith('http') && !url.startsWith('blob:')) {
-    return { bucket: 'practice-media', path: url };
-  }
-
+function isStorageRef(url: string): boolean {
+  if (!url) return false;
+  if (url.startsWith('blob:')) return false;
+  if (!url.startsWith('http')) return true; // legacy stored paths
   try {
     const urlObj = new URL(url);
-
-    // Already signed URLs have a token - no need to sign again
-    if (urlObj.searchParams.has('token')) {
-      return null;
-    }
-
-    // PUBLIC storage URLs should NOT be signed - return null
-    if (urlObj.pathname.includes('/storage/v1/object/public/')) {
-      return null;
-    }
-
-    // Match authenticated/private Supabase storage URLs:
-    // /storage/v1/object/authenticated/{bucket}/{path}
-    // /storage/v1/object/{bucket}/{path} (older format, non-public)
-    const match = urlObj.pathname.match(/\/storage\/v1\/object\/(?:authenticated\/)?([^/]+)\/(.+)/);
-    if (match) {
-      const bucket = match[1];
-      const path = decodeURIComponent(match[2]);
-      return { bucket, path };
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Check if a URL is an external (non-Supabase storage) URL that should pass through
- */
-function isExternalUrl(url: string): boolean {
-  if (!url.startsWith('http')) return false;
-  
-  try {
-    const urlObj = new URL(url);
-    // If it's not a Supabase storage URL, it's external (e.g., dicebear avatars)
-    return !urlObj.pathname.includes('/storage/v1/object/');
+    return urlObj.pathname.includes('/storage/v1/object/');
   } catch {
     return false;
   }
@@ -96,14 +50,8 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
       return;
     }
 
-    // External URLs (not Supabase storage) pass through directly
+    // External URLs (not storage) pass through directly
     if (isExternalUrl(originalUrl)) {
-      setSignedUrl(originalUrl);
-      return;
-    }
-
-    // Public Supabase storage URLs pass through directly (no signing needed)
-    if (isPublicStorageUrl(originalUrl)) {
       setSignedUrl(originalUrl);
       return;
     }
@@ -116,7 +64,13 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
         return;
       }
     } catch {
-      // Not a URL; may be a direct storage path. Continue to try signing.
+      // Not a URL; may be a direct storage path.
+    }
+
+    // If it doesn't look like storage, use as-is
+    if (!isStorageRef(originalUrl)) {
+      setSignedUrl(originalUrl);
+      return;
     }
 
     // Check cache
@@ -126,36 +80,31 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
       return;
     }
 
-    const ref = parseStorageRef(originalUrl);
-    if (!ref) {
-      // Not a storage URL we recognize; use as-is
-      setSignedUrl(originalUrl);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     const run = async () => {
       try {
-        const { data, error: urlError } = await supabase.storage
-          .from(ref.bucket)
-          .createSignedUrl(ref.path, 60 * 60 * 24); // 24 hours
+        const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
+          body: { url: originalUrl, expiresInSeconds: 60 * 60 * 24 },
+        });
 
-        if (urlError || !data?.signedUrl) {
-          console.error('[useSignedUrl] Error creating signed URL for path:', ref.path, urlError);
-          setError(urlError ?? new Error('Failed to create signed URL'));
-          // Fall back to original - might work if bucket becomes public again
+        if (fnError) {
+          console.error('[useSignedUrl] get-signed-url error:', fnError);
+          setError(new Error(fnError.message));
           setSignedUrl(originalUrl);
           return;
         }
 
+        const urlFromFn: string | undefined = data?.results?.[originalUrl];
+        const finalUrl = urlFromFn || originalUrl;
+
         signedUrlCache.set(originalUrl, {
-          url: data.signedUrl,
-          expiresAt: Date.now() + 23 * 60 * 60 * 1000, // 23 hours
+          url: finalUrl,
+          expiresAt: Date.now() + 23 * 60 * 60 * 1000,
         });
 
-        setSignedUrl(data.signedUrl);
+        setSignedUrl(finalUrl);
       } catch (err) {
         console.error('[useSignedUrl] Error:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -175,73 +124,68 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
 export async function getSignedUrls(urls: string[]): Promise<Map<string, string>> {
   const results = new Map<string, string>();
 
-  await Promise.all(
-    urls.map(async (url) => {
-      if (!url) return;
+  const unique = Array.from(new Set(urls.filter(Boolean)));
 
-      // Blob URLs pass through
-      if (url.startsWith('blob:')) {
+  // Partition: pass-through vs needs signing
+  const toSign: string[] = [];
+  for (const url of unique) {
+    if (!url) continue;
+
+    if (url.startsWith('blob:') || isExternalUrl(url)) {
+      results.set(url, url);
+      continue;
+    }
+
+    try {
+      const u = new URL(url);
+      if (u.searchParams.has('token')) {
         results.set(url, url);
-        return;
+        continue;
       }
+    } catch {
+      // not a URL
+    }
 
-      // External URLs pass through
-      if (isExternalUrl(url)) {
-        results.set(url, url);
-        return;
-      }
+    const cached = signedUrlCache.get(url);
+    if (cached && cached.expiresAt > Date.now()) {
+      results.set(url, cached.url);
+      continue;
+    }
 
-      // Public Supabase storage URLs pass through directly
-      if (isPublicStorageUrl(url)) {
-        results.set(url, url);
-        return;
-      }
+    if (!isStorageRef(url)) {
+      results.set(url, url);
+      continue;
+    }
 
-      // Already signed URL passes through
-      try {
-        const urlObj = new URL(url);
-        if (urlObj.searchParams.has('token')) {
-          results.set(url, url);
-          return;
-        }
-      } catch {
-        // Continue; might be a direct path
-      }
+    toSign.push(url);
+  }
 
-      // Cache
-      const cached = signedUrlCache.get(url);
-      if (cached && cached.expiresAt > Date.now()) {
-        results.set(url, cached.url);
-        return;
-      }
+  if (toSign.length === 0) return results;
 
-      const ref = parseStorageRef(url);
-      if (!ref) {
-        results.set(url, url);
-        return;
-      }
+  try {
+    const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
+      body: { urls: toSign, expiresInSeconds: 60 * 60 * 24 },
+    });
 
-      try {
-        const { data, error } = await supabase.storage
-          .from(ref.bucket)
-          .createSignedUrl(ref.path, 60 * 60 * 24);
+    if (fnError) {
+      // fall back to original
+      for (const u of toSign) results.set(u, u);
+      return results;
+    }
 
-        if (error || !data?.signedUrl) {
-          results.set(url, url);
-          return;
-        }
-
-        signedUrlCache.set(url, {
-          url: data.signedUrl,
-          expiresAt: Date.now() + 23 * 60 * 60 * 1000,
-        });
-
-        results.set(url, data.signedUrl);
-      } catch {
-        results.set(url, url);
-      }
-    })
-  );
+    const returned: Record<string, string> = data?.results || {};
+    for (const original of toSign) {
+      const finalUrl = returned[original] || original;
+      signedUrlCache.set(original, {
+        url: finalUrl,
+        expiresAt: Date.now() + 23 * 60 * 60 * 1000,
+      });
+      results.set(original, finalUrl);
+    }
+  } catch {
+    for (const u of toSign) results.set(u, u);
+  }
 
   return results;
 }
+
