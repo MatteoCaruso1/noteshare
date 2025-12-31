@@ -11,13 +11,12 @@ import { FriendsList } from '@/components/FriendsList';
 import { NotificationsList } from '@/components/NotificationsList';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { useFriends } from '@/hooks/useFriendships';
-import { useUnreadNotificationCount, useNotifications } from '@/hooks/useNotifications';
+import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useMessages';
-import { Users, Bell, MessageCircle, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Users, Bell, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const FriendsJournals = () => {
   const { user } = useAuth();
@@ -58,12 +57,74 @@ const FriendsJournals = () => {
           <div className="flex items-center justify-between gap-3 h-9">
             <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends</h1>
             <div className="flex items-center gap-2 flex-1 justify-end">
+              {/* Notifications Button */}
+              <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <DialogTrigger asChild>
+                  <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                    <Bell className={`w-4 h-4 ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
+                    {unreadNotificationCount && unreadNotificationCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-destructive text-destructive-foreground">
+                        {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                      </Badge>
+                    )}
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Bell className="w-5 h-5 text-primary" />
+                      Notifications
+                      {unreadNotificationCount && unreadNotificationCount > 0 && (
+                        <Badge className="ml-2 bg-destructive text-destructive-foreground">
+                          {unreadNotificationCount}
+                        </Badge>
+                      )}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-[60vh]">
+                    <NotificationsList embedded />
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
+
+              {/* Messages Button */}
+              <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
+                <DialogTrigger asChild>
+                  <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                    <MessageCircle className={`w-4 h-4 ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
+                    {unreadMessagesCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-destructive text-destructive-foreground">
+                        {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+                      </Badge>
+                    )}
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-primary" />
+                      Messages
+                      {unreadMessagesCount > 0 && (
+                        <Badge className="ml-2 bg-destructive text-destructive-foreground">
+                          {unreadMessagesCount}
+                        </Badge>
+                      )}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-[60vh]">
+                    <DirectMessages embedded />
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
+
+              {/* Friends Button */}
               <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
                 <div className="cursor-pointer transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                   <Users className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">{friends?.length || 0}</span>
                 </div>
               </FriendsList>
+
               <div className="flex-1 max-w-xs">
                 <UserSearch compact />
               </div>
@@ -76,52 +137,6 @@ const FriendsJournals = () => {
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
           {/* Pending Friend Requests */}
           <PendingFriendRequests />
-
-          {/* Notifications Dropdown */}
-          <Card className="bg-card border-border">
-            <Collapsible open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-              <CollapsibleTrigger asChild>
-                <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
-                  <div className="flex items-center gap-2">
-                    <Bell className={`w-5 h-5 transition-colors ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                    <span className="font-semibold">Notifications</span>
-                    {unreadNotificationCount && unreadNotificationCount > 0 && (
-                      <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-                        {unreadNotificationCount}
-                      </Badge>
-                    )}
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${notificationsOpen ? 'rotate-180' : ''}`} />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="px-4 pb-4">
-                <NotificationsList embedded />
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
-
-          {/* Messages Dropdown */}
-          <Card className="bg-card border-border">
-            <Collapsible open={messagesOpen} onOpenChange={setMessagesOpen}>
-              <CollapsibleTrigger asChild>
-                <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className={`w-5 h-5 transition-colors ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                    <span className="font-semibold">Messages</span>
-                    {unreadMessagesCount > 0 && (
-                      <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-                        {unreadMessagesCount}
-                      </Badge>
-                    )}
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${messagesOpen ? 'rotate-180' : ''}`} />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="px-4 pb-4">
-                <DirectMessages embedded />
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
 
           {/* Friends Feed */}
           <div className="pt-2">
