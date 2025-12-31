@@ -139,7 +139,7 @@ export function usePracticeStats(profileId: string | undefined) {
         });
         
         weeklyDaysPracticed.push({
-          week: format(weekStart, 'M/d'),
+          week: format(weekStart, 'MMM d'),
           days: daysInWeek.size
         });
       }
