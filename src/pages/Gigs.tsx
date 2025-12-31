@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -29,6 +28,8 @@ import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { SignedImage } from '@/components/SignedImage';
 import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Trash2, Upload, CalendarIcon, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -158,17 +159,16 @@ const Gigs = () => {
     >
       <div className="flex items-start gap-4">
         {/* Gig image or icon - matching project card layout */}
-        {post.image ? (
-          <img
-            src={post.image}
-            alt=""
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-            <Music2 className="w-6 h-6 text-muted-foreground" />
-          </div>
-        )}
+        <SignedImage
+          src={post.image || ''}
+          alt=""
+          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+          fallback={
+            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              <Music2 className="w-6 h-6 text-muted-foreground" />
+            </div>
+          }
+        />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
@@ -216,10 +216,12 @@ const Gigs = () => {
           
           {showAuthor && post.author && (
             <div className="flex items-center gap-2 mt-1">
-              <Avatar className="w-4 h-4">
-                <AvatarImage src={post.author?.avatar || ''} />
-                <AvatarFallback><User className="w-2 h-2" /></AvatarFallback>
-              </Avatar>
+              <ClickableAvatar
+                profileId={post.author_id}
+                avatar={post.author?.avatar}
+                name={post.author?.name}
+                size="sm"
+              />
               <span className="text-xs text-muted-foreground">{post.author?.name}</span>
             </div>
           )}

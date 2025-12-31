@@ -238,6 +238,7 @@ const ProjectDetail = () => {
           title={project.title}
           date={project.release_date || ''}
           dateLabel="Expected release"
+          authorId={project.owner_id}
           authorName={project.owner?.name}
           authorUsername={project.owner?.username}
           authorAvatar={project.owner?.avatar}
