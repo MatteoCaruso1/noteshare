@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
+import { useGlint } from '@/contexts/GlintContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
   const { saveToBacklog, isSaving } = useFocusBacklog();
+  const { setFocusFocused } = useGlint();
   const [text, setText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -18,6 +20,11 @@ export function TodaysFocus() {
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync isFocused state with glint context
+  useEffect(() => {
+    setFocusFocused(isFocused);
+  }, [isFocused, setFocusFocused]);
 
   // Initialize text from focus data - only once on initial load
   useEffect(() => {
