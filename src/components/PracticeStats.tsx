@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Zap, Award } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getStreakTier, getStreakMilestoneMessage, STREAK_TIERS } from '@/lib/streakUtils';
@@ -137,7 +137,42 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Current Streak, Best Streak & Best Week */}
+        {/* Days Practiced Per Month Bar Chart */}
+        <p className="text-sm text-muted-foreground mb-2">Days practiced per month</p>
+        <div className="h-32 mb-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={stats.monthlyDaysPracticed}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis 
+                dataKey="month" 
+                tick={{ fontSize: 10 }} 
+                className="text-muted-foreground"
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 10 }} 
+                className="text-muted-foreground"
+                tickLine={false}
+                width={24}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))', 
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '8px'
+                }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                formatter={(value: number) => [`${value} days`, 'Practiced']}
+              />
+              <Bar 
+                dataKey="days" 
+                fill="hsl(var(--primary))" 
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
             <Flame className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-primary" />
