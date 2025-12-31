@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Crosshair } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { toast } from 'sonner';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -40,7 +41,7 @@ export function QuickNoteCapture() {
   const recentTags = useRecentTags();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [attachFocus, setAttachFocus] = useState(true);
+  const [attachFocus, setAttachFocus] = useState(false);
 
   // Use persistent state for note content that survives navigation
   const {
@@ -106,7 +107,6 @@ export function QuickNoteCapture() {
       {
         onSuccess: () => {
           clearState();
-          setAttachFocus(true);
           setIsOpen(false);
         },
       }
@@ -232,7 +232,14 @@ export function QuickNoteCapture() {
                   <Switch
                     id="attach-focus"
                     checked={attachFocus}
-                    onCheckedChange={setAttachFocus}
+                    onCheckedChange={(checked) => {
+                      setAttachFocus(checked);
+                      if (checked) {
+                        toast.success("Your note will be linked to Today's Focus");
+                      } else {
+                        toast.success("Your note will no longer be linked to Today's Focus");
+                      }
+                    }}
                     className="scale-90"
                   />
                 </div>
