@@ -371,19 +371,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           size="md"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <StreakTintedName 
-              name={note.author?.name || 'Unknown'} 
-              streakDays={streakDays}
-              className="text-sm font-medium truncate"
-            />
-            <div className="flex items-center gap-0.5">
-              <Flame className={`w-3 h-3 ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`} />
-              <span className={`text-xs font-medium ${streakDays > 0 ? 'text-primary' : 'text-muted-foreground/40'}`}>
-                {streakDays}
-              </span>
-            </div>
-          </div>
+          <StreakTintedName 
+            name={note.author?.name || 'Unknown'} 
+            streakDays={streakDays}
+            className="text-sm font-medium truncate"
+          />
           {/* Short date in timeline only */}
           {!expanded && (
             <p className="text-xs text-muted-foreground">
