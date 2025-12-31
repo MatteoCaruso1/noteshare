@@ -1,7 +1,8 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface ClickableAvatarProps {
   profileId: string;
@@ -19,6 +20,7 @@ export function ClickableAvatar({
   className = ''
 }: ClickableAvatarProps) {
   const navigate = useNavigate();
+  const { signedUrl, loading } = useSignedUrl(avatar);
 
   const sizeClasses = {
     sm: 'w-6 h-6',
@@ -53,10 +55,17 @@ export function ClickableAvatar({
   if (!profileId || profileId === 'undefined' || profileId === 'null') {
     return (
       <Avatar className={`${sizeClasses[size]} ${className}`}>
-        <AvatarImage src={avatar || ''} />
-        <AvatarFallback>
-          <User className={iconSizes[size]} />
-        </AvatarFallback>
+        {signedUrl && !loading ? (
+          <img 
+            src={signedUrl} 
+            alt={name || ''} 
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <AvatarFallback>
+            <User className={iconSizes[size]} />
+          </AvatarFallback>
+        )}
       </Avatar>
     );
   }
@@ -66,10 +75,17 @@ export function ClickableAvatar({
       className={`${sizeClasses[size]} cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all ${className}`}
       onClick={handleClick}
     >
-      <AvatarImage src={avatar || ''} />
-      <AvatarFallback>
-        <User className={iconSizes[size]} />
-      </AvatarFallback>
+      {signedUrl && !loading ? (
+        <img 
+          src={signedUrl} 
+          alt={name || ''} 
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <AvatarFallback>
+          <User className={iconSizes[size]} />
+        </AvatarFallback>
+      )}
     </Avatar>
   );
 }
