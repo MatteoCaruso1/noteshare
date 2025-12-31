@@ -11,16 +11,17 @@ export function SignedImage({ src, fallback, className, alt = '', ...props }: Si
   const { signedUrl, loading } = useSignedUrl(src);
   const [imageError, setImageError] = useState(false);
 
+  // Show skeleton while loading the signed URL
   if (loading) {
-    return (
-      <Skeleton className={className} />
-    );
+    return <Skeleton className={className} />;
   }
 
+  // Show fallback if there was an error loading the image
   if (imageError && fallback) {
     return <>{fallback}</>;
   }
 
+  // Show fallback if no signed URL available
   if (!signedUrl) {
     return fallback ? <>{fallback}</> : null;
   }
