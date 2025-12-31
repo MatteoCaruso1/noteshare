@@ -32,14 +32,8 @@ export function StreakIndicator() {
             <span>{streak}</span>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="text-xs">
-          <p className="font-medium">{streak} day streak</p>
-          {streak === 0 && (
-            <p className="text-muted-foreground">Practice today to start your streak!</p>
-          )}
-          {tier.tier !== 'none' && (
-            <p className={`${tier.colorClass}`}>{tier.label} tier</p>
-          )}
+        <TooltipContent side="bottom" className="text-xs max-w-[200px]">
+          <p>Days practiced in a row. Reach milestones to earn rewards!</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
