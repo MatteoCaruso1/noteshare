@@ -299,6 +299,7 @@ const GigDetail = () => {
           title={gig.title}
           date={gig.event_date || ''}
           dateLabel="Gig date"
+          authorId={gig.author_id}
           authorName={gig.author?.name}
           authorUsername={gig.author?.username}
           authorAvatar={gig.author?.avatar}

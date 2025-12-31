@@ -320,6 +320,7 @@ const Projects = () => {
                       date={project.created_at}
                       releaseDate={project.release_date}
                       showOwner
+                      ownerId={project.owner_id}
                       ownerName={project.owner?.name}
                       ownerAvatar={project.owner?.avatar}
                     />

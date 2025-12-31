@@ -1,11 +1,10 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SignedImage } from '@/components/SignedImage';
-import { Calendar, User } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { Calendar, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
-import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface CollectionCardProps {
   id: string;
@@ -17,6 +16,7 @@ interface CollectionCardProps {
   date: string;
   releaseDate?: string | null;
   showOwner?: boolean;
+  ownerId?: string;
   ownerName?: string;
   ownerAvatar?: string | null;
   badges?: ReactNode;
@@ -34,6 +34,7 @@ export const CollectionCard = ({
   date,
   releaseDate,
   showOwner = false,
+  ownerId,
   ownerName,
   ownerAvatar,
   badges,
@@ -41,7 +42,6 @@ export const CollectionCard = ({
   dateLabel,
 }: CollectionCardProps) => {
   const navigate = useNavigate();
-  const { signedUrl: signedOwnerAvatar } = useSignedUrl(ownerAvatar);
 
   // Prefer release date if available, otherwise use created date
   const displayDate = releaseDate || date;
@@ -59,13 +59,13 @@ export const CollectionCard = ({
             alt={`${title} cover`}
             className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
             fallback={
-              <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                {coverIcon}
+              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                {coverIcon || <ImageOff className="w-6 h-6 text-muted-foreground" />}
               </div>
             }
           />
         ) : (
-          <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
             {coverIcon}
           </div>
         )}
@@ -84,13 +84,12 @@ export const CollectionCard = ({
           
           {showOwner && ownerName && (
             <div className="flex items-center gap-2 mt-1">
-              <Avatar className="w-4 h-4">
-                {signedOwnerAvatar ? (
-                  <img src={signedOwnerAvatar} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <AvatarFallback><User className="w-2 h-2" /></AvatarFallback>
-                )}
-              </Avatar>
+              <ClickableAvatar
+                profileId={ownerId || ''}
+                avatar={ownerAvatar}
+                name={ownerName}
+                size="sm"
+              />
               <span className="text-xs text-muted-foreground">{ownerName}</span>
             </div>
           )}

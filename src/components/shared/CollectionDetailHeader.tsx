@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, User, Settings } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { SignedImage } from '@/components/SignedImage';
+import { ArrowLeft, Settings, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CollectionDetailHeaderProps {
@@ -10,6 +11,7 @@ interface CollectionDetailHeaderProps {
   title: string;
   date: string;
   dateLabel?: string;
+  authorId?: string;
   authorName?: string;
   authorUsername?: string;
   authorAvatar?: string | null;
@@ -25,6 +27,7 @@ export const CollectionDetailHeader = ({
   title,
   date,
   dateLabel = 'Created',
+  authorId,
   authorName,
   authorUsername,
   authorAvatar,
@@ -53,13 +56,18 @@ export const CollectionDetailHeader = ({
       <div className="flex items-start gap-4">
         {/* Cover image or icon */}
         {coverImage ? (
-          <img
+          <SignedImage
             src={coverImage}
             alt=""
             className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+            fallback={
+              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                {coverIcon || <ImageOff className="w-6 h-6 text-muted-foreground" />}
+              </div>
+            }
           />
         ) : coverIcon ? (
-          <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
             {coverIcon}
           </div>
         ) : null}
@@ -68,10 +76,12 @@ export const CollectionDetailHeader = ({
           {/* Author info */}
           {authorName && (
             <div className="flex items-center gap-2 mb-1">
-              <Avatar className="w-5 h-5">
-                <AvatarImage src={authorAvatar || ''} />
-                <AvatarFallback><User className="w-3 h-3" /></AvatarFallback>
-              </Avatar>
+              <ClickableAvatar
+                profileId={authorId || ''}
+                avatar={authorAvatar}
+                name={authorName}
+                size="sm"
+              />
               <span className="text-sm text-muted-foreground">{authorName}</span>
               {authorUsername && (
                 <span className="text-xs text-muted-foreground">@{authorUsername}</span>

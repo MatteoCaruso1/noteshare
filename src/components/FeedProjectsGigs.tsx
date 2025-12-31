@@ -101,13 +101,13 @@ export function FeedProjectsGigs() {
                           alt={`${project.title} project cover`}
                           className="w-10 h-10 rounded-lg object-cover"
                           fallback={
-                            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                               <Disc3 className="w-5 h-5 text-muted-foreground" />
                             </div>
                           }
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                           <Disc3 className="w-5 h-5 text-muted-foreground" />
                         </div>
                       )}
@@ -145,14 +145,14 @@ export function FeedProjectsGigs() {
                           alt={`${gig.title} gig thumbnail`}
                           className="w-10 h-10 rounded-lg object-cover"
                           fallback={
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Music2 className="w-5 h-5 text-primary" />
+                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                              <Music2 className="w-5 h-5 text-muted-foreground" />
                             </div>
                           }
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Music2 className="w-5 h-5 text-primary" />
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                          <Music2 className="w-5 h-5 text-muted-foreground" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
