@@ -68,7 +68,7 @@ export function PracticeControls() {
     clearState,
   } = usePersistentNoteState('practice_session', profile?.id);
 
-  const [attachFocus, setAttachFocus] = useState(true);
+  const [attachFocus, setAttachFocus] = useState(false);
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -242,7 +242,6 @@ export function PracticeControls() {
               {
                 onSuccess: () => {
                   clearState();
-                  setAttachFocus(true);
                 },
               }
             );
@@ -486,7 +485,14 @@ export function PracticeControls() {
                   <Switch
                     id="attach-focus-session"
                     checked={attachFocus}
-                    onCheckedChange={setAttachFocus}
+                    onCheckedChange={(checked) => {
+                      setAttachFocus(checked);
+                      if (checked) {
+                        toast.success("Your session will be linked to Today's Focus");
+                      } else {
+                        toast.success("Your session will no longer be linked to Today's Focus");
+                      }
+                    }}
                     className="scale-90"
                   />
                 </div>
