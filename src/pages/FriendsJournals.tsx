@@ -118,7 +118,7 @@ const FriendsJournals = () => {
                         variant="ghost" 
                         size="icon"
                         onClick={() => setShowNewMessageView(true)}
-                        className="h-7 w-7 ml-auto"
+                        className="h-7 w-7 ml-auto mr-4"
                         title="New message"
                       >
                         <PenSquare className="w-4 h-4" />
