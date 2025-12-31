@@ -404,7 +404,7 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="h-64 p-4" ref={scrollRef}>
+      <ScrollArea className="h-48 p-4" ref={scrollRef}>
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground text-sm">
             Loading...
