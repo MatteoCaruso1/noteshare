@@ -64,6 +64,13 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
         setSignedUrl(originalUrl);
         return;
       }
+      
+      // Check if it's a PUBLIC storage URL - these don't need signing!
+      if (originalUrl.includes('/storage/v1/object/public/')) {
+        // Public URLs work directly without signing
+        setSignedUrl(originalUrl);
+        return;
+      }
     } catch {
       // Not a valid URL, try to use as-is
       setSignedUrl(originalUrl);
@@ -77,7 +84,7 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
       return;
     }
 
-    // Extract file path and get signed URL
+    // Extract file path and get signed URL (only for non-public URLs)
     const filePath = extractFilePath(originalUrl);
     if (!filePath) {
       // Can't extract path, use original
@@ -137,10 +144,15 @@ export async function getSignedUrls(urls: string[]): Promise<Map<string, string>
       return;
     }
     
-    // Check if already signed
+    // Check if already signed or is a public URL
     try {
       const urlObj = new URL(url);
       if (urlObj.searchParams.has('token')) {
+        results.set(url, url);
+        return;
+      }
+      // Public URLs don't need signing
+      if (url.includes('/storage/v1/object/public/')) {
         results.set(url, url);
         return;
       }
