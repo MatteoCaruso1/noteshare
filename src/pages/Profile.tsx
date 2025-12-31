@@ -6,7 +6,7 @@ import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,8 +20,11 @@ import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 import { StreakBadges } from '@/components/StreakBadges';
 import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+
 const MILESTONE_STORAGE_KEY = 'noteshare_celebrated_milestones';
+
 function getCelebratedMilestones(): number[] {
   try {
     const stored = localStorage.getItem(MILESTONE_STORAGE_KEY);
@@ -30,6 +33,7 @@ function getCelebratedMilestones(): number[] {
     return [];
   }
 }
+
 function setCelebratedMilestone(days: number) {
   const milestones = getCelebratedMilestones();
   if (!milestones.includes(days)) {
@@ -37,17 +41,11 @@ function setCelebratedMilestone(days: number) {
     localStorage.setItem(MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
   }
 }
+
 const Profile = () => {
-  const {
-    user,
-    profile,
-    signOut,
-    refreshProfile
-  } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const {
-    uploadImage
-  } = useMediaUpload();
+  const { uploadImage } = useMediaUpload();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile?.name || '');
   const [username, setUsername] = useState(profile?.username || '');
@@ -58,12 +56,13 @@ const Profile = () => {
   const [openToCollaborate, setOpenToCollaborate] = useState(profile?.open_to_collaborate || false);
   const [saving, setSaving] = useState(false);
 
+  // Get signed URL for avatar
+  const { signedUrl: signedAvatar } = useSignedUrl(avatar);
+
   // Streak milestone dialog state
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
-  const {
-    data: practiceStats
-  } = usePracticeStats(profile?.id);
+  const { data: practiceStats } = usePracticeStats(profile?.id);
 
   // Check for new streak milestones
   useEffect(() => {
@@ -82,16 +81,16 @@ const Profile = () => {
       setCelebratedMilestone(currentTier.minDays);
     }
   }, [practiceStats?.currentStreak]);
+
   if (!user) {
     navigate('/auth');
     return null;
   }
+
   const handleSave = async () => {
     if (!profile) return;
     setSaving(true);
-    const {
-      error
-    } = await supabase.from('profiles').update({
+    const { error } = await supabase.from('profiles').update({
       name,
       username,
       avatar,
@@ -111,6 +110,7 @@ const Profile = () => {
     }
     setSaving(false);
   };
+
   const toggleInstrument = (instrument: string) => {
     if (instruments.includes(instrument)) {
       setInstruments(instruments.filter(i => i !== instrument));
@@ -118,6 +118,7 @@ const Profile = () => {
       setInstruments([...instruments, instrument]);
     }
   };
+
   const toggleGenre = (genre: string) => {
     if (genres.includes(genre)) {
       setGenres(genres.filter(g => g !== genre));
@@ -125,6 +126,7 @@ const Profile = () => {
       setGenres([...genres, genre]);
     }
   };
+
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
@@ -132,9 +134,7 @@ const Profile = () => {
     if (url) {
       setAvatar(url);
       // Auto-save avatar immediately so it persists even if user navigates away
-      const {
-        error
-      } = await supabase.from('profiles').update({
+      const { error } = await supabase.from('profiles').update({
         avatar: url
       }).eq('id', profile.id);
       if (error) {
@@ -145,7 +145,9 @@ const Profile = () => {
       }
     }
   };
-  return <PageLayout>
+
+  return (
+    <PageLayout>
       {/* Page Title - consistent with other pages */}
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
@@ -164,47 +166,78 @@ const Profile = () => {
           <div className="flex items-center gap-4">
             <div className="relative">
               <Avatar className="w-20 h-20">
-                <AvatarImage src={avatar || ''} />
-                <AvatarFallback>
-                  <User className="w-8 h-8" />
-                </AvatarFallback>
+                {signedAvatar ? (
+                  <img 
+                    src={signedAvatar} 
+                    alt={name || 'Profile picture'} 
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback>
+                    <User className="w-8 h-8" />
+                  </AvatarFallback>
+                )}
               </Avatar>
-              {editing && <label className="absolute bottom-0 right-0 bg-background/80 rounded-full p-1 cursor-pointer border border-border">
+              {editing && (
+                <label className="absolute bottom-0 right-0 bg-background/80 rounded-full p-1 cursor-pointer border border-border">
                   <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
                   <Camera className="w-4 h-4 text-muted-foreground" />
-                </label>}
+                </label>
+              )}
             </div>
             <div className="flex-1">
-              {editing ? <div className="space-y-2">
+              {editing ? (
+                <div className="space-y-2">
                   <Input value={name} onChange={e => setName(e.target.value)} className="text-lg font-semibold" placeholder="Full name" />
                   <Input value={username} onChange={e => setUsername(e.target.value)} className="text-sm" placeholder="Handle (e.g., matteo_caruso)" />
-                </div> : <div className="space-y-1">
+                </div>
+              ) : (
+                <div className="space-y-1">
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
                   <p className="text-sm text-muted-foreground">@{profile?.username}</p>
                   {practiceStats && <StreakBadges currentStreak={practiceStats.currentStreak} bestStreak={practiceStats.bestDailyStreak} />}
-                </div>}
+                </div>
+              )}
             </div>
-            {!editing && <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            {!editing && (
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
                 <Settings className="w-4 h-4 mr-2" />
                 Edit
-              </Button>}
+              </Button>
+            )}
           </div>
 
           {/* Bio */}
           <Card className="p-4 bg-card border-border">
             <h3 className="font-medium mb-2">About</h3>
-            {editing ? <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself and your musical journey..." rows={3} /> : <p className="text-sm text-muted-foreground">
+            {editing ? (
+              <Textarea 
+                value={bio} 
+                onChange={e => setBio(e.target.value)} 
+                placeholder="Tell others about yourself and your musical journey..." 
+                rows={3} 
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
                 {profile?.bio || 'No bio yet. Add one to help others get to know you!'}
-              </p>}
+              </p>
+            )}
           </Card>
 
           {/* Instruments */}
           <Card className="p-4 bg-card border-border">
             <h3 className="font-medium mb-3">Instruments</h3>
             <div className="flex flex-wrap gap-2">
-              {(editing ? INSTRUMENTS : profile?.instruments || []).map(instrument => <Badge key={instrument} variant={instruments.includes(instrument) ? 'default' : 'secondary'} className={editing ? 'cursor-pointer' : ''} onClick={editing ? () => toggleInstrument(instrument) : undefined}>
+              {(editing ? INSTRUMENTS : profile?.instruments || []).map(instrument => (
+                <Badge 
+                  key={instrument} 
+                  variant={instruments.includes(instrument) ? 'default' : 'secondary'} 
+                  className={editing ? 'cursor-pointer' : ''} 
+                  onClick={editing ? () => toggleInstrument(instrument) : undefined}
+                >
                   {instrument}
-                </Badge>)}
+                </Badge>
+              ))}
             </div>
           </Card>
 
@@ -212,59 +245,79 @@ const Profile = () => {
           <Card className="p-4 bg-card border-border">
             <h3 className="font-medium mb-3">Genres</h3>
             <div className="flex flex-wrap gap-2">
-              {(editing ? GENRES : profile?.genres || []).map(genre => <Badge key={genre} variant={genres.includes(genre) ? 'default' : 'secondary'} className={editing ? 'cursor-pointer' : ''} onClick={editing ? () => toggleGenre(genre) : undefined}>
+              {(editing ? GENRES : profile?.genres || []).map(genre => (
+                <Badge 
+                  key={genre} 
+                  variant={genres.includes(genre) ? 'default' : 'secondary'} 
+                  className={editing ? 'cursor-pointer' : ''} 
+                  onClick={editing ? () => toggleGenre(genre) : undefined}
+                >
                   {genre}
-                </Badge>)}
+                </Badge>
+              ))}
             </div>
           </Card>
 
-          {/* Collaboration */}
+          {/* Open to Collaborate */}
           <Card className="p-4 bg-card border-border">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium">Open to Collaborate</h3>
-                
+                <p className="text-sm text-muted-foreground">Show others you're looking for practice partners</p>
               </div>
-              {editing ? <Button variant={openToCollaborate ? 'default' : 'outline'} size="sm" onClick={() => setOpenToCollaborate(!openToCollaborate)}>
+              {editing ? (
+                <Button
+                  variant={openToCollaborate ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setOpenToCollaborate(!openToCollaborate)}
+                >
                   {openToCollaborate ? 'Yes' : 'No'}
-                </Button> : <Badge variant={profile?.open_to_collaborate ? 'default' : 'secondary'}>
+                </Button>
+              ) : (
+                <Badge variant={profile?.open_to_collaborate ? 'default' : 'secondary'}>
                   {profile?.open_to_collaborate ? 'Yes' : 'No'}
-                </Badge>}
+                </Badge>
+              )}
             </div>
           </Card>
 
+          {/* Practice Stats */}
+          <PracticeStats profileId={profile?.id} />
+
           {/* Save/Cancel Buttons */}
-          {editing && <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => { setEditing(false); window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }}>
+          {editing && (
+            <div className="flex gap-3">
+              <Button onClick={handleSave} disabled={saving} className="flex-1">
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+              <Button variant="outline" onClick={() => setEditing(false)}>
                 Cancel
               </Button>
-              <Button className="flex-1 bg-gradient-primary text-primary-foreground" onClick={handleSave} disabled={saving}>
-                Save Changes
-              </Button>
-            </div>}
-
-          {/* Practice Stats */}
-          {!editing && profile && <div className="pt-4">
-              <h2 className="text-lg font-semibold mb-4">Your Stats</h2>
-              <PracticeStats profileId={profile.id} />
-            </div>}
+            </div>
+          )}
 
           {/* Feedback Section */}
-          {!editing && <div className="pt-4">
-              <FeedbackCard />
-            </div>}
+          <FeedbackCard />
 
-          {/* Add to Home Screen Info */}
-          {!editing && <div className="pt-2">
-              <AddToHomescreenInfo />
-            </div>}
+          {/* Add to Homescreen Info */}
+          <AddToHomescreenInfo />
         </main>
       </PageBody>
 
       <BottomNav />
-      
-      {/* Streak Milestone Celebration Dialog */}
-      {celebratingTier && <StreakMilestoneDialog open={milestoneDialogOpen} onOpenChange={setMilestoneDialogOpen} tier={celebratingTier} streakDays={practiceStats?.currentStreak || celebratingTier.minDays} hasNextMilestone={celebratingTier.tier !== 'gold'} />}
-    </PageLayout>;
+
+      {/* Streak Milestone Dialog */}
+      {celebratingTier && (
+        <StreakMilestoneDialog
+          open={milestoneDialogOpen}
+          onOpenChange={setMilestoneDialogOpen}
+          tier={celebratingTier}
+          streakDays={practiceStats?.currentStreak || 0}
+          hasNextMilestone={true}
+        />
+      )}
+    </PageLayout>
+  );
 };
+
 export default Profile;

@@ -1,14 +1,15 @@
-import { useEffect, useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePublicNotes } from '@/hooks/usePublicNotes';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Music2, Disc3, Users, MapPin, Flame } from 'lucide-react';
 import { Profile } from '@/types';
@@ -64,6 +65,9 @@ const PublicProfile = () => {
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
   const [displayCount, setDisplayCount] = useState(10);
   
+  // Get signed URL for avatar
+  const { signedUrl: signedAvatar } = useSignedUrl(profile?.avatar);
+  
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
@@ -100,11 +104,10 @@ const PublicProfile = () => {
     return (
       <PageLayout>
         <PageBody>
-          <div className="container max-w-2xl mx-auto px-4 py-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-24 bg-muted rounded-xl" />
-              <div className="h-32 bg-muted rounded-xl" />
-            </div>
+          <div className="container max-w-2xl mx-auto px-4 py-8">
+            <Card className="p-6 bg-card border-border animate-pulse">
+              <div className="h-20 bg-muted rounded" />
+            </Card>
           </div>
         </PageBody>
         <BottomNav />
@@ -115,18 +118,12 @@ const PublicProfile = () => {
   if (error || !profile) {
     return (
       <PageLayout>
-        <PageHeader>
-          <div className="container max-w-2xl mx-auto px-4 py-6">
-            <Button variant="ghost" onClick={handleBack} className="mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
-            </Button>
-          </div>
-        </PageHeader>
         <PageBody>
-          <div className="container max-w-2xl mx-auto px-4">
-            <Card className="p-8 text-center">
-              <User className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h2 className="font-semibold text-lg">Profile not found</h2>
+          <div className="container max-w-2xl mx-auto px-4 py-8">
+            <Card className="p-6 bg-card border-border text-center">
+              <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
+              <p className="text-muted-foreground mb-4">This user doesn't exist or the profile couldn't be loaded.</p>
+              <Button onClick={() => navigate('/friends')}>Go to Friends</Button>
             </Card>
           </div>
         </PageBody>
@@ -152,10 +149,17 @@ const PublicProfile = () => {
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="w-20 h-20 border-2 border-primary/20">
-                <AvatarImage src={profile.avatar || ''} />
-                <AvatarFallback className="text-2xl">
-                  <User className="w-10 h-10" />
-                </AvatarFallback>
+                {signedAvatar ? (
+                  <img 
+                    src={signedAvatar} 
+                    alt={profile.name || 'Profile picture'} 
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback className="text-2xl">
+                    <User className="w-10 h-10" />
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div className="flex-1 min-w-0">
                 <StreakTintedName 
@@ -222,7 +226,7 @@ const PublicProfile = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {profile.genres.map((genre) => (
-                    <Badge key={genre} variant="outline">
+                    <Badge key={genre} variant="secondary">
                       {genre}
                     </Badge>
                   ))}
@@ -231,16 +235,16 @@ const PublicProfile = () => {
             )}
           </Card>
 
-          {/* User's Notes */}
-          <section>
-            <h2 className="text-lg font-semibold mb-4">{profile.name}'s Notes</h2>
+          {/* Notes Section */}
+          <div className="space-y-4">
+            <h3 className="font-semibold px-1">Recent Notes</h3>
             <Timeline 
               notes={notes || []} 
-              loading={notesLoading} 
+              loading={notesLoading}
               displayCount={displayCount}
               onLoadMore={handleLoadMore}
             />
-          </section>
+          </div>
         </div>
       </PageBody>
 

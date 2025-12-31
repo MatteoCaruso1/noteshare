@@ -1,9 +1,11 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { SignedImage } from '@/components/SignedImage';
 import { Calendar, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface CollectionCardProps {
   id: string;
@@ -39,6 +41,7 @@ export const CollectionCard = ({
   dateLabel,
 }: CollectionCardProps) => {
   const navigate = useNavigate();
+  const { signedUrl: signedOwnerAvatar } = useSignedUrl(ownerAvatar);
 
   // Prefer release date if available, otherwise use created date
   const displayDate = releaseDate || date;
@@ -51,10 +54,15 @@ export const CollectionCard = ({
     >
       <div className="flex items-start gap-4">
         {coverImage ? (
-          <img
+          <SignedImage
             src={coverImage}
-            alt=""
+            alt={`${title} cover`}
             className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+            fallback={
+              <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                {coverIcon}
+              </div>
+            }
           />
         ) : (
           <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
@@ -77,8 +85,11 @@ export const CollectionCard = ({
           {showOwner && ownerName && (
             <div className="flex items-center gap-2 mt-1">
               <Avatar className="w-4 h-4">
-                <AvatarImage src={ownerAvatar || ''} />
-                <AvatarFallback><User className="w-2 h-2" /></AvatarFallback>
+                {signedOwnerAvatar ? (
+                  <img src={signedOwnerAvatar} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <AvatarFallback><User className="w-2 h-2" /></AvatarFallback>
+                )}
               </Avatar>
               <span className="text-xs text-muted-foreground">{ownerName}</span>
             </div>
