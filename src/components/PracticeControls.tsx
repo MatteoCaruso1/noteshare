@@ -7,6 +7,7 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
+import { useGlint } from '@/contexts/GlintContext';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
@@ -50,6 +51,7 @@ export function PracticeControls() {
   const resumeSession = useResumeSession();
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
+  const { isPaused, setPracticeExpanded } = useGlint();
 
   // Use persistent state for note content that survives navigation
   const {
@@ -72,6 +74,14 @@ export function PracticeControls() {
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  // Determine if we should show the collapsible content
+  const isExpanded = !!activeSession || showSessionChoice;
+
+  // Sync expanded state with glint context
+  useEffect(() => {
+    setPracticeExpanded(isExpanded);
+  }, [isExpanded, setPracticeExpanded]);
 
   // Simple wake lock toggle - button state is source of truth
   const toggleWakeLock = useCallback(async () => {
@@ -142,13 +152,13 @@ export function PracticeControls() {
   }, [activeSession]);
   // Live-updating timer - must be before early return
   const [, setTick] = useState(0);
-  const isPaused = !!activeSession?.paused_at;
+  const isSessionPaused = !!activeSession?.paused_at;
   
   useEffect(() => {
-    if (!activeSession || isPaused) return;
+    if (!activeSession || isSessionPaused) return;
     const interval = setInterval(() => setTick(t => t + 1), 60000);
     return () => clearInterval(interval);
-  }, [activeSession, isPaused]);
+  }, [activeSession, isSessionPaused]);
 
   if (!profile) return null;
 
@@ -289,14 +299,11 @@ export function PracticeControls() {
     }
   };
 
-  // Determine if we should show the collapsible content
-  const isExpanded = !!activeSession || showSessionChoice;
-
   return (
     <Card className="bg-card border-border">
       <Collapsible open={isExpanded} onOpenChange={handlePracticeOpen}>
         <CollapsibleTrigger asChild>
-          <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isExpanded ? 'glint-paused' : ''}`}>
+          <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isPaused ? 'glint-paused' : ''}`}>
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Start Practice Session</h2>
@@ -551,10 +558,10 @@ export function PracticeControls() {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={isPaused ? handleResumeSession : handlePauseSession}
+              onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
               disabled={pauseSession.isPending || resumeSession.isPending}
             >
-              {isPaused ? (
+              {isSessionPaused ? (
                 <>
                   <Play className="w-4 h-4 mr-2" />
                   Resume Session

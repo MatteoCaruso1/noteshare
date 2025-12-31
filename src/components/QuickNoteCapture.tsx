@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
@@ -6,6 +6,7 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
+import { useGlint } from '@/contexts/GlintContext';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
@@ -39,9 +40,15 @@ export function QuickNoteCapture() {
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   const recentTags = useRecentTags();
+  const { isPaused, setQuickNoteExpanded } = useGlint();
 
   const [isOpen, setIsOpen] = useState(false);
   const [attachFocus, setAttachFocus] = useState(false);
+
+  // Sync isOpen state with glint context
+  useEffect(() => {
+    setQuickNoteExpanded(isOpen);
+  }, [isOpen, setQuickNoteExpanded]);
 
   // Use persistent state for note content that survives navigation
   const {
@@ -119,7 +126,7 @@ export function QuickNoteCapture() {
     <Card className="bg-card border-border">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isOpen ? 'glint-paused' : ''}`}>
+          <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isPaused ? 'glint-paused' : ''}`}>
             <div className="flex items-center gap-2">
               <Music className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Capture Quick Note</h2>

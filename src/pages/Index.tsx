@@ -13,6 +13,7 @@ import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
+import { GlintProvider } from '@/contexts/GlintContext';
 
 const LOAD_MORE_COUNT = 10;
 
@@ -107,14 +108,17 @@ const Index = () => {
           {/* Simple Goals - always visible at top */}
           {profile && <SimpleGoals profileId={profile.id} />}
 
-          {/* Practice Controls (Collapsible) */}
-          <PracticeControls />
+          {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
+          <GlintProvider>
+            {/* Practice Controls (Collapsible) */}
+            <PracticeControls />
 
-          {/* Quick Note Capture */}
-          <QuickNoteCapture />
+            {/* Quick Note Capture */}
+            <QuickNoteCapture />
 
-          {/* Today's Focus */}
-          {profile && <TodaysFocus />}
+            {/* Today's Focus */}
+            {profile && <TodaysFocus />}
+          </GlintProvider>
 
           {/* Memory Reminder */}
           <MemoryReminder />
