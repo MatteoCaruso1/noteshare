@@ -12,26 +12,21 @@ export function useFriendships() {
     queryFn: async () => {
       if (!profile?.id) return [];
 
-      const { data, error } = await supabase
-        .from('friendships')
-        .select('*')
-        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+      // Run both queries in parallel
+      const [friendshipsResult, profilesResult] = await Promise.all([
+        supabase
+          .from('friendships')
+          .select('*')
+          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
+        supabase
+          .from('profiles')
+          .select('id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak')
+      ]);
 
-      if (error) throw error;
+      if (friendshipsResult.error) throw friendshipsResult.error;
 
-      // Fetch profiles separately
-      const profileIds = new Set<string>();
-      data.forEach(f => {
-        profileIds.add(f.requester_id);
-        profileIds.add(f.addressee_id);
-      });
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', Array.from(profileIds));
-
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const data = friendshipsResult.data;
+      const profileMap = new Map((profilesResult.data || []).map(p => [p.id, p]));
 
       return data.map(f => ({
         ...f,
@@ -41,6 +36,8 @@ export function useFriendships() {
       })) as FriendshipWithProfile[];
     },
     enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -87,14 +84,23 @@ export function useFriends() {
     queryFn: async () => {
       if (!profile?.id) return [];
 
-      const { data, error } = await supabase
-        .from('friendships')
-        .select('*')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+      // Run both queries in parallel for better performance
+      const [friendshipsResult, allProfilesResult] = await Promise.all([
+        supabase
+          .from('friendships')
+          .select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
+        // Prefetch profiles in parallel - we'll filter after
+        supabase
+          .from('profiles')
+          .select('id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak')
+      ]);
 
-      if (error) throw error;
+      if (friendshipsResult.error) throw friendshipsResult.error;
 
+      const data = friendshipsResult.data;
+      
       // Get friend IDs (the other person)
       const friendIds = data.map(f => 
         f.requester_id === profile.id ? f.addressee_id : f.requester_id
@@ -102,14 +108,15 @@ export function useFriends() {
 
       if (friendIds.length === 0) return [];
 
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', friendIds);
+      // Filter from prefetched profiles
+      const friendIdSet = new Set(friendIds);
+      const profiles = (allProfilesResult.data || []).filter(p => friendIdSet.has(p.id));
 
-      return (profiles || []) as Profile[];
+      return profiles as Profile[];
     },
     enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 }
 
