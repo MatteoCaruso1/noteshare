@@ -251,6 +251,41 @@
     }
   }
 
+  /* Glint animation for attention-grabbing buttons */
+  .glint {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glint::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.15),
+      transparent
+    );
+    animation: glintSweep 3s ease-in-out infinite;
+  }
+
+  .glint-paused::before {
+    animation-play-state: paused;
+  }
+
+  @keyframes glintSweep {
+    0% {
+      left: -100%;
+    }
+    50%, 100% {
+      left: 200%;
+    }
+  }
+
   /* Subtle fade in */
   .fade-in {
     animation: fadeIn 0.3s ease-out forwards;
