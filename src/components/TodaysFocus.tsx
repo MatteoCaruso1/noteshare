@@ -448,7 +448,7 @@ export function TodaysFocus() {
           className={isFocused ? '' : 'cursor-text'}
           onClick={() => {
             if (!isFocused) {
-              textareaRef.current?.focus();
+              textareaRef.current?.focus({ preventScroll: true });
             }
           }}
         >
@@ -457,7 +457,10 @@ export function TodaysFocus() {
             value={text}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
+            onFocus={(e) => {
+              e.target.scrollIntoView = () => {};
+              setIsFocused(true);
+            }}
             onBlur={() => {
               setIsFocused(false);
               handleBlur();

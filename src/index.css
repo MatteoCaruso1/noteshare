@@ -267,7 +267,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      hsl(var(--primary) / 0.08),
+      hsl(var(--primary) / 0.05),
       transparent
     );
     animation: glintSweep 5.5s ease-in-out infinite;
