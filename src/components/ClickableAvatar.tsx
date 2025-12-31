@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface ClickableAvatarProps {
@@ -22,8 +22,6 @@ export function ClickableAvatar({
   const navigate = useNavigate();
   const { signedUrl, loading } = useSignedUrl(avatar);
   const [imgError, setImgError] = useState(false);
-
-  const placeholderSrc = useMemo(() => '/placeholder.svg', []);
 
   const sizeClasses = {
     sm: 'w-6 h-6',
@@ -54,24 +52,27 @@ export function ClickableAvatar({
 
   const showRealImage = !!signedUrl && !loading && !imgError;
 
-  const imageEl = showRealImage ? (
-    <img
-      src={signedUrl!}
-      alt={name || 'Profile picture'}
-      className="h-full w-full object-cover"
-      onError={() => setImgError(true)}
-    />
-  ) : (
-    <img
-      src={placeholderSrc}
-      alt="Profile picture placeholder"
-      className="h-full w-full object-cover"
-    />
-  );
+  const renderContent = () => {
+    if (showRealImage) {
+      return (
+        <img
+          src={signedUrl!}
+          alt={name || 'Profile picture'}
+          className="h-full w-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      );
+    }
+    return (
+      <AvatarFallback className="bg-muted">
+        <User className={`${iconSizes[size]} text-muted-foreground`} />
+      </AvatarFallback>
+    );
+  };
 
   // Non-clickable avatar if no valid profileId
   if (!profileId || profileId === 'undefined' || profileId === 'null') {
-    return <Avatar className={`${sizeClasses[size]} ${className}`}>{imageEl}</Avatar>;
+    return <Avatar className={`${sizeClasses[size]} ${className}`}>{renderContent()}</Avatar>;
   }
 
   return (
@@ -79,16 +80,7 @@ export function ClickableAvatar({
       className={`${sizeClasses[size]} cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all ${className}`}
       onClick={handleClick}
     >
-      {showRealImage ? (
-        imageEl
-      ) : (
-        <>
-          {imageEl}
-          <AvatarFallback>
-            <User className={iconSizes[size]} />
-          </AvatarFallback>
-        </>
-      )}
+      {renderContent()}
     </Avatar>
   );
 }

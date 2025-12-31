@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ImageOff } from 'lucide-react';
 
 interface SignedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string;
@@ -16,14 +17,17 @@ export function SignedImage({ src, fallback, className, alt = '', ...props }: Si
     return <Skeleton className={className} />;
   }
 
-  // Show fallback if there was an error loading the image
-  if (imageError && fallback) {
-    return <>{fallback}</>;
-  }
-
-  // Show fallback if no signed URL available
-  if (!signedUrl) {
-    return fallback ? <>{fallback}</> : null;
+  // Show fallback if there was an error loading the image or no signed URL available
+  if (imageError || !signedUrl) {
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+    // Default grey fallback with icon
+    return (
+      <div className={`bg-muted flex items-center justify-center ${className}`}>
+        <ImageOff className="w-6 h-6 text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
