@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface ClickableAvatarProps {
@@ -12,15 +12,18 @@ interface ClickableAvatarProps {
   className?: string;
 }
 
-export function ClickableAvatar({ 
-  profileId, 
-  avatar, 
+export function ClickableAvatar({
+  profileId,
+  avatar,
   name,
   size = 'md',
-  className = ''
+  className = '',
 }: ClickableAvatarProps) {
   const navigate = useNavigate();
   const { signedUrl, loading } = useSignedUrl(avatar);
+  const [imgError, setImgError] = useState(false);
+
+  const placeholderSrc = useMemo(() => '/placeholder.svg', []);
 
   const sizeClasses = {
     sm: 'w-6 h-6',
@@ -34,57 +37,57 @@ export function ClickableAvatar({
     lg: 'w-5 h-5',
   };
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    // Validate profileId before navigating
-    if (!profileId || profileId === 'undefined' || profileId === 'null') {
-      console.warn('[ClickableAvatar] Invalid profileId:', profileId);
-      return;
-    }
-    
-    try {
-      navigate(`/user/${profileId}`);
-    } catch (error) {
-      console.error('[ClickableAvatar] Navigation error:', error);
-    }
-  }, [navigate, profileId]);
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
 
-  // Don't render as clickable if no valid profileId
+      if (!profileId || profileId === 'undefined' || profileId === 'null') {
+        console.warn('[ClickableAvatar] Invalid profileId:', profileId);
+        return;
+      }
+
+      navigate(`/user/${profileId}`);
+    },
+    [navigate, profileId]
+  );
+
+  const showRealImage = !!signedUrl && !loading && !imgError;
+
+  const imageEl = showRealImage ? (
+    <img
+      src={signedUrl!}
+      alt={name || 'Profile picture'}
+      className="h-full w-full object-cover"
+      onError={() => setImgError(true)}
+    />
+  ) : (
+    <img
+      src={placeholderSrc}
+      alt="Profile picture placeholder"
+      className="h-full w-full object-cover"
+    />
+  );
+
+  // Non-clickable avatar if no valid profileId
   if (!profileId || profileId === 'undefined' || profileId === 'null') {
-    return (
-      <Avatar className={`${sizeClasses[size]} ${className}`}>
-        {signedUrl && !loading ? (
-          <img 
-            src={signedUrl} 
-            alt={name || ''} 
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <AvatarFallback>
-            <User className={iconSizes[size]} />
-          </AvatarFallback>
-        )}
-      </Avatar>
-    );
+    return <Avatar className={`${sizeClasses[size]} ${className}`}>{imageEl}</Avatar>;
   }
 
   return (
-    <Avatar 
+    <Avatar
       className={`${sizeClasses[size]} cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all ${className}`}
       onClick={handleClick}
     >
-      {signedUrl && !loading ? (
-        <img 
-          src={signedUrl} 
-          alt={name || ''} 
-          className="h-full w-full object-cover"
-        />
+      {showRealImage ? (
+        imageEl
       ) : (
-        <AvatarFallback>
-          <User className={iconSizes[size]} />
-        </AvatarFallback>
+        <>
+          {imageEl}
+          <AvatarFallback>
+            <User className={iconSizes[size]} />
+          </AvatarFallback>
+        </>
       )}
     </Avatar>
   );
