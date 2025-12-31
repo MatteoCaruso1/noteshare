@@ -15,8 +15,9 @@ import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useMessages';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Bell, MessageCircle } from 'lucide-react';
+import { Users, Bell, MessageCircle, PenSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 const FriendsJournals = () => {
   const { user } = useAuth();
@@ -29,6 +30,7 @@ const FriendsJournals = () => {
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
+  const [showNewMessageView, setShowNewMessageView] = useState(false);
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
@@ -88,7 +90,10 @@ const FriendsJournals = () => {
               </Dialog>
 
               {/* Messages Button */}
-              <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
+              <Dialog open={messagesOpen} onOpenChange={(open) => {
+                setMessagesOpen(open);
+                if (!open) setShowNewMessageView(false);
+              }}>
                 <DialogTrigger asChild>
                   <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                     <MessageCircle className={`w-4 h-4 ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -109,10 +114,23 @@ const FriendsJournals = () => {
                           {unreadMessagesCount}
                         </Badge>
                       )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => setShowNewMessageView(true)}
+                        className="h-7 w-7 ml-auto"
+                        title="New message"
+                      >
+                        <PenSquare className="w-4 h-4" />
+                      </Button>
                     </DialogTitle>
                   </DialogHeader>
                   <ScrollArea className="max-h-[60vh]">
-                    <DirectMessages embedded />
+                    <DirectMessages 
+                      embedded 
+                      showNewMessageView={showNewMessageView}
+                      onNewMessageViewChange={setShowNewMessageView}
+                    />
                   </ScrollArea>
                 </DialogContent>
               </Dialog>

@@ -14,14 +14,20 @@ import { Profile } from '@/types';
 
 interface DirectMessagesProps {
   embedded?: boolean;
+  showNewMessageView?: boolean;
+  onNewMessageViewChange?: (show: boolean) => void;
 }
 
-export function DirectMessages({ embedded }: DirectMessagesProps = {}) {
+export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange }: DirectMessagesProps = {}) {
   const { profile } = useAuth();
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: friends } = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<Profile | null>(null);
-  const [showNewMessage, setShowNewMessage] = useState(false);
+  const [internalShowNewMessage, setInternalShowNewMessage] = useState(false);
+  
+  // Use external control if provided, otherwise internal state
+  const showNewMessage = showNewMessageView !== undefined ? showNewMessageView : internalShowNewMessage;
+  const setShowNewMessage = onNewMessageViewChange || setInternalShowNewMessage;
 
   if (selectedFriend) {
     return (
@@ -50,17 +56,6 @@ export function DirectMessages({ embedded }: DirectMessagesProps = {}) {
   if (embedded) {
     return (
       <div className="bg-card border border-border rounded-lg p-3">
-        <div className="flex justify-end mb-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setShowNewMessage(true)}
-            className="h-7 w-7"
-            title="New message"
-          >
-            <PenSquare className="w-4 h-4" />
-          </Button>
-        </div>
         {convsLoading ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
             Loading...
