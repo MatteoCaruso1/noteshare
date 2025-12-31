@@ -115,20 +115,22 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     }
   }, [note.visibility]);
 
-  // Calculate session duration - memoized
+  // Calculate session duration - memoized (accounting for paused time)
   const sessionDuration = useMemo(() => {
     if (!note.session?.started_at || !note.session?.ended_at) return null;
     
     const start = new Date(note.session.started_at).getTime();
     const end = new Date(note.session.ended_at).getTime();
-    const durationMinutes = Math.round((end - start) / 60000);
+    const pausedMs = note.session.paused_duration_ms || 0;
+    const activeDurationMs = (end - start) - pausedMs;
+    const durationMinutes = Math.round(activeDurationMs / 60000);
     
     if (durationMinutes < 5) {
       return `~${Math.max(1, durationMinutes)}m`;
     }
     const rounded = Math.round(durationMinutes / 5) * 5;
     return `~${rounded}m`;
-  }, [note.session?.started_at, note.session?.ended_at]);
+  }, [note.session?.started_at, note.session?.ended_at, note.session?.paused_duration_ms]);
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
