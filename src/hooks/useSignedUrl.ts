@@ -10,12 +10,22 @@ type ParsedStorageRef = {
 };
 
 /**
+ * Check if a URL is a public Supabase storage URL (these don't need signing)
+ */
+function isPublicStorageUrl(url: string): boolean {
+  if (!url.startsWith('http')) return false;
+  try {
+    const urlObj = new URL(url);
+    return urlObj.pathname.includes('/storage/v1/object/public/');
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Parse a Supabase storage URL or path into bucket + path.
- * Handles:
- *  - Full URLs: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
- *  - Full URLs: https://<project>.supabase.co/storage/v1/object/authenticated/<bucket>/<path>
- *  - Already signed URLs (returns null - no need to sign again)
- *  - Direct path references (legacy - assumes practice-media bucket)
+ * Only returns a ref for URLs that need signing (authenticated/private).
+ * Returns null for public URLs (no signing needed).
  */
 function parseStorageRef(url: string): ParsedStorageRef | null {
   if (!url) return null;
@@ -33,11 +43,15 @@ function parseStorageRef(url: string): ParsedStorageRef | null {
       return null;
     }
 
-    // Match Supabase storage URLs:
-    // /storage/v1/object/public/{bucket}/{path}
+    // PUBLIC storage URLs should NOT be signed - return null
+    if (urlObj.pathname.includes('/storage/v1/object/public/')) {
+      return null;
+    }
+
+    // Match authenticated/private Supabase storage URLs:
     // /storage/v1/object/authenticated/{bucket}/{path}
-    // /storage/v1/object/{bucket}/{path} (older format)
-    const match = urlObj.pathname.match(/\/storage\/v1\/object\/(?:public\/|authenticated\/)?([^/]+)\/(.+)/);
+    // /storage/v1/object/{bucket}/{path} (older format, non-public)
+    const match = urlObj.pathname.match(/\/storage\/v1\/object\/(?:authenticated\/)?([^/]+)\/(.+)/);
     if (match) {
       const bucket = match[1];
       const path = decodeURIComponent(match[2]);
@@ -84,6 +98,12 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
 
     // External URLs (not Supabase storage) pass through directly
     if (isExternalUrl(originalUrl)) {
+      setSignedUrl(originalUrl);
+      return;
+    }
+
+    // Public Supabase storage URLs pass through directly (no signing needed)
+    if (isPublicStorageUrl(originalUrl)) {
       setSignedUrl(originalUrl);
       return;
     }
@@ -167,6 +187,12 @@ export async function getSignedUrls(urls: string[]): Promise<Map<string, string>
 
       // External URLs pass through
       if (isExternalUrl(url)) {
+        results.set(url, url);
+        return;
+      }
+
+      // Public Supabase storage URLs pass through directly
+      if (isPublicStorageUrl(url)) {
         results.set(url, url);
         return;
       }
