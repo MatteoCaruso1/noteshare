@@ -267,10 +267,10 @@
     background: linear-gradient(
       90deg,
       transparent,
-      hsl(var(--primary) / 0.15),
+      hsl(var(--primary) / 0.08),
       transparent
     );
-    animation: glintSweep 4.5s ease-in-out infinite;
+    animation: glintSweep 5.5s ease-in-out infinite;
   }
 
   .glint-paused::before {
