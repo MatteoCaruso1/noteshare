@@ -192,7 +192,7 @@ const Profile = () => {
                   <Input value={username} onChange={e => setUsername(e.target.value)} className="text-sm" placeholder="Handle (e.g., matteo_caruso)" />
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
                   <p className="text-sm text-muted-foreground">@{profile?.username}</p>
                   {practiceStats && <StreakBadges currentStreak={practiceStats.currentStreak} bestStreak={practiceStats.bestDailyStreak} />}

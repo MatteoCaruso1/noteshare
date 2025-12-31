@@ -206,11 +206,13 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
                     achieved 
                       ? `${tier.bgColorClass} ${tier.colorClass} font-medium` 
-                      : tier.tier === 'bronze' 
-                        ? 'bg-amber-600/20 text-amber-700/60 dark:text-amber-500/60'
-                        : tier.tier === 'silver'
-                          ? 'bg-slate-400/20 text-slate-500/60 dark:text-slate-300/60'
-                          : 'bg-yellow-500/20 text-yellow-600/60 dark:text-yellow-400/60'
+                      : tier.tier === 'starter'
+                        ? 'bg-blue-500/20 text-blue-500/60 dark:text-blue-400/60'
+                        : tier.tier === 'bronze' 
+                          ? 'bg-amber-600/20 text-amber-700/60 dark:text-amber-500/60'
+                          : tier.tier === 'silver'
+                            ? 'bg-slate-400/20 text-slate-500/60 dark:text-slate-300/60'
+                            : 'bg-yellow-500/20 text-yellow-600/60 dark:text-yellow-400/60'
                   }`}
                 >
                   <span>{tier.minDays}d</span>
