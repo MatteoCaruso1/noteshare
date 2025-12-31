@@ -581,12 +581,12 @@ export function PracticeControls() {
                   <AlertDialogTitle>End session?</AlertDialogTitle>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex-row gap-2">
-                  <AlertDialogCancel className="flex-1 mt-0">Back</AlertDialogCancel>
+                  <AlertDialogCancel className="flex-1 mt-0">No</AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={handleSaveNoteAndEndSession}
                     className="flex-1 bg-gradient-primary"
                   >
-                    End
+                    Yes
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
