@@ -7,6 +7,7 @@ import { useFeedGigs } from '@/hooks/usePromoPosts';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { SignedImage } from '@/components/SignedImage';
 import { Disc3, Music2, Calendar, DollarSign, ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
 import { Project } from '@/types';
@@ -65,9 +66,13 @@ export function FeedProjectsGigs() {
         <CollapsibleTrigger asChild>
           <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
             <div className="flex items-center gap-2">
-              <Briefcase className={`w-5 h-5 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+              <Briefcase
+                className={`w-5 h-5 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`}
+              />
               <h2 className="font-semibold">Projects & Gigs</h2>
-              <Badge variant="secondary" className="text-xs">{totalCount}</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {totalCount}
+              </Badge>
             </div>
             {isExpanded ? (
               <ChevronDown className="w-5 h-5 text-muted-foreground" />
@@ -76,6 +81,7 @@ export function FeedProjectsGigs() {
             )}
           </button>
         </CollapsibleTrigger>
+
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-4">
             {/* Projects */}
@@ -90,10 +96,15 @@ export function FeedProjectsGigs() {
                   >
                     <div className="flex items-center gap-3">
                       {project.cover_image ? (
-                        <img
+                        <SignedImage
                           src={project.cover_image}
-                          alt=""
+                          alt={`${project.title} project cover`}
                           className="w-10 h-10 rounded-lg object-cover"
+                          fallback={
+                            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                              <Disc3 className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                          }
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
@@ -102,12 +113,13 @@ export function FeedProjectsGigs() {
                       )}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">{project.title}</h4>
-                        <p className={`text-xs flex items-center gap-1 mt-1 ${project.release_date ? 'text-primary' : 'text-muted-foreground'}`}>
+                        <p
+                          className={`text-xs flex items-center gap-1 mt-1 ${project.release_date ? 'text-primary' : 'text-muted-foreground'}`}
+                        >
                           <Calendar className="w-3 h-3" />
-                          {project.release_date 
+                          {project.release_date
                             ? format(new Date(project.release_date), 'MMM d, yyyy')
-                            : format(new Date(project.created_at), 'MMM d, yyyy')
-                          }
+                            : format(new Date(project.created_at), 'MMM d, yyyy')}
                         </p>
                       </div>
                     </div>
@@ -128,10 +140,15 @@ export function FeedProjectsGigs() {
                   >
                     <div className="flex items-start gap-3">
                       {gig.image ? (
-                        <img
+                        <SignedImage
                           src={gig.image}
-                          alt=""
+                          alt={`${gig.title} gig thumbnail`}
                           className="w-10 h-10 rounded-lg object-cover"
+                          fallback={
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Music2 className="w-5 h-5 text-primary" />
+                            </div>
+                          }
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
