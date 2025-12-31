@@ -137,14 +137,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Days Practiced Per Month Bar Chart */}
-        <p className="text-sm text-muted-foreground mb-2">Days practiced per month</p>
+        {/* Days Practiced Per Week Bar Chart */}
+        <p className="text-sm text-muted-foreground mb-2">Days practiced per week</p>
         <div className="h-32 mb-4">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stats.monthlyDaysPracticed}>
+            <BarChart data={stats.weeklyDaysPracticed}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis 
-                dataKey="month" 
+                dataKey="week" 
                 tick={{ fontSize: 10 }} 
                 className="text-muted-foreground"
                 tickLine={false}
@@ -154,6 +154,8 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 className="text-muted-foreground"
                 tickLine={false}
                 width={24}
+                domain={[0, 7]}
+                ticks={[0, 2, 4, 6]}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -162,7 +164,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   borderRadius: '8px'
                 }}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number) => [`${value} days`, 'Practiced']}
+                formatter={(value: number) => [`${value} day${value !== 1 ? 's' : ''}`, 'Practiced']}
               />
               <Bar 
                 dataKey="days" 
