@@ -13,7 +13,7 @@ interface PracticeStats {
   
   // Progress
   weeklyMinutesOverTime: { week: string; minutes: number }[];
-  monthlyDaysPracticed: { month: string; days: number }[];
+  weeklyDaysPracticed: { week: string; days: number }[];
   currentStreak: number;
   bestDailyStreak: number;
   bestWeekMinutes: { week: string; minutes: number } | null;
@@ -118,29 +118,29 @@ export function usePracticeStats(profileId: string | undefined) {
         });
       }
 
-      // Monthly days practiced (last 6 months)
-      const monthlyDaysPracticed: { month: string; days: number }[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = startOfMonth(subMonths(now, i));
-        const monthEnd = endOfMonth(subMonths(now, i));
+      // Weekly days practiced (last 12 weeks)
+      const weeklyDaysPracticed: { week: string; days: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
         
-        // Count unique days with activity in this month
-        const daysInMonth = new Set<string>();
+        // Count unique days with activity in this week
+        const daysInWeek = new Set<string>();
         sessionsWithDuration.forEach(s => {
-          if (isWithinInterval(s.startDate, { start: monthStart, end: monthEnd })) {
-            daysInMonth.add(format(s.startDate, 'yyyy-MM-dd'));
+          if (isWithinInterval(s.startDate, { start: weekStart, end: weekEnd })) {
+            daysInWeek.add(format(s.startDate, 'yyyy-MM-dd'));
           }
         });
         notes.forEach(note => {
           const noteDate = parseISO(note.created_at);
-          if (isWithinInterval(noteDate, { start: monthStart, end: monthEnd })) {
-            daysInMonth.add(format(noteDate, 'yyyy-MM-dd'));
+          if (isWithinInterval(noteDate, { start: weekStart, end: weekEnd })) {
+            daysInWeek.add(format(noteDate, 'yyyy-MM-dd'));
           }
         });
         
-        monthlyDaysPracticed.push({
-          month: format(monthStart, 'MMM'),
-          days: daysInMonth.size
+        weeklyDaysPracticed.push({
+          week: format(weekStart, 'M/d'),
+          days: daysInWeek.size
         });
       }
 
@@ -333,7 +333,7 @@ export function usePracticeStats(profileId: string | undefined) {
         totalMinutesThisWeek,
         totalMinutesThisMonth,
         weeklyMinutesOverTime,
-        monthlyDaysPracticed,
+        weeklyDaysPracticed,
         currentStreak,
         bestDailyStreak,
         bestWeekMinutes,
