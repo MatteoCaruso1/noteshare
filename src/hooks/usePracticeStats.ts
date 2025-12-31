@@ -42,7 +42,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const [sessionsResult, notesResult, focusResult, backlogResult] = await Promise.all([
         supabase
           .from('practice_sessions')
-          .select('started_at, ended_at')
+          .select('started_at, ended_at, paused_duration_ms')
           .eq('user_id', profileId)
           .gte('started_at', threeMonthsAgo.toISOString())
           .order('started_at', { ascending: true }),
@@ -72,11 +72,14 @@ export function usePracticeStats(profileId: string | undefined) {
       const focusEntries = focusResult.data || [];
       const backlogEntries = backlogResult.data || [];
 
-      // Calculate session durations
+      // Calculate session durations (accounting for paused time)
       const sessionsWithDuration = sessions.map(session => {
         const start = parseISO(session.started_at);
         const end = session.ended_at ? parseISO(session.ended_at) : now;
-        const durationMinutes = Math.max(0, differenceInMinutes(end, start));
+        const rawDurationMs = end.getTime() - start.getTime();
+        const pausedMs = session.paused_duration_ms || 0;
+        const activeDurationMs = rawDurationMs - pausedMs;
+        const durationMinutes = Math.max(0, Math.floor(activeDurationMs / 60000));
         return { durationMinutes, startDate: start };
       });
 
