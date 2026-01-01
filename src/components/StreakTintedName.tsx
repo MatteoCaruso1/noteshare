@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { getStreakTier } from '@/lib/streakUtils';
 import { cn } from '@/lib/utils';
-import { Award, Medal, Trophy, Star } from 'lucide-react';
+import { Flame, Medal, Trophy, Star } from 'lucide-react';
 
 interface StreakTintedNameProps {
   name: string;
@@ -34,7 +34,7 @@ export const StreakTintedName = memo(function StreakTintedName({
       case 'silver':
         return <Medal className={iconClass} />;
       case 'bronze':
-        return <Award className={iconClass} />;
+        return <Flame className={iconClass} />;
       case 'starter':
         return <Star className={iconClass} />;
       default:
