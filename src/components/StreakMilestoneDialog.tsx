@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Award, Medal, Trophy, Sparkles, Star } from 'lucide-react';
+import { Flame, Medal, Trophy, Sparkles, Star } from 'lucide-react';
 import { StreakTierInfo } from '@/lib/streakUtils';
 
 interface StreakMilestoneDialogProps {
@@ -25,7 +25,7 @@ function TierIcon({ tier }: { tier: StreakTierInfo }) {
   } else if (tier.tier === 'silver') {
     return <Medal className={iconClass} />;
   } else if (tier.tier === 'bronze') {
-    return <Award className={iconClass} />;
+    return <Flame className={iconClass} />;
   } else if (tier.tier === 'starter') {
     return <Star className={iconClass} />;
   }
@@ -37,7 +37,7 @@ function getRewardDescription(tier: StreakTierInfo): string {
     case 'starter':
       return 'A starter star badge appears next to your name — visible to everyone!';
     case 'bronze':
-      return 'A bronze award badge now appears next to your name!';
+      return 'A bronze flame badge now appears next to your name!';
     case 'silver':
       return 'A silver medal badge now appears next to your name!';
     case 'gold':
@@ -50,7 +50,7 @@ function getRewardDescription(tier: StreakTierInfo): string {
 function getNextMilestoneText(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'Keep going! Reach 30 days to upgrade to a bronze award badge.';
+      return 'Keep going! Reach 30 days to upgrade to a bronze flame badge.';
     case 'bronze':
       return 'Keep it up! Reach 90 days to upgrade to a silver medal badge.';
     case 'silver':
