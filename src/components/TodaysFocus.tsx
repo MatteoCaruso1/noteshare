@@ -47,13 +47,19 @@ export function TodaysFocus() {
     }
   }, [focus?.focus_text, isInitialized]);
 
-  // Auto-resize textarea
+  // Auto-resize textarea - also triggers when collapsible opens
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
+    if (textareaRef.current && isOpen) {
+      // Small delay to ensure the collapsible content is rendered
+      const timer = setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+          textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
+        }
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [text]);
+  }, [text, isOpen]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
