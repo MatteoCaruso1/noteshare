@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function NoteCardSkeleton() {
   return (
-    <Card className="p-3 sm:p-4 bg-note border border-note-border rounded-xl shadow-sm border-l-[3px] border-l-primary/30">
+    <Card className="p-3 sm:p-4 bg-note border border-note-border/50 rounded-lg border-l-[3px] border-l-primary/40">
       {/* Type Badge Row */}
       <div className="flex items-center gap-2 mb-3">
         <Skeleton className="h-5 w-28 rounded-full" />
