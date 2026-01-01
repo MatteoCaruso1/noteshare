@@ -271,6 +271,7 @@
       transparent
     );
     animation: glintSweep 4.5s ease-in-out infinite;
+    animation-delay: var(--glint-delay, 0ms);
   }
 
   .glint-paused::before {
