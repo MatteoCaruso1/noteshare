@@ -125,7 +125,7 @@ const Index = () => {
             <div className="relative px-3 sm:px-4 border-t border-x border-border rounded-t-lg bg-card z-10">
               
               {/* Header row inside the frame */}
-              <div className="flex items-center gap-2 sm:gap-4 pt-3 pb-3">
+              <div className="flex items-center gap-2 sm:gap-4 py-3">
                 <h2 className="text-lg font-semibold shrink-0">Notes</h2>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <TimelineSearch 
@@ -139,11 +139,8 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Divider between header and notes */}
-              <div className="h-px bg-border -mx-3 sm:-mx-4" />
-              
               {(searchQuery || focusDateFilter || tagFilter) && (
-                <p className="text-sm text-muted-foreground pt-3 pb-1">
+                <p className="text-sm text-muted-foreground pb-3">
                   {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
                   {searchQuery && ` for "${searchQuery}"`}
                   {tagFilter && ` tagged "${tagFilter}"`}
@@ -151,7 +148,7 @@ const Index = () => {
                 </p>
               )}
               
-              <div className="pt-3">
+              <div>
                 <Timeline 
                   notes={filteredNotes} 
                   loading={notesLoading || isNotesBootstrapping} 
