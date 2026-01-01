@@ -73,12 +73,16 @@ export function PracticeControls() {
   const [attachFocus, setAttachFocus] = useState(false);
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
   const [showSessionChoice, setShowSessionChoice] = useState(false);
+  const [manuallyCollapsed, setManuallyCollapsed] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   // Determine if we should show the collapsible content
-  const isExpanded = !!activeSession || showSessionChoice;
+  // Active session can now be collapsed manually
+  const isExpanded = activeSession 
+    ? !manuallyCollapsed 
+    : showSessionChoice;
 
-  // Sync expanded state with glint context
+  // Sync expanded state with glint context (glint paused when expanded)
   useEffect(() => {
     setPracticeExpanded(isExpanded);
   }, [isExpanded, setPracticeExpanded]);
@@ -285,9 +289,12 @@ export function PracticeControls() {
 
   const sessionDuration = getSessionDuration();
 
-  // Handle practice dropdown open - show session choice instead of starting immediately
+  // Handle practice dropdown open/close
   const handlePracticeOpen = (open: boolean) => {
-    if (!activeSession) {
+    if (activeSession) {
+      // Toggle collapse state for active session
+      setManuallyCollapsed(!open);
+    } else {
       setShowSessionChoice(open);
     }
   };
@@ -296,6 +303,7 @@ export function PracticeControls() {
     if (!startSession.isPending) {
       startSession.mutate({ userId: profile.id });
       setShowSessionChoice(false);
+      setManuallyCollapsed(false); // Ensure expanded when starting
     }
   };
 
@@ -306,14 +314,21 @@ export function PracticeControls() {
           <button className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isPaused ? 'glint-paused' : ''}`}>
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-              <h2 className="font-semibold">Start Practice Session</h2>
+              <h2 className="font-semibold">
+                {activeSession ? 'Practice Session' : 'Start Practice Session'}
+              </h2>
+              {/* Show duration when collapsed with active session */}
+              {activeSession && manuallyCollapsed && sessionDuration && (
+                <span className={`text-sm font-medium ${isSessionPaused ? 'text-muted-foreground' : 'text-primary'}`}>
+                  {sessionDuration}
+                  {isSessionPaused && ' (paused)'}
+                </span>
+              )}
             </div>
-            {!activeSession && (
-              isExpanded ? (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              )
+            {isExpanded ? (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
             )}
           </button>
         </CollapsibleTrigger>
