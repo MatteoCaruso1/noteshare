@@ -121,10 +121,9 @@ const Index = () => {
 
           {/* Timeline */}
           <section>
-            {/* Header row with horizontal line */}
-            <div className="flex items-center gap-3 mb-4">
+            {/* Header row */}
+            <div className="flex items-center justify-between gap-4 mb-2">
               <h2 className="text-lg font-semibold shrink-0">Notes</h2>
-              <div className="flex-1 h-px bg-border" />
               <div className="flex items-center gap-2 shrink-0">
                 <TimelineSearch 
                   onSearch={setSearchQuery} 
@@ -136,6 +135,8 @@ const Index = () => {
                 />
               </div>
             </div>
+            {/* Horizontal divider below header */}
+            <div className="h-px bg-border mb-4" />
             {(searchQuery || focusDateFilter || tagFilter) && (
               <p className="text-sm text-muted-foreground mb-3">
                 {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
@@ -145,11 +146,11 @@ const Index = () => {
               </p>
             )}
             {/* Notes container with side borders */}
-            <div className="relative">
+            <div className="relative px-3 sm:px-4">
               {/* Left vertical line */}
-              <div className="absolute left-0 top-0 bottom-0 w-px bg-border -ml-3 hidden sm:block" />
+              <div className="absolute left-0 top-0 bottom-0 w-px bg-border" />
               {/* Right vertical line */}
-              <div className="absolute right-0 top-0 bottom-0 w-px bg-border -mr-3 hidden sm:block" />
+              <div className="absolute right-0 top-0 bottom-0 w-px bg-border" />
               
               <Timeline 
                 notes={filteredNotes} 
