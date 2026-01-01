@@ -138,7 +138,7 @@ const FriendsJournals = () => {
 
               {/* Friends Button */}
               <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-                <div className="cursor-pointer transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                <div className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                   <Users className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">{friends?.length || 0}</span>
                 </div>
