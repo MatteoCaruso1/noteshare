@@ -145,6 +145,8 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   }
                   return ticks;
                 })()}
+                interval={0}
+                allowDecimals={false}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -186,7 +188,8 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 width={24}
                 domain={[0, 7]}
                 ticks={[1, 3, 5, 7]}
-                tickCount={4}
+                interval={0}
+                allowDecimals={false}
               />
               <Tooltip 
                 contentStyle={{ 
