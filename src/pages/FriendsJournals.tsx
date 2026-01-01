@@ -173,20 +173,9 @@ const FriendsJournals = () => {
           {/* Pending Friend Requests */}
           <PendingFriendRequests />
 
-          {/* Friends Feed */}
           <section>
-            <div className="relative px-3 sm:px-4 border-t border-x border-border rounded-t-lg bg-card z-10">
-              {/* Header row inside the frame */}
-              <div className="flex items-center gap-2 sm:gap-4 pt-3 pb-3">
-                <h2 className="text-lg font-semibold shrink-0">Feed</h2>
-              </div>
-              
-              {/* Divider between header and notes */}
-              <div className="h-px bg-border -mx-3 sm:-mx-4" />
-              
-              <div className="pt-3">
-                <FriendsFeed />
-              </div>
+            <div className="relative p-3 sm:p-4 border border-border rounded-lg bg-card z-10">
+              <FriendsFeed />
             </div>
           </section>
         </main>
