@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { X, Send, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Crosshair } from 'lucide-react';
+import { X, Save, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Crosshair } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
@@ -264,8 +264,23 @@ export function QuickNoteCapture() {
             onChange={setNoteText}
           />
 
-          {/* Audio Recording */}
-          <AudioRecorder onRecorded={handleAudioRecorded} />
+          {/* Action Buttons - inline */}
+          <div className="flex items-center gap-2">
+            <AudioRecorder onRecorded={handleAudioRecorded} className="flex-[1]" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  className="h-9 flex-[3] bg-gradient-primary text-primary-foreground"
+                  onClick={handleSaveNote}
+                  disabled={createNote.isPending || uploading || !hasContent}
+                >
+                  <Save className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Save Note</TooltipContent>
+            </Tooltip>
+          </div>
 
           {/* Uploaded Audio Files - with editable names */}
           {audioFiles.length > 0 && (
@@ -300,16 +315,6 @@ export function QuickNoteCapture() {
               ))}
             </div>
           )}
-
-          {/* Save Button */}
-          <Button
-            className="w-full bg-gradient-primary text-primary-foreground"
-            onClick={handleSaveNote}
-            disabled={createNote.isPending || uploading || !hasContent}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Save Note
-          </Button>
         </CollapsibleContent>
       </Collapsible>
     </Card>
