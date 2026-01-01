@@ -168,7 +168,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   return (
     <Card
-      className={`p-3 sm:p-4 bg-note text-note-foreground border border-note-border rounded-xl shadow-sm border-l-[3px] border-l-primary/30 relative ${!expanded ? 'cursor-pointer hover:border-l-primary/60 hover:shadow-md' : ''} transition-all duration-200`}
+      className={`p-3 sm:p-4 bg-note text-note-foreground border border-note-border/50 rounded-lg border-l-[3px] border-l-primary/40 relative ${!expanded ? 'cursor-pointer hover:bg-note/80 hover:border-l-primary/70' : ''} transition-colors duration-150`}
       onClick={!expanded ? handleNavigateToNote : undefined}
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}
