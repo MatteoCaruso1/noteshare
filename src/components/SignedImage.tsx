@@ -35,6 +35,8 @@ export function SignedImage({ src, fallback, className, alt = '', ...props }: Si
       src={signedUrl}
       alt={alt}
       className={className}
+      loading="lazy"
+      decoding="async"
       onError={() => setImageError(true)}
       {...props}
     />

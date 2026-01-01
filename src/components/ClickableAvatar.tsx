@@ -59,6 +59,8 @@ export function ClickableAvatar({
           src={signedUrl!}
           alt={name || 'Profile picture'}
           className="h-full w-full object-cover"
+          loading="eager"
+          decoding="async"
           onError={() => setImgError(true)}
         />
       );

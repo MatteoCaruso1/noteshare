@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { NoteCard } from './NoteCard';
 import { Button } from '@/components/ui/button';
+import { useSignedUrlPrefetch } from '@/hooks/useSignedUrlPrefetch';
 
 interface TimelineProps {
   notes: NoteWithAuthor[];
@@ -18,6 +19,9 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
     notes.slice(0, displayCount), 
     [notes, displayCount]
   );
+
+  // Prefetch signed URLs for all displayed notes in a single batch
+  useSignedUrlPrefetch(displayedNotes);
 
   // Show skeleton only on initial load, not during refetch
   if (loading && notes.length === 0) {
