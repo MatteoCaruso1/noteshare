@@ -253,7 +253,7 @@ const NoteDetail = () => {
                 {comments.map((comment) => {
                   const isCommentOwner = profile?.id === comment.author_id;
                   return (
-                    <Card key={comment.id} className="p-4 bg-note text-note-foreground border-border">
+                    <Card key={comment.id} className="p-4 bg-note text-note-foreground border-border border-l-2 border-l-primary/20">
                       <div className="flex gap-3">
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={comment.author?.avatar || ''} />
