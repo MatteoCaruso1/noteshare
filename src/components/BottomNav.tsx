@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Disc3, Calendar, User, Users } from 'lucide-react';
+import { Home, Target, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
@@ -14,7 +14,7 @@ interface BottomNavProps {
 const routeScrollKeys: Record<string, string> = {
   '/': 'index-timeline',
   '/friends': 'friends-feed',
-  // Other tabs should always open at top (no restoration yet)
+  '/working-toward': 'working-toward-top',
   '/projects': 'projects-top',
   '/gigs': 'gigs-top',
   '/profile': 'profile-top',
@@ -51,8 +51,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
 
   const links = [
     { to: '/', icon: Home, label: 'My Practice' },
-    { to: '/projects', icon: Disc3, label: 'Projects' },
-    { to: '/gigs', icon: Calendar, label: 'Gigs' },
+    { to: '/working-toward', icon: Target, label: 'Working Toward' },
     { to: '/friends', icon: Users, label: 'Friends', showBadge: true },
     { to: '/profile', icon: User, label: 'Profile' },
   ];

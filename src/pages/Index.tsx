@@ -8,7 +8,6 @@ import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
 import { WelcomeHero } from '@/components/WelcomeHero';
 import { MemoryReminder } from '@/components/MemoryReminder';
-import { SimpleGoals } from '@/components/SimpleGoals';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
@@ -105,9 +104,6 @@ const Index = () => {
       {/* Main Content */}
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4 sm:space-y-6">
-          {/* Simple Goals - always visible at top */}
-          {profile && <SimpleGoals profileId={profile.id} />}
-
           {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
           <GlintProvider>
             {/* Practice Controls (Collapsible) */}
