@@ -261,10 +261,7 @@ const Profile = () => {
           {/* Open to Collaborate */}
           <Card className="p-4 bg-card border-border">
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Open to Collaborate</h3>
-                <p className="text-sm text-muted-foreground">Show others you're looking for practice partners</p>
-              </div>
+              <h3 className="font-medium">Open to Collaborate</h3>
               {editing ? (
                 <Button
                   variant={openToCollaborate ? 'default' : 'outline'}
