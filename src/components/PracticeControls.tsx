@@ -631,6 +631,7 @@ export function PracticeControls() {
 
           {/* Action Buttons - inline full-width */}
           <div className="flex items-center gap-2">
+            <AudioRecorder onRecorded={handleAudioRecorded} className="flex-[2]" />
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -679,7 +680,6 @@ export function PracticeControls() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <AudioRecorder onRecorded={handleAudioRecorded} className="flex-[2]" />
           </div>
           </div>
           )}
