@@ -16,7 +16,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame } from 'lucide-react';
-import { format, isToday } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
@@ -380,8 +380,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           />
           {/* Short date in timeline only */}
           {!expanded && (
-            <p className="text-xs text-muted-foreground">
-              {isToday(new Date(note.created_at)) ? 'Today' : format(new Date(note.created_at), 'MMM d')}
+          <p className="text-xs text-muted-foreground">
+              {isToday(new Date(note.created_at)) 
+                ? 'Today' 
+                : isYesterday(new Date(note.created_at)) 
+                  ? 'Yesterday' 
+                  : format(new Date(note.created_at), 'MMM d')}
             </p>
           )}
         </div>
