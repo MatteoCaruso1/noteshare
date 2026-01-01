@@ -65,7 +65,7 @@ export function TimelineSearch({
     : availableTags;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full min-w-0">
       {/* Tag Filter - moved to left */}
       {availableTags.length > 0 && (
         <Popover open={tagFilterOpen} onOpenChange={setTagFilterOpen}>
@@ -170,14 +170,14 @@ export function TimelineSearch({
       )}
 
       {/* Search bar - now on the right */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-w-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder="..."
           value={query}
           onChange={(e) => handleChange(e.target.value)}
-          className="pl-9 pr-9 h-9 bg-secondary/30 border-border placeholder:text-muted-foreground"
+          className="pl-9 pr-9 h-9 bg-secondary/30 border-border placeholder:text-muted-foreground w-full"
         />
         {query && (
           <Button
