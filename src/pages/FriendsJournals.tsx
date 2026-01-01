@@ -151,14 +151,14 @@ const FriendsJournals = () => {
                     <UserPlus className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-md min-h-[60vh]">
+                <DialogContent className="max-w-md min-h-[60vh] flex flex-col">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                       <UserPlus className="w-5 h-5 text-primary" />
                       Add Friend
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="py-2 flex-1">
+                  <div className="pt-2 flex-1">
                     <UserSearch />
                   </div>
                 </DialogContent>
