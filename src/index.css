@@ -21,8 +21,9 @@
 
     --card: 210 40% 98%;
     --card-foreground: 222 47% 11%;
-    --note: 210 25% 94%;
+    --note: 210 20% 92%;
     --note-foreground: 222 47% 11%;
+    --note-border: 200 40% 75%;
 
     --popover: 214 31% 91%;
     --popover-foreground: 222 47% 11%;
@@ -147,8 +148,9 @@
     --foreground: 210 40% 98%;
     --card: 217 32% 17%;
     --card-foreground: 210 40% 98%;
-    --note: 217 28% 15%;
+    --note: 220 25% 18%;
     --note-foreground: 210 40% 98%;
+    --note-border: 210 35% 28%;
     --popover: 215 24% 26%;
     --popover-foreground: 210 40% 98%;
     --primary: 198 93% 59%;
