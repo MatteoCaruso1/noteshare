@@ -1,6 +1,7 @@
 import { memo } from 'react';
-import { getStreakTier, StreakTier } from '@/lib/streakUtils';
+import { getStreakTier } from '@/lib/streakUtils';
 import { cn } from '@/lib/utils';
+import { Award, Medal, Trophy, Star } from 'lucide-react';
 
 interface StreakTintedNameProps {
   name: string;
@@ -9,10 +10,11 @@ interface StreakTintedNameProps {
 }
 
 /**
- * Displays a name with optional streak-based color tint
- * - 360+ days: Gold tint
- * - 90+ days: Silver tint
- * - 30+ days: Bronze tint
+ * Displays a name with a subtle streak badge icon next to it
+ * - 360+ days: Gold trophy
+ * - 90+ days: Silver medal
+ * - 30+ days: Bronze award
+ * - 10+ days: Starter star
  */
 export const StreakTintedName = memo(function StreakTintedName({
   name,
@@ -21,12 +23,31 @@ export const StreakTintedName = memo(function StreakTintedName({
 }: StreakTintedNameProps) {
   const tier = getStreakTier(streakDays);
   
+  const renderBadge = () => {
+    if (tier.tier === 'none') return null;
+    
+    const iconClass = `w-3.5 h-3.5 ${tier.colorClass} opacity-80`;
+    
+    switch (tier.tier) {
+      case 'gold':
+        return <Trophy className={iconClass} />;
+      case 'silver':
+        return <Medal className={iconClass} />;
+      case 'bronze':
+        return <Award className={iconClass} />;
+      case 'starter':
+        return <Star className={iconClass} />;
+      default:
+        return null;
+    }
+  };
+
+  const badge = renderBadge();
+  
   return (
-    <span className={cn(
-      tier.tier !== 'none' ? tier.textColorClass : '',
-      className
-    )}>
+    <span className={cn('inline-flex items-center gap-1', className)}>
       {name}
+      {badge}
     </span>
   );
 });
