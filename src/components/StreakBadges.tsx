@@ -1,4 +1,4 @@
-import { Flame, Medal, Trophy, Star } from 'lucide-react';
+import { Medal } from 'lucide-react';
 import { STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 
 interface StreakBadgesProps {
@@ -7,18 +7,8 @@ interface StreakBadgesProps {
 }
 
 function BadgeIcon({ tier }: { tier: StreakTierInfo }) {
-  const iconClass = `w-4 h-4 ${tier.colorClass}`;
-  
-  if (tier.tier === 'gold') {
-    return <Trophy className={iconClass} />;
-  } else if (tier.tier === 'silver') {
-    return <Medal className={iconClass} />;
-  } else if (tier.tier === 'bronze') {
-    return <Flame className={iconClass} />;
-  } else if (tier.tier === 'starter') {
-    return <Star className={iconClass} />;
-  }
-  return null;
+  if (tier.tier === 'none') return null;
+  return <Medal className={`w-4 h-4 ${tier.colorClass}`} />;
 }
 
 export function StreakBadges({ currentStreak, bestStreak }: StreakBadgesProps) {

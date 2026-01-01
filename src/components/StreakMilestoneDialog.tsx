@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Flame, Medal, Trophy, Sparkles, Star } from 'lucide-react';
+import { Medal, Sparkles } from 'lucide-react';
 import { StreakTierInfo } from '@/lib/streakUtils';
 
 interface StreakMilestoneDialogProps {
@@ -18,30 +18,20 @@ interface StreakMilestoneDialogProps {
 }
 
 function TierIcon({ tier }: { tier: StreakTierInfo }) {
-  const iconClass = `w-12 h-12 ${tier.colorClass}`;
-  
-  if (tier.tier === 'gold') {
-    return <Trophy className={iconClass} />;
-  } else if (tier.tier === 'silver') {
-    return <Medal className={iconClass} />;
-  } else if (tier.tier === 'bronze') {
-    return <Flame className={iconClass} />;
-  } else if (tier.tier === 'starter') {
-    return <Star className={iconClass} />;
-  }
-  return null;
+  if (tier.tier === 'none') return null;
+  return <Medal className={`w-12 h-12 ${tier.colorClass}`} />;
 }
 
 function getRewardDescription(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'A starter star badge appears next to your name — visible to everyone!';
+      return 'A starter medal badge appears next to your name — visible to everyone!';
     case 'bronze':
-      return 'A bronze flame badge now appears next to your name!';
+      return 'A bronze medal badge now appears next to your name!';
     case 'silver':
       return 'A silver medal badge now appears next to your name!';
     case 'gold':
-      return 'A prestigious gold trophy badge now appears next to your name!';
+      return 'A gold medal badge now appears next to your name!';
     default:
       return '';
   }
@@ -50,11 +40,11 @@ function getRewardDescription(tier: StreakTierInfo): string {
 function getNextMilestoneText(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'Keep going! Reach 30 days to upgrade to a bronze flame badge.';
+      return 'Keep going! Reach 30 days to upgrade to a bronze medal badge.';
     case 'bronze':
       return 'Keep it up! Reach 90 days to upgrade to a silver medal badge.';
     case 'silver':
-      return 'Almost there! Reach 360 days to upgrade to a gold trophy badge.';
+      return 'Almost there! Reach 360 days to upgrade to a gold medal badge.';
     default:
       return '';
   }
