@@ -185,7 +185,8 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 tickLine={false}
                 width={24}
                 domain={[0, 7]}
-                ticks={[0, 1, 2, 3, 4, 5, 6, 7]}
+                ticks={[1, 3, 5, 7]}
+                tickCount={4}
               />
               <Tooltip 
                 contentStyle={{ 
