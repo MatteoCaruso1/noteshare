@@ -87,30 +87,57 @@ export function PracticeControls() {
     setPracticeExpanded(isExpanded);
   }, [isExpanded, setPracticeExpanded]);
 
-  // Simple wake lock toggle - button state is source of truth
+  // Helper to acquire wake lock
+  const acquireWakeLock = useCallback(async (silent = false) => {
+    if (!('wakeLock' in navigator)) {
+      if (!silent) toast.error('Screen lock prevention not supported on this device');
+      return false;
+    }
+    
+    try {
+      // Release existing lock first to ensure clean state
+      if (wakeLockRef.current) {
+        try {
+          await wakeLockRef.current.release();
+        } catch {
+          // Ignore
+        }
+        wakeLockRef.current = null;
+      }
+      
+      wakeLockRef.current = await navigator.wakeLock.request('screen');
+      
+      // Listen for release events on this lock
+      wakeLockRef.current.addEventListener('release', () => {
+        // Lock was released (e.g., by system), try to re-acquire if still enabled
+        if (wakeLockEnabled && document.visibilityState === 'visible') {
+          acquireWakeLock(true);
+        }
+      });
+      
+      return true;
+    } catch (err) {
+      console.error('Wake lock request failed:', err);
+      if (!silent) toast.error('Could not keep screen unlocked');
+      return false;
+    }
+  }, [wakeLockEnabled]);
+
+  // Toggle wake lock on/off
   const toggleWakeLock = useCallback(async () => {
     const newState = !wakeLockEnabled;
     
     if (newState) {
-      // Turning ON
-      if ('wakeLock' in navigator) {
-        try {
-          wakeLockRef.current = await navigator.wakeLock.request('screen');
-          setWakeLockEnabled(true);
-          toast.success('Screen will stay unlocked during session');
-        } catch (err) {
-          console.error('Wake lock request failed:', err);
-          toast.error('Could not keep screen unlocked');
-        }
-      } else {
-        toast.error('Screen lock prevention not supported on this device');
+      const success = await acquireWakeLock(false);
+      if (success) {
+        setWakeLockEnabled(true);
+        toast.success('Screen will stay unlocked during session');
       }
     } else {
-      // Turning OFF
       if (wakeLockRef.current) {
         try {
           await wakeLockRef.current.release();
-        } catch (err) {
+        } catch {
           // Ignore release errors
         }
         wakeLockRef.current = null;
@@ -118,28 +145,53 @@ export function PracticeControls() {
       setWakeLockEnabled(false);
       toast.success('Screen unlocked mode disabled');
     }
-  }, [wakeLockEnabled]);
+  }, [wakeLockEnabled, acquireWakeLock]);
 
-  // Re-acquire wake lock when page becomes visible again (if user had it enabled)
+  // Re-acquire wake lock on visibility change, focus, and user interaction
   useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible' && wakeLockEnabled && !wakeLockRef.current) {
-        // Re-acquire wake lock silently
-        if ('wakeLock' in navigator) {
-          try {
-            wakeLockRef.current = await navigator.wakeLock.request('screen');
-          } catch (err) {
-            // Silent fail on re-acquire
-          }
+    if (!wakeLockEnabled) return;
+
+    const reacquire = async () => {
+      if (document.visibilityState === 'visible' && wakeLockEnabled) {
+        // Check if lock is still valid
+        if (!wakeLockRef.current || wakeLockRef.current.released) {
+          await acquireWakeLock(true);
         }
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    // Visibility change (tab becomes visible again)
+    document.addEventListener('visibilitychange', reacquire);
+    
+    // Window focus (user returns to window)
+    window.addEventListener('focus', reacquire);
+    
+    // User interaction events (touch/click can re-enable wake lock)
+    const handleInteraction = () => {
+      if (wakeLockEnabled && (!wakeLockRef.current || wakeLockRef.current.released)) {
+        acquireWakeLock(true);
+      }
     };
-  }, [wakeLockEnabled]);
+    document.addEventListener('touchstart', handleInteraction, { passive: true });
+    document.addEventListener('click', handleInteraction, { passive: true });
+    
+    // Periodic check every 30 seconds to ensure lock is still active
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible' && wakeLockEnabled) {
+        if (!wakeLockRef.current || wakeLockRef.current.released) {
+          acquireWakeLock(true);
+        }
+      }
+    }, 30000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', reacquire);
+      window.removeEventListener('focus', reacquire);
+      document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('click', handleInteraction);
+      clearInterval(interval);
+    };
+  }, [wakeLockEnabled, acquireWakeLock]);
 
   // Release wake lock when session ends or component unmounts
   useEffect(() => {
@@ -154,6 +206,7 @@ export function PracticeControls() {
       }
     };
   }, [activeSession]);
+
   // Live-updating timer - must be before early return
   const [, setTick] = useState(0);
   const isSessionPaused = !!activeSession?.paused_at;
