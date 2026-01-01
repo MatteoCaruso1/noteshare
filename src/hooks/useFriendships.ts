@@ -84,33 +84,29 @@ export function useFriends() {
     queryFn: async () => {
       if (!profile?.id) return [];
 
-      // Run both queries in parallel for better performance
-      const [friendshipsResult, allProfilesResult] = await Promise.all([
-        supabase
-          .from('friendships')
-          .select('requester_id, addressee_id')
-          .eq('status', 'accepted')
-          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
-        // Prefetch profiles in parallel - we'll filter after
-        supabase
-          .from('profiles')
-          .select('id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak')
-      ]);
+      // Get friendships first
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
 
-      if (friendshipsResult.error) throw friendshipsResult.error;
+      if (friendshipsError) throw friendshipsError;
 
-      const data = friendshipsResult.data;
-      
       // Get friend IDs (the other person)
-      const friendIds = data.map(f => 
+      const friendIds = friendships.map(f => 
         f.requester_id === profile.id ? f.addressee_id : f.requester_id
       );
 
       if (friendIds.length === 0) return [];
 
-      // Filter from prefetched profiles
-      const friendIdSet = new Set(friendIds);
-      const profiles = (allProfilesResult.data || []).filter(p => friendIdSet.has(p.id));
+      // Only fetch profiles for actual friends (not all profiles)
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak')
+        .in('id', friendIds);
+
+      if (profilesError) throw profilesError;
 
       return profiles as Profile[];
     },
@@ -282,13 +278,17 @@ export function useFriendsNotes() {
 
       if (friendIds.length === 0) return [];
 
-      // Get notes from friends with 'friends' visibility only (no public option)
-      // Also fetch session data for duration display
+      // Fetch notes AND author profiles in parallel using a join
       const { data: notes, error: notesError } = await supabase
         .from('notes')
         .select(`
           *,
-          practice_sessions!notes_session_id_fkey (*)
+          profiles!notes_author_id_fkey (
+            id, name, username, avatar, current_streak
+          ),
+          practice_sessions!notes_session_id_fkey (
+            id, started_at, ended_at, paused_duration_ms
+          )
         `)
         .in('author_id', friendIds)
         .eq('visibility', 'friends')
@@ -297,24 +297,16 @@ export function useFriendsNotes() {
 
       if (notesError) throw notesError;
 
-      // Fetch author profiles
-      const authorIds = [...new Set(notes.map(n => n.author_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', authorIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
       return notes.map((note: any) => ({
         ...note,
         visibility: note.visibility as NoteWithAuthor['visibility'],
-        author: profileMap.get(note.author_id) as Profile,
+        author: note.profiles,
         session: note.practice_sessions,
       })) as NoteWithAuthor[];
     },
     enabled: !!profile?.id,
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    staleTime: 60 * 1000, // Consider data fresh for 1 minute
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 }
 
