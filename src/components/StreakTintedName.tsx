@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { getStreakTier } from '@/lib/streakUtils';
 import { cn } from '@/lib/utils';
 import { Flame, Medal, Trophy, Star } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StreakTintedNameProps {
   name: string;
@@ -13,7 +14,7 @@ interface StreakTintedNameProps {
  * Displays a name with a subtle streak badge icon next to it
  * - 360+ days: Gold trophy
  * - 90+ days: Silver medal
- * - 30+ days: Bronze award
+ * - 30+ days: Bronze flame
  * - 10+ days: Starter star
  */
 export const StreakTintedName = memo(function StreakTintedName({
@@ -28,18 +29,36 @@ export const StreakTintedName = memo(function StreakTintedName({
     
     const iconClass = `w-3.5 h-3.5 ${tier.colorClass} opacity-80`;
     
+    let icon;
     switch (tier.tier) {
       case 'gold':
-        return <Trophy className={iconClass} />;
+        icon = <Trophy className={iconClass} />;
+        break;
       case 'silver':
-        return <Medal className={iconClass} />;
+        icon = <Medal className={iconClass} />;
+        break;
       case 'bronze':
-        return <Flame className={iconClass} />;
+        icon = <Flame className={iconClass} />;
+        break;
       case 'starter':
-        return <Star className={iconClass} />;
+        icon = <Star className={iconClass} />;
+        break;
       default:
         return null;
     }
+
+    return (
+      <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex cursor-default">{icon}</span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            {tier.label} Streak ({tier.minDays}+ days)
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
   };
 
   const badge = renderBadge();
