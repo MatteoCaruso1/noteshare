@@ -596,10 +596,6 @@ export function PracticeControls() {
             />
           </div>
 
-          {/* Audio Recording */}
-          <div className="mb-4">
-            <AudioRecorder onRecorded={handleAudioRecorded} />
-          </div>
 
           {/* Uploaded Audio Files - with editable names */}
           {audioFiles.length > 0 && (
@@ -633,14 +629,14 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Action Buttons - compact icon buttons */}
+          {/* Action Buttons - inline full-width */}
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9"
+                  className="h-9 flex-1"
                   onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
                   disabled={pauseSession.isPending || resumeSession.isPending}
                 >
@@ -659,7 +655,7 @@ export function PracticeControls() {
                   <AlertDialogTrigger asChild>
                     <Button
                       size="icon"
-                      className="h-9 w-9 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      className="h-9 flex-1 bg-gradient-primary text-primary-foreground"
                       disabled={createNote.isPending || uploading || endSession.isPending}
                     >
                       <Square className="w-4 h-4 fill-current" />
@@ -683,6 +679,7 @@ export function PracticeControls() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+            <AudioRecorder onRecorded={handleAudioRecorded} />
           </div>
           </div>
           )}
