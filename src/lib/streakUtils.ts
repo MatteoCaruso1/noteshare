@@ -14,7 +14,7 @@ export const STREAK_TIERS: StreakTierInfo[] = [
   { tier: 'gold', label: 'Gold', minDays: 360, colorClass: 'text-yellow-500', textColorClass: 'text-yellow-600 dark:text-yellow-400', bgColorClass: 'bg-yellow-500/10' },
   { tier: 'silver', label: 'Silver', minDays: 90, colorClass: 'text-slate-400', textColorClass: 'text-slate-500 dark:text-slate-300', bgColorClass: 'bg-slate-400/10' },
   { tier: 'bronze', label: 'Bronze', minDays: 30, colorClass: 'text-amber-600', textColorClass: 'text-amber-700 dark:text-amber-500', bgColorClass: 'bg-amber-600/10' },
-  { tier: 'starter', label: 'Starter', minDays: 10, colorClass: 'text-blue-400', textColorClass: 'text-blue-500 dark:text-blue-400', bgColorClass: 'bg-blue-500/10' },
+  { tier: 'starter', label: 'Starter', minDays: 10, colorClass: 'text-primary', textColorClass: 'text-primary', bgColorClass: 'bg-primary/10' },
   { tier: 'none', label: '', minDays: 0, colorClass: '', textColorClass: '', bgColorClass: '' },
 ];
 
