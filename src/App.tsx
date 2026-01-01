@@ -22,6 +22,7 @@ import Discover from "./pages/Discover";
 import Gigs from "./pages/Gigs";
 import GigDetail from "./pages/GigDetail";
 import FriendsJournals from "./pages/FriendsJournals";
+import WorkingToward from "./pages/WorkingToward";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -76,6 +77,7 @@ function AppInner() {
                 <Route path="/gigs" element={<Gigs />} />
                 <Route path="/gigs/:id" element={<GigDetail />} />
                 <Route path="/friends" element={<FriendsJournals />} />
+                <Route path="/working-toward" element={<WorkingToward />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
