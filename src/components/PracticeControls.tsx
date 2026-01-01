@@ -317,11 +317,10 @@ export function PracticeControls() {
               <h2 className="font-semibold">
                 {activeSession ? 'Practice Session' : 'Start Practice Session'}
               </h2>
-              {/* Show duration when collapsed with active session */}
-              {activeSession && manuallyCollapsed && sessionDuration && (
+              {/* Show "Active" when collapsed with active session */}
+              {activeSession && manuallyCollapsed && (
                 <span className={`text-sm font-medium ${isSessionPaused ? 'text-muted-foreground' : 'text-primary'}`}>
-                  {sessionDuration}
-                  {isSessionPaused && ' (paused)'}
+                  {isSessionPaused ? 'Paused' : 'Active'}
                 </span>
               )}
             </div>
