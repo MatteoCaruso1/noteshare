@@ -35,13 +35,13 @@ function TierIcon({ tier }: { tier: StreakTierInfo }) {
 function getRewardDescription(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'A starter streak badge on your profile — visible to all users!';
+      return 'A starter star badge appears next to your name — visible to everyone!';
     case 'bronze':
-      return 'Bronze name highlight on your profile and a bronze streak badge!';
+      return 'A bronze award badge now appears next to your name!';
     case 'silver':
-      return 'Silver name highlight on your profile and a silver streak badge!';
+      return 'A silver medal badge now appears next to your name!';
     case 'gold':
-      return 'Gold name highlight on your profile and a prestigious gold streak badge!';
+      return 'A prestigious gold trophy badge now appears next to your name!';
     default:
       return '';
   }
@@ -50,11 +50,11 @@ function getRewardDescription(tier: StreakTierInfo): string {
 function getNextMilestoneText(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'Keep going! Reach 30 days for bronze rewards and a name highlight.';
+      return 'Keep going! Reach 30 days to upgrade to a bronze award badge.';
     case 'bronze':
-      return 'Keep it up! Reach 90 days for silver rewards.';
+      return 'Keep it up! Reach 90 days to upgrade to a silver medal badge.';
     case 'silver':
-      return 'Almost there! Reach 360 days for gold rewards.';
+      return 'Almost there! Reach 360 days to upgrade to a gold trophy badge.';
     default:
       return '';
   }
