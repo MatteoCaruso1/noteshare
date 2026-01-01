@@ -15,7 +15,7 @@ import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useMessages';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Bell, MessageCircle, PenSquare } from 'lucide-react';
+import { Users, Bell, MessageCircle, PenSquare, UserPlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -31,6 +31,7 @@ const FriendsJournals = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [showNewMessageView, setShowNewMessageView] = useState(false);
+  const [addFriendOpen, setAddFriendOpen] = useState(false);
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
@@ -143,9 +144,25 @@ const FriendsJournals = () => {
                 </div>
               </FriendsList>
 
-              <div className="flex-1 max-w-xs">
-                <UserSearch compact />
-              </div>
+              {/* Add Friend Button */}
+              <Dialog open={addFriendOpen} onOpenChange={setAddFriendOpen}>
+                <DialogTrigger asChild>
+                  <div className="cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                    <UserPlus className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <UserPlus className="w-5 h-5 text-primary" />
+                      Add Friend
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="py-2">
+                    <UserSearch />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
