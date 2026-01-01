@@ -318,11 +318,19 @@ export function PracticeControls() {
                 {activeSession ? 'Practice Session' : 'Start Practice Session'}
               </h2>
               {/* Show "Active" when collapsed with active session */}
-              {activeSession && manuallyCollapsed && (
-                <span className={`text-sm font-medium ${isSessionPaused ? 'text-muted-foreground' : 'text-primary'}`}>
-                  {isSessionPaused ? 'Paused' : 'Active'}
-                </span>
-              )}
+              <span 
+                className={`text-sm font-medium transition-opacity duration-300 ${
+                  activeSession && manuallyCollapsed 
+                    ? 'opacity-100' 
+                    : 'opacity-0 pointer-events-none'
+                } ${
+                  isSessionPaused 
+                    ? 'text-muted-foreground' 
+                    : 'text-primary animate-pulse'
+                }`}
+              >
+                {isSessionPaused ? 'Paused' : 'Active'}
+              </span>
             </div>
             {isExpanded ? (
               <ChevronDown className="w-5 h-5 text-muted-foreground" />
