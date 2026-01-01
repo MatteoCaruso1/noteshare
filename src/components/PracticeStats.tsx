@@ -114,7 +114,37 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 tick={{ fontSize: 10 }} 
                 className="text-muted-foreground"
                 tickLine={false}
-                width={30}
+                width={36}
+                tickFormatter={(value) => `${value}`}
+                domain={[0, (dataMax: number) => {
+                  // Calculate nice round tick interval
+                  if (dataMax <= 60) return 60;
+                  if (dataMax <= 120) return 120;
+                  if (dataMax <= 180) return 180;
+                  if (dataMax <= 240) return 240;
+                  if (dataMax <= 300) return 300;
+                  if (dataMax <= 360) return 360;
+                  if (dataMax <= 480) return 480;
+                  if (dataMax <= 600) return 600;
+                  return Math.ceil(dataMax / 120) * 120;
+                }]}
+                ticks={(() => {
+                  const maxMinutes = Math.max(...(stats.weeklyMinutesOverTime?.map(d => d.minutes) || [0]), 60);
+                  let interval: number;
+                  if (maxMinutes <= 60) interval = 30;
+                  else if (maxMinutes <= 120) interval = 30;
+                  else if (maxMinutes <= 240) interval = 60;
+                  else if (maxMinutes <= 360) interval = 90;
+                  else if (maxMinutes <= 480) interval = 120;
+                  else interval = 120;
+                  
+                  const maxTick = Math.ceil(maxMinutes / interval) * interval;
+                  const ticks = [];
+                  for (let i = 0; i <= maxTick; i += interval) {
+                    ticks.push(i);
+                  }
+                  return ticks;
+                })()}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -155,7 +185,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 tickLine={false}
                 width={24}
                 domain={[0, 7]}
-                ticks={[0, 2, 4, 6]}
+                ticks={[0, 1, 2, 3, 4, 5, 6, 7]}
               />
               <Tooltip 
                 contentStyle={{ 
