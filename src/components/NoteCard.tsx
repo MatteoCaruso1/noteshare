@@ -410,23 +410,26 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </div>
       )}
 
-      {/* Focus Text - displayed inline when note has a focus date */}
-      {note.focus_text_snapshot && (
-        <div className="mb-3 pl-3 border-l-2 border-primary/30">
-          <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
-            <Crosshair className="w-3 h-3" />
-            Today's Focus
-          </p>
-          <p className="text-sm text-muted-foreground italic">{note.focus_text_snapshot}</p>
-        </div>
-      )}
-
       {note.text_content && (
         <RichTextContent 
           content={note.text_content} 
-          className={`${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}
+          className={`${(note.audio_files.length > 0 || note.image_files.length > 0 || note.focus_text_snapshot) ? 'mb-3' : ''}`}
           lineClamp={!expanded ? 3 : undefined}
         />
+      )}
+
+      {/* Focus Text - displayed after user content */}
+      {note.focus_text_snapshot && (
+        <div className={`pl-3 border-l-2 border-primary/30 ${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <Crosshair className="w-3 h-3" />
+            Today's Focus
+          </p>
+          <RichTextContent 
+            content={note.focus_text_snapshot} 
+            className="text-sm text-muted-foreground italic"
+          />
+        </div>
       )}
 
       {note.audio_files.length > 0 && (
