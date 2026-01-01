@@ -47,7 +47,7 @@ export function FocusViewDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
-            Focus for {formattedDate}
+            Ongoing Focus for {formattedDate}
           </DialogTitle>
           <DialogDescription className="sr-only">
             View the focus text that was saved with this note
