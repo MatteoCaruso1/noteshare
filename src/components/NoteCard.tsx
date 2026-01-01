@@ -270,11 +270,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               }}
             >
               <Crosshair className="w-3 h-3 mr-1" />
-              {/* Parse date parts directly to avoid timezone conversion issues */}
-              {(() => {
-                const [year, month, day] = note.focus_date.split('-').map(Number);
-                return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year.toString().slice(-2)}`;
-              })()} Focus
+              Ongoing Focus
             </Badge>
           )}
         </div>
