@@ -30,8 +30,8 @@ export function FocusViewDialog({
   const formattedDate = focusDate 
     ? (() => {
         const [year, month, day] = focusDate.split('-').map(Number);
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return `${months[month - 1]} ${day}, ${year}`;
       })()
     : 'Unknown date';
