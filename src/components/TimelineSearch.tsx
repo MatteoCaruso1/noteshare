@@ -132,45 +132,9 @@ export function TimelineSearch({
         </Button>
       )}
       
-      {/* Date Filter - moved to left */}
-      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <PopoverTrigger asChild>
-          <div
-            className={cn(
-              "cursor-pointer flex items-center justify-center h-9 w-9 shrink-0 rounded-lg bg-secondary/30 border border-border transition-colors hover:bg-secondary/50",
-              focusDate && "text-primary bg-primary/10 border-primary/20"
-            )}
-          >
-            <Calendar className="w-4 h-4" />
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <CalendarComponent
-            mode="single"
-            selected={focusDate}
-            onSelect={(date) => {
-              onFocusDateFilter?.(date);
-              setCalendarOpen(false);
-            }}
-            initialFocus
-            className={cn("p-3 pointer-events-auto")}
-          />
-        </PopoverContent>
-      </Popover>
-      {focusDate && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
-          onClick={handleClearFocusDate}
-        >
-          {format(focusDate, 'M/d')}
-          <X className="w-3 h-3 ml-1" />
-        </Button>
-      )}
 
-      {/* Search bar - now on the right */}
-      <div className="relative flex-1 min-w-0">
+      {/* Search bar - narrower width */}
+      <div className="relative w-[55%] min-w-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           type="text"
