@@ -410,6 +410,17 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </div>
       )}
 
+      {/* Focus Text - displayed inline when note has a focus date */}
+      {note.focus_text_snapshot && (
+        <div className="mb-3 pl-3 border-l-2 border-primary/30">
+          <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
+            <Crosshair className="w-3 h-3" />
+            Today's Focus
+          </p>
+          <p className="text-sm text-muted-foreground italic">{note.focus_text_snapshot}</p>
+        </div>
+      )}
+
       {note.text_content && (
         <RichTextContent 
           content={note.text_content} 
