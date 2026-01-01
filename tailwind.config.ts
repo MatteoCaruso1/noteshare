@@ -94,7 +94,8 @@ export default {
   			},
   			note: {
   				DEFAULT: 'hsl(var(--note))',
-  				foreground: 'hsl(var(--note-foreground))'
+  				foreground: 'hsl(var(--note-foreground))',
+  				border: 'hsl(var(--note-border))'
   			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
