@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -15,10 +15,10 @@ import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame, Pencil, Check } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames } from '@/hooks/useUpdateNote';
+import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames, useUpdateNoteContent } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -39,6 +39,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const { profile } = useAuth();
   const updateVisibility = useUpdateNoteVisibility();
   const updateAudioNames = useUpdateNoteAudioNames();
+  const updateContent = useUpdateNoteContent();
   const removeNoteFocus = useRemoveNoteFocus();
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
@@ -47,6 +48,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const [focusDialogOpen, setFocusDialogOpen] = useState(false);
   const [tagInputOpen, setTagInputOpen] = useState(false);
   const [newTagValue, setNewTagValue] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTextContent, setEditedTextContent] = useState('');
+  const [editedFocusText, setEditedFocusText] = useState('');
 
   const canEditTags = expanded && onTagsChange;
 
@@ -165,6 +169,37 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       prefetchComments(note.id);
     }
   }, [expanded, prefetchNote, prefetchComments, note.id]);
+
+  // Edit mode handlers
+  const handleStartEdit = useCallback(() => {
+    // Strip HTML tags for plain text editing
+    const stripHtml = (html: string) => {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    };
+    setEditedTextContent(stripHtml(note.text_content || ''));
+    setEditedFocusText(stripHtml(note.focus_text_snapshot || ''));
+    setIsEditing(true);
+  }, [note.text_content, note.focus_text_snapshot]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditedTextContent('');
+    setEditedFocusText('');
+  }, []);
+
+  const handleSaveEdit = useCallback(() => {
+    updateContent.mutate({
+      noteId: note.id,
+      textContent: editedTextContent || null,
+      focusTextSnapshot: note.focus_text_snapshot ? editedFocusText || null : undefined,
+    }, {
+      onSuccess: () => {
+        setIsEditing(false);
+      }
+    });
+  }, [note.id, note.focus_text_snapshot, editedTextContent, editedFocusText, updateContent]);
 
   return (
     <Card
@@ -325,6 +360,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenuItem
+                  onClick={handleStartEdit}
+                  className="cursor-pointer"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => handleVisibilityChange(note.visibility === 'private' ? 'friends' : 'private')}
                   className="cursor-pointer"
                 >
@@ -406,26 +448,86 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </div>
       )}
 
-      {note.text_content && (
-        <RichTextContent 
-          content={note.text_content} 
-          className={`${(note.audio_files.length > 0 || note.image_files.length > 0 || note.focus_text_snapshot) ? 'mb-3' : ''}`}
-          lineClamp={!expanded ? 3 : undefined}
-        />
-      )}
-
-      {/* Focus Text - displayed after user content */}
-      {note.focus_text_snapshot && (
-        <div className={`pl-3 border-l-2 border-primary/30 ${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}>
-          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-            <Crosshair className="w-3 h-3" />
-            Ongoing Focus
-          </p>
-          <RichTextContent 
-            content={note.focus_text_snapshot} 
-            className="text-sm text-muted-foreground italic"
+      {/* Text Content - editable or display mode */}
+      {isEditing ? (
+        <div className="space-y-3 mb-3">
+          <Textarea
+            value={editedTextContent}
+            onChange={(e) => setEditedTextContent(e.target.value)}
+            placeholder="Note content..."
+            className="min-h-[80px] text-sm resize-none"
+            onClick={(e) => e.stopPropagation()}
           />
+          
+          {/* Focus Text editing */}
+          {note.focus_text_snapshot && (
+            <div className="pl-3 border-l-2 border-primary/30">
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Crosshair className="w-3 h-3" />
+                Ongoing Focus
+              </p>
+              <Textarea
+                value={editedFocusText}
+                onChange={(e) => setEditedFocusText(e.target.value)}
+                placeholder="Focus text..."
+                className="min-h-[60px] text-sm resize-none"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+
+          {/* Save/Cancel buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-xs text-muted-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCancelEdit();
+              }}
+            >
+              <X className="w-3 h-3 mr-1" />
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSaveEdit();
+              }}
+              disabled={updateContent.isPending}
+            >
+              <Check className="w-3 h-3 mr-1" />
+              Save
+            </Button>
+          </div>
         </div>
+      ) : (
+        <>
+          {note.text_content && (
+            <RichTextContent 
+              content={note.text_content} 
+              className={`${(note.audio_files.length > 0 || note.image_files.length > 0 || note.focus_text_snapshot) ? 'mb-3' : ''}`}
+              lineClamp={!expanded ? 3 : undefined}
+            />
+          )}
+
+          {/* Focus Text - displayed after user content */}
+          {note.focus_text_snapshot && (
+            <div className={`pl-3 border-l-2 border-primary/30 ${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Crosshair className="w-3 h-3" />
+                Ongoing Focus
+              </p>
+              <RichTextContent 
+                content={note.focus_text_snapshot} 
+                className="text-sm text-muted-foreground italic"
+              />
+            </div>
+          )}
+        </>
       )}
 
       {note.audio_files.length > 0 && (
