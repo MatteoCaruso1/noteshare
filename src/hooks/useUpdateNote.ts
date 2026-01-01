@@ -220,3 +220,79 @@ return useMutation({
   },
 });
 }
+
+export function useUpdateNoteContent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      noteId,
+      textContent,
+      focusTextSnapshot,
+    }: {
+      noteId: string;
+      textContent?: string;
+      focusTextSnapshot?: string | null;
+    }) => {
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      
+      if (textContent !== undefined) {
+        updateData.text_content = textContent;
+      }
+      if (focusTextSnapshot !== undefined) {
+        updateData.focus_text_snapshot = focusTextSnapshot;
+      }
+
+      const { data, error } = await supabase
+        .from('notes')
+        .update(updateData)
+        .eq('id', noteId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onMutate: async ({ noteId, textContent, focusTextSnapshot }) => {
+      await queryClient.cancelQueries({ queryKey: ['note', noteId] });
+      await queryClient.cancelQueries({ queryKey: ['notes'] });
+
+      const previousNote = queryClient.getQueryData<NoteWithAuthor>(['note', noteId]);
+
+      if (previousNote) {
+        const updatedNote = { ...previousNote };
+        if (textContent !== undefined) updatedNote.text_content = textContent;
+        if (focusTextSnapshot !== undefined) updatedNote.focus_text_snapshot = focusTextSnapshot;
+        queryClient.setQueryData<NoteWithAuthor>(['note', noteId], updatedNote);
+      }
+
+      queryClient.setQueriesData<NoteWithAuthor[]>(
+        { queryKey: ['notes'], exact: false },
+        (old) => old?.map(note => {
+          if (note.id !== noteId) return note;
+          const updated = { ...note };
+          if (textContent !== undefined) updated.text_content = textContent;
+          if (focusTextSnapshot !== undefined) updated.focus_text_snapshot = focusTextSnapshot;
+          return updated;
+        })
+      );
+
+      return { previousNote };
+    },
+    onError: (error, { noteId }, context) => {
+      if (context?.previousNote) {
+        queryClient.setQueryData(['note', noteId], context.previousNote);
+      }
+      console.error('Error updating note content:', error);
+      toast.error('Failed to update note');
+    },
+    onSuccess: (_, { noteId }) => {
+      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      toast.success('Note updated');
+    },
+  });
+}
