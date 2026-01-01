@@ -636,7 +636,7 @@ export function PracticeControls() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-9 flex-1"
+                  className="h-9 flex-[3]"
                   onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
                   disabled={pauseSession.isPending || resumeSession.isPending}
                 >
@@ -655,7 +655,7 @@ export function PracticeControls() {
                   <AlertDialogTrigger asChild>
                     <Button
                       size="icon"
-                      className="h-9 flex-1 bg-gradient-primary text-primary-foreground"
+                      className="h-9 flex-[3] bg-gradient-primary text-primary-foreground"
                       disabled={createNote.isPending || uploading || endSession.isPending}
                     >
                       <Square className="w-4 h-4 fill-current" />
@@ -679,7 +679,7 @@ export function PracticeControls() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <AudioRecorder onRecorded={handleAudioRecorded} />
+            <AudioRecorder onRecorded={handleAudioRecorded} className="flex-[2]" />
           </div>
           </div>
           )}

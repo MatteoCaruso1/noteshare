@@ -6,9 +6,10 @@ import { audioManager } from '@/lib/audioManager';
 
 interface AudioRecorderProps {
   onRecorded: (blob: Blob, duration: number) => void;
+  className?: string;
 }
 
-export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
+export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -178,14 +179,14 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={`flex items-center gap-2 ${className || ''}`}>
       {recording ? (
         <>
           <Button
             variant="destructive"
             size="icon"
             onClick={stopRecording}
-            className="h-9 w-9"
+            className="h-9 flex-1"
           >
             <Square className="w-4 h-4 fill-current" />
           </Button>
@@ -199,7 +200,7 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
           variant="outline"
           size="icon"
           onClick={startRecording}
-          className="h-9 w-9 bg-background hover:bg-background active:bg-background"
+          className="h-9 flex-1 bg-background hover:bg-background active:bg-background"
           title="Record audio"
         >
           {processing ? (
