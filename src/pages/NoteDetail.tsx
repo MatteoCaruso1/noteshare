@@ -209,7 +209,7 @@ const NoteDetail = () => {
 
             {/* Comment Input */}
             {profile && (
-              <Card className="p-3 bg-card border-border mb-4">
+              <Card className="p-3 bg-note text-note-foreground border-border mb-4">
                 <div className="flex gap-2">
                   <Avatar className="w-6 h-6">
                     <AvatarImage src={profile.avatar || ''} />
@@ -253,7 +253,7 @@ const NoteDetail = () => {
                 {comments.map((comment) => {
                   const isCommentOwner = profile?.id === comment.author_id;
                   return (
-                    <Card key={comment.id} className="p-4 bg-card border-border">
+                    <Card key={comment.id} className="p-4 bg-note text-note-foreground border-border">
                       <div className="flex gap-3">
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={comment.author?.avatar || ''} />
