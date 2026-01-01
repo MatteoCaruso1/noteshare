@@ -5,9 +5,12 @@ import { useGlint } from '@/contexts/GlintContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Crosshair, Save, FolderOpen } from 'lucide-react';
+import { Crosshair, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+
+const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
@@ -18,8 +21,18 @@ export function TodaysFocus() {
   const [isFocused, setIsFocused] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(() => {
+    // Initialize from localStorage, default to expanded (true)
+    const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
+    return stored === null ? true : stored === 'open';
+  });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Persist collapsed state to localStorage
+  useEffect(() => {
+    localStorage.setItem(FOCUS_COLLAPSED_KEY, isOpen ? 'open' : 'collapsed');
+  }, [isOpen]);
 
   // Sync isFocused state with glint context
   useEffect(() => {
@@ -380,12 +393,14 @@ export function TodaysFocus() {
 
   if (isLoading) {
     return (
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-2">
+      <Card className="bg-card border-border">
+        <div className="p-4 flex items-center gap-2">
           <Crosshair className="w-5 h-5 text-muted-foreground" />
           <h2 className="font-semibold">Today's Focus</h2>
         </div>
-        <div className="h-12 bg-muted/50 rounded animate-pulse" />
+        <div className="px-4 pb-4">
+          <div className="h-12 bg-muted/50 rounded animate-pulse" />
+        </div>
       </Card>
     );
   }
@@ -414,63 +429,83 @@ export function TodaysFocus() {
 
   return (
     <>
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Crosshair className={`w-5 h-5 transition-colors ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
-            <h2 className="font-semibold">Today's Focus</h2>
-          </div>
-          <div className="flex gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 active:bg-transparent"
-              onClick={handleSaveToBacklog}
-              disabled={isSaving || !text.trim()}
-              title="Save to backlog"
+      <Card className="bg-card border-border">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
+              <div className="flex items-center gap-2">
+                <Crosshair className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                <h2 className="font-semibold">Today's Focus</h2>
+              </div>
+              <div className="flex items-center gap-1">
+                {/* Buttons fade in when open */}
+                <div className={`flex gap-1 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 active:bg-transparent"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSaveToBacklog();
+                    }}
+                    disabled={isSaving || !text.trim()}
+                    title="Save to backlog"
+                  >
+                    <Save className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 active:bg-transparent"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsBacklogOpen(true);
+                    }}
+                    title="View backlog"
+                  >
+                    <FolderOpen className="w-4 h-4" />
+                  </Button>
+                </div>
+                {isOpen ? (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="px-4 pb-4">
+            <div 
+              className={isFocused ? '' : 'cursor-text'}
+              onClick={() => {
+                if (!isFocused) {
+                  textareaRef.current?.focus({ preventScroll: true });
+                }
+              }}
             >
-              <Save className="w-4 h-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 active:bg-transparent"
-              onClick={() => setIsBacklogOpen(true)}
-              title="View backlog"
-            >
-              <FolderOpen className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-        <div 
-          className={isFocused ? '' : 'cursor-text'}
-          onClick={() => {
-            if (!isFocused) {
-              textareaRef.current?.focus({ preventScroll: true });
-            }
-          }}
-        >
-          <Textarea
-            ref={textareaRef}
-            value={text}
-            onInput={handleInput}
-            onKeyDown={handleKeyDown}
-            onFocus={(e) => {
-              e.target.scrollIntoView = () => {};
-              setIsFocused(true);
-            }}
-            onBlur={() => {
-              setIsFocused(false);
-              handleBlur();
-            }}
-            placeholder="What will you work on today?"
-            className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
-            style={{ overscrollBehavior: 'contain' }}
-            rows={1}
-          />
-        </div>
+              <Textarea
+                ref={textareaRef}
+                value={text}
+                onInput={handleInput}
+                onKeyDown={handleKeyDown}
+                onFocus={(e) => {
+                  e.target.scrollIntoView = () => {};
+                  setIsFocused(true);
+                }}
+                onBlur={() => {
+                  setIsFocused(false);
+                  handleBlur();
+                }}
+                placeholder="What will you work on today?"
+                className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
+                style={{ overscrollBehavior: 'contain' }}
+                rows={1}
+              />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
 
       <FocusBacklogDialog 
