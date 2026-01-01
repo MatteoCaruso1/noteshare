@@ -633,36 +633,41 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
-              disabled={pauseSession.isPending || resumeSession.isPending}
-            >
-              {isSessionPaused ? (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Resume Session
-                </>
-              ) : (
-                <>
-                  <Pause className="w-4 h-4 mr-2" />
-                  Pause Session
-                </>
-              )}
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+          {/* Action Buttons - compact icon buttons */}
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button
-                  className="flex-1 bg-gradient-primary text-primary-foreground"
-                  disabled={createNote.isPending || uploading || endSession.isPending}
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
+                  disabled={pauseSession.isPending || resumeSession.isPending}
                 >
-                  <Square className="w-4 h-4 mr-2" />
-                  End Session
+                  {isSessionPaused ? (
+                    <Play className="w-4 h-4" />
+                  ) : (
+                    <Pause className="w-4 h-4" />
+                  )}
                 </Button>
-              </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>{isSessionPaused ? 'Resume' : 'Pause'}</TooltipContent>
+            </Tooltip>
+            <AlertDialog>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="icon"
+                      className="h-9 w-9 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      disabled={createNote.isPending || uploading || endSession.isPending}
+                    >
+                      <Square className="w-4 h-4 fill-current" />
+                    </Button>
+                  </AlertDialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>End Session</TooltipContent>
+              </Tooltip>
               <AlertDialogContent className="max-w-xs">
                 <AlertDialogHeader>
                   <AlertDialogTitle>End session?</AlertDialogTitle>

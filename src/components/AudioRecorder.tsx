@@ -183,13 +183,13 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
         <>
           <Button
             variant="destructive"
+            size="icon"
             onClick={stopRecording}
-            className="flex-1"
+            className="h-9 w-9"
           >
-            <Square className="w-4 h-4 mr-2" />
-            Stop Recording
+            <Square className="w-4 h-4 fill-current" />
           </Button>
-          <div className="flex items-center gap-2 text-sm text-destructive min-w-[80px]">
+          <div className="flex items-center gap-2 text-sm text-destructive">
             <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             {formatTime(elapsedTime)}
           </div>
@@ -197,15 +197,16 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
       ) : (
         <Button
           variant="outline"
+          size="icon"
           onClick={startRecording}
-          className="flex-1 bg-background hover:bg-background active:bg-background"
+          className="h-9 w-9 bg-background hover:bg-background active:bg-background"
+          title="Record audio"
         >
           {processing ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Mic className="w-4 h-4 mr-2" />
+            <Mic className="w-4 h-4" />
           )}
-          {processing ? 'Processing...' : 'Record Audio'}
         </Button>
       )}
     </div>
