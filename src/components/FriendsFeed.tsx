@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
+import { NoteCardSkeleton } from './NoteCardSkeleton';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Sparkles } from 'lucide-react';
@@ -64,9 +65,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="p-4 bg-card border-border animate-pulse">
-            <div className="h-20 bg-muted rounded" />
-          </Card>
+          <NoteCardSkeleton key={i} />
         ))}
       </div>
     );
