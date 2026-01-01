@@ -121,9 +121,11 @@ const Index = () => {
 
           {/* Timeline */}
           <section>
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <h2 className="text-lg font-semibold">Notes</h2>
-              <div className="flex items-center gap-2 flex-1 justify-end">
+            {/* Header row with horizontal line */}
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-lg font-semibold shrink-0">Notes</h2>
+              <div className="flex-1 h-px bg-border" />
+              <div className="flex items-center gap-2 shrink-0">
                 <TimelineSearch 
                   onSearch={setSearchQuery} 
                   onFocusDateFilter={setFocusDateFilter}
@@ -142,13 +144,21 @@ const Index = () => {
                 {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
               </p>
             )}
-            <Timeline 
-              notes={filteredNotes} 
-              loading={notesLoading || isNotesBootstrapping} 
-              isRefetching={notesRefetching}
-              displayCount={displayCount}
-              onLoadMore={handleLoadMore}
-            />
+            {/* Notes container with side borders */}
+            <div className="relative">
+              {/* Left vertical line */}
+              <div className="absolute left-0 top-0 bottom-0 w-px bg-border -ml-3 hidden sm:block" />
+              {/* Right vertical line */}
+              <div className="absolute right-0 top-0 bottom-0 w-px bg-border -mr-3 hidden sm:block" />
+              
+              <Timeline 
+                notes={filteredNotes} 
+                loading={notesLoading || isNotesBootstrapping} 
+                isRefetching={notesRefetching}
+                displayCount={displayCount}
+                onLoadMore={handleLoadMore}
+              />
+            </div>
           </section>
         </main>
       </PageBody>
