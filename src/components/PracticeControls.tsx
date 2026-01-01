@@ -575,9 +575,9 @@ export function PracticeControls() {
                     onCheckedChange={(checked) => {
                       setAttachFocus(checked);
                       if (checked) {
-                        toast.success("Your session will be linked to Today's Focus");
+                        toast.success("Your session will be linked to Ongoing Focus");
                       } else {
-                        toast.success("Your session will no longer be linked to Today's Focus");
+                        toast.success("Your session will no longer be linked to Ongoing Focus");
                       }
                     }}
                     className="scale-90"

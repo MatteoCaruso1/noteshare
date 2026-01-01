@@ -112,7 +112,7 @@ const Index = () => {
             {/* Quick Note Capture */}
             <QuickNoteCapture />
 
-            {/* Today's Focus */}
+            {/* Ongoing Focus */}
             {profile && <TodaysFocus />}
           </GlintProvider>
 

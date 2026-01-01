@@ -423,7 +423,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         <div className={`pl-3 border-l-2 border-primary/30 ${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}>
           <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
             <Crosshair className="w-3 h-3" />
-            Today's Focus
+            Ongoing Focus
           </p>
           <RichTextContent 
             content={note.focus_text_snapshot} 
