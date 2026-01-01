@@ -281,8 +281,8 @@ const Profile = () => {
             </div>
           </Card>
 
-          {/* Practice Stats */}
-          <PracticeStats profileId={profile?.id} />
+          {/* Practice Stats - hide during editing */}
+          {!editing && <PracticeStats profileId={profile?.id} />}
 
           {/* Save/Cancel Buttons */}
           {editing && (
@@ -296,11 +296,11 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Feedback Section */}
-          <FeedbackCard />
+          {/* Feedback Section - hide during editing */}
+          {!editing && <FeedbackCard />}
 
-          {/* Add to Homescreen Info */}
-          <AddToHomescreenInfo />
+          {/* Add to Homescreen Info - hide during editing */}
+          {!editing && <AddToHomescreenInfo />}
         </main>
       </PageBody>
 
