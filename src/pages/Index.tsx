@@ -135,30 +135,32 @@ const Index = () => {
                 />
               </div>
             </div>
-            {/* Horizontal divider below header */}
-            <div className="h-px bg-border mb-4" />
             {(searchQuery || focusDateFilter || tagFilter) && (
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-muted-foreground mb-2">
                 {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
                 {searchQuery && ` for "${searchQuery}"`}
                 {tagFilter && ` tagged "${tagFilter}"`}
                 {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
               </p>
             )}
-            {/* Notes container with side borders */}
+            {/* Notes container with connected borders */}
             <div className="relative px-3 sm:px-4">
               {/* Left vertical line */}
               <div className="absolute left-0 top-0 bottom-0 w-px bg-border" />
               {/* Right vertical line */}
               <div className="absolute right-0 top-0 bottom-0 w-px bg-border" />
+              {/* Top horizontal line connecting the verticals */}
+              <div className="absolute left-0 right-0 top-0 h-px bg-border" />
               
-              <Timeline 
-                notes={filteredNotes} 
-                loading={notesLoading || isNotesBootstrapping} 
-                isRefetching={notesRefetching}
-                displayCount={displayCount}
-                onLoadMore={handleLoadMore}
-              />
+              <div className="pt-3">
+                <Timeline 
+                  notes={filteredNotes} 
+                  loading={notesLoading || isNotesBootstrapping} 
+                  isRefetching={notesRefetching}
+                  displayCount={displayCount}
+                  onLoadMore={handleLoadMore}
+                />
+              </div>
             </div>
           </section>
         </main>
