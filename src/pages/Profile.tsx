@@ -23,25 +23,6 @@ import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 
-const MILESTONE_STORAGE_KEY = 'noteshare_celebrated_milestones';
-
-function getCelebratedMilestones(): number[] {
-  try {
-    const stored = localStorage.getItem(MILESTONE_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function setCelebratedMilestone(days: number) {
-  const milestones = getCelebratedMilestones();
-  if (!milestones.includes(days)) {
-    milestones.push(days);
-    localStorage.setItem(MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
-  }
-}
-
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
@@ -64,23 +45,36 @@ const Profile = () => {
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
   const { data: practiceStats } = usePracticeStats(profile?.id);
 
-  // Check for new streak milestones
+  // Check for new streak milestones and persist to database
   useEffect(() => {
-    if (!practiceStats?.currentStreak) return;
+    if (!practiceStats?.currentStreak || !profile) return;
     const currentStreak = practiceStats.currentStreak;
     const currentTier = getStreakTier(currentStreak);
 
     // Only celebrate actual tier achievements (not 'none')
     if (currentTier.tier === 'none') return;
-    const celebratedMilestones = getCelebratedMilestones();
+    const celebratedMilestones = profile.celebrated_streak_milestones || [];
 
     // Check if user just hit this milestone and hasn't celebrated it
     if (currentStreak >= currentTier.minDays && !celebratedMilestones.includes(currentTier.minDays)) {
       setCelebratingTier(currentTier);
       setMilestoneDialogOpen(true);
-      setCelebratedMilestone(currentTier.minDays);
+      
+      // Persist to database
+      const newMilestones = [...celebratedMilestones, currentTier.minDays];
+      supabase
+        .from('profiles')
+        .update({ celebrated_streak_milestones: newMilestones })
+        .eq('id', profile.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Failed to save milestone:', error);
+          } else {
+            refreshProfile();
+          }
+        });
     }
-  }, [practiceStats?.currentStreak]);
+  }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones]);
 
   if (!user) {
     navigate('/auth');
