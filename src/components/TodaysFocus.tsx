@@ -338,11 +338,28 @@ export function TodaysFocus() {
     }
   }, [text, getLineInfo, insertListPrefix, renumberList]);
 
+  // Track if we're pasting to skip auto-formatting
+  const isPastingRef = useRef(false);
+
+  const handlePaste = useCallback(() => {
+    isPastingRef.current = true;
+    // Reset after a short delay to allow paste to complete
+    setTimeout(() => {
+      isPastingRef.current = false;
+    }, 100);
+  }, []);
+
   // Handle input for auto-conversion and auto-capitalization
   const handleInput = useCallback((e: React.FormEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
     let value = textarea.value;
     let cursorPos = textarea.selectionStart;
+    
+    // Skip auto-formatting during paste operations
+    if (isPastingRef.current) {
+      handleTextChange(value);
+      return;
+    }
     
     // Find current line info
     let lineStart = cursorPos;
@@ -495,6 +512,7 @@ export function TodaysFocus() {
                 ref={textareaRef}
                 value={text}
                 onInput={handleInput}
+                onPaste={handlePaste}
                 onKeyDown={handleKeyDown}
                 onFocus={(e) => {
                   e.target.scrollIntoView = () => {};
