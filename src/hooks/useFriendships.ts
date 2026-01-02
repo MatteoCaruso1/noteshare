@@ -49,30 +49,29 @@ export function usePendingFriendRequests() {
     queryFn: async () => {
       if (!profile?.id) return [];
 
+      // Use a join to fetch friendships with requester profiles in a single query
       const { data, error } = await supabase
         .from('friendships')
-        .select('*')
+        .select(`
+          *,
+          profiles!friendships_requester_id_fkey (
+            id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak
+          )
+        `)
         .eq('addressee_id', profile.id)
         .eq('status', 'pending');
 
       if (error) throw error;
 
-      // Fetch requester profiles
-      const requesterIds = data.map(f => f.requester_id);
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', requesterIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
-      return data.map(f => ({
+      return (data || []).map((f: any) => ({
         ...f,
         status: f.status as 'pending' | 'accepted' | 'rejected',
-        requester: profileMap.get(f.requester_id) as Profile,
+        requester: f.profiles as Profile,
       })) as FriendshipWithProfile[];
     },
     enabled: !!profile?.id,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -331,44 +330,62 @@ export function useSuggestedMusicians() {
       const excludeIds = new Set<string>([profile.id]);
       const suggestionMap = new Map<string, { mutualCount: number; reasons: Set<SuggestionReason>; matchingGenres: string[] }>();
 
-      // Step 1: Get current friends to exclude them
-      const { data: myFriendships, error: myFriendshipsError } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+      // Run initial queries in parallel: all friendships (accepted + pending) and potential suggestions
+      const [friendshipsResult, collaboratorsResult, genreMatchesResult] = await Promise.all([
+        // Get all friendships in one query
+        supabase
+          .from('friendships')
+          .select('requester_id, addressee_id, status')
+          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
+        // Get users open to collaborate
+        supabase
+          .from('profiles')
+          .select('id, genres')
+          .eq('open_to_collaborate', true)
+          .neq('id', profile.id)
+          .limit(50),
+        // Get users with matching genres
+        myGenres.length > 0
+          ? supabase
+              .from('profiles')
+              .select('id, genres')
+              .neq('id', profile.id)
+              .overlaps('genres', myGenres)
+              .limit(50)
+          : Promise.resolve({ data: [], error: null })
+      ]);
 
-      if (myFriendshipsError) throw myFriendshipsError;
+      if (friendshipsResult.error) throw friendshipsResult.error;
+      if (collaboratorsResult.error) throw collaboratorsResult.error;
+      if (genreMatchesResult.error) throw genreMatchesResult.error;
 
-      const myFriendIds = (myFriendships || []).map(f => 
-        f.requester_id === profile.id ? f.addressee_id : f.requester_id
-      );
-      myFriendIds.forEach(id => excludeIds.add(id));
-
-      // Also exclude pending requests
-      const { data: pendingFriendships } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'pending')
-        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
-
-      (pendingFriendships || []).forEach(f => {
-        excludeIds.add(f.requester_id);
-        excludeIds.add(f.addressee_id);
+      const allFriendships = friendshipsResult.data || [];
+      
+      // Separate accepted and pending friendships
+      const myAcceptedFriendIds: string[] = [];
+      allFriendships.forEach(f => {
+        const otherId = f.requester_id === profile.id ? f.addressee_id : f.requester_id;
+        if (f.status === 'accepted') {
+          myAcceptedFriendIds.push(otherId);
+          excludeIds.add(otherId);
+        } else if (f.status === 'pending') {
+          excludeIds.add(f.requester_id);
+          excludeIds.add(f.addressee_id);
+        }
       });
 
-      // Step 2: Get friends-of-friends (mutual connections)
-      if (myFriendIds.length > 0) {
+      // Get friends-of-friends only if we have friends
+      if (myAcceptedFriendIds.length > 0) {
         const { data: fofFriendships, error: fofError } = await supabase
           .from('friendships')
           .select('requester_id, addressee_id')
           .eq('status', 'accepted')
-          .or(myFriendIds.map(id => `requester_id.eq.${id},addressee_id.eq.${id}`).join(','));
+          .or(myAcceptedFriendIds.map(id => `requester_id.eq.${id},addressee_id.eq.${id}`).join(','));
 
         if (fofError) throw fofError;
 
         (fofFriendships || []).forEach(f => {
-          const otherId = myFriendIds.includes(f.requester_id) ? f.addressee_id : f.requester_id;
+          const otherId = myAcceptedFriendIds.includes(f.requester_id) ? f.addressee_id : f.requester_id;
           if (!excludeIds.has(otherId)) {
             const existing = suggestionMap.get(otherId) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
             existing.mutualCount += 1;
@@ -378,22 +395,12 @@ export function useSuggestedMusicians() {
         });
       }
 
-      // Step 3: Get users open to collaborate
-      const { data: collaborators, error: collabError } = await supabase
-        .from('profiles')
-        .select('id, genres')
-        .eq('open_to_collaborate', true)
-        .neq('id', profile.id)
-        .limit(50);
-
-      if (collabError) throw collabError;
-
-      (collaborators || []).forEach(user => {
+      // Process collaborators
+      (collaboratorsResult.data || []).forEach(user => {
         if (!excludeIds.has(user.id)) {
           const existing = suggestionMap.get(user.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
           existing.reasons.add('collaborate');
           
-          // Check for genre overlap
           const userGenres = user.genres || [];
           const overlap = myGenres.filter(g => userGenres.includes(g));
           if (overlap.length > 0) {
@@ -405,32 +412,21 @@ export function useSuggestedMusicians() {
         }
       });
 
-      // Step 4: Get users with matching genres (even if not open to collaborate)
-      if (myGenres.length > 0) {
-        const { data: genreMatches, error: genreError } = await supabase
-          .from('profiles')
-          .select('id, genres')
-          .neq('id', profile.id)
-          .overlaps('genres', myGenres)
-          .limit(50);
-
-        if (genreError) throw genreError;
-
-        (genreMatches || []).forEach(user => {
-          if (!excludeIds.has(user.id)) {
-            const existing = suggestionMap.get(user.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
-            const userGenres = user.genres || [];
-            const overlap = myGenres.filter(g => userGenres.includes(g));
-            if (overlap.length > 0) {
-              existing.reasons.add('genre');
-              existing.matchingGenres = overlap;
-            }
-            suggestionMap.set(user.id, existing);
+      // Process genre matches
+      (genreMatchesResult.data || []).forEach(user => {
+        if (!excludeIds.has(user.id)) {
+          const existing = suggestionMap.get(user.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
+          const userGenres = user.genres || [];
+          const overlap = myGenres.filter(g => userGenres.includes(g));
+          if (overlap.length > 0) {
+            existing.reasons.add('genre');
+            existing.matchingGenres = overlap;
           }
-        });
-      }
+          suggestionMap.set(user.id, existing);
+        }
+      });
 
-      // Step 5: Fetch full profiles for all suggestions
+      // Fetch full profiles for suggestions
       const suggestionIds = Array.from(suggestionMap.keys());
       if (suggestionIds.length === 0) return [];
 
@@ -442,7 +438,6 @@ export function useSuggestedMusicians() {
 
       if (profilesError) throw profilesError;
 
-      // Score and sort suggestions
       return (profiles || [])
         .map(p => {
           const meta = suggestionMap.get(p.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
@@ -454,12 +449,13 @@ export function useSuggestedMusicians() {
           };
         })
         .sort((a, b) => {
-          // Score: mutual connections worth 3, collaborate worth 2, genre worth 1
           const scoreA = a.mutualCount * 3 + (a.reasons.includes('collaborate') ? 2 : 0) + (a.reasons.includes('genre') ? 1 : 0);
           const scoreB = b.mutualCount * 3 + (b.reasons.includes('collaborate') ? 2 : 0) + (b.reasons.includes('genre') ? 1 : 0);
           return scoreB - scoreA;
         });
     },
     enabled: !!profile?.id,
+    staleTime: 5 * 60 * 1000, // Suggestions are expensive, cache for 5 minutes
+    gcTime: 10 * 60 * 1000,
   });
 }

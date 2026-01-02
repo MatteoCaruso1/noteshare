@@ -54,13 +54,13 @@ export function useConversations() {
         }
       });
 
-      // Get partner profiles
+      // Get partner profiles - only if we have conversations
       const partnerIds = Array.from(conversationMap.keys());
       if (partnerIds.length === 0) return [];
 
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, username, avatar, current_streak')
         .in('id', partnerIds);
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
@@ -84,6 +84,8 @@ export function useConversations() {
       );
     },
     enabled: !!profile?.id,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    gcTime: 5 * 60 * 1000,
   });
 }
 
