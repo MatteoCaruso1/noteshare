@@ -22,7 +22,7 @@ const EXAMPLE_GOALS = [
 ];
 
 export function SimpleGoals({ profileId }: SimpleGoalsProps) {
-  const { data: goals = [] } = useGoals(profileId);
+  const { data: goals = [], isLoading } = useGoals(profileId);
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
   const deleteGoal = useDeleteGoal();
@@ -194,7 +194,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         )}
 
-        {activeGoals.length === 0 && !isAdding && (
+        {!isLoading && activeGoals.length === 0 && !isAdding && !pendingGoal && (
           <p className="text-sm text-muted-foreground">No goals yet. Click + to add one.</p>
         )}
       </div>

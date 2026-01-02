@@ -362,113 +362,115 @@ const WorkingToward = () => {
                       </Badge>
                     )}
                   </div>
-                  <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent onClick={(e) => e.stopPropagation()}>
-                      <DialogHeader>
-                        <DialogTitle>Create New Project</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <div className="flex flex-col items-center gap-3">
-                          <div
-                            className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                            onClick={() => projectFileInputRef.current?.click()}
-                          >
-                            {projectCoverImage ? (
-                              <img src={projectCoverImage} alt="" className="w-full h-full object-cover" />
-                            ) : isProjectUploading ? (
-                              <div className="text-xs text-muted-foreground">Uploading...</div>
-                            ) : (
-                              <div className="flex flex-col items-center gap-1">
-                                <Upload className="w-6 h-6 text-muted-foreground" />
-                                <span className="text-xs text-muted-foreground">Album Art</span>
-                              </div>
-                            )}
-                          </div>
-                          <input
-                            ref={projectFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleProjectImageUpload}
-                            className="hidden"
-                          />
-                        </div>
-
-                        <Input
-                          placeholder="Project title (e.g., Jazz Standards Album)"
-                          value={newProjectTitle}
-                          onChange={(e) => setNewProjectTitle(e.target.value)}
-                        />
-                        <Textarea
-                          placeholder="Describe your project..."
-                          value={newProjectDescription}
-                          onChange={(e) => setNewProjectDescription(e.target.value)}
-                          rows={3}
-                        />
-
-                        <div className="space-y-2">
-                          <Label className="text-sm">Expected Release Date (optional)</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !projectReleaseDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {projectReleaseDate ? format(projectReleaseDate, "MMM d, yyyy") : "Pick a date"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <CalendarComponent
-                                mode="single"
-                                selected={projectReleaseDate}
-                                onSelect={setProjectReleaseDate}
-                                initialFocus
-                                className="p-3 pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        
-                        <div className="flex items-center justify-between py-2">
-                          <Label htmlFor="project-show-feed" className="text-sm">Show on home feed</Label>
-                          <Switch
-                            id="project-show-feed"
-                            checked={projectShowOnFeed}
-                            onCheckedChange={setProjectShowOnFeed}
-                          />
-                        </div>
-
-                        <div className="border-t border-border pt-4">
-                          <CollaboratorPicker
-                            selectedIds={projectCollaboratorIds}
-                            onSelect={setProjectCollaboratorIds}
-                            label="Tag Collaborators"
-                          />
-                        </div>
-
-                        <Button
-                          className="w-full bg-gradient-primary text-primary-foreground"
-                          onClick={handleCreateProject}
-                          disabled={createProject.isPending || !newProjectTitle.trim() || isProjectUploading}
+                  {projectsOpen && (
+                    <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="h-8 animate-fade-in"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          Create Project
+                          <Plus className="w-4 h-4" />
                         </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogTrigger>
+                      <DialogContent onClick={(e) => e.stopPropagation()}>
+                        <DialogHeader>
+                          <DialogTitle>Create New Project</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <div className="flex flex-col items-center gap-3">
+                            <div
+                              className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
+                              onClick={() => projectFileInputRef.current?.click()}
+                            >
+                              {projectCoverImage ? (
+                                <img src={projectCoverImage} alt="" className="w-full h-full object-cover" />
+                              ) : isProjectUploading ? (
+                                <div className="text-xs text-muted-foreground">Uploading...</div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                  <Upload className="w-6 h-6 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">Album Art</span>
+                                </div>
+                              )}
+                            </div>
+                            <input
+                              ref={projectFileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProjectImageUpload}
+                              className="hidden"
+                            />
+                          </div>
+
+                          <Input
+                            placeholder="Project title (e.g., Jazz Standards Album)"
+                            value={newProjectTitle}
+                            onChange={(e) => setNewProjectTitle(e.target.value)}
+                          />
+                          <Textarea
+                            placeholder="Describe your project..."
+                            value={newProjectDescription}
+                            onChange={(e) => setNewProjectDescription(e.target.value)}
+                            rows={3}
+                          />
+
+                          <div className="space-y-2">
+                            <Label className="text-sm">Expected Release Date (optional)</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !projectReleaseDate && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {projectReleaseDate ? format(projectReleaseDate, "MMM d, yyyy") : "Pick a date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={projectReleaseDate}
+                                  onSelect={setProjectReleaseDate}
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                          
+                          <div className="flex items-center justify-between py-2">
+                            <Label htmlFor="project-show-feed" className="text-sm">Show on home feed</Label>
+                            <Switch
+                              id="project-show-feed"
+                              checked={projectShowOnFeed}
+                              onCheckedChange={setProjectShowOnFeed}
+                            />
+                          </div>
+
+                          <div className="border-t border-border pt-4">
+                            <CollaboratorPicker
+                              selectedIds={projectCollaboratorIds}
+                              onSelect={setProjectCollaboratorIds}
+                              label="Tag Collaborators"
+                            />
+                          </div>
+
+                          <Button
+                            className="w-full bg-gradient-primary text-primary-foreground"
+                            onClick={handleCreateProject}
+                            disabled={createProject.isPending || !newProjectTitle.trim() || isProjectUploading}
+                          >
+                            Create Project
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </div>
               </CollapsibleTrigger>
               
@@ -590,138 +592,135 @@ const WorkingToward = () => {
                     )}
                     <Calendar className="w-5 h-5 text-foreground" />
                     <span className="font-semibold">Gigs</span>
-                    {myPosts && myPosts.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {myPosts.length}
-                      </Badge>
-                    )}
                   </div>
-                  <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent onClick={(e) => e.stopPropagation()}>
-                      <DialogHeader>
-                        <DialogTitle>Create New Gig</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <div className="flex flex-col items-center gap-3">
-                          <div
-                            className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                            onClick={() => gigFileInputRef.current?.click()}
-                          >
-                            {gigImage ? (
-                              <img src={gigImage} alt="" className="w-full h-full object-cover" />
-                            ) : isGigUploading ? (
-                              <div className="text-xs text-muted-foreground">Uploading...</div>
-                            ) : (
-                              <div className="flex flex-col items-center gap-1">
-                                <Upload className="w-6 h-6 text-muted-foreground" />
-                                <span className="text-xs text-muted-foreground">Add Image</span>
-                              </div>
-                            )}
+                  {gigsOpen && (
+                    <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="h-8 animate-fade-in"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent onClick={(e) => e.stopPropagation()}>
+                        <DialogHeader>
+                          <DialogTitle>Create New Gig</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <div className="flex flex-col items-center gap-3">
+                            <div
+                              className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
+                              onClick={() => gigFileInputRef.current?.click()}
+                            >
+                              {gigImage ? (
+                                <img src={gigImage} alt="" className="w-full h-full object-cover" />
+                              ) : isGigUploading ? (
+                                <div className="text-xs text-muted-foreground">Uploading...</div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                  <Upload className="w-6 h-6 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">Add Image</span>
+                                </div>
+                              )}
+                            </div>
+                            <input
+                              ref={gigFileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleGigImageUpload}
+                              className="hidden"
+                            />
+                            <span className="text-xs text-muted-foreground">Optional gig image</span>
                           </div>
-                          <input
-                            ref={gigFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleGigImageUpload}
-                            className="hidden"
-                          />
-                          <span className="text-xs text-muted-foreground">Optional gig image</span>
-                        </div>
 
-                        <Input
-                          placeholder="Gig title (e.g., Jazz Night at Blue Note)"
-                          value={gigTitle}
-                          onChange={(e) => setGigTitle(e.target.value)}
-                        />
-                        <Textarea
-                          placeholder="Describe your gig..."
-                          value={gigDescription}
-                          onChange={(e) => setGigDescription(e.target.value)}
-                          rows={3}
-                        />
-                        <div className="space-y-3">
-                          <Label className="text-sm text-muted-foreground block">
-                            Event Date & Time
-                          </Label>
-                          <div className="flex gap-2">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "flex-1 justify-start text-left font-normal",
-                                    !gigEventDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {gigEventDate ? format(gigEventDate, "MMM d, yyyy") : "Pick date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <CalendarComponent
-                                  mode="single"
-                                  selected={gigEventDate}
-                                  onSelect={setGigEventDate}
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
+                          <Input
+                            placeholder="Gig title (e.g., Jazz Night at Blue Note)"
+                            value={gigTitle}
+                            onChange={(e) => setGigTitle(e.target.value)}
+                          />
+                          <Textarea
+                            placeholder="Describe your gig..."
+                            value={gigDescription}
+                            onChange={(e) => setGigDescription(e.target.value)}
+                            rows={3}
+                          />
+                          <div className="space-y-3">
+                            <Label className="text-sm text-muted-foreground block">
+                              Event Date & Time
+                            </Label>
+                            <div className="flex gap-2">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "flex-1 justify-start text-left font-normal",
+                                      !gigEventDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {gigEventDate ? format(gigEventDate, "MMM d, yyyy") : "Pick date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <CalendarComponent
+                                    mode="single"
+                                    selected={gigEventDate}
+                                    onSelect={setGigEventDate}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                <Input
+                                  type="time"
+                                  value={gigEventTime}
+                                  onChange={(e) => setGigEventTime(e.target.value)}
+                                  className="pl-9 w-[120px]"
+                                  placeholder="Time"
                                 />
-                              </PopoverContent>
-                            </Popover>
-                            <div className="relative">
-                              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                              <Input
-                                type="time"
-                                value={gigEventTime}
-                                onChange={(e) => setGigEventTime(e.target.value)}
-                                className="pl-9 w-[120px]"
-                                placeholder="Time"
-                              />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <Input
-                          placeholder="Link (optional)"
-                          value={gigLink}
-                          onChange={(e) => setGigLink(e.target.value)}
-                        />
-                        
-                        <div className="flex items-center justify-between py-2">
-                          <Label htmlFor="gig-show-feed" className="text-sm">Show on home feed</Label>
-                          <Switch
-                            id="gig-show-feed"
-                            checked={gigShowOnFeed}
-                            onCheckedChange={setGigShowOnFeed}
+                          <Input
+                            placeholder="Link (optional)"
+                            value={gigLink}
+                            onChange={(e) => setGigLink(e.target.value)}
                           />
-                        </div>
+                          
+                          <div className="flex items-center justify-between py-2">
+                            <Label htmlFor="gig-show-feed" className="text-sm">Show on home feed</Label>
+                            <Switch
+                              id="gig-show-feed"
+                              checked={gigShowOnFeed}
+                              onCheckedChange={setGigShowOnFeed}
+                            />
+                          </div>
 
-                        <div className="border-t border-border pt-4">
-                          <CollaboratorPicker
-                            selectedIds={gigCollaboratorIds}
-                            onSelect={setGigCollaboratorIds}
-                            label="Tag Collaborators"
-                          />
-                        </div>
+                          <div className="border-t border-border pt-4">
+                            <CollaboratorPicker
+                              selectedIds={gigCollaboratorIds}
+                              onSelect={setGigCollaboratorIds}
+                              label="Tag Collaborators"
+                            />
+                          </div>
 
-                        <Button
-                          className="w-full bg-gradient-primary text-primary-foreground"
-                          onClick={handleCreateGig}
-                          disabled={createPromoPost.isPending || isGigUploading || !gigTitle.trim()}
-                        >
-                          Create Gig
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                          <Button
+                            className="w-full bg-gradient-primary text-primary-foreground"
+                            onClick={handleCreateGig}
+                            disabled={createPromoPost.isPending || isGigUploading || !gigTitle.trim()}
+                          >
+                            Create Gig
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </div>
               </CollapsibleTrigger>
               
