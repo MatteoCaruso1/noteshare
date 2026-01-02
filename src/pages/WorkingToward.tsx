@@ -347,10 +347,7 @@ const WorkingToward = () => {
           <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <div className={cn(
-                  "flex items-center justify-between p-4 cursor-pointer transition-colors",
-                  projectsOpen ? "bg-secondary/30" : "hover:bg-secondary/30"
-                )}>
+                <div className="flex items-center justify-between p-4 cursor-pointer">
                   <div className="flex items-center gap-3">
                     {projectsOpen ? (
                       <ChevronDown className="w-5 h-5 text-muted-foreground" />
@@ -586,10 +583,7 @@ const WorkingToward = () => {
           <Collapsible open={gigsOpen} onOpenChange={setGigsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <div className={cn(
-                  "flex items-center justify-between p-4 cursor-pointer transition-colors",
-                  gigsOpen ? "bg-secondary/30" : "hover:bg-secondary/30"
-                )}>
+                <div className="flex items-center justify-between p-4 cursor-pointer">
                   <div className="flex items-center gap-3">
                     {gigsOpen ? (
                       <ChevronDown className="w-5 h-5 text-muted-foreground" />
