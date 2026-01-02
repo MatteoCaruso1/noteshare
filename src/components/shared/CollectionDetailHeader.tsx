@@ -7,7 +7,8 @@ import { ArrowLeft, Settings, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CollectionDetailHeaderProps {
-  backPath: string;
+  backPath?: string;
+  useHistoryBack?: boolean;
   title: string;
   date: string;
   dateLabel?: string;
@@ -24,6 +25,7 @@ interface CollectionDetailHeaderProps {
 
 export const CollectionDetailHeader = ({
   backPath,
+  useHistoryBack = false,
   title,
   date,
   dateLabel = 'Created',
@@ -39,10 +41,20 @@ export const CollectionDetailHeader = ({
 }: CollectionDetailHeaderProps) => {
   const navigate = useNavigate();
 
+  const handleBack = () => {
+    if (useHistoryBack) {
+      navigate(-1);
+    } else if (backPath) {
+      navigate(backPath);
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
       <div className="flex items-center gap-3 mb-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(backPath)}>
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex-1" />

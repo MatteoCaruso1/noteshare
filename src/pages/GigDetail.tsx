@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useRef, useLayoutEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -125,9 +125,7 @@ function useAddNoteToGig() {
 
 const GigDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const fromNotes = searchParams.get('from') === 'notes';
   const { profile } = useAuth();
   const { data: gig, isLoading: gigLoading } = useGig(id);
   const { data: notes, isLoading: notesLoading } = useGigNotes(id);
@@ -226,25 +224,14 @@ const GigDetail = () => {
 
     deleteGig.mutate(gig.id, {
       onSuccess: () => {
-        if (fromNotes) {
-          localStorage.setItem('noteshare_projects_gigs_expanded', 'true');
-          navigate('/');
-        } else {
-          navigate('/gigs');
-        }
+        // Navigate back after deleting
+        navigate(-1);
       },
     });
   };
 
-  // Determine back path based on where user came from
-  const backPath = fromNotes ? '/' : '/gigs';
-  
-  // When coming from notes, ensure projects/gigs section stays expanded
-  useEffect(() => {
-    if (fromNotes) {
-      localStorage.setItem('noteshare_projects_gigs_expanded', 'true');
-    }
-  }, [fromNotes]);
+  // Always use history back to return to the previous page with its state preserved
+  const useHistoryBack = true;
 
   const handleAddNote = (data: {
     textContent?: string;
@@ -295,7 +282,7 @@ const GigDetail = () => {
       {/* Header */}
       <PageHeader>
         <CollectionDetailHeader
-          backPath={backPath}
+          useHistoryBack={useHistoryBack}
           title={gig.title}
           date={gig.event_date || ''}
           dateLabel="Gig date"
@@ -507,7 +494,7 @@ const GigDetail = () => {
         </DialogContent>
       </Dialog>
 
-      <BottomNav overrideActiveRoute={fromNotes ? '/' : undefined} />
+      <BottomNav />
     </PageLayout>
   );
 };
