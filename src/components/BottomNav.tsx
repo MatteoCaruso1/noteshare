@@ -50,7 +50,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   }, []);
 
   const links = [
-    { to: '/', icon: Home, label: 'My Practice', mobileLabel: 'My Practice' },
+    { to: '/', icon: Home, label: 'My Practice', mobileLabel: 'My\nPractice' },
     { to: '/working-toward', icon: Target, label: 'Working Toward', mobileLabel: 'Working\nToward' },
     { to: '/friends', icon: Users, label: "Friends' Practice", mobileLabel: "Friends'\nPractice", showBadge: true },
     { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
@@ -90,7 +90,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-start justify-around py-1.5">
           {links.map(({ to, icon: Icon, label, mobileLabel, showBadge }) => {
             // Use override if provided, otherwise fall back to standard logic
             let isActive: boolean;
@@ -109,7 +109,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
                 to={to}
                 onPointerDown={() => handleNavClick(to)}
                 className={cn(
-                  'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative',
+                  'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -121,7 +121,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
                     </span>
                   )}
                 </div>
-                <span className="text-[9px] sm:text-[10px] text-center whitespace-pre-line leading-tight sm:whitespace-nowrap">
+                <span className="text-[8px] sm:text-[10px] text-center whitespace-pre-line leading-[1.1] h-[18px] sm:h-auto sm:whitespace-nowrap flex items-start justify-center">
                   <span className="sm:hidden">{mobileLabel}</span>
                   <span className="hidden sm:inline">{label}</span>
                 </span>
