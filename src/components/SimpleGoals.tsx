@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/useGoals';
-import { Target, X, Plus } from 'lucide-react';
+import { Compass, X, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -97,7 +97,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
     <Card className="bg-card border-border p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Target className={`w-5 h-5 transition-colors ${isActive ? 'text-primary' : 'text-foreground'}`} />
+          <Compass className={`w-5 h-5 transition-colors ${isActive ? 'text-primary' : 'text-foreground'}`} />
           <h2 className="font-semibold">Musical Goals</h2>
         </div>
         {canAddMore && !isAdding && (

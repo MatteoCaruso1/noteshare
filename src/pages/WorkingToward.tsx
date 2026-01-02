@@ -347,14 +347,17 @@ const WorkingToward = () => {
           <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-secondary/30 transition-colors">
+                <div className={cn(
+                  "flex items-center justify-between p-4 cursor-pointer transition-colors",
+                  projectsOpen ? "bg-secondary/30" : "hover:bg-secondary/30"
+                )}>
                   <div className="flex items-center gap-3">
                     {projectsOpen ? (
                       <ChevronDown className="w-5 h-5 text-muted-foreground" />
                     ) : (
                       <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     )}
-                    <Disc3 className="w-5 h-5 text-foreground" />
+                    <Disc3 className={cn("w-5 h-5 transition-colors", projectsOpen ? "text-primary" : "text-foreground")} />
                     <span className="font-semibold">Projects</span>
                     {myProjects && myProjects.length > 0 && (
                       <Badge variant="secondary" className="text-xs">
@@ -583,14 +586,17 @@ const WorkingToward = () => {
           <Collapsible open={gigsOpen} onOpenChange={setGigsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-secondary/30 transition-colors">
+                <div className={cn(
+                  "flex items-center justify-between p-4 cursor-pointer transition-colors",
+                  gigsOpen ? "bg-secondary/30" : "hover:bg-secondary/30"
+                )}>
                   <div className="flex items-center gap-3">
                     {gigsOpen ? (
                       <ChevronDown className="w-5 h-5 text-muted-foreground" />
                     ) : (
                       <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     )}
-                    <Calendar className="w-5 h-5 text-foreground" />
+                    <Calendar className={cn("w-5 h-5 transition-colors", gigsOpen ? "text-primary" : "text-foreground")} />
                     <span className="font-semibold">Gigs</span>
                   </div>
                   {gigsOpen && (
