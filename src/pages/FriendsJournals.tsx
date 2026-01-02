@@ -58,7 +58,7 @@ const FriendsJournals = () => {
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between gap-3 h-9">
-            <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends</h1>
+            <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends' Practice</h1>
             <div className="flex items-center gap-2 flex-1 justify-end">
               {/* Notifications Button */}
               <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>

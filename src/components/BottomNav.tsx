@@ -52,7 +52,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const links = [
     { to: '/', icon: Home, label: 'My Practice' },
     { to: '/working-toward', icon: Target, label: 'Working Toward' },
-    { to: '/friends', icon: Users, label: 'Friends', showBadge: true },
+    { to: '/friends', icon: Users, label: "Friends' Practice", showBadge: true },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
