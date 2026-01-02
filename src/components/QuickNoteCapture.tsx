@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { X, Save, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Crosshair } from 'lucide-react';
+import { X, Save, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ClipboardList } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
@@ -235,9 +235,9 @@ export function QuickNoteCapture() {
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
                 <div className="flex items-center gap-2 ml-auto">
-                  <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Label htmlFor="attach-focus" className="text-xs cursor-pointer text-muted-foreground">
-                    Focus
+                    Board
                   </Label>
                   <Switch
                     id="attach-focus"
@@ -245,9 +245,9 @@ export function QuickNoteCapture() {
                     onCheckedChange={(checked) => {
                       setAttachFocus(checked);
                       if (checked) {
-                        toast.success("Your note will be linked to Ongoing Focus");
+                        toast.success("Your note will be linked to Practice Board");
                       } else {
-                        toast.success("Your note will no longer be linked to Ongoing Focus");
+                        toast.success("Your note will no longer be linked to Practice Board");
                       }
                     }}
                     className="scale-90"

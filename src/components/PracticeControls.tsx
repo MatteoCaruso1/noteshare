@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, Crosshair, Pause, ChevronDown, ChevronRight, Smartphone, Trash2, LockOpen } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, ClipboardList, Pause, ChevronDown, ChevronRight, Smartphone, Trash2, LockOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -565,9 +565,9 @@ export function PracticeControls() {
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
                 <div className="flex items-center gap-2 ml-auto">
-                  <Crosshair className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Label htmlFor="attach-focus-session" className="text-xs cursor-pointer text-muted-foreground">
-                    Focus
+                    Board
                   </Label>
                   <Switch
                     id="attach-focus-session"
@@ -575,9 +575,9 @@ export function PracticeControls() {
                     onCheckedChange={(checked) => {
                       setAttachFocus(checked);
                       if (checked) {
-                        toast.success("Your session will be linked to Ongoing Focus");
+                        toast.success("Your session will be linked to Practice Board");
                       } else {
-                        toast.success("Your session will no longer be linked to Ongoing Focus");
+                        toast.success("Your session will no longer be linked to Practice Board");
                       }
                     }}
                     className="scale-90"

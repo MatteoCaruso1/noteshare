@@ -5,7 +5,7 @@ import { useGlint } from '@/contexts/GlintContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Crosshair, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { ClipboardList, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -401,8 +401,8 @@ export function TodaysFocus() {
     return (
       <Card className="bg-card border-border">
         <div className="p-4 flex items-center gap-2">
-          <Crosshair className="w-5 h-5 text-muted-foreground" />
-          <h2 className="font-semibold">Ongoing Focus</h2>
+          <ClipboardList className="w-5 h-5 text-muted-foreground" />
+          <h2 className="font-semibold">Practice Board</h2>
         </div>
         <div className="px-4 pb-4">
           <div className="h-12 bg-muted/50 rounded animate-pulse" />
@@ -440,8 +440,8 @@ export function TodaysFocus() {
           <CollapsibleTrigger asChild>
             <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group">
               <div className="flex items-center gap-2">
-                <Crosshair className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                <h2 className="font-semibold">Ongoing Focus</h2>
+                <ClipboardList className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                <h2 className="font-semibold">Practice Board</h2>
               </div>
               <div className="flex items-center gap-1">
                 {/* Buttons fade in when open */}
