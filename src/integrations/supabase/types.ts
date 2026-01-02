@@ -568,6 +568,7 @@ export type Database = {
         Row: {
           avatar: string | null
           bio: string | null
+          celebrated_streak_milestones: number[]
           created_at: string
           current_streak: number
           followers_count: number
@@ -586,6 +587,7 @@ export type Database = {
         Insert: {
           avatar?: string | null
           bio?: string | null
+          celebrated_streak_milestones?: number[]
           created_at?: string
           current_streak?: number
           followers_count?: number
@@ -604,6 +606,7 @@ export type Database = {
         Update: {
           avatar?: string | null
           bio?: string | null
+          celebrated_streak_milestones?: number[]
           created_at?: string
           current_streak?: number
           followers_count?: number
