@@ -89,12 +89,23 @@ export function MentionInput({ value, onChange, placeholder, rows = 3, className
     }, 0);
   };
 
+  const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    // Prevent auto-scroll on mobile by temporarily disabling scroll behavior
+    if ('ontouchstart' in window) {
+      e.target.style.transform = 'translateY(0)';
+      requestAnimationFrame(() => {
+        e.target.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      });
+    }
+  };
+
   return (
     <div className="relative">
       <Textarea
         ref={textareaRef}
         value={value}
         onChange={handleChange}
+        onFocus={handleFocus}
         placeholder={placeholder}
         rows={rows}
         className={className}
