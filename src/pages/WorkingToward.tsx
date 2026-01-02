@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
@@ -40,9 +40,42 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// Storage keys for persisting UI state
+const WORKING_TOWARD_STATE_KEY = 'noteshare_working_toward_state';
+
+interface WorkingTowardState {
+  projectsOpen: boolean;
+  gigsOpen: boolean;
+  projectsTab: string;
+  gigsTab: string;
+  scrollY: number;
+}
+
+const getStoredState = (): WorkingTowardState | null => {
+  try {
+    const stored = sessionStorage.getItem(WORKING_TOWARD_STATE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
+const saveState = (state: Partial<WorkingTowardState>) => {
+  try {
+    const current = getStoredState() || { projectsOpen: false, gigsOpen: false, projectsTab: 'mine', gigsTab: 'mine', scrollY: 0 };
+    sessionStorage.setItem(WORKING_TOWARD_STATE_KEY, JSON.stringify({ ...current, ...state }));
+  } catch {
+    // Ignore storage errors
+  }
+};
+
 const WorkingToward = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const isRestoringScroll = useRef(false);
+  
+  // Get stored state for initial values
+  const storedState = getStoredState();
   
   // Projects hooks
   const { data: myProjects, isLoading: myProjectsLoading } = useProjects();
@@ -56,9 +89,45 @@ const WorkingToward = () => {
   const createPromoPost = useCreatePromoPost();
   const deletePromoPost = useDeletePromoPost();
   
-  // Collapsible states
-  const [projectsOpen, setProjectsOpen] = useState(false);
-  const [gigsOpen, setGigsOpen] = useState(false);
+  // Collapsible states - initialize from stored state
+  const [projectsOpen, setProjectsOpen] = useState(storedState?.projectsOpen ?? false);
+  const [gigsOpen, setGigsOpen] = useState(storedState?.gigsOpen ?? false);
+  
+  // Tab states - initialize from stored state
+  const [projectsTab, setProjectsTab] = useState(storedState?.projectsTab ?? 'mine');
+  const [gigsTab, setGigsTab] = useState(storedState?.gigsTab ?? 'mine');
+  
+  // Restore scroll position on mount
+  useLayoutEffect(() => {
+    const stored = getStoredState();
+    if (stored && stored.scrollY > 0) {
+      isRestoringScroll.current = true;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: stored.scrollY, left: 0, behavior: 'auto' });
+          setTimeout(() => {
+            isRestoringScroll.current = false;
+          }, 50);
+        });
+      });
+    }
+  }, []);
+  
+  // Save scroll position on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!isRestoringScroll.current) {
+        saveState({ scrollY: window.scrollY });
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Save UI state when it changes
+  useEffect(() => {
+    saveState({ projectsOpen, gigsOpen, projectsTab, gigsTab });
+  }, [projectsOpen, gigsOpen, projectsTab, gigsTab]);
   
   // Project dialog state
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
@@ -474,13 +543,13 @@ const WorkingToward = () => {
               
               <CollapsibleContent>
                 <div className="px-4 pb-4">
-                  <Tabs defaultValue="my" className="w-full">
+                  <Tabs value={projectsTab} onValueChange={setProjectsTab} className="w-full">
                     <TabsList className="w-full mb-4">
-                      <TabsTrigger value="my" className="flex-1">My Projects</TabsTrigger>
-                      <TabsTrigger value="friends" className="flex-1">Friend's Projects</TabsTrigger>
+                      <TabsTrigger value="mine" className="flex-1">My Projects</TabsTrigger>
+                      <TabsTrigger value="friends" className="flex-1">Friends' Projects</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="my" className="space-y-4">
+                    <TabsContent value="mine" className="space-y-4">
                       {myProjectsLoading ? (
                         <div className="text-center text-muted-foreground py-8">Loading...</div>
                       ) : myProjects && myProjects.length > 0 ? (
@@ -723,13 +792,13 @@ const WorkingToward = () => {
               
               <CollapsibleContent>
                 <div className="px-4 pb-4">
-                  <Tabs defaultValue="my" className="w-full">
+                  <Tabs value={gigsTab} onValueChange={setGigsTab} className="w-full">
                     <TabsList className="w-full mb-4">
-                      <TabsTrigger value="my" className="flex-1">My Gigs</TabsTrigger>
-                      <TabsTrigger value="friends" className="flex-1">Friend's Gigs</TabsTrigger>
+                      <TabsTrigger value="mine" className="flex-1">My Gigs</TabsTrigger>
+                      <TabsTrigger value="friends" className="flex-1">Friends' Gigs</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="my" className="space-y-4">
+                    <TabsContent value="mine" className="space-y-4">
                       {myGigsLoading ? (
                         <div className="text-center text-muted-foreground py-8">Loading...</div>
                       ) : myPosts && myPosts.length > 0 ? (
