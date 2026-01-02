@@ -362,18 +362,17 @@ const WorkingToward = () => {
                       </Badge>
                     )}
                   </div>
-                  {projectsOpen && (
-                    <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          className="h-8 animate-fade-in"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
+                  <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        className={cn("h-8 transition-opacity", projectsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
                       <DialogContent onClick={(e) => e.stopPropagation()}>
                         <DialogHeader>
                           <DialogTitle>Create New Project</DialogTitle>
@@ -470,7 +469,6 @@ const WorkingToward = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
-                  )}
                 </div>
               </CollapsibleTrigger>
               
@@ -593,18 +591,17 @@ const WorkingToward = () => {
                     <Calendar className={cn("w-5 h-5 transition-colors", gigsOpen ? "text-primary" : "text-foreground")} />
                     <span className="font-semibold">Gigs</span>
                   </div>
-                  {gigsOpen && (
-                    <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          className="h-8 animate-fade-in"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
+                  <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        className={cn("h-8 transition-opacity", gigsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
                       <DialogContent onClick={(e) => e.stopPropagation()}>
                         <DialogHeader>
                           <DialogTitle>Create New Gig</DialogTitle>
@@ -720,7 +717,6 @@ const WorkingToward = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
-                  )}
                 </div>
               </CollapsibleTrigger>
               
