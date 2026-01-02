@@ -15,7 +15,7 @@ import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, Crosshair, Settings, Plus, X, Flame, Pencil, Check } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, ClipboardList, Settings, Plus, X, Flame, Pencil, Check } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames, useUpdateNoteContent } from '@/hooks/useUpdateNote';
@@ -304,8 +304,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                 setFocusDialogOpen(true);
               }}
             >
-              <Crosshair className="w-3 h-3 mr-1" />
-              Ongoing Focus
+              <ClipboardList className="w-3 h-3 mr-1" />
+              Practice Board
             </Badge>
           )}
         </div>
@@ -463,8 +463,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {note.focus_text_snapshot && (
             <div className="pl-3 border-l-2 border-primary/30">
               <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <Crosshair className="w-3 h-3" />
-                Ongoing Focus
+                <ClipboardList className="w-3 h-3" />
+                Practice Board
               </p>
               <Textarea
                 value={editedFocusText}
@@ -518,8 +518,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {note.focus_text_snapshot && (
             <div className={`pl-3 border-l-2 border-primary/30 ${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}>
               <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <Crosshair className="w-3 h-3" />
-                Ongoing Focus
+                <ClipboardList className="w-3 h-3" />
+                Practice Board
               </p>
               <RichTextContent 
                 content={note.focus_text_snapshot} 
