@@ -523,7 +523,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               </p>
               <RichTextContent 
                 content={note.focus_text_snapshot} 
-                className="text-sm text-muted-foreground italic"
+                className="text-sm text-muted-foreground"
               />
             </div>
           )}
