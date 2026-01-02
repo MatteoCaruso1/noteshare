@@ -38,6 +38,8 @@ export function useNotifications() {
         from_user: n.profiles,
       })) as Notification[];
     },
+    staleTime: 60 * 1000, // Consider data fresh for 1 minute
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -53,6 +55,8 @@ export function useUnreadNotificationCount() {
       if (error) throw error;
       return count || 0;
     },
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    gcTime: 5 * 60 * 1000,
   });
 }
 
