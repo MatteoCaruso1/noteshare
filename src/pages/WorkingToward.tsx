@@ -531,11 +531,12 @@ const WorkingToward = () => {
                         </div>
                       ) : (
                         <CollectionEmptyState
-                          icon={Disc3}
-                          title="No projects yet"
                           subtitle={"Create a project to organize your\nnotes around a goal"}
                           actionLabel="Create First Project"
                           onAction={() => setIsProjectDialogOpen(true)}
+                          showIcon={false}
+                          showPlusInButton={false}
+                          compact
                         />
                       )}
                     </TabsContent>
@@ -739,11 +740,12 @@ const WorkingToward = () => {
                         </div>
                       ) : (
                         <CollectionEmptyState
-                          icon={Music2}
-                          title="No gigs yet"
                           subtitle="Share your first gig with your friends"
                           actionLabel="Create First Gig"
                           onAction={() => setIsGigDialogOpen(true)}
+                          showIcon={false}
+                          showPlusInButton={false}
+                          compact
                         />
                       )}
                     </TabsContent>
