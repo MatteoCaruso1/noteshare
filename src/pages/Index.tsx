@@ -122,7 +122,7 @@ const Index = () => {
           {/* Timeline */}
           <section>
             {/* Notes container with connected borders - includes header */}
-            <div className="relative px-3 sm:px-4 border-t border-x border-border rounded-t-lg bg-card z-10">
+            <div className="relative px-3 sm:px-4 border border-border rounded-lg bg-card z-10">
               
               {/* Header row inside the frame */}
               <div className="flex items-center gap-2 sm:gap-4 py-3">
