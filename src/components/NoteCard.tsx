@@ -455,7 +455,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             value={editedTextContent}
             onChange={(e) => setEditedTextContent(e.target.value)}
             placeholder="Note content..."
-            className="min-h-[80px] text-sm resize-none"
+            className="min-h-[60px] max-h-[120px] text-sm resize-none"
             onClick={(e) => e.stopPropagation()}
           />
           
@@ -469,8 +469,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               <Textarea
                 value={editedFocusText}
                 onChange={(e) => setEditedFocusText(e.target.value)}
-                placeholder="Focus text..."
-                className="min-h-[60px] text-sm resize-none"
+                placeholder="Practice board text..."
+                className="min-h-[80px] max-h-[200px] text-sm resize-none overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
