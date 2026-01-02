@@ -40,7 +40,7 @@ export function QuickNoteCapture() {
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   const recentTags = useRecentTags();
-  const { isPaused, glintStyle, setQuickNoteExpanded } = useGlint();
+  const { setQuickNoteExpanded } = useGlint();
 
   const [isOpen, setIsOpen] = useState(false);
   const [attachFocus, setAttachFocus] = useState(false);
@@ -127,8 +127,7 @@ export function QuickNoteCapture() {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <button 
-            className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isPaused ? 'glint-paused' : ''}`}
-            style={glintStyle}
+            className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group"
           >
             <div className="flex items-center gap-2">
               <Music className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
