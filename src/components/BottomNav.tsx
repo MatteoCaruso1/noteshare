@@ -50,10 +50,10 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   }, []);
 
   const links = [
-    { to: '/', icon: Home, label: 'My Practice' },
-    { to: '/working-toward', icon: Target, label: 'Working Toward' },
-    { to: '/friends', icon: Users, label: "Friends' Practice", showBadge: true },
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/', icon: Home, label: 'My Practice', mobileLabel: 'My Practice' },
+    { to: '/working-toward', icon: Target, label: 'Working Toward', mobileLabel: 'Working\nToward' },
+    { to: '/friends', icon: Users, label: "Friends' Practice", mobileLabel: "Friends'\nPractice", showBadge: true },
+    { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
   ];
 
   // Check if we're on a user profile page (part of friends flow)
@@ -91,7 +91,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-around py-2">
-          {links.map(({ to, icon: Icon, label, showBadge }) => {
+          {links.map(({ to, icon: Icon, label, mobileLabel, showBadge }) => {
             // Use override if provided, otherwise fall back to standard logic
             let isActive: boolean;
             if (overrideActiveRoute) {
@@ -121,7 +121,10 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
                     </span>
                   )}
                 </div>
-                <span className="text-[9px] sm:text-[10px] truncate">{label}</span>
+                <span className="text-[9px] sm:text-[10px] text-center whitespace-pre-line leading-tight sm:whitespace-nowrap">
+                  <span className="sm:hidden">{mobileLabel}</span>
+                  <span className="hidden sm:inline">{label}</span>
+                </span>
               </NavLink>
             );
           })}
