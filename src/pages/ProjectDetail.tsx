@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useRef, useLayoutEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
 import { useNotes } from '@/hooks/useNotes';
@@ -70,9 +70,7 @@ function useAddNoteToProject() {
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const fromNotes = searchParams.get('from') === 'notes';
   const { profile } = useAuth();
   const { data: project, isLoading: projectLoading } = useProject(id || '');
   const { data: notes, isLoading: notesLoading } = useNotes(id);
@@ -190,25 +188,14 @@ const ProjectDetail = () => {
 
     deleteProject.mutate(project.id, {
       onSuccess: () => {
-        if (fromNotes) {
-          localStorage.setItem('noteshare_projects_gigs_expanded', 'true');
-          navigate('/');
-        } else {
-          navigate('/projects');
-        }
+        // Navigate back after deleting
+        navigate(-1);
       },
     });
   };
 
-  // Determine back path based on where user came from
-  const backPath = fromNotes ? '/' : '/projects';
-  
-  // When coming from notes, ensure projects/gigs section stays expanded
-  useEffect(() => {
-    if (fromNotes) {
-      localStorage.setItem('noteshare_projects_gigs_expanded', 'true');
-    }
-  }, [fromNotes]);
+  // Always use history back to return to the previous page with its state preserved
+  const useHistoryBack = true;
 
   if (projectLoading) {
     return (
@@ -234,7 +221,7 @@ const ProjectDetail = () => {
       {/* Header */}
       <PageHeader>
         <CollectionDetailHeader
-          backPath={backPath}
+          useHistoryBack={useHistoryBack}
           title={project.title}
           date={project.release_date || ''}
           dateLabel="Expected release"
@@ -399,7 +386,7 @@ const ProjectDetail = () => {
         </DialogContent>
       </Dialog>
 
-      <BottomNav overrideActiveRoute={fromNotes ? '/' : undefined} />
+      <BottomNav />
     </PageLayout>
   );
 };
