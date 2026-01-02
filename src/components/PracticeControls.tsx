@@ -566,9 +566,6 @@ export function PracticeControls() {
               {currentFocus?.focus_text && (
                 <div className="flex items-center gap-2 ml-auto">
                   <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <Label htmlFor="attach-focus-session" className="text-xs cursor-pointer text-muted-foreground">
-                    Board
-                  </Label>
                   <Switch
                     id="attach-focus-session"
                     checked={attachFocus}

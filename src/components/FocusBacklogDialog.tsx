@@ -92,7 +92,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Focus Backlog</DialogTitle>
+          <DialogTitle>Practice Board Backlog</DialogTitle>
         </DialogHeader>
 
         {/* Search and Filter */}
