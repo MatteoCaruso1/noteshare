@@ -178,6 +178,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 200)}
           className={`bg-secondary/30 border-border placeholder:text-muted-foreground ${compact ? "pl-9 h-9 text-sm" : "pl-9"}`}
+          autoFocus={false}
         />
       </div>
       
