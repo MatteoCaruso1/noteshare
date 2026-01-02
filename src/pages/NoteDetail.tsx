@@ -102,7 +102,7 @@ const NoteDetail = () => {
     return (
       <PageLayout>
         <PageHeader>
-          <header className="sticky top-0 z-40 bg-background">
+            <header className="sticky top-0 z-40 bg-background border-b border-border">
             <div className="container max-w-2xl mx-auto px-4 py-4">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -133,7 +133,7 @@ const NoteDetail = () => {
     return (
       <PageLayout>
         <PageHeader>
-          <header className="sticky top-0 z-40 bg-background">
+          <header className="sticky top-0 z-40 bg-background border-b border-border">
             <div className="container max-w-2xl mx-auto px-4 py-4">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -162,7 +162,7 @@ const NoteDetail = () => {
   return (
     <PageLayout>
       <PageHeader>
-        <header className="sticky top-0 z-40 bg-background">
+        <header className="sticky top-0 z-40 bg-background border-b border-border">
           <div className="container max-w-2xl mx-auto px-4 py-4">
             <div className="flex items-center gap-3">
               <Button 
