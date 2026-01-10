@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { getStreakTier } from '@/lib/streakUtils';
 import { cn } from '@/lib/utils';
-import { Medal } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StreakTintedNameProps {
@@ -12,7 +12,7 @@ interface StreakTintedNameProps {
 
 /**
  * Displays a name with a subtle streak badge icon next to it
- * All tiers use Medal icon with different colors
+ * All tiers use Trophy icon with different colors
  */
 export const StreakTintedName = memo(function StreakTintedName({
   name,
@@ -26,7 +26,7 @@ export const StreakTintedName = memo(function StreakTintedName({
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-flex cursor-default">
-            <Medal className={`w-3.5 h-3.5 ${tier.colorClass} opacity-80`} />
+            <Trophy className={`w-3.5 h-3.5 ${tier.colorClass} opacity-80`} />
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
