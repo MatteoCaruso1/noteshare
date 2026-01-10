@@ -1,8 +1,8 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -450,13 +450,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
       {/* Text Content - editable or display mode */}
       {isEditing ? (
-        <div className="space-y-3 mb-3">
-          <Textarea
+        <div className="space-y-3 mb-3" onClick={(e) => e.stopPropagation()}>
+          <RichTextarea
             value={editedTextContent}
-            onChange={(e) => setEditedTextContent(e.target.value)}
+            onChange={setEditedTextContent}
             placeholder="Note content..."
-            className="min-h-[60px] max-h-[120px] text-sm resize-none"
-            onClick={(e) => e.stopPropagation()}
+            autoExpand={true}
+            rows={2}
           />
           
           {/* Focus Text editing */}
@@ -466,12 +466,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                 <ClipboardList className="w-3 h-3" />
                 Practice Board
               </p>
-              <Textarea
+              <RichTextarea
                 value={editedFocusText}
-                onChange={(e) => setEditedFocusText(e.target.value)}
+                onChange={setEditedFocusText}
                 placeholder="Practice board text..."
-                className="min-h-[80px] max-h-[200px] text-sm resize-none overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
+                autoExpand={true}
+                rows={3}
               />
             </div>
           )}

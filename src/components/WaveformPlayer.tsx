@@ -194,10 +194,14 @@ export function WaveformPlayer({ src, title, onRename, onError }: WaveformPlayer
         window.clearTimeout(playStartTimeoutRef.current);
         playStartTimeoutRef.current = null;
       }
-      try {
-        wavesurfer.destroy();
-      } catch (e) {
-        // Ignore destroy errors (e.g., AbortError when unmounting during load)
+      // Don't destroy wavesurfer if it's currently playing - let audio continue
+      // Only clean up if not playing
+      if (!wavesurfer.isPlaying()) {
+        try {
+          wavesurfer.destroy();
+        } catch (e) {
+          // Ignore destroy errors (e.g., AbortError when unmounting during load)
+        }
       }
     };
   }, [signedUrl, urlLoading, onError, instanceId]);
