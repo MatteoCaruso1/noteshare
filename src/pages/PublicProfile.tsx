@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Music2, Disc3, Users, MapPin, Flame } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Flame } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
@@ -161,38 +161,28 @@ const PublicProfile = () => {
                   </AvatarFallback>
                 )}
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <StreakTintedName 
-                  name={profile.name}
-                  streakDays={profile.current_streak || 0}
-                  className="text-xl font-bold truncate block"
-                />
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <StreakTintedName 
+                    name={profile.name}
+                    streakDays={profile.current_streak || 0}
+                    className="text-xl font-bold truncate"
+                  />
+                  {(profile.current_streak || 0) > 0 && (
+                    <span className="flex items-center gap-1 text-primary text-sm font-medium shrink-0">
+                      <Flame className="w-4 h-4" />
+                      {profile.current_streak}d
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
                 {profile.location && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {profile.location}
                   </p>
                 )}
               </div>
             </div>
-
-            {/* Streak Display */}
-            {(profile.current_streak || 0) > 0 && (
-              <div className="flex items-center gap-2 p-3 rounded-lg border bg-primary/10 border-primary/20 mb-4">
-                <Flame className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
-                  {profile.current_streak}d streak
-                </span>
-              </div>
-            )}
-
-            {/* Open to Collaborate */}
-            {profile.open_to_collaborate && (
-              <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20 mb-4">
-                <Users className="w-4 h-4 text-primary" />
-                <span className="text-sm text-primary font-medium">Open to collaborate</span>
-              </div>
-            )}
 
             {/* Bio */}
             {profile.bio && (
@@ -202,35 +192,19 @@ const PublicProfile = () => {
               </div>
             )}
 
-            {/* Instruments */}
-            {profile.instruments && profile.instruments.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                  <Music2 className="w-4 h-4" /> Instruments
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.instruments.map((instrument) => (
-                    <Badge key={instrument} variant="secondary">
-                      {instrument}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Genres */}
-            {profile.genres && profile.genres.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                  <Disc3 className="w-4 h-4" /> Genres
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.genres.map((genre) => (
-                    <Badge key={genre} variant="secondary">
-                      {genre}
-                    </Badge>
-                  ))}
-                </div>
+            {/* Combined Instruments & Genres */}
+            {((profile.instruments && profile.instruments.length > 0) || (profile.genres && profile.genres.length > 0)) && (
+              <div className="flex flex-wrap gap-2">
+                {profile.instruments?.map((instrument) => (
+                  <Badge key={instrument} variant="secondary" className="text-xs">
+                    {instrument}
+                  </Badge>
+                ))}
+                {profile.genres?.map((genre) => (
+                  <Badge key={genre} variant="secondary" className="text-xs bg-muted text-muted-foreground">
+                    {genre}
+                  </Badge>
+                ))}
               </div>
             )}
           </Card>
