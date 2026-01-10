@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles, Music, Handshake } from 'lucide-react';
 import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians, SuggestionReason } from '@/hooks/useFriendships';
@@ -172,7 +171,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="..."
+          placeholder="Search by name or username..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
@@ -181,15 +180,28 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
           autoFocus={false}
         />
       </div>
+
+      {/* Initial hint when not searching */}
+      {!showSearchResults && !showSuggestions && !suggestionsLoading && (
+        <div className="mt-4 text-center py-6">
+          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
+            Search for musicians to add as friends
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            Try searching by name or @username
+          </p>
+        </div>
+      )}
       
       {/* Suggested Musicians (when focused but no search query) */}
       {showSuggestions && (
-        <Card className="absolute top-full left-0 right-0 mt-2 p-3 bg-card border-border z-50 shadow-lg">
+        <div className="mt-3 p-3 bg-secondary/20 rounded-lg border border-border">
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Suggested for you</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {suggestedMusicians.map((user) => (
               <div 
                 key={user.id} 
@@ -225,57 +237,59 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
               </div>
             ))}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Loading suggestions */}
       {isFocused && query.length < 2 && suggestionsLoading && (
-        <Card className="absolute top-full left-0 right-0 mt-2 p-4 bg-card border-border z-50 shadow-lg">
+        <div className="mt-3 p-4 bg-secondary/20 rounded-lg border border-border">
           <div className="text-center text-muted-foreground text-sm">
             Finding suggestions...
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Search Results */}
       {showSearchResults && (
-        <Card className="absolute top-full left-0 right-0 mt-2 p-2 bg-card border-border divide-y divide-border z-50 shadow-lg">
+        <div className="mt-3 p-2 bg-secondary/20 rounded-lg border border-border max-h-[350px] overflow-y-auto">
           {isLoading ? (
             <div className="py-4 text-center text-muted-foreground text-sm">
               Searching...
             </div>
           ) : searchResults && searchResults.length > 0 ? (
-            searchResults.map((user) => (
-              <div 
-                key={user.id} 
-                className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-secondary/30 transition-colors"
-                onClick={() => navigate(`/user/${user.id}`)}
-              >
-                <ClickableAvatar
-                  profileId={user.id}
-                  avatar={user.avatar}
-                  name={user.name}
-                  size="lg"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
-                  {user.instruments && user.instruments.length > 0 && (
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.instruments.slice(0, 2).join(', ')}
-                      {user.instruments.length > 2 && ` +${user.instruments.length - 2}`}
-                    </p>
-                  )}
+            <div className="divide-y divide-border">
+              {searchResults.map((user) => (
+                <div 
+                  key={user.id} 
+                  className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-secondary/30 transition-colors rounded-lg"
+                  onClick={() => navigate(`/user/${user.id}`)}
+                >
+                  <ClickableAvatar
+                    profileId={user.id}
+                    avatar={user.avatar}
+                    name={user.name}
+                    size="lg"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
+                    {user.instruments && user.instruments.length > 0 && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.instruments.slice(0, 2).join(', ')}
+                        {user.instruments.length > 2 && ` +${user.instruments.length - 2}`}
+                      </p>
+                    )}
+                  </div>
+                  {renderFriendButton(user)}
                 </div>
-                {renderFriendButton(user)}
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
             <div className="py-4 text-center text-muted-foreground text-sm">
               No musicians found
             </div>
           )}
-        </Card>
+        </div>
       )}
     </div>
   );
