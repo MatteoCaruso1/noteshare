@@ -30,7 +30,7 @@ export const StreakTintedName = memo(function StreakTintedName({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
-          {tier.label} Streak ({tier.minDays}+ days)
+          {tier.minDays}+ day streak reward
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
