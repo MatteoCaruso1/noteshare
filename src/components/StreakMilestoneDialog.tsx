@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Medal, Sparkles } from 'lucide-react';
+import { Trophy, Sparkles } from 'lucide-react';
 import { StreakTierInfo } from '@/lib/streakUtils';
 
 interface StreakMilestoneDialogProps {
@@ -19,19 +19,19 @@ interface StreakMilestoneDialogProps {
 
 function TierIcon({ tier }: { tier: StreakTierInfo }) {
   if (tier.tier === 'none') return null;
-  return <Medal className={`w-12 h-12 ${tier.colorClass}`} />;
+  return <Trophy className={`w-12 h-12 ${tier.colorClass}`} />;
 }
 
 function getRewardDescription(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'A starter medal badge appears next to your name — visible to everyone!';
+      return 'A starter trophy badge appears next to your name — visible to everyone!';
     case 'bronze':
-      return 'A bronze medal badge now appears next to your name!';
+      return 'A bronze trophy badge now appears next to your name!';
     case 'silver':
-      return 'A silver medal badge now appears next to your name!';
+      return 'A silver trophy badge now appears next to your name!';
     case 'gold':
-      return 'A gold medal badge now appears next to your name!';
+      return 'A gold trophy badge now appears next to your name!';
     default:
       return '';
   }
@@ -40,11 +40,11 @@ function getRewardDescription(tier: StreakTierInfo): string {
 function getNextMilestoneText(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'Keep going! Reach 30 days to upgrade to a bronze medal badge.';
+      return 'Keep going! Reach 30 days to upgrade to a bronze trophy badge.';
     case 'bronze':
-      return 'Keep it up! Reach 90 days to upgrade to a silver medal badge.';
+      return 'Keep it up! Reach 90 days to upgrade to a silver trophy badge.';
     case 'silver':
-      return 'Almost there! Reach 360 days to upgrade to a gold medal badge.';
+      return 'Almost there! Reach 360 days to upgrade to a gold trophy badge.';
     default:
       return '';
   }
