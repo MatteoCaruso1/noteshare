@@ -19,6 +19,7 @@ import { FeedbackCard } from '@/components/FeedbackCard';
 import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 import { StreakBadges } from '@/components/StreakBadges';
 import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
+import { StreakRewardsSection } from '@/components/StreakRewardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
@@ -34,7 +35,6 @@ const Profile = () => {
   const [bio, setBio] = useState(profile?.bio || '');
   const [instruments, setInstruments] = useState<string[]>(profile?.instruments || []);
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
-  const [openToCollaborate, setOpenToCollaborate] = useState(profile?.open_to_collaborate || false);
   const [saving, setSaving] = useState(false);
 
   // Get signed URL for avatar
@@ -90,8 +90,7 @@ const Profile = () => {
       avatar,
       bio,
       instruments,
-      genres,
-      open_to_collaborate: openToCollaborate
+      genres
     }).eq('id', profile.id);
     if (error) {
       toast.error('Failed to update profile');
@@ -201,6 +200,11 @@ const Profile = () => {
             )}
           </div>
 
+          {/* Streak Rewards - show above About when not editing */}
+          {!editing && practiceStats && (
+            <StreakRewardsSection currentStreak={practiceStats.currentStreak} />
+          )}
+
           {/* Bio */}
           <Card className="p-4 bg-card border-border">
             <h3 className="font-medium mb-2">About</h3>
@@ -249,26 +253,6 @@ const Profile = () => {
                   {genre}
                 </Badge>
               ))}
-            </div>
-          </Card>
-
-          {/* Open to Collaborate */}
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">Open to Collaborate</h3>
-              {editing ? (
-                <Button
-                  variant={openToCollaborate ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setOpenToCollaborate(!openToCollaborate)}
-                >
-                  {openToCollaborate ? 'Yes' : 'No'}
-                </Button>
-              ) : (
-                <Badge variant={profile?.open_to_collaborate ? 'default' : 'secondary'}>
-                  {profile?.open_to_collaborate ? 'Yes' : 'No'}
-                </Badge>
-              )}
             </div>
           </Card>
 
