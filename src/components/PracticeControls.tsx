@@ -24,9 +24,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, ClipboardList, Pause, ChevronDown, ChevronRight, Smartphone, Trash2, LockOpen } from 'lucide-react';
+import { Play, Square, Clock, X, Folder, Lock, Users, Settings, ClipboardList, Pause, ChevronDown, ChevronRight, Trash2, LockOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
+// Session-specific settings storage key
+const SESSION_SETTINGS_KEY = 'noteshare_session_settings';
+
+interface SessionSettings {
+  wakeLockEnabled: boolean;
+  attachFocus: boolean;
+  sessionId: string | null;
+}
+
+const getSessionSettings = (): SessionSettings => {
+  try {
+    const stored = sessionStorage.getItem(SESSION_SETTINGS_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Ignore
+  }
+  return { wakeLockEnabled: false, attachFocus: false, sessionId: null };
+};
+
+const saveSessionSettings = (settings: Partial<SessionSettings>) => {
+  try {
+    const current = getSessionSettings();
+    sessionStorage.setItem(SESSION_SETTINGS_KEY, JSON.stringify({ ...current, ...settings }));
+  } catch {
+    // Ignore
+  }
+};
+
+const clearSessionSettings = () => {
+  try {
+    sessionStorage.removeItem(SESSION_SETTINGS_KEY);
+  } catch {
+    // Ignore
+  }
+};
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -70,11 +108,54 @@ export function PracticeControls() {
     clearState,
   } = usePersistentNoteState('practice_session', profile?.id);
 
-  const [attachFocus, setAttachFocus] = useState(false);
-  const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
+  // Initialize from session storage if we have the same active session
+  const storedSettings = getSessionSettings();
+  const isStoredSessionMatch = activeSession && storedSettings.sessionId === activeSession.id;
+  
+  const [attachFocus, setAttachFocusState] = useState(() => 
+    isStoredSessionMatch ? storedSettings.attachFocus : false
+  );
+  const [wakeLockEnabled, setWakeLockEnabledState] = useState(() => 
+    isStoredSessionMatch ? storedSettings.wakeLockEnabled : false
+  );
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const [manuallyCollapsed, setManuallyCollapsed] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  
+  // Wrapper to persist attachFocus changes
+  const setAttachFocus = useCallback((value: boolean) => {
+    setAttachFocusState(value);
+    if (activeSession) {
+      saveSessionSettings({ attachFocus: value, sessionId: activeSession.id });
+    }
+  }, [activeSession]);
+  
+  // Wrapper to persist wakeLockEnabled changes
+  const setWakeLockEnabled = useCallback((value: boolean) => {
+    setWakeLockEnabledState(value);
+    if (activeSession) {
+      saveSessionSettings({ wakeLockEnabled: value, sessionId: activeSession.id });
+    }
+  }, [activeSession]);
+  
+  // Sync session ID when active session changes
+  useEffect(() => {
+    if (activeSession) {
+      const stored = getSessionSettings();
+      if (stored.sessionId === activeSession.id) {
+        // Restore settings for this session
+        setAttachFocusState(stored.attachFocus);
+        setWakeLockEnabledState(stored.wakeLockEnabled);
+        // Re-acquire wake lock if it was enabled
+        if (stored.wakeLockEnabled && (!wakeLockRef.current || wakeLockRef.current.released)) {
+          acquireWakeLock(true);
+        }
+      } else {
+        // New session, clear old settings
+        saveSessionSettings({ wakeLockEnabled: false, attachFocus: false, sessionId: activeSession.id });
+      }
+    }
+  }, [activeSession?.id]);
 
   // Determine if we should show the collapsible content
   // Active session can now be collapsed manually
@@ -198,7 +279,8 @@ export function PracticeControls() {
     if (!activeSession && wakeLockRef.current) {
       wakeLockRef.current.release().catch(() => {});
       wakeLockRef.current = null;
-      setWakeLockEnabled(false);
+      setWakeLockEnabledState(false);
+      clearSessionSettings();
     }
     return () => {
       if (wakeLockRef.current) {
@@ -241,10 +323,10 @@ export function PracticeControls() {
       if (wakeLockRef.current) {
         wakeLockRef.current.release();
         wakeLockRef.current = null;
-        setWakeLockEnabled(false);
       }
-      // Clear form state (including localStorage)
+      // Clear all session-related state
       clearState();
+      clearSessionSettings();
       deleteSession.mutate({ sessionId: activeSession.id, userId: profile.id });
     }
   };
@@ -309,6 +391,7 @@ export function PracticeControls() {
               {
                 onSuccess: () => {
                   clearState();
+                  clearSessionSettings();
                 },
               }
             );
@@ -556,10 +639,7 @@ export function PracticeControls() {
                 }
                 onClick={toggleWakeLock}
               >
-                <div className="relative">
-                  <Smartphone className="w-4 h-4" />
-                  <LockOpen className="w-2.5 h-2.5 absolute -top-1 -right-1" />
-                </div>
+                <LockOpen className="w-4 h-4" />
               </Button>
 
               {/* Focus toggle - inline, show if focus exists with text */}
