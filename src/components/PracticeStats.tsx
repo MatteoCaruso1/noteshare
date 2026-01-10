@@ -211,7 +211,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-3 gap-2">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
             <Flame className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-primary" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>

@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera } from 'lucide-react';
+import { LogOut, User, Settings, Camera, Info } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
 import { FeedbackCard } from '@/components/FeedbackCard';
@@ -207,7 +207,10 @@ const Profile = () => {
 
           {/* About Section - combined bio, instruments, and genres */}
           <Card className="p-4 bg-card border-border">
-            <h3 className="font-medium mb-3">About</h3>
+            <div className="flex items-center gap-2 mb-3">
+              <Info className="w-5 h-5 text-primary" />
+              <h3 className="font-medium">About</h3>
+            </div>
             {editing ? (
               <div className="space-y-4">
                 <Textarea 
@@ -263,7 +266,7 @@ const Profile = () => {
                       </Badge>
                     ))}
                     {profile?.genres?.map(genre => (
-                      <Badge key={genre} variant="outline" className="text-xs">
+                      <Badge key={genre} variant="secondary" className="text-xs bg-muted text-muted-foreground">
                         {genre}
                       </Badge>
                     ))}
