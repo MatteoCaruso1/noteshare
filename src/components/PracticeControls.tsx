@@ -106,6 +106,9 @@ export function PracticeControls() {
     visibility,
     setVisibility,
     clearState,
+    addPendingUpload,
+    completePendingUpload,
+    failPendingUpload,
   } = usePersistentNoteState('practice_session', profile?.id);
 
   // Initialize from session storage if we have the same active session
@@ -332,24 +335,60 @@ export function PracticeControls() {
   };
 
   const handleAudioRecorded = async (blob: Blob, duration: number) => {
-    const url = await uploadAudio(blob, profile.id);
-    if (url) {
-      setAudioFiles([...audioFiles, { url, name: '', duration }]);
+    // Generate unique ID for tracking this upload
+    const uploadId = `audio-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Mark upload as pending BEFORE starting (survives navigation)
+    addPendingUpload('audio', uploadId, { name: '', duration });
+    
+    try {
+      const url = await uploadAudio(blob, profile.id);
+      if (url) {
+        // Mark as completed - this will persist even if user navigated away
+        completePendingUpload(uploadId, url);
+      } else {
+        failPendingUpload(uploadId);
+      }
+    } catch (error) {
+      console.error('Audio upload failed:', error);
+      failPendingUpload(uploadId);
     }
   };
 
   const handleAudioFileUpload = async (file: File) => {
-    const url = await uploadFile(file, profile.id, 'audio');
-    if (url) {
-      const name = file.name.replace(/\.[^/.]+$/, '') || '';
-      setAudioFiles([...audioFiles, { url, name }]);
+    const uploadId = `audio-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const name = file.name.replace(/\.[^/.]+$/, '') || '';
+    
+    addPendingUpload('audio', uploadId, { name });
+    
+    try {
+      const url = await uploadFile(file, profile.id, 'audio');
+      if (url) {
+        completePendingUpload(uploadId, url);
+      } else {
+        failPendingUpload(uploadId);
+      }
+    } catch (error) {
+      console.error('Audio file upload failed:', error);
+      failPendingUpload(uploadId);
     }
   };
 
   const handleImageUpload = async (file: File) => {
-    const url = await uploadImage(file, profile.id);
-    if (url) {
-      setImageFiles([...imageFiles, url]);
+    const uploadId = `image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    addPendingUpload('image', uploadId);
+    
+    try {
+      const url = await uploadImage(file, profile.id);
+      if (url) {
+        completePendingUpload(uploadId, url);
+      } else {
+        failPendingUpload(uploadId);
+      }
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      failPendingUpload(uploadId);
     }
   };
 
