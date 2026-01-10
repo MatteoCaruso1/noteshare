@@ -8,15 +8,15 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        default: "border-transparent bg-primary text-primary-foreground [@media(hover:hover)]:hover:bg-primary/80",
+        secondary: "border-transparent bg-secondary text-secondary-foreground [@media(hover:hover)]:hover:bg-secondary/80",
+        destructive: "border-transparent bg-destructive text-destructive-foreground [@media(hover:hover)]:hover:bg-destructive/80",
         outline: "text-foreground",
         // Jazz-specific variants
-        jazz: "border-jazz-gold/30 bg-jazz-gold/10 text-jazz-gold hover:bg-jazz-gold/20",
-        "jazz-solid": "border-transparent bg-jazz-gold text-jazz-midnight hover:bg-jazz-amber",
-        accent: "border-accent/30 bg-accent/10 text-accent hover:bg-accent/20",
-        muted: "border-border bg-muted text-muted-foreground hover:bg-muted/80",
+        jazz: "border-jazz-gold/30 bg-jazz-gold/10 text-jazz-gold [@media(hover:hover)]:hover:bg-jazz-gold/20",
+        "jazz-solid": "border-transparent bg-jazz-gold text-jazz-midnight [@media(hover:hover)]:hover:bg-jazz-amber",
+        accent: "border-accent/30 bg-accent/10 text-accent [@media(hover:hover)]:hover:bg-accent/20",
+        muted: "border-border bg-muted text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80",
       },
     },
     defaultVariants: {
