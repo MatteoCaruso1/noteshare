@@ -230,16 +230,14 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
   const { data: messages, isLoading } = useMessages(friend.id);
   const sendMessage = useSendMessage();
   const [newMessage, setNewMessage] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages load or update
   useEffect(() => {
     // Small timeout to ensure DOM is updated before scrolling
     const timer = setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      }
-    }, 50);
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }, 100);
     return () => clearTimeout(timer);
   }, [messages]);
 
@@ -259,9 +257,9 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
   };
 
   return (
-    <Card className="p-0 bg-card border-border overflow-hidden">
+    <Card className="p-0 bg-card border-border overflow-hidden flex flex-col max-h-[400px]">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border">
+      <div className="flex items-center gap-3 p-3 border-b border-border shrink-0">
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
@@ -278,7 +276,7 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="h-48 p-4" ref={scrollRef}>
+      <div className="flex-1 overflow-y-auto p-3 min-h-0">
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground text-sm">
             Loading...
@@ -307,17 +305,18 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
                 </div>
               );
             })}
+            <div ref={messagesEndRef} />
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground text-sm">
             Start the conversation!
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       {/* Input */}
-      <div className="border-t border-border bg-card">
-        <div className="flex items-end gap-2 p-4">
+      <div className="border-t border-border bg-card shrink-0">
+        <div className="flex items-end gap-2 p-3">
           <Textarea
             placeholder="Type a message..."
             value={newMessage}
