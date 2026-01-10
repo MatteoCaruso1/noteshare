@@ -4,6 +4,7 @@ import { Compass, X, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SimpleGoalsProps {
   profileId: string;
@@ -93,6 +94,30 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   // Icon should light up when editing or adding
   const isActive = isAdding || editingId !== null;
 
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Compass className="w-5 h-5 text-foreground" />
+            <h2 className="font-semibold">Musical Goals</h2>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-start gap-2">
+            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 pt-0.5">1.</span>
+            <Skeleton className="h-5 flex-1" />
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 pt-0.5">2.</span>
+            <Skeleton className="h-5 flex-1 w-3/4" />
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-card border-border p-4">
       <div className="flex items-center justify-between mb-3">
@@ -112,7 +137,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
       
       <div className="space-y-2">
         {activeGoals.map((goal, index) => (
-          <div key={goal.id} className="group flex items-start gap-2">
+          <div key={goal.id} className="group flex items-start gap-2 animate-fade-in">
             <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {index + 1}.
             </span>
@@ -154,7 +179,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
 
         {/* Optimistic pending goal */}
         {pendingGoal && (
-          <div className="flex items-start gap-2 opacity-60">
+          <div className="flex items-start gap-2 opacity-60 animate-fade-in">
             <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {activeGoals.length + 1}.
             </span>
@@ -165,7 +190,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         )}
         
         {isAdding && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 animate-fade-in">
             <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {activeGoals.length + 1}.
             </span>
@@ -194,8 +219,8 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         )}
 
-        {!isLoading && activeGoals.length === 0 && !isAdding && !pendingGoal && (
-          <p className="text-sm text-muted-foreground">No goals yet. Click + to add one.</p>
+        {activeGoals.length === 0 && !isAdding && !pendingGoal && (
+          <p className="text-sm text-muted-foreground animate-fade-in">No goals yet. Click + to add one.</p>
         )}
       </div>
     </Card>
