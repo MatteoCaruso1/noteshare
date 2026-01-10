@@ -188,9 +188,6 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
           <p className="text-sm text-muted-foreground">
             Search for musicians to add as friends
           </p>
-          <p className="text-xs text-muted-foreground/70 mt-1">
-            Try searching by name or @username
-          </p>
         </div>
       )}
       
