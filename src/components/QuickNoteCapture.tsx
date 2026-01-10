@@ -233,22 +233,27 @@ export function QuickNoteCapture() {
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
-                <div className="flex items-center gap-2 ml-auto">
-                  <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <Switch
-                    id="attach-focus"
-                    checked={attachFocus}
-                    onCheckedChange={(checked) => {
-                      setAttachFocus(checked);
-                      if (checked) {
-                        toast.success("Your note will be linked to Practice Board");
-                      } else {
-                        toast.success("Your note will no longer be linked to Practice Board");
-                      }
-                    }}
-                    className="scale-90"
-                  />
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2 ml-auto cursor-pointer">
+                      <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Switch
+                        id="attach-focus"
+                        checked={attachFocus}
+                        onCheckedChange={(checked) => {
+                          setAttachFocus(checked);
+                          if (checked) {
+                            toast.success("Your note will be linked to Practice Board");
+                          } else {
+                            toast.success("Your note will no longer be linked to Practice Board");
+                          }
+                        }}
+                        className="scale-90"
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Link to Practice Board</TooltipContent>
+                </Tooltip>
               )}
             </div>
           </TooltipProvider>
@@ -262,7 +267,14 @@ export function QuickNoteCapture() {
 
           {/* Action Buttons - inline */}
           <div className="flex items-center gap-2">
-            <AudioRecorder onRecorded={handleAudioRecorded} className="flex-[1]" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex-[1]">
+                  <AudioRecorder onRecorded={handleAudioRecorded} className="w-full" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Record audio</TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -274,7 +286,7 @@ export function QuickNoteCapture() {
                   <Save className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Save Note</TooltipContent>
+              <TooltipContent>Save note</TooltipContent>
             </Tooltip>
           </div>
 

@@ -5,6 +5,7 @@ import { useGlint } from '@/contexts/GlintContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ClipboardList, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -462,35 +463,45 @@ export function TodaysFocus() {
               </div>
               <div className="flex items-center gap-1">
                 {/* Buttons fade in when open */}
-                <div className={`flex gap-1 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 active:bg-transparent"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSaveToBacklog();
-                    }}
-                    disabled={isSaving || !text.trim()}
-                    title="Save to backlog"
-                  >
-                    <Save className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 active:bg-transparent"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsBacklogOpen(true);
-                    }}
-                    title="View backlog"
-                  >
-                    <FolderOpen className="w-4 h-4" />
-                  </Button>
-                </div>
+                <TooltipProvider delayDuration={300}>
+                  <div className={`flex gap-1 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 active:bg-transparent"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveToBacklog();
+                          }}
+                          disabled={isSaving || !text.trim()}
+                        >
+                          <Save className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Save to backlog</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 active:bg-transparent"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsBacklogOpen(true);
+                          }}
+                        >
+                          <FolderOpen className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View backlog</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
                 {isOpen ? (
                   <ChevronDown className="w-5 h-5 text-muted-foreground" />
                 ) : (
