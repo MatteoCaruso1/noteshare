@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { Award } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { STREAK_TIERS, getStreakMilestoneMessage } from '@/lib/streakUtils';
 
 interface StreakRewardsSectionProps {
@@ -10,7 +10,7 @@ export function StreakRewardsSection({ currentStreak }: StreakRewardsSectionProp
   return (
     <Card className="p-4 bg-card border-border">
       <div className="flex items-center gap-2 mb-3">
-        <Award className="w-5 h-5 text-primary" />
+        <Trophy className="w-5 h-5 text-primary" />
         <h3 className="font-medium">Streak Rewards</h3>
       </div>
       <div className="flex flex-wrap gap-2">
