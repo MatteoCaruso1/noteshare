@@ -2,9 +2,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Zap, Award } from 'lucide-react';
+import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getStreakTier, getStreakMilestoneMessage, STREAK_TIERS } from '@/lib/streakUtils';
 
 interface PracticeStatsProps {
   profileId: string;
@@ -228,43 +227,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Top Wk</p>
           </div>
-        </div>
-
-        {/* Streak Rewards */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Award className="w-4 h-4" />
-            <span>Streak rewards</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[...STREAK_TIERS].filter(t => t.tier !== 'none').reverse().map((tier) => {
-              const achieved = stats.currentStreak >= tier.minDays;
-              return (
-                <div 
-                  key={tier.tier}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                    achieved 
-                      ? `${tier.bgColorClass} ${tier.colorClass} font-medium` 
-                      : tier.tier === 'starter'
-                        ? 'bg-blue-500/20 text-blue-500/60 dark:text-blue-400/60'
-                        : tier.tier === 'bronze' 
-                          ? 'bg-amber-600/20 text-amber-700/60 dark:text-amber-500/60'
-                          : tier.tier === 'silver'
-                            ? 'bg-slate-400/20 text-slate-500/60 dark:text-slate-300/60'
-                            : 'bg-yellow-500/20 text-yellow-600/60 dark:text-yellow-400/60'
-                  }`}
-                >
-                  <span>{tier.minDays}d</span>
-                  {achieved && <span>✓</span>}
-                </div>
-              );
-            })}
-          </div>
-          {getStreakMilestoneMessage(stats.currentStreak) && (
-            <p className="text-xs text-muted-foreground italic mt-1">
-              {getStreakMilestoneMessage(stats.currentStreak)}
-            </p>
-          )}
         </div>
       </Card>
 

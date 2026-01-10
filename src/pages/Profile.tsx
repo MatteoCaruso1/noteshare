@@ -205,55 +205,72 @@ const Profile = () => {
             <StreakRewardsSection currentStreak={practiceStats.currentStreak} />
           )}
 
-          {/* Bio */}
+          {/* About Section - combined bio, instruments, and genres */}
           <Card className="p-4 bg-card border-border">
-            <h3 className="font-medium mb-2">About</h3>
+            <h3 className="font-medium mb-3">About</h3>
             {editing ? (
-              <Textarea 
-                value={bio} 
-                onChange={e => setBio(e.target.value)} 
-                placeholder="Tell others about yourself and your musical journey..." 
-                rows={3} 
-              />
+              <div className="space-y-4">
+                <Textarea 
+                  value={bio} 
+                  onChange={e => setBio(e.target.value)} 
+                  placeholder="Tell others about yourself and your musical journey..." 
+                  rows={3} 
+                />
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Instruments</p>
+                  <div className="flex flex-wrap gap-2">
+                    {INSTRUMENTS.map(instrument => (
+                      <Badge 
+                        key={instrument} 
+                        variant={instruments.includes(instrument) ? 'default' : 'secondary'} 
+                        className="cursor-pointer" 
+                        onClick={() => toggleInstrument(instrument)}
+                      >
+                        {instrument}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Genres</p>
+                  <div className="flex flex-wrap gap-2">
+                    {GENRES.map(genre => (
+                      <Badge 
+                        key={genre} 
+                        variant={genres.includes(genre) ? 'default' : 'secondary'} 
+                        className="cursor-pointer" 
+                        onClick={() => toggleGenre(genre)}
+                      >
+                        {genre}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                {profile?.bio || 'No bio yet. Add one to help others get to know you!'}
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {profile?.bio || 'No bio yet. Add one to help others get to know you!'}
+                </p>
+                
+                {((profile?.instruments && profile.instruments.length > 0) || (profile?.genres && profile.genres.length > 0)) && (
+                  <div className="flex flex-wrap gap-2">
+                    {profile?.instruments?.map(instrument => (
+                      <Badge key={instrument} variant="secondary" className="text-xs">
+                        {instrument}
+                      </Badge>
+                    ))}
+                    {profile?.genres?.map(genre => (
+                      <Badge key={genre} variant="outline" className="text-xs">
+                        {genre}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
-          </Card>
-
-          {/* Instruments */}
-          <Card className="p-4 bg-card border-border">
-            <h3 className="font-medium mb-3">Instruments</h3>
-            <div className="flex flex-wrap gap-2">
-              {(editing ? INSTRUMENTS : profile?.instruments || []).map(instrument => (
-                <Badge 
-                  key={instrument} 
-                  variant={instruments.includes(instrument) ? 'default' : 'secondary'} 
-                  className={editing ? 'cursor-pointer' : ''} 
-                  onClick={editing ? () => toggleInstrument(instrument) : undefined}
-                >
-                  {instrument}
-                </Badge>
-              ))}
-            </div>
-          </Card>
-
-          {/* Genres */}
-          <Card className="p-4 bg-card border-border">
-            <h3 className="font-medium mb-3">Genres</h3>
-            <div className="flex flex-wrap gap-2">
-              {(editing ? GENRES : profile?.genres || []).map(genre => (
-                <Badge 
-                  key={genre} 
-                  variant={genres.includes(genre) ? 'default' : 'secondary'} 
-                  className={editing ? 'cursor-pointer' : ''} 
-                  onClick={editing ? () => toggleGenre(genre) : undefined}
-                >
-                  {genre}
-                </Badge>
-              ))}
-            </div>
           </Card>
 
           {/* Practice Stats - hide during editing */}
