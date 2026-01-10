@@ -205,6 +205,23 @@
     font-family: var(--font-sans);
   }
 
+  /* Fix stuck hover states on touch devices (iOS Safari) */
+  @media (hover: none) {
+    button,
+    a,
+    [role="button"],
+    .touch-manipulation {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Reset any hover backgrounds that might get stuck */
+    button:hover,
+    a:hover,
+    [role="button"]:hover {
+      background-color: inherit;
+    }
+  }
+
   h1,
   h2,
   h3,
