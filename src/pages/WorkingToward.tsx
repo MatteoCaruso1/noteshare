@@ -416,13 +416,8 @@ const WorkingToward = () => {
           <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between p-4 cursor-pointer">
+                <div className="flex items-center justify-between p-4 cursor-pointer group">
                   <div className="flex items-center gap-3">
-                    {projectsOpen ? (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                    )}
                     <Disc3 className={cn("w-5 h-5 transition-colors", projectsOpen ? "text-primary" : "text-foreground")} />
                     <span className="font-semibold">Projects</span>
                     {myProjects && myProjects.length > 0 && (
@@ -431,17 +426,18 @@ const WorkingToward = () => {
                       </Badge>
                     )}
                   </div>
-                  <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        className={cn("h-8 transition-opacity", projectsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
+                  <div className="flex items-center gap-1">
+                    <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className={cn("h-8 transition-opacity", projectsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
                       <DialogContent onClick={(e) => e.stopPropagation()}>
                         <DialogHeader>
                           <DialogTitle>Create New Project</DialogTitle>
@@ -538,6 +534,12 @@ const WorkingToward = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
+                    {projectsOpen ? (
+                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                    )}
+                  </div>
                 </div>
               </CollapsibleTrigger>
               
@@ -651,27 +653,23 @@ const WorkingToward = () => {
           <Collapsible open={gigsOpen} onOpenChange={setGigsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between p-4 cursor-pointer">
+                <div className="flex items-center justify-between p-4 cursor-pointer group">
                   <div className="flex items-center gap-3">
-                    {gigsOpen ? (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                    )}
                     <Calendar className={cn("w-5 h-5 transition-colors", gigsOpen ? "text-primary" : "text-foreground")} />
                     <span className="font-semibold">Gigs</span>
                   </div>
-                  <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        className={cn("h-8 transition-opacity", gigsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
+                  <div className="flex items-center gap-1">
+                    <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className={cn("h-8 transition-opacity", gigsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
                       <DialogContent onClick={(e) => e.stopPropagation()}>
                         <DialogHeader>
                           <DialogTitle>Create New Gig</DialogTitle>
@@ -787,6 +785,12 @@ const WorkingToward = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
+                    {gigsOpen ? (
+                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                    )}
+                  </div>
                 </div>
               </CollapsibleTrigger>
               
