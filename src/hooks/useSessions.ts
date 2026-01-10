@@ -225,6 +225,23 @@ export function useEndSession() {
       userId: string;
       notesSummary?: string;
     }) => {
+      // First, fetch the current session to finalize pause time
+      const { data: currentSession, error: fetchError } = await supabase
+        .from('practice_sessions')
+        .select('paused_at, paused_duration_ms')
+        .eq('id', sessionId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Calculate final paused duration if currently paused
+      let finalPausedDurationMs = currentSession?.paused_duration_ms || 0;
+      if (currentSession?.paused_at) {
+        const pausedAt = new Date(currentSession.paused_at);
+        const additionalPausedMs = Date.now() - pausedAt.getTime();
+        finalPausedDurationMs += additionalPausedMs;
+      }
+
       const { data, error } = await supabase
         .from('practice_sessions')
         .update({
@@ -232,6 +249,7 @@ export function useEndSession() {
           ended_at: new Date().toISOString(),
           notes_summary: notesSummary,
           paused_at: null, // Clear pause state when ending
+          paused_duration_ms: finalPausedDurationMs, // Save finalized pause duration
         })
         .eq('id', sessionId)
         .select()
