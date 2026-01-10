@@ -665,42 +665,52 @@ export function PracticeControls() {
               />
 
               {/* Wake Lock toggle - custom implementation for iOS touch handling */}
-              <button
-                type="button"
-                aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
-                aria-pressed={wakeLockEnabled}
-                onClick={toggleWakeLock}
-                className={`
-                  h-8 w-8 inline-flex items-center justify-center rounded-md
-                  transition-colors touch-manipulation select-none
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                  ${wakeLockEnabled 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-transparent text-muted-foreground [@media(hover:hover)]:hover:bg-muted/50"
-                  }
-                `}
-              >
-                <LockOpen className="w-4 h-4" />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
+                    aria-pressed={wakeLockEnabled}
+                    onClick={toggleWakeLock}
+                    className={`
+                      h-8 w-8 inline-flex items-center justify-center rounded-md
+                      transition-colors touch-manipulation select-none
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                      ${wakeLockEnabled 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-transparent text-muted-foreground [@media(hover:hover)]:hover:bg-muted/50"
+                      }
+                    `}
+                  >
+                    <LockOpen className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Keep screen unlocked</TooltipContent>
+              </Tooltip>
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
-                <div className="flex items-center gap-2 ml-auto">
-                  <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <Switch
-                    id="attach-focus-session"
-                    checked={attachFocus}
-                    onCheckedChange={(checked) => {
-                      setAttachFocus(checked);
-                      if (checked) {
-                        toast.success("Your session will be linked to Practice Board");
-                      } else {
-                        toast.success("Your session will no longer be linked to Practice Board");
-                      }
-                    }}
-                    className="scale-90"
-                  />
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2 ml-auto cursor-pointer">
+                      <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Switch
+                        id="attach-focus-session"
+                        checked={attachFocus}
+                        onCheckedChange={(checked) => {
+                          setAttachFocus(checked);
+                          if (checked) {
+                            toast.success("Your session will be linked to Practice Board");
+                          } else {
+                            toast.success("Your session will no longer be linked to Practice Board");
+                          }
+                        }}
+                        className="scale-90"
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Link to Practice Board</TooltipContent>
+                </Tooltip>
               )}
             </div>
           </TooltipProvider>
@@ -749,7 +759,14 @@ export function PracticeControls() {
 
           {/* Action Buttons - inline full-width */}
           <div className="flex items-center gap-2">
-            <AudioRecorder onRecorded={handleAudioRecorded} className="flex-[2]" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex-[2]">
+                  <AudioRecorder onRecorded={handleAudioRecorded} className="w-full" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Record audio</TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
