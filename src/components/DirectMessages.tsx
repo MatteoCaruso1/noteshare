@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { MessageCircle, Send, ArrowLeft, Users, List, ListOrdered, PenSquare } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Users, PenSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { Profile } from '@/types';
 
@@ -231,12 +231,16 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
   const sendMessage = useSendMessage();
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Auto-scroll to bottom when messages load or update
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // Small timeout to ensure DOM is updated before scrolling
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 50);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const handleSend = () => {
@@ -247,140 +251,10 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
     );
   };
 
-  const insertListPrefix = (prefix: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    
-    const start = textarea.selectionStart;
-    const text = textarea.value;
-    
-    // Find line start
-    let lineStart = start;
-    while (lineStart > 0 && text[lineStart - 1] !== '\n') {
-      lineStart--;
-    }
-    
-    // Find line end
-    let lineEnd = start;
-    while (lineEnd < text.length && text[lineEnd] !== '\n') {
-      lineEnd++;
-    }
-    
-    const line = text.substring(lineStart, lineEnd);
-    const bulletMatch = line.match(/^(\s*)([-•]\s)/);
-    const numberMatch = line.match(/^(\s*)(\d+\.\s)/);
-    
-    let newLine: string;
-    
-    if (prefix === '• ') {
-      if (bulletMatch) {
-        newLine = line.replace(/^(\s*)[-•]\s/, '$1');
-      } else if (numberMatch) {
-        newLine = line.replace(/^(\s*)\d+\.\s/, '$1• ');
-      } else {
-        newLine = '• ' + line;
-      }
-    } else {
-      if (numberMatch) {
-        newLine = line.replace(/^(\s*)\d+\.\s/, '$1');
-      } else if (bulletMatch) {
-        newLine = line.replace(/^(\s*)[-•]\s/, '$11. ');
-      } else {
-        newLine = '1. ' + line;
-      }
-    }
-    
-    const newValue = text.substring(0, lineStart) + newLine + text.substring(lineEnd);
-    setNewMessage(newValue);
-    textarea.focus();
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      const text = newMessage;
-      const textarea = e.target as HTMLTextAreaElement;
-      const start = textarea.selectionStart;
-      
-      // Find line start
-      let lineStart = start;
-      while (lineStart > 0 && text[lineStart - 1] !== '\n') {
-        lineStart--;
-      }
-      
-      const line = text.substring(lineStart, start);
-      const bulletMatch = line.match(/^(\s*)([-•])\s/);
-      const numberMatch = line.match(/^(\s*)(\d+)\.\s/);
-      
-      if (bulletMatch || numberMatch) {
-        const contentAfterPrefix = bulletMatch 
-          ? line.replace(/^(\s*)[-•]\s/, '')
-          : line.replace(/^(\s*)\d+\.\s/, '');
-        
-        if (contentAfterPrefix.trim() === '') {
-          e.preventDefault();
-          const newValue = text.substring(0, lineStart) + text.substring(start);
-          setNewMessage(newValue);
-          return;
-        }
-        
-        e.preventDefault();
-        const indent = bulletMatch ? bulletMatch[1] : numberMatch![1];
-        let prefix: string;
-        
-        if (bulletMatch) {
-          prefix = indent + bulletMatch[2] + ' ';
-        } else {
-          const num = parseInt(numberMatch![2]) + 1;
-          prefix = indent + num + '. ';
-        }
-        
-        const newValue = text.substring(0, start) + '\n' + prefix + text.substring(start);
-        setNewMessage(newValue);
-        
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + 1 + prefix.length;
-        }, 0);
-      } else {
-        // Regular enter - send message
-        e.preventDefault();
-        handleSend();
-      }
-    }
-    
-    if (e.key === 'Tab') {
       e.preventDefault();
-      const textarea = e.target as HTMLTextAreaElement;
-      const start = textarea.selectionStart;
-      const text = newMessage;
-      
-      // Find line start
-      let lineStart = start;
-      while (lineStart > 0 && text[lineStart - 1] !== '\n') {
-        lineStart--;
-      }
-      
-      // Find line end
-      let lineEnd = start;
-      while (lineEnd < text.length && text[lineEnd] !== '\n') {
-        lineEnd++;
-      }
-      
-      const line = text.substring(lineStart, lineEnd);
-      const indent = '  ';
-      
-      if (e.shiftKey && line.startsWith(indent)) {
-        const newValue = text.substring(0, lineStart) + line.substring(indent.length) + text.substring(lineEnd);
-        setNewMessage(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - indent.length);
-        }, 0);
-      } else if (!e.shiftKey) {
-        const newValue = text.substring(0, lineStart) + indent + text.substring(lineStart);
-        setNewMessage(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + indent.length;
-        }, 0);
-      }
+      handleSend();
     }
   };
 
@@ -441,33 +315,10 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
         )}
       </ScrollArea>
 
-      {/* Input - with list formatting support */}
+      {/* Input */}
       <div className="border-t border-border bg-card">
-        <div className="flex gap-1 px-4 pt-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => insertListPrefix('• ')}
-            title="Bullet list"
-          >
-            <List className="w-3 h-3" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => insertListPrefix('1. ')}
-            title="Numbered list"
-          >
-            <ListOrdered className="w-3 h-3" />
-          </Button>
-        </div>
-        <div className="flex items-end gap-2 p-4 pt-1">
+        <div className="flex items-end gap-2 p-4">
           <Textarea
-            ref={textareaRef}
             placeholder="Type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
