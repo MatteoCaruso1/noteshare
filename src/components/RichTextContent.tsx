@@ -193,12 +193,16 @@ export function RichTextContent({ content, className = '', lineClamp }: RichText
     [urls]
   );
 
+  // Use responsive line clamping: shorter on mobile, longer on desktop
+  // When lineClamp is specified, use 4 lines on mobile and 6 on desktop
+  const lineClampClass = lineClamp ? 'line-clamp-4 sm:line-clamp-6' : '';
+
   // For HTML content (from TipTap), render as HTML
   if (isHtml) {
     return (
       <div className={className}>
         <div 
-          className={`text-sm prose prose-sm prose-invert max-w-none ${lineClamp ? `line-clamp-${lineClamp}` : ''}`}
+          className={`text-sm prose prose-sm prose-invert max-w-none ${lineClampClass}`}
           dangerouslySetInnerHTML={{ __html: content }}
         />
         {/* Show previews below the text */}
@@ -238,7 +242,7 @@ export function RichTextContent({ content, className = '', lineClamp }: RichText
 
   return (
     <div className={className}>
-      <p className={`text-sm whitespace-pre-wrap ${lineClamp ? `line-clamp-${lineClamp}` : ''}`}>
+      <p className={`text-sm whitespace-pre-wrap ${lineClampClass}`}>
         {elements}
       </p>
       {/* Show previews below the text */}
