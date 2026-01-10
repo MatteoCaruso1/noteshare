@@ -237,13 +237,13 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <h3 className="font-semibold">Themes</h3>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Themes are based on words from your practice notes and daily focus.
+          Based on words from your practice notes and daily focus.
         </p>
         
         <div className="space-y-4">
           {/* Keywords from text content */}
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Top words this month</p>
+            <p className="text-sm text-muted-foreground mb-2">Top this month</p>
             <div className="flex flex-wrap gap-2">
               {stats.topKeywordsThisMonth.length > 0 ? (
                 stats.topKeywordsThisMonth.map(({ keyword, count }) => (
