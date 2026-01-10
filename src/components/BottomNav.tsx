@@ -50,7 +50,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   }, []);
 
   const links = [
-    { to: '/', icon: Home, label: 'My Practice', mobileLabel: 'My\nPractice' },
+    { to: '/', icon: Home, label: 'Practice', mobileLabel: 'Practice' },
     { to: '/working-toward', icon: Target, label: 'Working Toward', mobileLabel: 'Working\nToward' },
     { to: '/friends', icon: Users, label: "Friends' Practice", mobileLabel: "Friends'\nPractice", showBadge: true },
     { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
@@ -65,10 +65,12 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   // Determine current path - allow override for nested routes
   const currentPath = overrideActiveRoute || location.pathname;
 
-  const handleNavClick = (to: string) => {
-    // Only perform scroll actions if we're actually navigating to a different page
+  const handleNavClick = (to: string, e: React.PointerEvent) => {
+    // If tapping the current tab, scroll to top
     if (to === location.pathname) {
-      return; // Don't do anything if tapping the current tab
+      e.preventDefault();
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      return;
     }
 
     // Clear scroll state for the destination so it starts at top
@@ -107,7 +109,7 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
               <NavLink
                 key={to}
                 to={to}
-                onPointerDown={() => handleNavClick(to)}
+                onPointerDown={(e) => handleNavClick(to, e)}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
