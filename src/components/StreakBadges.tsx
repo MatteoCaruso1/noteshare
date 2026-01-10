@@ -1,4 +1,4 @@
-import { Medal } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -9,7 +9,7 @@ interface StreakBadgesProps {
 
 function BadgeIcon({ tier }: { tier: StreakTierInfo }) {
   if (tier.tier === 'none') return null;
-  return <Medal className={`w-4 h-4 ${tier.colorClass}`} />;
+  return <Trophy className={`w-4 h-4 ${tier.colorClass}`} />;
 }
 
 function getBadgeDescription(tier: StreakTierInfo): string {
