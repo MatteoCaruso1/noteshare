@@ -46,8 +46,27 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
     };
   }, [recording]);
 
+  const isSafari = (): boolean => {
+    const ua = navigator.userAgent;
+    return /^((?!chrome|android).)*safari/i.test(ua) || 
+           (/iPad|iPhone|iPod/.test(ua) && !('MSStream' in window));
+  };
+
   const getSupportedMimeType = (): string => {
-    // Prefer webm/ogg (more reliable in Chrome) and fall back to mp4
+    // Safari/iOS requires mp4 - check this first for iOS devices
+    if (isSafari()) {
+      // On Safari/iOS, try mp4 first, then let browser decide
+      const safariTypes = ['audio/mp4', 'audio/aac', 'audio/mpeg'];
+      for (const type of safariTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          return type;
+        }
+      }
+      // Safari may work without specifying mimeType - let it choose
+      return '';
+    }
+    
+    // For other browsers, prefer webm/ogg
     const types = [
       'audio/webm;codecs=opus',
       'audio/webm',
@@ -55,7 +74,6 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
       'audio/ogg',
       'audio/mp4',
       'audio/mpeg',
-      'audio/wav',
     ];
     
     for (const type of types) {
@@ -78,21 +96,35 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
       audioManager.pauseAll();
       audioManager.setRecording(true);
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        }
-      });
+      // Safari/iOS is stricter about constraints - use simpler config for Safari
+      const audioConstraints = isSafari() 
+        ? { audio: true }
+        : { 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            }
+          };
+
+      const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
       
       streamRef.current = stream;
       
       const mimeType = getSupportedMimeType();
+      // For Safari, don't pass mimeType if empty - let browser choose
       const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
       
-      const mediaRecorder = new MediaRecorder(stream, options);
-      console.log('[AudioRecorder] Using mimeType:', mediaRecorder.mimeType || mimeType);
+      let mediaRecorder: MediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        // If options fail (Safari can be picky), try without options
+        console.warn('[AudioRecorder] MediaRecorder with options failed, trying without:', e);
+        mediaRecorder = new MediaRecorder(stream);
+      }
+      
+      console.log('[AudioRecorder] Using mimeType:', mediaRecorder.mimeType || 'default');
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
       startTimeRef.current = Date.now();
@@ -120,7 +152,7 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
         audioManager.setRecording(false);
         
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-        const actualMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm';
+        const actualMimeType = mediaRecorder.mimeType || 'audio/mp4';
         const blob = new Blob(chunksRef.current, { type: actualMimeType });
         console.log('[AudioRecorder] final blob size:', blob.size, 'type:', blob.type, 'duration(s):', duration);
         
@@ -155,13 +187,30 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
         setElapsedTime(0);
       };
 
-      // Use timeslice to get data more frequently (helps with screen lock scenarios)
-      mediaRecorder.start(1000);
+      // Safari has issues with timeslice - don't use it on Safari
+      if (isSafari()) {
+        mediaRecorder.start();
+      } else {
+        // Use timeslice to get data more frequently (helps with screen lock scenarios)
+        mediaRecorder.start(1000);
+      }
       setRecording(true);
     } catch (err) {
       console.error('[AudioRecorder] Failed to start recording:', err);
       audioManager.setRecording(false);
-      toast.error('Could not access microphone. Please check permissions.');
+      
+      // Provide more specific error message for permission issues
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          toast.error('Microphone access denied. Please enable in Settings > Safari > Microphone.');
+        } else if (err.name === 'NotFoundError') {
+          toast.error('No microphone found on this device.');
+        } else {
+          toast.error('Could not access microphone. Please check permissions and try again.');
+        }
+      } else {
+        toast.error('Could not access microphone. Please check permissions.');
+      }
     }
   };
 
