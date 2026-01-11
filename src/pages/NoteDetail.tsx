@@ -109,27 +109,30 @@ const NoteDetail = () => {
     }
   }, [fromFriends, fromProject, fromGig, navigate]);
 
-  // Sticky back button component - rendered outside PageBody for proper fixed positioning
-  const StickyBackButton = () => (
-    <div className="sticky top-12 z-40 bg-background py-2 -mx-4 px-4">
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="h-9 w-9 bg-muted/50 hover:bg-muted"
-        onClick={handleBack}
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </Button>
-    </div>
+  // Fixed back button - stays locked in place
+  const FixedBackButton = () => (
+    <button 
+      onClick={handleBack}
+      className="fixed top-14 left-4 z-40 flex items-center justify-center h-7 w-7 rounded-md bg-muted/80 hover:bg-muted text-foreground transition-colors"
+      aria-label="Go back"
+    >
+      <ArrowLeft className="w-4 h-4" />
+    </button>
+  );
+
+  // Spacer to account for fixed back button area
+  const BackButtonSpacer = () => (
+    <div className="h-6" />
   );
 
   // Show skeleton with navigation while loading - don't block the UI
   if (isLoading) {
     return (
       <PageLayout>
+        <FixedBackButton />
         <PageBody>
-          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
-            <StickyBackButton />
+          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
+            <BackButtonSpacer />
             {/* Note skeleton */}
             <div className="h-48 bg-card rounded-lg animate-pulse" />
             {/* Comments section skeleton */}
@@ -147,9 +150,10 @@ const NoteDetail = () => {
   if (!note) {
     return (
       <PageLayout>
+        <FixedBackButton />
         <PageBody>
           <main className="container max-w-2xl mx-auto px-4 py-2">
-            <StickyBackButton />
+            <BackButtonSpacer />
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4">Note not found</p>
               <Button variant="outline" onClick={() => navigate('/')}>
@@ -165,9 +169,10 @@ const NoteDetail = () => {
 
   return (
     <PageLayout>
+      <FixedBackButton />
       <PageBody>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
-          <StickyBackButton />
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
+          <BackButtonSpacer />
 
           <NoteCard 
             note={note} 
