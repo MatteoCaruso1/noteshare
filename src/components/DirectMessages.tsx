@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useConversations, useMessages, useSendMessage } from '@/hooks/useMessages';
 import { useFriends } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
@@ -231,15 +231,20 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
   const sendMessage = useSendMessage();
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isReady, setIsReady] = useState(false);
 
-  // Auto-scroll to bottom when messages load or update
-  useEffect(() => {
-    // Small timeout to ensure DOM is updated before scrolling
-    const timer = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [messages]);
+  // Use layout effect to scroll before paint, preventing visual jump
+  useLayoutEffect(() => {
+    if (!isLoading && messages) {
+      // Scroll instantly before browser paints
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      }
+      // Mark as ready to show content
+      setIsReady(true);
+    }
+  }, [messages, isLoading]);
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
@@ -280,10 +285,18 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 min-h-0">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-3 min-h-0"
+        style={{ visibility: isLoading || !isReady ? 'hidden' : 'visible' }}
+      >
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            Loading...
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                <div className="max-w-[80%] px-3 py-2 rounded-lg bg-muted animate-pulse h-12 w-32" />
+              </div>
+            ))}
           </div>
         ) : messages && messages.length > 0 ? (
           <div className="space-y-3">
