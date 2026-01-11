@@ -109,7 +109,7 @@ const FriendsJournals = () => {
                     )}
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md" hideCloseButton={inChatView}>
                   {!inChatView && (
                     <DialogHeader className="flex flex-row items-center justify-between pr-12">
                       <DialogTitle className="flex items-center gap-2">
@@ -130,14 +130,12 @@ const FriendsJournals = () => {
                       </button>
                     </DialogHeader>
                   )}
-                  <ScrollArea className="max-h-[60vh]">
-                    <DirectMessages 
-                      embedded 
-                      showNewMessageView={showNewMessageView}
-                      onNewMessageViewChange={setShowNewMessageView}
-                      onInChatViewChange={setInChatView}
-                    />
-                  </ScrollArea>
+                  <DirectMessages 
+                    embedded 
+                    showNewMessageView={showNewMessageView}
+                    onNewMessageViewChange={setShowNewMessageView}
+                    onInChatViewChange={setInChatView}
+                  />
                 </DialogContent>
               </Dialog>
 
