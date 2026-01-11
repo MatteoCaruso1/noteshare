@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { useFriends } from '@/hooks/useFriendships';
-import { Users, Music, Handshake, Guitar, Flame } from 'lucide-react';
+import { Users, Music, Guitar, Flame } from 'lucide-react';
 
 interface FriendsListProps {
   children: React.ReactNode;
@@ -97,13 +97,6 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
                     <p className="text-xs text-muted-foreground truncate mb-2">@{friend.username}</p>
                     
                     <div className="flex flex-wrap gap-1">
-                      {friend.open_to_collaborate && (
-                        <Badge variant="outline" className="text-xs py-0 px-1.5 gap-0.5 border-primary/30 text-primary">
-                          <Handshake className="w-3 h-3" />
-                          Open to collab
-                        </Badge>
-                      )}
-                      
                       {friend.instruments && friend.instruments.length > 0 && (
                         <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-0.5">
                           <Guitar className="w-3 h-3" />
