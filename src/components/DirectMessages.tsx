@@ -243,12 +243,11 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
   // Use layout effect to scroll before paint, preventing visual jump
   useLayoutEffect(() => {
     if (!isLoading && messages) {
-      // Scroll instantly before browser paints
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-      }
-      // Mark as ready to show content
-      setIsReady(true);
+      // Small delay to ensure content is rendered, then scroll to end ref
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ block: 'end' });
+        setIsReady(true);
+      });
     }
   }, [messages, isLoading]);
 
@@ -268,9 +267,9 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
   };
 
   return (
-    <Card className="p-0 bg-card border-border overflow-hidden flex flex-col max-h-[400px]">
-      {/* Header - sticky within the card */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 p-3 border-b border-border shrink-0 bg-card">
+    <div className="flex flex-col max-h-[60vh]">
+      {/* Header - sticky at top */}
+      <div className="flex items-center gap-3 p-3 border-b border-border shrink-0 bg-background">
         <button 
           onClick={onBack}
           className="flex items-center justify-center h-9 w-9 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors shrink-0"
@@ -290,11 +289,11 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages - scrollable area */}
       <div 
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto p-3 min-h-0"
-        style={{ visibility: isLoading || !isReady ? 'hidden' : 'visible' }}
+        style={{ opacity: isLoading || !isReady ? 0 : 1, transition: 'opacity 0.15s' }}
       >
         {isLoading ? (
           <div className="space-y-3">
@@ -328,7 +327,7 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
                 </div>
               );
             })}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} className="h-1" />
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground text-sm">
@@ -337,8 +336,8 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
         )}
       </div>
 
-      {/* Input */}
-      <div className="border-t border-border bg-card shrink-0">
+      {/* Input - fixed at bottom */}
+      <div className="border-t border-border bg-background shrink-0">
         <div className="flex items-end gap-2 p-3">
           <Textarea
             placeholder="Type a message..."
@@ -357,6 +356,6 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
