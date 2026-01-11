@@ -260,9 +260,13 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
     <Card className="p-0 bg-card border-border overflow-hidden flex flex-col max-h-[400px]">
       {/* Header */}
       <div className="flex items-center gap-3 p-3 border-b border-border shrink-0">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
+        <button 
+          onClick={onBack}
+          className="flex items-center justify-center h-9 w-9 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors shrink-0"
+          aria-label="Close conversation"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         <ClickableAvatar
           profileId={friend.id}
           avatar={friend.avatar}
