@@ -97,21 +97,39 @@ const NoteDetail = () => {
     deleteComment.mutate({ commentId, noteId: id });
   };
 
+  const handleBack = useCallback(() => {
+    if (fromFriends) {
+      navigate('/friends');
+    } else if (fromProject) {
+      navigate(`/projects/${fromProject}`);
+    } else if (fromGig) {
+      navigate(`/gigs/${fromGig}`);
+    } else {
+      navigate('/');
+    }
+  }, [fromFriends, fromProject, fromGig, navigate]);
+
+  // Sticky back button component - rendered outside PageBody for proper fixed positioning
+  const StickyBackButton = () => (
+    <div className="sticky top-12 z-40 bg-background py-2 -mx-4 px-4">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="h-9 w-9 bg-muted/50 hover:bg-muted"
+        onClick={handleBack}
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
+    </div>
+  );
+
   // Show skeleton with navigation while loading - don't block the UI
   if (isLoading) {
     return (
       <PageLayout>
         <PageBody>
-          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6 relative">
-            {/* Fixed back button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm border border-border"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
+            <StickyBackButton />
             {/* Note skeleton */}
             <div className="h-48 bg-card rounded-lg animate-pulse" />
             {/* Comments section skeleton */}
@@ -130,16 +148,8 @@ const NoteDetail = () => {
     return (
       <PageLayout>
         <PageBody>
-          <main className="container max-w-2xl mx-auto px-4 py-2 relative">
-            {/* Fixed back button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm border border-border"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+          <main className="container max-w-2xl mx-auto px-4 py-2">
+            <StickyBackButton />
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4">Note not found</p>
               <Button variant="outline" onClick={() => navigate('/')}>
@@ -156,29 +166,8 @@ const NoteDetail = () => {
   return (
     <PageLayout>
       <PageBody>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6 relative">
-          {/* Fixed back button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm border border-border"
-            onClick={() => {
-              // Use explicit navigation to avoid history stack issues
-              if (fromFriends) {
-                navigate('/friends');
-              } else if (fromProject) {
-                navigate(`/projects/${fromProject}`);
-              } else if (fromGig) {
-                navigate(`/gigs/${fromGig}`);
-              } else {
-                // Always go home - more reliable than navigate(-1) which can get stuck
-                // if mutations or other actions have affected history
-                navigate('/');
-              }
-            }}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
+          <StickyBackButton />
 
           <NoteCard 
             note={note} 
