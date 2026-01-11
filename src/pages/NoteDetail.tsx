@@ -120,9 +120,9 @@ const NoteDetail = () => {
     </button>
   );
 
-  // Spacer only needed on desktop for fixed button
+  // Spacer only needed on desktop for fixed button - minimal height
   const BackButtonSpacer = () => (
-    <div className="hidden md:block h-6" />
+    <div className="hidden md:block h-1" />
   );
 
   // Show skeleton with navigation while loading - don't block the UI
