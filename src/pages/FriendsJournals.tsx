@@ -111,7 +111,7 @@ const FriendsJournals = () => {
                 </DialogTrigger>
                 <DialogContent className="max-w-md" hideCloseButton={inChatView}>
                   {!inChatView && (
-                    <DialogHeader className="flex flex-row items-center justify-between pr-12">
+                    <DialogHeader className="flex flex-row items-center justify-between pr-12 space-y-0">
                       <DialogTitle className="flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-primary" />
                         Messages
