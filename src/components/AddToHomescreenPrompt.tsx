@@ -2,13 +2,18 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Smartphone, Share, Plus } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const HOMESCREEN_PROMPT_KEY = 'noteshare_homescreen_prompt_dismissed_v2';
 
 export function AddToHomescreenPrompt() {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Only show to logged-in users
+    if (!user) return;
+
     // Check if already dismissed - use a versioned key to ensure it's only shown once
     const alreadyDismissed = localStorage.getItem(HOMESCREEN_PROMPT_KEY);
     if (alreadyDismissed === 'true') return;
@@ -28,7 +33,7 @@ export function AddToHomescreenPrompt() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [user]);
 
   const handleClose = () => {
     localStorage.setItem(HOMESCREEN_PROMPT_KEY, 'true');
