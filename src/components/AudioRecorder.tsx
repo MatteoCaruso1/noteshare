@@ -17,12 +17,16 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const dataIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+      }
+      if (dataIntervalRef.current) {
+        clearInterval(dataIntervalRef.current);
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -143,10 +147,14 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
       };
 
       mediaRecorder.onstop = () => {
-        console.log('[AudioRecorder] onstop, chunks:', chunksRef.current.length);
+        console.log('[AudioRecorder] onstop, chunks:', chunksRef.current.length, 'total size:', chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0));
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
+        }
+        if (dataIntervalRef.current) {
+          clearInterval(dataIntervalRef.current);
+          dataIntervalRef.current = null;
         }
         
         audioManager.setRecording(false);
@@ -176,6 +184,10 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
           clearInterval(timerRef.current);
           timerRef.current = null;
         }
+        if (dataIntervalRef.current) {
+          clearInterval(dataIntervalRef.current);
+          dataIntervalRef.current = null;
+        }
         audioManager.setRecording(false);
         toast.error('Recording failed. Please try again.');
         if (streamRef.current) {
@@ -187,9 +199,21 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
         setElapsedTime(0);
       };
 
-      // Safari has issues with timeslice - don't use it on Safari
+      // Safari has issues with timeslice - use requestData() periodically instead
       if (isSafari()) {
         mediaRecorder.start();
+        // For Safari, periodically request data to avoid losing long recordings
+        // requestData() forces ondataavailable to fire with current data
+        dataIntervalRef.current = setInterval(() => {
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            try {
+              mediaRecorderRef.current.requestData();
+              console.log('[AudioRecorder] Safari: requested data chunk');
+            } catch (e) {
+              console.warn('[AudioRecorder] requestData failed:', e);
+            }
+          }
+        }, 5000); // Request data every 5 seconds
       } else {
         // Use timeslice to get data more frequently (helps with screen lock scenarios)
         mediaRecorder.start(1000);
