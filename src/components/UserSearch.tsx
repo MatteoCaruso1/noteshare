@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles, Music, Handshake } from 'lucide-react';
 import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians, SuggestionReason } from '@/hooks/useFriendships';
@@ -181,19 +182,21 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
         />
       </div>
 
-      {/* Initial hint when not searching */}
-      {!showSearchResults && !showSuggestions && !suggestionsLoading && (
-        <div className="mt-4 text-center py-6">
-          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-          <p className="text-sm text-muted-foreground">
-            Search for musicians to add as friends
-          </p>
-        </div>
-      )}
+      {/* Stable height container for content below search */}
+      <div className="min-h-[120px]">
+        {/* Initial hint when not searching */}
+        {!showSearchResults && !showSuggestions && !suggestionsLoading && (
+          <div className="mt-4 text-center py-6 animate-fade-in">
+            <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">
+              Search for musicians to add as friends
+            </p>
+          </div>
+        )}
       
       {/* Suggested Musicians (when focused but no search query) */}
       {showSuggestions && (
-        <div className="mt-3 p-3 bg-secondary/20 rounded-lg border border-border">
+        <div className="mt-3 p-3 bg-secondary/20 rounded-lg border border-border animate-fade-in">
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Suggested for you</span>
@@ -237,21 +240,44 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
         </div>
       )}
 
-      {/* Loading suggestions */}
+      {/* Loading suggestions - skeleton with stable height */}
       {isFocused && query.length < 2 && suggestionsLoading && (
-        <div className="mt-3 p-4 bg-secondary/20 rounded-lg border border-border">
-          <div className="text-center text-muted-foreground text-sm">
-            Finding suggestions...
+        <div className="mt-3 p-3 bg-secondary/20 rounded-lg border border-border animate-fade-in">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+            <Skeleton className="w-4 h-4 rounded" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-3 p-2">
+                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+                <Skeleton className="h-7 w-14 rounded" />
+              </div>
+            ))}
           </div>
         </div>
       )}
 
       {/* Search Results */}
       {showSearchResults && (
-        <div className="mt-3 p-2 bg-secondary/20 rounded-lg border border-border max-h-[350px] overflow-y-auto">
+        <div className="mt-3 p-2 bg-secondary/20 rounded-lg border border-border max-h-[350px] overflow-y-auto animate-fade-in">
           {isLoading ? (
-            <div className="py-4 text-center text-muted-foreground text-sm">
-              Searching...
+            <div className="space-y-2 p-1">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 py-3 px-2">
+                  <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-24 rounded" />
+                </div>
+              ))}
             </div>
           ) : searchResults && searchResults.length > 0 ? (
             <div className="divide-y divide-border">
@@ -288,6 +314,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { useFriends } from '@/hooks/useFriendships';
 import { Users, Music, Handshake, Guitar, Flame } from 'lucide-react';
@@ -49,12 +50,28 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
         </DialogHeader>
         
         <ScrollArea className="max-h-[60vh]">
-          {isLoading ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">
-              Loading friends...
-            </div>
-          ) : friends && friends.length > 0 ? (
-            <div className="space-y-2 pr-2">
+          <div className="min-h-[200px]">
+            {isLoading ? (
+              <div className="space-y-2 pr-2 animate-fade-in">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border">
+                    <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-8" />
+                      </div>
+                      <Skeleton className="h-3 w-20" />
+                      <div className="flex gap-1">
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : friends && friends.length > 0 ? (
+            <div className="space-y-2 pr-2 animate-fade-in">
               {friends.map((friend) => (
                 <div
                   key={friend.id}
@@ -108,7 +125,7 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center">
+            <div className="py-8 text-center animate-fade-in">
               <Users className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-sm text-muted-foreground">No friends yet</p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -116,6 +133,7 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
               </p>
             </div>
           )}
+          </div>
         </ScrollArea>
       </DialogContent>
     </Dialog>
