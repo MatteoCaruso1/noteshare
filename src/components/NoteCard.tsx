@@ -510,7 +510,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             <RichTextContent 
               content={note.text_content} 
               className={`${(note.audio_files.length > 0 || note.image_files.length > 0 || note.focus_text_snapshot) ? 'mb-3' : ''}`}
-              lineClamp={!expanded ? 3 : undefined}
+              lineClamp={!expanded ? 8 : undefined}
+              onShowMore={!expanded ? handleNavigateToNote : undefined}
             />
           )}
 

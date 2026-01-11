@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { ExternalLink, Youtube, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -6,6 +6,7 @@ interface RichTextContentProps {
   content: string;
   className?: string;
   lineClamp?: number;
+  onShowMore?: () => void;
 }
 
 // Regex to match URLs
@@ -178,8 +179,10 @@ function extractTextFromHtml(html: string): string {
   return div.textContent || div.innerText || '';
 }
 
-export function RichTextContent({ content, className = '', lineClamp }: RichTextContentProps) {
+export function RichTextContent({ content, className = '', lineClamp, onShowMore }: RichTextContentProps) {
   const isHtml = useMemo(() => isHtmlContent(content), [content]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
   
   // Extract URLs from content (works for both plain text and HTML)
   const urls = useMemo(() => {
@@ -193,18 +196,38 @@ export function RichTextContent({ content, className = '', lineClamp }: RichText
     [urls]
   );
 
-  // Use responsive line clamping: shorter on mobile, longer on desktop
-  // When lineClamp is specified, use 4 lines on mobile and 6 on desktop
-  const lineClampClass = lineClamp ? 'line-clamp-4 sm:line-clamp-6' : '';
+  // Use 8 line clamp for both mobile and desktop when lineClamp is specified
+  const lineClampClass = lineClamp ? 'line-clamp-[8]' : '';
+
+  // Check if content is truncated
+  useEffect(() => {
+    if (contentRef.current && lineClamp) {
+      const element = contentRef.current;
+      setIsTruncated(element.scrollHeight > element.clientHeight);
+    }
+  }, [content, lineClamp]);
 
   // For HTML content (from TipTap), render as HTML
   if (isHtml) {
     return (
       <div className={className}>
         <div 
+          ref={contentRef}
           className={`text-sm prose prose-sm prose-invert max-w-none ${lineClampClass}`}
           dangerouslySetInnerHTML={{ __html: content }}
         />
+        {/* Show more link - X style */}
+        {lineClamp && isTruncated && onShowMore && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowMore();
+            }}
+            className="text-sm text-primary hover:underline mt-1 block"
+          >
+            Show more
+          </button>
+        )}
         {/* Show previews below the text */}
         {previewUrls.map((url, i) => (
           <LinkPreview key={`preview-${i}`} url={url} />
@@ -242,9 +265,21 @@ export function RichTextContent({ content, className = '', lineClamp }: RichText
 
   return (
     <div className={className}>
-      <p className={`text-sm whitespace-pre-wrap ${lineClampClass}`}>
+      <p ref={contentRef} className={`text-sm whitespace-pre-wrap ${lineClampClass}`}>
         {elements}
       </p>
+      {/* Show more link - X style */}
+      {lineClamp && isTruncated && onShowMore && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onShowMore();
+          }}
+          className="text-sm text-primary hover:underline mt-1 block"
+        >
+          Show more
+        </button>
+      )}
       {/* Show previews below the text */}
       {previewUrls.map((url, i) => (
         <LinkPreview key={`preview-${i}`} url={url} />
