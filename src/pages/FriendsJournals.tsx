@@ -109,9 +109,9 @@ const FriendsJournals = () => {
                     )}
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-md" hideCloseButton>
+                <DialogContent className="max-w-md" hideCloseButton={inChatView}>
                   {!inChatView && (
-                    <DialogHeader className="flex flex-row items-center justify-between space-y-0">
+                    <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-10">
                       <DialogTitle className="flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-primary" />
                         Messages
@@ -122,23 +122,13 @@ const FriendsJournals = () => {
                         )}
                       </DialogTitle>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setShowNewMessageView(true)}
-                          className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
-                          title="New message"
-                        >
-                          <PenSquare className="w-4 h-4" />
-                        </button>
-                        <DialogClose asChild>
-                          <button
-                            className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
-                            aria-label="Close"
-                          >
-                            <span className="text-lg leading-none">×</span>
-                          </button>
-                        </DialogClose>
-                      </div>
+                      <button
+                        onClick={() => setShowNewMessageView(true)}
+                        className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                        title="New message"
+                      >
+                        <PenSquare className="w-4 h-4" />
+                      </button>
                     </DialogHeader>
                   )}
 
