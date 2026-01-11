@@ -8,7 +8,7 @@ import { useUpdateNoteTags } from '@/hooks/useUpdateNote';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { BottomNav } from '@/components/BottomNav';
-import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
+import { PageLayout, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 
 import { Button } from '@/components/ui/button';
@@ -101,20 +101,17 @@ const NoteDetail = () => {
   if (isLoading) {
     return (
       <PageLayout>
-        <PageHeader>
-            <header className="sticky top-0 z-40 bg-background">
-            <div className="container max-w-2xl mx-auto px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <h1 className="text-lg font-semibold">Note</h1>
-              </div>
-            </div>
-          </header>
-        </PageHeader>
         <PageBody>
-          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
+          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6 relative">
+            {/* Fixed back button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm border border-border"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             {/* Note skeleton */}
             <div className="h-48 bg-card rounded-lg animate-pulse" />
             {/* Comments section skeleton */}
@@ -132,20 +129,17 @@ const NoteDetail = () => {
   if (!note) {
     return (
       <PageLayout>
-        <PageHeader>
-          <header className="sticky top-0 z-40 bg-background">
-            <div className="container max-w-2xl mx-auto px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <h1 className="text-lg font-semibold">Note</h1>
-              </div>
-            </div>
-          </header>
-        </PageHeader>
         <PageBody>
-          <main className="container max-w-2xl mx-auto px-4 py-2">
+          <main className="container max-w-2xl mx-auto px-4 py-2 relative">
+            {/* Fixed back button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm border border-border"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4">Note not found</p>
               <Button variant="outline" onClick={() => navigate('/')}>
@@ -161,38 +155,31 @@ const NoteDetail = () => {
 
   return (
     <PageLayout>
-      <PageHeader>
-        <header className="sticky top-0 z-40 bg-background">
-          <div className="container max-w-2xl mx-auto px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => {
-                  // Use explicit navigation to avoid history stack issues
-                  if (fromFriends) {
-                    navigate('/friends');
-                  } else if (fromProject) {
-                    navigate(`/projects/${fromProject}`);
-                  } else if (fromGig) {
-                    navigate(`/gigs/${fromGig}`);
-                  } else {
-                    // Always go home - more reliable than navigate(-1) which can get stuck
-                    // if mutations or other actions have affected history
-                    navigate('/');
-                  }
-                }}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <h1 className="text-lg font-semibold">Note</h1>
-            </div>
-          </div>
-        </header>
-      </PageHeader>
-
       <PageBody>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6">
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-6 relative">
+          {/* Fixed back button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm shadow-sm border border-border"
+            onClick={() => {
+              // Use explicit navigation to avoid history stack issues
+              if (fromFriends) {
+                navigate('/friends');
+              } else if (fromProject) {
+                navigate(`/projects/${fromProject}`);
+              } else if (fromGig) {
+                navigate(`/gigs/${fromGig}`);
+              } else {
+                // Always go home - more reliable than navigate(-1) which can get stuck
+                // if mutations or other actions have affected history
+                navigate('/');
+              }
+            }}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+
           <NoteCard 
             note={note} 
             expanded 
