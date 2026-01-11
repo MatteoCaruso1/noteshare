@@ -1,5 +1,6 @@
-import { ReactNode, useEffect, useState, useRef } from 'react';
+import { ReactNode, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { getSavedScrollPosition } from '@/hooks/useScrollRestoration';
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -75,13 +76,56 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
   );
 }
 
+// Map route paths to scroll restoration keys
+function getScrollKeyForPath(pathname: string): string | null {
+  if (pathname === '/') return 'home-timeline';
+  if (pathname === '/friends') return 'friends-timeline';
+  if (pathname === '/projects') return 'projects';
+  if (pathname === '/working-toward') return 'working-toward';
+  return null;
+}
+
 /**
  * PageLayout - Wrapper for page content.
- * Does not animate itself - nav bars remain outside this component.
+ * Handles preventing header flash when restoring scroll position.
  */
 export function PageLayout({ children }: PageLayoutProps) {
+  const location = useLocation();
+  const [isReady, setIsReady] = useState(false);
+  const hasAppliedScroll = useRef(false);
+  
+  // Check if we need to restore scroll position before first paint
+  useLayoutEffect(() => {
+    const scrollKey = getScrollKeyForPath(location.pathname);
+    const savedScrollY = scrollKey ? getSavedScrollPosition(scrollKey) : null;
+    
+    if (savedScrollY && savedScrollY > 100 && !hasAppliedScroll.current) {
+      // We have a significant scroll position to restore
+      // Apply it immediately and then show content
+      hasAppliedScroll.current = true;
+      window.scrollTo({ top: savedScrollY, left: 0, behavior: 'auto' });
+      // Show content after scroll is applied
+      requestAnimationFrame(() => {
+        setIsReady(true);
+      });
+    } else {
+      // No scroll to restore or already at top, show immediately
+      setIsReady(true);
+    }
+  }, [location.pathname]);
+
+  // Reset when route changes
+  useEffect(() => {
+    hasAppliedScroll.current = false;
+  }, [location.pathname]);
+
   return (
-    <div className="min-h-screen bg-background pb-20 pt-12">
+    <div 
+      className="min-h-screen bg-background pb-20 pt-12"
+      style={{
+        visibility: isReady ? 'visible' : 'hidden',
+      }}
+    >
       {children}
     </div>
   );
