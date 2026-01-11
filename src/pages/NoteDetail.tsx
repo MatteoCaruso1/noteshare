@@ -109,29 +109,30 @@ const NoteDetail = () => {
     }
   }, [fromFriends, fromProject, fromGig, navigate]);
 
-  // Fixed back button - stays locked in place
-  const FixedBackButton = () => (
+  // Back button - static on mobile, fixed on desktop
+  const BackButton = () => (
     <button 
       onClick={handleBack}
-      className="fixed top-14 left-4 z-40 flex items-center justify-center h-7 w-7 rounded-md bg-muted/80 hover:bg-muted text-foreground transition-colors"
+      className="md:fixed md:top-14 md:left-4 z-40 flex items-center justify-center h-7 w-7 rounded-md bg-muted/80 hover:bg-muted text-foreground transition-colors"
       aria-label="Go back"
     >
       <ArrowLeft className="w-4 h-4" />
     </button>
   );
 
-  // Spacer to account for fixed back button area
+  // Spacer only needed on desktop for fixed button
   const BackButtonSpacer = () => (
-    <div className="h-6" />
+    <div className="hidden md:block h-6" />
   );
 
   // Show skeleton with navigation while loading - don't block the UI
   if (isLoading) {
     return (
       <PageLayout>
-        <FixedBackButton />
+        <div className="hidden md:block"><BackButton /></div>
         <PageBody>
           <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
+            <div className="md:hidden"><BackButton /></div>
             <BackButtonSpacer />
             {/* Note skeleton */}
             <div className="h-48 bg-card rounded-lg animate-pulse" />
@@ -150,9 +151,10 @@ const NoteDetail = () => {
   if (!note) {
     return (
       <PageLayout>
-        <FixedBackButton />
+        <div className="hidden md:block"><BackButton /></div>
         <PageBody>
           <main className="container max-w-2xl mx-auto px-4 py-2">
+            <div className="md:hidden mb-3"><BackButton /></div>
             <BackButtonSpacer />
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4">Note not found</p>
@@ -169,9 +171,10 @@ const NoteDetail = () => {
 
   return (
     <PageLayout>
-      <FixedBackButton />
+      <div className="hidden md:block"><BackButton /></div>
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
+          <div className="md:hidden"><BackButton /></div>
           <BackButtonSpacer />
 
           <NoteCard 
