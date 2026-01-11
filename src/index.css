@@ -197,12 +197,19 @@
 
   html {
     scroll-behavior: smooth;
-    scrollbar-gutter: stable;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    overflow-y: scroll;
+  }
+  
+  /* Prevent layout shift when dialogs open by reserving scrollbar space */
+  html[data-scroll-locked], 
+  body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
   }
 
   /* Fix stuck hover states on touch devices (iOS Safari) */
