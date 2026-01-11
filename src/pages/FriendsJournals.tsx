@@ -15,7 +15,7 @@ import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { useConversations } from '@/hooks/useMessages';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Bell, MessageCircle, PenSquare, UserPlus } from 'lucide-react';
+import { Users, Bell, MessageCircle, PenSquare, UserPlus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -109,9 +109,9 @@ const FriendsJournals = () => {
                     )}
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-md" hideCloseButton={inChatView}>
+                <DialogContent className="max-w-md" hideCloseButton>
                   {!inChatView && (
-                    <DialogHeader className="flex flex-row items-center justify-between space-y-0 pr-10">
+                    <DialogHeader className="flex flex-row items-center justify-between space-y-0">
                       <DialogTitle className="flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-primary" />
                         Messages
@@ -122,13 +122,23 @@ const FriendsJournals = () => {
                         )}
                       </DialogTitle>
 
-                      <button
-                        onClick={() => setShowNewMessageView(true)}
-                        className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
-                        title="New message"
-                      >
-                        <PenSquare className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setShowNewMessageView(true)}
+                          className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                          title="New message"
+                        >
+                          <PenSquare className="w-4 h-4" />
+                        </button>
+                        <DialogClose asChild>
+                          <button
+                            className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                            aria-label="Close"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </DialogClose>
+                      </div>
                     </DialogHeader>
                   )}
 
