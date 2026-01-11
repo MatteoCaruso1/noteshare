@@ -32,6 +32,7 @@ const FriendsJournals = () => {
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [showNewMessageView, setShowNewMessageView] = useState(false);
   const [addFriendOpen, setAddFriendOpen] = useState(false);
+  const [inChatView, setInChatView] = useState(false);
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
@@ -93,7 +94,10 @@ const FriendsJournals = () => {
               {/* Messages Button */}
               <Dialog open={messagesOpen} onOpenChange={(open) => {
                 setMessagesOpen(open);
-                if (!open) setShowNewMessageView(false);
+                if (!open) {
+                  setShowNewMessageView(false);
+                  setInChatView(false);
+                }
               }}>
                 <DialogTrigger asChild>
                   <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
@@ -106,29 +110,32 @@ const FriendsJournals = () => {
                   </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
-                  <DialogHeader className="flex flex-row items-center justify-between pr-12">
-                    <DialogTitle className="flex items-center gap-2">
-                      <MessageCircle className="w-5 h-5 text-primary" />
-                      Messages
-                      {unreadMessagesCount > 0 && (
-                        <Badge className="ml-2 bg-destructive text-destructive-foreground">
-                          {unreadMessagesCount}
-                        </Badge>
-                      )}
-                    </DialogTitle>
-                    <button
-                      onClick={() => setShowNewMessageView(true)}
-                      className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
-                      title="New message"
-                    >
-                      <PenSquare className="w-4 h-4" />
-                    </button>
-                  </DialogHeader>
+                  {!inChatView && (
+                    <DialogHeader className="flex flex-row items-center justify-between pr-12">
+                      <DialogTitle className="flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5 text-primary" />
+                        Messages
+                        {unreadMessagesCount > 0 && (
+                          <Badge className="ml-2 bg-destructive text-destructive-foreground">
+                            {unreadMessagesCount}
+                          </Badge>
+                        )}
+                      </DialogTitle>
+                      <button
+                        onClick={() => setShowNewMessageView(true)}
+                        className="flex items-center justify-center h-8 w-8 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                        title="New message"
+                      >
+                        <PenSquare className="w-4 h-4" />
+                      </button>
+                    </DialogHeader>
+                  )}
                   <ScrollArea className="max-h-[60vh]">
                     <DirectMessages 
                       embedded 
                       showNewMessageView={showNewMessageView}
                       onNewMessageViewChange={setShowNewMessageView}
+                      onInChatViewChange={setInChatView}
                     />
                   </ScrollArea>
                 </DialogContent>
