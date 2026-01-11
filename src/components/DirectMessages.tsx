@@ -16,9 +16,10 @@ interface DirectMessagesProps {
   embedded?: boolean;
   showNewMessageView?: boolean;
   onNewMessageViewChange?: (show: boolean) => void;
+  onInChatViewChange?: (inChat: boolean) => void;
 }
 
-export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange }: DirectMessagesProps = {}) {
+export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange, onInChatViewChange }: DirectMessagesProps = {}) {
   const { profile } = useAuth();
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: friends } = useFriends();
@@ -28,6 +29,11 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
   // Use external control if provided, otherwise internal state
   const showNewMessage = showNewMessageView !== undefined ? showNewMessageView : internalShowNewMessage;
   const setShowNewMessage = onNewMessageViewChange || setInternalShowNewMessage;
+
+  // Notify parent when entering/leaving chat view
+  useEffect(() => {
+    onInChatViewChange?.(!!selectedFriend);
+  }, [selectedFriend, onInChatViewChange]);
 
   if (selectedFriend) {
     return (
@@ -263,8 +269,8 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
 
   return (
     <Card className="p-0 bg-card border-border overflow-hidden flex flex-col max-h-[400px]">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-3 border-b border-border shrink-0">
+      {/* Header - sticky within the card */}
+      <div className="sticky top-0 z-10 flex items-center gap-3 p-3 border-b border-border shrink-0 bg-card">
         <button 
           onClick={onBack}
           className="flex items-center justify-center h-9 w-9 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors shrink-0"
