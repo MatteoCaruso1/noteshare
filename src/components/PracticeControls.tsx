@@ -664,29 +664,26 @@ export function PracticeControls() {
                 iconOnly
               />
 
-              {/* Wake Lock toggle - custom implementation for iOS touch handling */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
-                    aria-pressed={wakeLockEnabled}
-                    onClick={toggleWakeLock}
-                    className={`
-                      h-8 w-8 inline-flex items-center justify-center rounded-md
-                      transition-colors touch-manipulation select-none
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                      ${wakeLockEnabled 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-transparent text-muted-foreground [@media(hover:hover)]:hover:bg-muted/50"
-                      }
-                    `}
-                  >
-                    <LockOpen className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Keep screen unlocked</TooltipContent>
-              </Tooltip>
+              {/* Wake Lock toggle - touch-friendly without tooltip on mobile */}
+              <button
+                type="button"
+                aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
+                aria-pressed={wakeLockEnabled}
+                onClick={toggleWakeLock}
+                className={`
+                  h-8 w-8 inline-flex items-center justify-center rounded-md
+                  transition-colors touch-manipulation select-none
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                  active:opacity-80
+                  ${wakeLockEnabled 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-transparent text-muted-foreground hover:bg-muted/50"
+                  }
+                `}
+                title="Keep screen unlocked"
+              >
+                <LockOpen className="w-4 h-4" />
+              </button>
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
