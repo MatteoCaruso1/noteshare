@@ -49,8 +49,9 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[60vh]">
-          <div className="min-h-[200px]">
+        <div className="border-t border-border">
+          <ScrollArea className="max-h-[60vh]">
+            <div className="min-h-[200px] py-3">
             {isLoading ? (
               <div className="space-y-2 pr-2 animate-fade-in">
                 {[1, 2, 3].map((i) => (
@@ -126,8 +127,9 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
               </p>
             </div>
           )}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
