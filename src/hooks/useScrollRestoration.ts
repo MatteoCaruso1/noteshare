@@ -10,10 +10,25 @@ const storedStates = new Map<string, StoredState>();
 // Track which keys have been cleared (reset on next hook mount)
 const clearedKeys = new Set<string>();
 
+// Track if we're in the process of restoring scroll (global for PageLayout to use)
+let isRestoringScroll = false;
+export function getIsRestoringScroll() {
+  return isRestoringScroll;
+}
+
 // Clear saved state for a route (used when navigating via nav bar)
 export function clearScrollState(key: string) {
   storedStates.delete(key);
   clearedKeys.add(key);
+}
+
+// Get the saved scroll position for a key (used for instant restore)
+export function getSavedScrollPosition(key: string): number | null {
+  const saved = storedStates.get(key);
+  if (saved && saved.scrollY > 0 && !clearedKeys.has(key)) {
+    return saved.scrollY;
+  }
+  return null;
 }
 
 export function useScrollRestoration(key: string, initialDisplayCount: number = 10) {
@@ -44,14 +59,15 @@ export function useScrollRestoration(key: string, initialDisplayCount: number = 
     const currentSavedState = storedStates.get(key);
     if (currentSavedState && currentSavedState.scrollY > 0) {
       isRestoring.current = true;
-      // Small delay to allow content to render with restored displayCount
+      isRestoringScroll = true;
+      
+      // Apply scroll immediately (synchronously before paint)
+      window.scrollTo({ top: currentSavedState.scrollY, left: 0, behavior: 'auto' });
+      
+      // Mark restoration complete after a frame
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: currentSavedState.scrollY, left: 0, behavior: 'auto' });
-          setTimeout(() => {
-            isRestoring.current = false;
-          }, 50);
-        });
+        isRestoring.current = false;
+        isRestoringScroll = false;
       });
     }
   }, [key, wasCleared]);
