@@ -50,7 +50,7 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
         </DialogHeader>
         
         <div className="border-y border-border">
-          <ScrollArea className="max-h-[60vh]">
+          <ScrollArea className="h-[60vh]">
             <div className="min-h-[200px] py-3 pr-2">
               {isLoading ? (
                 <div className="space-y-2 animate-fade-in">
