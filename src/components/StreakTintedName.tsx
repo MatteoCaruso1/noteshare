@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { getStreakTier } from '@/lib/streakUtils';
 import { cn } from '@/lib/utils';
-import { Trophy } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TrophyBadge } from '@/components/shared/TrophyBadge';
 
 interface StreakTintedNameProps {
   name: string;
@@ -26,27 +26,18 @@ export const StreakTintedName = memo(function StreakTintedName({
   // Calculate display count - if at or above tier, show at least 1
   const dbCount = achievementCount || 0;
   const displayCount = streakDays >= tier.minDays ? Math.max(dbCount, 1) : dbCount;
-  const showCount = displayCount > 0;
-  const countText = displayCount > 99 ? '99+' : displayCount;
+  const showBadge = tier.tier !== 'none';
   
-  const badge = tier.tier === 'none' ? null : (
+  const badge = !showBadge ? null : (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex cursor-default relative">
-            <Trophy className={`w-3.5 h-3.5 ${tier.colorClass} opacity-80`} />
-            {showCount && (
-              <span 
-                className={`absolute inset-0 flex items-center justify-center text-[6px] font-bold ${tier.colorClass}`}
-                style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-2px', marginLeft: '-0.5px' }}
-              >
-                {countText}
-              </span>
-            )}
+          <span className="inline-flex cursor-default">
+            <TrophyBadge tier={tier} count={displayCount} />
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
-          {tier.minDays}+ day streak{showCount ? ` (${displayCount}x)` : ''}
+          {tier.minDays}+ day streak{displayCount > 0 ? ` (${displayCount}x)` : ''}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
