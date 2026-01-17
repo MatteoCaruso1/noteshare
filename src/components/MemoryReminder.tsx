@@ -110,10 +110,10 @@ export const MemoryReminder = memo(function MemoryReminder() {
       {memories.map(({ note, label }) => (
         <Card key={note.id} className="p-4 border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10">
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="secondary" className="text-xs">
-              <Clock className="w-3 h-3 mr-1" />
-              {label}
-            </Badge>
+          <Badge variant="secondary" className="text-xs select-none cursor-default">
+            <Clock className="w-3 h-3 mr-1" />
+            {label}
+          </Badge>
           </div>
           {note.text_content && (
             <p className="text-sm whitespace-pre-wrap">{note.text_content}</p>
