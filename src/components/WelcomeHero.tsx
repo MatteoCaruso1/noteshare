@@ -86,16 +86,17 @@ export function WelcomeHero() {
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6">
           Noteshare is a purpose-built tool to help musicians practice smarter
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 leading-relaxed">
+        <p className="text-lg md:text-xl text-gray-500 max-w-2xl mb-8 leading-relaxed">
           Organize, record, and share your practice. Manage your musical life, all in one place
         </p>
         <div className="flex items-center gap-4">
           <Button
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02]"
+            className="relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02] group"
             onClick={handleStartPracticing}
           >
-            Start practicing
+            <span className="relative z-10">Start practicing</span>
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out animate-glint" />
           </Button>
         </div>
       </main>
