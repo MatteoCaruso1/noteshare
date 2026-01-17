@@ -176,40 +176,40 @@ const NoteDetail = () => {
           />
 
           {/* Comments Section */}
-          <section>
+          <section className="space-y-3">
             {/* Comment Input */}
             {profile && (
-              <div className="flex items-center gap-3 py-3 border-t border-border">
-                <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarImage src={profile.avatar || ''} />
-                  <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <MentionInput
-                    placeholder="Post your reply"
-                    value={newComment}
-                    onChange={setNewComment}
-                    rows={1}
-                    className="resize-none text-sm min-h-[36px] bg-transparent border-0 focus-visible:ring-0 px-0"
-                  />
+              <Card className="p-4 bg-background text-foreground border-border">
+                <div className="flex gap-3">
+                  <Avatar className="w-8 h-8 flex-shrink-0">
+                    <AvatarImage src={profile.avatar || ''} />
+                    <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 flex items-center gap-2">
+                    <MentionInput
+                      placeholder="Post a comment"
+                      value={newComment}
+                      onChange={setNewComment}
+                      rows={1}
+                      className="resize-none text-sm min-h-[36px] bg-transparent border-0 focus-visible:ring-0 px-0 flex-1"
+                    />
+                    <VoiceReplyButton
+                      noteId={id!}
+                      authorId={profile.id}
+                      noteOwnerId={note?.author_id || ''}
+                      onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
+                    />
+                    <Button
+                      size="sm"
+                      className="h-8 px-4 rounded-full bg-muted hover:bg-muted/80 text-foreground"
+                      onClick={handleAddComment}
+                      disabled={createComment.isPending || !newComment.trim()}
+                    >
+                      Reply
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <VoiceReplyButton
-                    noteId={id!}
-                    authorId={profile.id}
-                    noteOwnerId={note?.author_id || ''}
-                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
-                  />
-                  <Button
-                    size="sm"
-                    className="h-8 px-4 rounded-full bg-muted hover:bg-muted/80 text-foreground"
-                    onClick={handleAddComment}
-                    disabled={createComment.isPending || !newComment.trim()}
-                  >
-                    Reply
-                  </Button>
-                </div>
-              </div>
+              </Card>
             )}
 
             {/* Comments List */}
