@@ -9,7 +9,7 @@ export function LandingTestimonial() {
           <p className="text-gray-500 text-lg leading-relaxed">
             "Using Noteshare has greatly improved my musical life. The quality of my practice has skyrocketed"
             <span className="block mt-3 text-muted-foreground text-base text-right">
-              Toronto Jazz Pianist
+              Toronto Professional Jazz Pianist
             </span>
           </p>
         </div>
