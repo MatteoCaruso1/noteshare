@@ -16,8 +16,21 @@ interface VoiceReplyButtonProps {
   onSuccess: () => void;
 }
 
+// Detect Safari browser for special handling
+function isSafari(): boolean {
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.includes('safari') && !ua.includes('chrome') && !ua.includes('chromium');
+}
+
 // Get supported mime type for mobile compatibility
 function getSupportedMimeType(): string {
+  // Safari works best with mp4
+  if (isSafari()) {
+    if (MediaRecorder.isTypeSupported('audio/mp4')) return 'audio/mp4';
+    // Safari might not report support correctly, try without specifying
+    return '';
+  }
+  
   const types = [
     'audio/webm;codecs=opus',
     'audio/webm',
@@ -68,27 +81,42 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Ref for Safari's requestData interval
+  const safariIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const startRecording = async () => {
     try {
       // Pause any playing audio before recording
       audioManager.pauseAll();
       audioManager.setRecording(true);
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        }
-      });
+      const safari = isSafari();
       
+      // Safari works better with simpler audio constraints
+      const audioConstraints = safari 
+        ? true 
+        : {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          };
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       streamRef.current = stream;
       
       const mimeType = getSupportedMimeType();
-      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
       
-      const mediaRecorder = new MediaRecorder(stream, options);
-      console.log('[VoiceReplyButton] Using mimeType:', mediaRecorder.mimeType || mimeType);
+      // Safari sometimes fails with options, so try without if needed
+      let mediaRecorder: MediaRecorder;
+      try {
+        const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        console.warn('[VoiceReplyButton] MediaRecorder with options failed, trying without:', e);
+        mediaRecorder = new MediaRecorder(stream);
+      }
+      
+      console.log('[VoiceReplyButton] Using mimeType:', mediaRecorder.mimeType || mimeType, 'Safari:', safari);
       
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -112,6 +140,10 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
+        }
+        if (safariIntervalRef.current) {
+          clearInterval(safariIntervalRef.current);
+          safariIntervalRef.current = null;
         }
         
         audioManager.setRecording(false);
@@ -139,6 +171,10 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
           clearInterval(timerRef.current);
           timerRef.current = null;
         }
+        if (safariIntervalRef.current) {
+          clearInterval(safariIntervalRef.current);
+          safariIntervalRef.current = null;
+        }
         audioManager.setRecording(false);
         toast.error('Recording failed. Please try again.');
         if (streamRef.current) {
@@ -148,13 +184,28 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
         setIsRecording(false);
       };
 
-      // Use timeslice to get data more frequently (helps with screen lock)
-      mediaRecorder.start(1000);
+      // Safari doesn't support timeslice well, use requestData interval instead
+      if (safari) {
+        mediaRecorder.start();
+        safariIntervalRef.current = setInterval(() => {
+          if (mediaRecorder.state === 'recording') {
+            mediaRecorder.requestData();
+          }
+        }, 1000);
+      } else {
+        // Use timeslice to get data more frequently (helps with screen lock)
+        mediaRecorder.start(1000);
+      }
+      
       setIsRecording(true);
     } catch (error) {
       console.error('[VoiceReplyButton] Error starting recording:', error);
       audioManager.setRecording(false);
-      toast.error('Could not access microphone. Please check permissions.');
+      if (error instanceof Error && error.name === 'NotAllowedError') {
+        toast.error('Microphone access denied. Please allow microphone permissions.');
+      } else {
+        toast.error('Could not access microphone. Please check permissions.');
+      }
     }
   };
 
@@ -174,6 +225,18 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
 
     setIsUploading(true);
     try {
+      // Get the user's profile ID for the correct upload path
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', authorId)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('[VoiceReplyButton] Could not fetch profile:', profileError);
+        throw new Error('Could not find user profile');
+      }
+
       // Determine file extension from mime type
       const mimeType = audioBlob.type;
       let ext = 'webm';
@@ -181,22 +244,32 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
       else if (mimeType.includes('ogg')) ext = 'ogg';
       else if (mimeType.includes('wav')) ext = 'wav';
       
-      // Upload audio to storage
+      // Upload audio to storage with correct path structure: {profileId}/voice-replies/{filename}
       const fileName = `voice-reply-${Date.now()}.${ext}`;
+      const uploadPath = `${profile.id}/voice-replies/${fileName}`;
+      
+      console.log('[VoiceReplyButton] Uploading to path:', uploadPath);
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('practice-media')
-        .upload(`voice-replies/${fileName}`, audioBlob, {
+        .upload(uploadPath, audioBlob, {
           contentType: mimeType,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('[VoiceReplyButton] Upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
 
       // Get signed URL for private bucket
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('practice-media')
         .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7); // 7 day expiry
 
-      if (signedUrlError) throw signedUrlError;
+      if (signedUrlError) {
+        console.error('[VoiceReplyButton] Signed URL error:', signedUrlError);
+        throw new Error(`Could not get signed URL: ${signedUrlError.message}`);
+      }
 
       // Create comment with audio - use custom title or default
       const displayTitle = replyTitle.trim() || '🎤 Voice reply';
@@ -209,7 +282,10 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
           audio_url: signedUrlData.signedUrl,
         });
 
-      if (commentError) throw commentError;
+      if (commentError) {
+        console.error('[VoiceReplyButton] Comment insert error:', commentError);
+        throw new Error(`Could not save comment: ${commentError.message}`);
+      }
 
       // Create notification for note owner (if not replying to own note)
       if (noteOwnerId && noteOwnerId !== authorId) {
@@ -230,7 +306,11 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
       onSuccess();
     } catch (error) {
       console.error('[VoiceReplyButton] Error sending voice reply:', error);
-      toast.error('Failed to send voice reply');
+      if (error instanceof Error) {
+        toast.error(`Failed to send voice reply: ${error.message}`);
+      } else {
+        toast.error('Failed to send voice reply');
+      }
     } finally {
       setIsUploading(false);
     }
