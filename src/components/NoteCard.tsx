@@ -17,6 +17,7 @@ import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, ClipboardList, Settings, Plus, X, Flame, Pencil, Check } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
+import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames, useUpdateNoteContent } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
@@ -189,6 +190,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   
   // Get streak from author's profile for tint display
   const streakDays = note.author?.current_streak || 0;
+  const streakAchievementCount = note.author?.streak_achievement_counts?.[
+    String(getStreakTier(streakDays).minDays)
+  ] || 0;
 
   const handleVisibilityChange = useCallback((value: string) => {
     updateVisibility.mutate({
@@ -631,6 +635,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           <StreakTintedName 
             name={note.author?.name || 'Unknown'} 
             streakDays={streakDays}
+            achievementCount={streakAchievementCount}
             className="text-sm font-medium truncate"
           />
           {/* Short date in timeline only */}

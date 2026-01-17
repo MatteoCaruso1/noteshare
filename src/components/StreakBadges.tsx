@@ -10,12 +10,19 @@ interface StreakBadgesProps {
 
 function BadgeIcon({ tier, count }: { tier: StreakTierInfo; count?: number }) {
   if (tier.tier === 'none') return null;
+  
+  // If count is provided and > 0, show it; otherwise show nothing
+  const displayCount = count && count > 0 ? (count > 99 ? '99+' : count) : null;
+  
   return (
-    <div className="relative">
+    <div className="relative inline-flex items-center justify-center">
       <Trophy className={`w-4 h-4 ${tier.colorClass}`} />
-      {count && count > 0 && (
-        <span className="absolute -bottom-1 -right-1.5 min-w-[12px] h-[12px] flex items-center justify-center text-[8px] font-bold bg-background border border-current rounded-full px-0.5">
-          {count > 99 ? '99+' : count}
+      {displayCount && (
+        <span 
+          className={`absolute inset-0 flex items-center justify-center text-[7px] font-bold ${tier.colorClass} pt-0.5`}
+          style={{ textShadow: '0 0 2px hsl(var(--background))' }}
+        >
+          {displayCount}
         </span>
       )}
     </div>
@@ -43,7 +50,12 @@ export function StreakBadges({ currentStreak, bestStreak, achievementCounts }: S
     <TooltipProvider delayDuration={0}>
       <div className="flex items-center gap-1.5">
         {achievedTiers.map((tier) => {
-          const count = achievementCounts?.[tier.minDays.toString()] || 0;
+          // Count includes current achievement if we're at/above this milestone
+          // The DB count tracks completed milestones, but if we're currently AT the streak, it counts as 1
+          const dbCount = achievementCounts?.[tier.minDays.toString()] || 0;
+          // If the user is at or above this tier's threshold, they've achieved it at least once
+          const count = currentStreak >= tier.minDays ? Math.max(dbCount, 1) : dbCount;
+          
           return (
             <Tooltip key={tier.tier}>
               <TooltipTrigger asChild>
