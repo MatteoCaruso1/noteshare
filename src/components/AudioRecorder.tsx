@@ -251,6 +251,11 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
     }
   };
 
+  // Handle touch end to blur button and prevent stuck focus states
+  const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur();
+  };
+
   return (
     <div className={`flex items-center gap-2 ${className || ''}`}>
       {recording ? (
@@ -259,7 +264,8 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
             variant="destructive"
             size="icon"
             onClick={stopRecording}
-            className="h-9 w-9 shrink-0 bg-destructive text-destructive-foreground touch-manipulation"
+            onTouchEnd={handleTouchEnd}
+            className="h-9 w-9 shrink-0 bg-destructive text-destructive-foreground touch-manipulation focus:outline-none focus-visible:outline-none"
           >
             <Square className="w-4 h-4 fill-current" />
           </Button>
@@ -273,7 +279,8 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
           variant="outline"
           size="icon"
           onClick={startRecording}
-          className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent"
+          onTouchEnd={handleTouchEnd}
+          className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
           title="Record audio"
         >
           {processing ? (

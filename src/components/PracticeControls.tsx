@@ -664,20 +664,23 @@ export function PracticeControls() {
                 iconOnly
               />
 
-              {/* Wake Lock toggle - touch-friendly without tooltip on mobile */}
+              {/* Wake Lock toggle - mobile-optimized button */}
               <button
                 type="button"
                 aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
                 aria-pressed={wakeLockEnabled}
                 onClick={toggleWakeLock}
+                onTouchEnd={(e) => {
+                  // Blur immediately after touch to prevent stuck focus state
+                  e.currentTarget.blur();
+                }}
                 className={`
                   h-8 w-8 inline-flex items-center justify-center rounded-md
-                  transition-colors touch-manipulation select-none
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                  active:opacity-80
+                  touch-manipulation select-none outline-none
+                  focus:outline-none focus-visible:outline-none
                   ${wakeLockEnabled 
                     ? "bg-primary text-primary-foreground" 
-                    : "bg-transparent text-muted-foreground hover:bg-muted/50"
+                    : "bg-transparent text-muted-foreground [@media(hover:hover)]:hover:bg-muted/50"
                   }
                 `}
                 title="Keep screen unlocked"
@@ -754,49 +757,42 @@ export function PracticeControls() {
             </div>
           )}
 
-          {/* Action Buttons - inline full-width */}
+          {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex-[2]">
-                  <AudioRecorder onRecorded={handleAudioRecorded} className="w-full" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Record audio</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 flex-[3]"
-                  onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
-                  disabled={pauseSession.isPending || resumeSession.isPending}
-                >
-                  {isSessionPaused ? (
-                    <Play className="w-4 h-4" />
-                  ) : (
-                    <Pause className="w-4 h-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{isSessionPaused ? 'Resume' : 'Pause'}</TooltipContent>
-            </Tooltip>
+            {/* Audio Recorder - title attr for tooltip on desktop */}
+            <div className="flex-[2]">
+              <AudioRecorder onRecorded={handleAudioRecorded} className="w-full" />
+            </div>
+            
+            {/* Pause/Resume button - mobile optimized */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 flex-[3] focus:outline-none focus-visible:outline-none"
+              onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
+              onTouchEnd={(e) => e.currentTarget.blur()}
+              disabled={pauseSession.isPending || resumeSession.isPending}
+              title={isSessionPaused ? 'Resume' : 'Pause'}
+            >
+              {isSessionPaused ? (
+                <Play className="w-4 h-4" />
+              ) : (
+                <Pause className="w-4 h-4" />
+              )}
+            </Button>
+            {/* End Session button - mobile optimized */}
             <AlertDialog>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="icon"
-                      className="h-9 flex-[3] bg-gradient-primary text-primary-foreground"
-                      disabled={createNote.isPending || uploading || endSession.isPending}
-                    >
-                      <Square className="w-4 h-4 fill-current" />
-                    </Button>
-                  </AlertDialogTrigger>
-                </TooltipTrigger>
-                <TooltipContent>End Session</TooltipContent>
-              </Tooltip>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="icon"
+                  className="h-9 flex-[3] bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none"
+                  onTouchEnd={(e) => e.currentTarget.blur()}
+                  disabled={createNote.isPending || uploading || endSession.isPending}
+                  title="End Session"
+                >
+                  <Square className="w-4 h-4 fill-current" />
+                </Button>
+              </AlertDialogTrigger>
               <AlertDialogContent className="max-w-xs">
                 <AlertDialogHeader>
                   <AlertDialogTitle>End session?</AlertDialogTitle>
