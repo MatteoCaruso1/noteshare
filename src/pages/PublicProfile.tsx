@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePublicNotes } from '@/hooks/usePublicNotes';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
-import { useFriends } from '@/hooks/useFriendships';
+import { useFriends, useRemoveFriend, useIsFriendMuted, useMuteFriend, useUnmuteFriend } from '@/hooks/useFriendships';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Card } from '@/components/ui/card';
@@ -13,8 +13,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DirectMessages } from '@/components/DirectMessages';
-import { ArrowLeft, User, MapPin, Flame, MessageCircle } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volume2 } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
@@ -67,11 +68,32 @@ const PublicProfile = () => {
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
   const { data: friends } = useFriends();
+  const removeFriend = useRemoveFriend();
+  const isMuted = useIsFriendMuted(profile?.id);
+  const muteFriend = useMuteFriend();
+  const unmuteFriend = useUnmuteFriend();
   const [displayCount, setDisplayCount] = useState(10);
   const [messagesOpen, setMessagesOpen] = useState(false);
   
   // Check if the profile user is a friend
   const isFriend = friends?.some(f => f.id === profile?.id);
+  
+  const handleRemoveFriend = () => {
+    if (profile?.id) {
+      removeFriend.mutate(profile.id, {
+        onSuccess: () => navigate('/friends'),
+      });
+    }
+  };
+
+  const handleToggleMute = () => {
+    if (!profile?.id) return;
+    if (isMuted) {
+      unmuteFriend.mutate(profile.id);
+    } else {
+      muteFriend.mutate(profile.id);
+    }
+  };
   
   // Get signed URL for avatar
   const { signedUrl: signedAvatar } = useSignedUrl(profile?.avatar);
@@ -161,15 +183,75 @@ const PublicProfile = () => {
         <div className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
           {/* Profile Header */}
           <Card className="p-6 bg-card border-border relative">
-            {/* Message Button - only show if friend */}
+            {/* Friend Actions - only show if friend */}
             {isFriend && (
-              <button 
-                onClick={() => setMessagesOpen(true)}
-                className="absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-                aria-label="Send message"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </button>
+              <div className="absolute top-4 right-4 flex items-center gap-1">
+                {/* Message Button */}
+                <button 
+                  onClick={() => setMessagesOpen(true)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+                  aria-label="Send message"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </button>
+
+                {/* Mute/Unmute Button */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button 
+                      className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+                      aria-label={isMuted ? "Unmute friend" : "Mute friend"}
+                    >
+                      {isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{isMuted ? 'Unmute' : 'Mute'} {profile?.name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {isMuted 
+                          ? "Their posts will appear in your feed again."
+                          : "Their posts won't show in your feed. You'll stay friends."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleToggleMute}>
+                        {isMuted ? 'Unmute' : 'Mute'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Remove Friend Button */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button 
+                      className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                      aria-label="Remove friend"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove {profile?.name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You'll no longer see each other's posts.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleRemoveFriend}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="w-20 h-20 border-2 border-primary/20">
