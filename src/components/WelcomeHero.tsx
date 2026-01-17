@@ -1,11 +1,26 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export function WelcomeHero() {
   const navigate = useNavigate();
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleNavigateToAuth = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      navigate('/auth');
+    }, 400);
+  };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col -mt-16">
+    <div 
+      className={`min-h-[100dvh] bg-background flex flex-col -mt-16 transition-all duration-500 ease-out ${
+        isExiting 
+          ? 'opacity-0 blur-sm scale-[1.02]' 
+          : 'animate-hero-enter'
+      }`}
+    >
       {/* Header */}
       <header className="w-full px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -15,14 +30,14 @@ export function WelcomeHero() {
           <Button 
             variant="ghost" 
             className="text-muted-foreground hover:text-foreground"
-            onClick={() => navigate('/auth')}
+            onClick={handleNavigateToAuth}
           >
             Log in
           </Button>
           <Button 
             variant="outline"
             className="border-border hover:bg-accent"
-            onClick={() => navigate('/auth')}
+            onClick={handleNavigateToAuth}
           >
             Sign up
           </Button>
@@ -41,7 +56,7 @@ export function WelcomeHero() {
           <Button
             size="lg"
             className="bg-foreground text-background hover:bg-foreground/90 font-medium px-6"
-            onClick={() => navigate('/auth')}
+            onClick={handleNavigateToAuth}
           >
             Start practicing
           </Button>
