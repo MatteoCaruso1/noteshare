@@ -22,8 +22,18 @@ const routeScrollKeys: Record<string, string> = {
 
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
-  const { data: unreadCount } = useUnreadNotificationCount();
+  const { data: unreadCount, isLoading } = useUnreadNotificationCount();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Fade in after mount to prevent jarring appearance
+  useEffect(() => {
+    // Small delay to ensure smooth fade-in after navigation
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Detect keyboard open/close on mobile
   useEffect(() => {
@@ -90,7 +100,13 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
+    <nav 
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
+        "transition-opacity duration-700",
+        isVisible ? "opacity-100" : "opacity-0"
+      )}
+    >
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
         <div className="flex items-start justify-around py-1.5">
           {links.map(({ to, icon: Icon, label, mobileLabel, showBadge }) => {
