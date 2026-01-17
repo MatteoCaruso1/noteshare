@@ -97,7 +97,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           className={`w-full h-auto ${
             feature.cropTop ? 'object-cover object-bottom' : ''
           }`}
-          style={feature.cropTop ? { marginTop: '-32%' } : undefined}
+          style={feature.cropTop ? { marginTop: '-38%' } : undefined}
           loading="lazy"
         />
       </div>
