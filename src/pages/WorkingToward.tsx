@@ -133,10 +133,9 @@ const WorkingToward = () => {
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const [newProjectTitle, setNewProjectTitle] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
-  const [projectShowOnFeed, setProjectShowOnFeed] = useState(true);
-  const [projectCoverImage, setProjectCoverImage] = useState<string | null>(null);
+  const [projectCoverImagePath, setProjectCoverImagePath] = useState<string | null>(null);
+  const [projectCoverImagePreview, setProjectCoverImagePreview] = useState<string | null>(null);
   const [projectReleaseDate, setProjectReleaseDate] = useState<Date | undefined>(undefined);
-  const [projectCollaboratorIds, setProjectCollaboratorIds] = useState<string[]>([]);
   const [isProjectUploading, setIsProjectUploading] = useState(false);
   const projectFileInputRef = useRef<HTMLInputElement>(null);
   
@@ -161,13 +160,13 @@ const WorkingToward = () => {
   // Project image upload
   const handleProjectImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !profile) return;
 
     setIsProjectUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `project-covers/${fileName}`;
+      const filePath = `${profile.id}/project-covers/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('practice-media')
@@ -175,11 +174,15 @@ const WorkingToward = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Use signed URL for preview since the bucket is private
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('practice-media')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60); // 1 hour for preview
 
-      setProjectCoverImage(urlData.publicUrl);
+      if (signedError) throw signedError;
+
+      setProjectCoverImagePath(filePath);
+      setProjectCoverImagePreview(signedData.signedUrl);
       toast.success('Album art uploaded!');
     } catch (error) {
       console.error('Upload error:', error);
@@ -228,18 +231,17 @@ const WorkingToward = () => {
         ownerId: profile.id,
         title: newProjectTitle,
         description: newProjectDescription,
-        coverImage: projectCoverImage || undefined,
-        showOnFeed: projectShowOnFeed,
-        collaboratorIds: projectCollaboratorIds,
+        coverImage: projectCoverImagePath || undefined,
+        showOnFeed: true,
+        collaboratorIds: [],
         releaseDate: projectReleaseDate ? format(projectReleaseDate, 'yyyy-MM-dd') : undefined,
       },
       {
         onSuccess: () => {
           setNewProjectTitle('');
           setNewProjectDescription('');
-          setProjectCoverImage(null);
-          setProjectShowOnFeed(true);
-          setProjectCollaboratorIds([]);
+          setProjectCoverImagePath(null);
+          setProjectCoverImagePreview(null);
           setProjectReleaseDate(undefined);
           setIsProjectDialogOpen(false);
         },
@@ -438,7 +440,7 @@ const WorkingToward = () => {
                           <Plus className="w-4 h-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent onClick={(e) => e.stopPropagation()}>
+                      <DialogContent onClick={(e) => e.stopPropagation()} onOpenAutoFocus={(e) => e.preventDefault()}>
                         <DialogHeader>
                           <DialogTitle>Create New Project</DialogTitle>
                         </DialogHeader>
@@ -448,8 +450,8 @@ const WorkingToward = () => {
                               className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
                               onClick={() => projectFileInputRef.current?.click()}
                             >
-                              {projectCoverImage ? (
-                                <img src={projectCoverImage} alt="" className="w-full h-full object-cover" />
+                              {projectCoverImagePreview ? (
+                                <img src={projectCoverImagePreview} alt="" className="w-full h-full object-cover" />
                               ) : isProjectUploading ? (
                                 <div className="text-xs text-muted-foreground">Uploading...</div>
                               ) : (
@@ -472,6 +474,7 @@ const WorkingToward = () => {
                             placeholder="Project title (e.g., Jazz Standards Album)"
                             value={newProjectTitle}
                             onChange={(e) => setNewProjectTitle(e.target.value)}
+                            autoFocus={false}
                           />
                           <Textarea
                             placeholder="Describe your project..."
@@ -507,22 +510,6 @@ const WorkingToward = () => {
                             </Popover>
                           </div>
                           
-                          <div className="flex items-center justify-between py-2">
-                            <Label htmlFor="project-show-feed" className="text-sm">Show on home feed</Label>
-                            <Switch
-                              id="project-show-feed"
-                              checked={projectShowOnFeed}
-                              onCheckedChange={setProjectShowOnFeed}
-                            />
-                          </div>
-
-                          <div className="border-t border-border pt-4">
-                            <CollaboratorPicker
-                              selectedIds={projectCollaboratorIds}
-                              onSelect={setProjectCollaboratorIds}
-                              label="Tag Collaborators"
-                            />
-                          </div>
 
                           <Button
                             className="w-full bg-gradient-primary text-primary-foreground"
