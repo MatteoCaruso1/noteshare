@@ -1,16 +1,29 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 export function WelcomeHero() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isExiting, setIsExiting] = useState(false);
 
-  const handleNavigateToAuth = () => {
+  const handleNavigate = (destination: 'auth' | 'app') => {
     setIsExiting(true);
     setTimeout(() => {
-      navigate('/auth');
+      navigate(destination === 'auth' ? '/auth' : '/');
     }, 400);
+  };
+
+  const handleStartPracticing = () => {
+    // If user is already logged in, take them to the app
+    // Otherwise, take them to auth
+    handleNavigate(user ? 'app' : 'auth');
+  };
+
+  const handleAuthClick = () => {
+    // If user is logged in, go to app; otherwise go to auth
+    handleNavigate(user ? 'app' : 'auth');
   };
 
   return (
@@ -27,20 +40,32 @@ export function WelcomeHero() {
           <span className="text-xl font-semibold tracking-tight">noteshare</span>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            className="text-muted-foreground hover:text-foreground"
-            onClick={handleNavigateToAuth}
-          >
-            Log in
-          </Button>
-          <Button 
-            variant="outline"
-            className="border-border hover:bg-accent"
-            onClick={handleNavigateToAuth}
-          >
-            Sign up
-          </Button>
+          {user ? (
+            <Button 
+              variant="outline"
+              className="border-border hover:bg-accent"
+              onClick={() => handleNavigate('app')}
+            >
+              Go to app
+            </Button>
+          ) : (
+            <>
+              <Button 
+                variant="ghost" 
+                className="text-muted-foreground hover:text-foreground"
+                onClick={handleAuthClick}
+              >
+                Log in
+              </Button>
+              <Button 
+                variant="outline"
+                className="border-border hover:bg-accent"
+                onClick={handleAuthClick}
+              >
+                Sign up
+              </Button>
+            </>
+          )}
         </div>
       </header>
 
@@ -56,7 +81,7 @@ export function WelcomeHero() {
           <Button
             size="lg"
             className="bg-foreground text-background hover:bg-foreground/90 font-medium px-6"
-            onClick={handleNavigateToAuth}
+            onClick={handleStartPracticing}
           >
             Start practicing
           </Button>
