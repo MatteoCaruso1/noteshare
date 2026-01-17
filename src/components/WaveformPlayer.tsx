@@ -214,15 +214,18 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   }, [signedUrl, urlLoading, onError, instanceId]);
 
   // Fallback to native audio if waveform fails
+  const isSepia = variant === 'sepia';
+  
   if (error && signedUrl) {
     return (
-      <div className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg">
-        <Mic className="w-4 h-4 text-primary flex-shrink-0" />
+      <div className={`flex items-center gap-2 p-3 rounded-lg ${isSepia ? 'bg-amber-900/20 border border-amber-700/30' : 'bg-secondary/50'}`}>
+        <Mic className={`w-4 h-4 flex-shrink-0 ${isSepia ? 'text-amber-500' : 'text-primary'}`} />
         <audio
           src={signedUrl}
           controls
           preload="metadata"
           className="flex-1 h-8 min-w-0"
+          style={isSepia ? { filter: 'sepia(0.5) saturate(1.2)' } : undefined}
           onClick={(e) => e.stopPropagation()}
           onPlay={(e) => {
             audioManager.play(e.currentTarget);
