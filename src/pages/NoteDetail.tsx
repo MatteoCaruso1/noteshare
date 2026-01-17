@@ -19,7 +19,7 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, Send, User, MessageCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -177,47 +177,39 @@ const NoteDetail = () => {
 
           {/* Comments Section */}
           <section>
-            <div className="flex items-center gap-1.5 mb-3">
-              <MessageCircle className="w-4 h-4 text-muted-foreground" />
-              <h2 className="text-sm font-medium text-muted-foreground">Comments</h2>
-            </div>
-
             {/* Comment Input */}
             {profile && (
-              <Card className="p-3 bg-background text-foreground border-border mb-4">
-                <div className="flex gap-2">
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src={profile.avatar || ''} />
-                    <AvatarFallback><User className="w-3 h-3" /></AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-2">
-                    <MentionInput
-                      placeholder="Use @ to mention someone"
-                      value={newComment}
-                      onChange={setNewComment}
-                      rows={1}
-                      className="resize-none text-sm min-h-[32px]"
-                    />
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        className="h-7 text-xs bg-gradient-primary text-primary-foreground"
-                        onClick={handleAddComment}
-                        disabled={createComment.isPending || !newComment.trim()}
-                      >
-                        <Send className="w-3 h-3 mr-1" />
-                        Comment
-                      </Button>
-                      <VoiceReplyButton
-                        noteId={id!}
-                        authorId={profile.id}
-                        noteOwnerId={note?.author_id || ''}
-                        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
-                      />
-                    </div>
-                  </div>
+              <div className="flex items-center gap-3 py-3 border-t border-border">
+                <Avatar className="w-8 h-8 flex-shrink-0">
+                  <AvatarImage src={profile.avatar || ''} />
+                  <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <MentionInput
+                    placeholder="Post your reply"
+                    value={newComment}
+                    onChange={setNewComment}
+                    rows={1}
+                    className="resize-none text-sm min-h-[36px] bg-transparent border-0 focus-visible:ring-0 px-0"
+                  />
                 </div>
-              </Card>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <VoiceReplyButton
+                    noteId={id!}
+                    authorId={profile.id}
+                    noteOwnerId={note?.author_id || ''}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
+                  />
+                  <Button
+                    size="sm"
+                    className="h-8 px-4 rounded-full bg-muted hover:bg-muted/80 text-foreground"
+                    onClick={handleAddComment}
+                    disabled={createComment.isPending || !newComment.trim()}
+                  >
+                    Reply
+                  </Button>
+                </div>
+              </div>
             )}
 
             {/* Comments List */}
