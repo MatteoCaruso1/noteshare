@@ -255,25 +255,33 @@ export function useSearchUsers(query: string) {
 }
 
 export function useFriendsNotes() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   return useQuery({
     queryKey: ['friends-notes', profile?.id],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!profile?.id || !user?.id) return [];
 
-      // First, get all friend IDs
-      const { data: friendships, error: friendshipsError } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+      // First, get all friend IDs and muted friends in parallel
+      const [friendshipsResult, mutedResult] = await Promise.all([
+        supabase
+          .from('friendships')
+          .select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
+        supabase
+          .from('muted_friends')
+          .select('muted_friend_id')
+          .eq('user_id', user.id),
+      ]);
 
-      if (friendshipsError) throw friendshipsError;
+      if (friendshipsResult.error) throw friendshipsResult.error;
 
-      const friendIds = friendships.map(f => 
-        f.requester_id === profile.id ? f.addressee_id : f.requester_id
-      );
+      const mutedIds = new Set((mutedResult.data || []).map(m => m.muted_friend_id));
+
+      const friendIds = friendshipsResult.data
+        .map(f => f.requester_id === profile.id ? f.addressee_id : f.requester_id)
+        .filter(id => !mutedIds.has(id)); // Filter out muted friends
 
       if (friendIds.length === 0) return [];
 
@@ -303,7 +311,7 @@ export function useFriendsNotes() {
         session: note.practice_sessions,
       })) as NoteWithAuthor[];
     },
-    enabled: !!profile?.id,
+    enabled: !!profile?.id && !!user?.id,
     staleTime: 60 * 1000, // Consider data fresh for 1 minute
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
@@ -459,5 +467,89 @@ export function useSuggestedMusicians() {
     enabled: !!profile?.id,
     staleTime: 5 * 60 * 1000, // Suggestions are expensive, cache for 5 minutes
     gcTime: 10 * 60 * 1000,
+  });
+}
+
+// Hook to get muted friends list
+export function useMutedFriends() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['muted-friends', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('muted_friends')
+        .select('muted_friend_id')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return (data || []).map(m => m.muted_friend_id);
+    },
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+// Hook to check if a specific friend is muted
+export function useIsFriendMuted(friendId: string | undefined) {
+  const { data: mutedFriends } = useMutedFriends();
+  return mutedFriends?.includes(friendId || '') || false;
+}
+
+// Hook to mute a friend
+export function useMuteFriend() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (friendId: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('muted_friends')
+        .insert({ user_id: user.id, muted_friend_id: friendId });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['muted-friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      toast.success('Friend muted');
+    },
+    onError: (error) => {
+      console.error('Error muting friend:', error);
+      toast.error('Failed to mute friend');
+    },
+  });
+}
+
+// Hook to unmute a friend
+export function useUnmuteFriend() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (friendId: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('muted_friends')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('muted_friend_id', friendId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['muted-friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      toast.success('Friend unmuted');
+    },
+    onError: (error) => {
+      console.error('Error unmuting friend:', error);
+      toast.error('Failed to unmute friend');
+    },
   });
 }

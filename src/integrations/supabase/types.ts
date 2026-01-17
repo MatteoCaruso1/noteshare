@@ -292,6 +292,27 @@ export type Database = {
           },
         ]
       }
+      muted_friends: {
+        Row: {
+          created_at: string
+          id: string
+          muted_friend_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muted_friend_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muted_friend_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       note_comments: {
         Row: {
           audio_url: string | null
