@@ -87,12 +87,12 @@ export function WelcomeHero() {
           Noteshare is a purpose-built tool to help musicians practice smarter
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 leading-relaxed">
-          Organize, record, and share your practice. Manage your musical life, all in one place.
+          Organize, record, and share your practice. Manage your musical life, all in one place
         </p>
         <div className="flex items-center gap-4">
           <Button
             size="lg"
-            className="bg-foreground text-background hover:bg-foreground/90 font-medium px-6"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02]"
             onClick={handleStartPracticing}
           >
             Start practicing
