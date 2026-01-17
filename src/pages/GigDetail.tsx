@@ -318,7 +318,7 @@ const GigDetail = () => {
               )}
 
               {gig.description && (
-                <p className="text-sm text-muted-foreground">{gig.description}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{gig.description}</p>
               )}
 
               {gig.links && gig.links.length > 0 && (
