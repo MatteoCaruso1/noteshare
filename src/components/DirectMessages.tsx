@@ -18,9 +18,10 @@ interface DirectMessagesProps {
   onNewMessageViewChange?: (show: boolean) => void;
   onInChatViewChange?: (inChat: boolean) => void;
   initialSelectedFriend?: Profile | null;
+  onClose?: () => void;
 }
 
-export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange, onInChatViewChange, initialSelectedFriend }: DirectMessagesProps = {}) {
+export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange, onInChatViewChange, initialSelectedFriend, onClose }: DirectMessagesProps = {}) {
   const { profile } = useAuth();
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: friends } = useFriends();
@@ -36,11 +37,20 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
     onInChatViewChange?.(!!selectedFriend);
   }, [selectedFriend, onInChatViewChange]);
 
+  // Handle back from chat - if we started with an initial friend, close the dialog
+  const handleChatBack = () => {
+    if (initialSelectedFriend && onClose) {
+      onClose();
+    } else {
+      setSelectedFriend(null);
+    }
+  };
+
   if (selectedFriend) {
     return (
       <ChatView 
         friend={selectedFriend} 
-        onBack={() => setSelectedFriend(null)} 
+        onBack={handleChatBack} 
       />
     );
   }
