@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Clock, X } from 'lucide-react';
-import { subWeeks, subMonths, differenceInDays } from 'date-fns';
+import { subWeeks, subMonths, differenceInDays, differenceInHours } from 'date-fns';
 import { NoteWithAuthor } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 
@@ -14,12 +14,14 @@ import { WaveformPlayer } from '@/components/WaveformPlayer';
 const DEV_MODE = true;
 
 const MEMORY_REFRESH_DAYS = 5;
+const MEMORY_EXPIRATION_HOURS = 24; // Memory auto-expires after 24 hours
 const MIN_AGE_WEEKS = 2;
 const MIN_REPEAT_MONTHS = 6;
 const STORAGE_KEY_DISMISSED = 'noteshare-dismissed-memories';
 const STORAGE_KEY_LAST_REFRESH = 'noteshare-memories-last-refresh';
 const STORAGE_KEY_SHOWN_HISTORY = 'noteshare-memories-shown-history'; // {noteId: lastShownDate}
 const STORAGE_KEY_CURRENT_MEMORY = 'noteshare-current-memory-id';
+const STORAGE_KEY_MEMORY_POPULATED_AT = 'noteshare-memory-populated-at'; // When the current memory was set
 
 export const MemoryReminder = memo(function MemoryReminder() {
   const { profile } = useAuth();
@@ -44,10 +46,29 @@ export const MemoryReminder = memo(function MemoryReminder() {
     }
   }, []);
 
-  // Check if we should refresh memories (every 5 days)
+  // Check if the current memory has expired (24 hours since populated)
+  const isMemoryExpired = (): boolean => {
+    try {
+      const populatedAt = localStorage.getItem(STORAGE_KEY_MEMORY_POPULATED_AT);
+      if (!populatedAt) return false;
+      const hoursSincePopulated = differenceInHours(new Date(), new Date(populatedAt));
+      return hoursSincePopulated >= MEMORY_EXPIRATION_HOURS;
+    } catch {
+      return false;
+    }
+  };
+
+  // Check if we should refresh memories (every 5 days OR if current memory expired)
   const shouldRefresh = (): boolean => {
     // DEV_MODE: Always refresh for testing
     if (DEV_MODE) return true;
+    
+    // If current memory has expired, we need to clear it (but not necessarily fetch a new one)
+    if (isMemoryExpired()) {
+      localStorage.removeItem(STORAGE_KEY_CURRENT_MEMORY);
+      localStorage.removeItem(STORAGE_KEY_MEMORY_POPULATED_AT);
+      return true; // Trigger refresh to clear the memory
+    }
     
     try {
       const lastRefresh = localStorage.getItem(STORAGE_KEY_LAST_REFRESH);
@@ -120,8 +141,8 @@ export const MemoryReminder = memo(function MemoryReminder() {
       const sixMonthsAgo = subMonths(new Date(), MIN_REPEAT_MONTHS);
 
       const eligibleNotes = data.filter(note => {
-        // Must have audio files
-        if (!note.audio_files || note.audio_files.length === 0) return false;
+        // Must have audio files - check for non-empty array (not just non-null)
+        if (!note.audio_files || !Array.isArray(note.audio_files) || note.audio_files.length === 0) return false;
         
         // Check if shown within last 6 months
         const lastShown = shownHistory[note.id];
@@ -142,6 +163,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
       // Update storage
       localStorage.setItem(STORAGE_KEY_LAST_REFRESH, new Date().toISOString());
       localStorage.setItem(STORAGE_KEY_CURRENT_MEMORY, selectedNote.id);
+      localStorage.setItem(STORAGE_KEY_MEMORY_POPULATED_AT, new Date().toISOString()); // Track when memory was set
       localStorage.removeItem(STORAGE_KEY_DISMISSED);
       
       // Record this note as shown
