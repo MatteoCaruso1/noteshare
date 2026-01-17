@@ -33,7 +33,6 @@ const features = [
 
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const [isVisible, setIsVisible] = useState(false);
-  const [parallaxOffset, setParallaxOffset] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,23 +53,6 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const elementCenter = rect.top + rect.height / 2;
-        const viewportCenter = windowHeight / 2;
-        const offset = (elementCenter - viewportCenter) * 0.08;
-        setParallaxOffset(offset);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const isRight = index % 2 === 1;
 
   return (
@@ -85,13 +67,20 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       }`}>
         {feature.title}
       </h2>
-      <div className="relative" style={{ transform: `translateY(${parallaxOffset}px)` }}>
+      <div 
+        className="relative"
+        style={{ perspective: '1000px' }}
+      >
         {/* Glow effect */}
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
-          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50 w-full max-w-lg ${
+          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-lg ${
             feature.cropTop ? 'h-[240px]' : ''
           }`}
+          style={{ 
+            transform: 'rotateX(8deg) rotateY(0deg) scale(0.98)',
+            transformOrigin: 'center bottom'
+          }}
         >
           <img
             src={feature.image}
