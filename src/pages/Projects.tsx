@@ -20,9 +20,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { CollectionCard } from '@/components/shared/CollectionCard';
 import { Plus, Disc3, Upload, Trash2, CalendarIcon } from 'lucide-react';
@@ -43,11 +41,10 @@ const Projects = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
-  const [showOnFeed, setShowOnFeed] = useState(true); // Default to true (friends visibility)
-  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [coverImagePath, setCoverImagePath] = useState<string | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [releaseDate, setReleaseDate] = useState<Date | undefined>(undefined);
   const [isUploading, setIsUploading] = useState(false);
-  const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
@@ -71,11 +68,15 @@ const Projects = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Use signed URL for preview since the bucket is private
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('practice-media')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60); // 1 hour for preview
 
-      setCoverImage(urlData.publicUrl);
+      if (signedError) throw signedError;
+
+      setCoverImagePath(filePath);
+      setCoverImagePreview(signedData.signedUrl);
       toast.success('Album art uploaded!');
     } catch (error) {
       console.error('Upload error:', error);
@@ -93,18 +94,17 @@ const Projects = () => {
         ownerId: profile.id,
         title: newTitle,
         description: newDescription,
-        coverImage: coverImage || undefined,
-        showOnFeed,
-        collaboratorIds,
+        coverImage: coverImagePath || undefined,
+        showOnFeed: true,
+        collaboratorIds: [],
         releaseDate: releaseDate ? format(releaseDate, 'yyyy-MM-dd') : undefined,
       },
       {
         onSuccess: () => {
           setNewTitle('');
           setNewDescription('');
-          setCoverImage(null);
-          setShowOnFeed(true);
-          setCollaboratorIds([]);
+          setCoverImagePath(null);
+          setCoverImagePreview(null);
           setReleaseDate(undefined);
           setIsDialogOpen(false);
         },
@@ -142,8 +142,8 @@ const Projects = () => {
                       className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {coverImage ? (
-                        <img src={coverImage} alt="" className="w-full h-full object-cover" />
+                      {coverImagePreview ? (
+                        <img src={coverImagePreview} alt="" className="w-full h-full object-cover" />
                       ) : isUploading ? (
                         <div className="text-xs text-muted-foreground">Uploading...</div>
                       ) : (
@@ -166,6 +166,7 @@ const Projects = () => {
                     placeholder="Project title (e.g., Jazz Standards Album)"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
+                    autoFocus={false}
                   />
                   <Textarea
                     placeholder="Describe your project..."
@@ -202,24 +203,6 @@ const Projects = () => {
                     </Popover>
                   </div>
                   
-                  {/* Show on Feed Toggle */}
-                  <div className="flex items-center justify-between py-2">
-                    <Label htmlFor="show-feed" className="text-sm">Show on home feed</Label>
-                    <Switch
-                      id="show-feed"
-                      checked={showOnFeed}
-                      onCheckedChange={setShowOnFeed}
-                    />
-                  </div>
-
-                  {/* Collaborator Picker */}
-                  <div className="border-t border-border pt-4">
-                    <CollaboratorPicker
-                      selectedIds={collaboratorIds}
-                      onSelect={setCollaboratorIds}
-                      label="Tag Collaborators"
-                    />
-                  </div>
 
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"
