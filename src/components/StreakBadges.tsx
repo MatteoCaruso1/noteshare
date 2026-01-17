@@ -1,32 +1,11 @@
-import { Trophy } from 'lucide-react';
 import { STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TrophyBadge } from '@/components/shared/TrophyBadge';
 
 interface StreakBadgesProps {
   currentStreak: number;
   bestStreak: number;
   achievementCounts?: Record<string, number>;
-}
-
-function BadgeIcon({ tier, count }: { tier: StreakTierInfo; count?: number }) {
-  if (tier.tier === 'none') return null;
-  
-  // If count is provided and > 0, show it; otherwise show nothing
-  const displayCount = count && count > 0 ? (count > 99 ? '99+' : count) : null;
-  
-  return (
-    <div className="relative inline-flex items-center justify-center">
-      <Trophy className={`w-4 h-4 ${tier.colorClass}`} />
-      {displayCount && (
-        <span 
-          className={`absolute inset-0 flex items-center justify-center text-[7px] font-bold ${tier.colorClass}`}
-          style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-4px' }}
-        >
-          {displayCount}
-        </span>
-      )}
-    </div>
-  );
 }
 
 function getBadgeDescription(tier: StreakTierInfo, count?: number): string {
@@ -63,7 +42,7 @@ export function StreakBadges({ currentStreak, bestStreak, achievementCounts }: S
                   type="button"
                   className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${tier.bgColorClass} ${tier.colorClass} font-medium cursor-pointer hover:opacity-80 transition-opacity`}
                 >
-                  <BadgeIcon tier={tier} count={count} />
+                  <TrophyBadge tier={tier} count={count} />
                   <span>{tier.label}</span>
                 </button>
               </TooltipTrigger>
