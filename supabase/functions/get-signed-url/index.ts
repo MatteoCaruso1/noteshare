@@ -76,22 +76,20 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Verify user session with anon client + provided JWT
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const {
-      data: { user },
-      error: userError,
-    } = await userClient.auth.getUser();
+    // Extract JWT token from Authorization header
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Use service role client to verify the JWT
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+    
+    // Verify the JWT is valid by getting the user
+    const { data: { user }, error: userError } = await admin.auth.getUser(token);
 
     // If auth fails, return original URLs gracefully
     if (userError || !user) {
-      console.log("[get-signed-url] Auth failed, returning original URLs");
+      console.log("[get-signed-url] Auth failed:", userError?.message || "No user", "Token prefix:", token.substring(0, 20));
       const results: Record<string, string> = {};
       for (const url of toSign) {
         if (url) results[url] = url;
@@ -100,9 +98,8 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Admin client bypasses storage RLS, but we still require an authenticated caller.
-    const admin = createClient(supabaseUrl, serviceRoleKey);
+    
+    console.log("[get-signed-url] Auth verified for user:", user.id);
 
     const results: Record<string, string> = {};
 
@@ -130,16 +127,20 @@ const handler = async (req: Request): Promise<Response> => {
           return;
         }
 
+        console.log("[get-signed-url] Creating signed URL for:", ref.bucket, ref.path);
+        
         const { data, error } = await admin.storage
           .from(ref.bucket)
           .createSignedUrl(ref.path, expiresInSeconds);
 
         if (error || !data?.signedUrl) {
+          console.log("[get-signed-url] Failed to sign:", ref.path, error?.message);
           // Keep the original so the client can still try to render something.
           results[input] = input;
           return;
         }
 
+        console.log("[get-signed-url] Successfully signed:", ref.path);
         results[input] = data.signedUrl;
       })
     );
