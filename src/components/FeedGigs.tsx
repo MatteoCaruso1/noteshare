@@ -3,7 +3,7 @@ import { useFeedGigs } from '@/hooks/usePromoPosts';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Music2, Calendar, DollarSign } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatLocalDateTime } from '@/lib/utils';
 
 export function FeedGigs() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export function FeedGigs() {
                 {gig.event_date && (
                   <p className="text-xs text-primary flex items-center gap-1 mt-1">
                     <Calendar className="w-3 h-3" />
-                    {format(new Date(gig.event_date), 'MMM d, yyyy · h:mm a')}
+                    {formatLocalDateTime(gig.event_date)}
                   </p>
                 )}
               </div>

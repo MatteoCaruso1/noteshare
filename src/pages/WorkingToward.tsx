@@ -36,7 +36,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { SignedImage } from '@/components/SignedImage';
 import { Plus, Disc3, Upload, Trash2, CalendarIcon, ChevronDown, ChevronRight, Calendar, Music2, ExternalLink, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatLocalDateTime } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -353,7 +353,7 @@ const WorkingToward = () => {
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <Calendar className="w-3 h-3" />
             {post.event_date 
-              ? format(new Date(post.event_date), 'MMM d, yyyy · h:mm a')
+              ? formatLocalDateTime(post.event_date)
               : format(new Date(post.created_at), 'MMM d, yyyy')
             }
           </div>

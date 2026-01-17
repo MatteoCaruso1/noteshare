@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { SignedImage } from '@/components/SignedImage';
 import { Disc3, Music2, Calendar, DollarSign, ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatLocalDateTime } from '@/lib/utils';
 import { Project } from '@/types';
 
 const PROJECTS_GIGS_EXPANDED_KEY = 'noteshare_projects_gigs_expanded';
@@ -168,7 +169,7 @@ export function FeedProjectsGigs() {
                         {gig.event_date && (
                           <p className="text-xs text-primary flex items-center gap-1 mt-1">
                             <Calendar className="w-3 h-3" />
-                            {format(new Date(gig.event_date), 'MMM d, yyyy · h:mm a')}
+                            {formatLocalDateTime(gig.event_date)}
                           </p>
                         )}
                       </div>

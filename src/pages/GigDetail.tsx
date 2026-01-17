@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Music2, Calendar, ExternalLink, DollarSign, Upload, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
 import { toast } from 'sonner';
 
@@ -313,7 +314,7 @@ const GigDetail = () => {
               {gig.event_date && (
                 <p className="text-sm text-primary flex items-center gap-2 mb-3">
                   <Calendar className="w-4 h-4" />
-                  {format(new Date(gig.event_date), 'EEEE, MMM d, yyyy · h:mm a')}
+                  {formatLocalDateTime(gig.event_date, 'EEEE, MMM d, yyyy · h:mm a')}
                 </p>
               )}
 

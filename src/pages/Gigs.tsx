@@ -34,7 +34,7 @@ import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Tras
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, formatLocalDateTime } from '@/lib/utils';
 
 const Gigs = () => {
   const navigate = useNavigate();
@@ -233,7 +233,7 @@ const Gigs = () => {
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <Calendar className="w-3 h-3" />
             {post.event_date 
-              ? format(new Date(post.event_date), 'MMM d, yyyy · h:mm a')
+              ? formatLocalDateTime(post.event_date)
               : format(new Date(post.created_at), 'MMM d, yyyy')
             }
           </div>
