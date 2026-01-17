@@ -46,25 +46,60 @@ const Profile = () => {
   const { data: practiceStats } = usePracticeStats(profile?.id);
 
   // Check for new streak milestones and persist to database
+  // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
   useEffect(() => {
-    if (!practiceStats?.currentStreak || !profile) return;
-    const currentStreak = practiceStats.currentStreak;
+    if (!profile) return;
+    const currentStreak = practiceStats?.currentStreak || 0;
+    const celebratedMilestones = profile.celebrated_streak_milestones || [];
+    
+    // Filter out celebrated milestones that are now above current streak
+    // This allows re-earning milestones after losing a streak
+    const stillValidMilestones = celebratedMilestones.filter(m => m <= currentStreak);
+    
+    // If some milestones need to be cleared, update the database
+    if (stillValidMilestones.length < celebratedMilestones.length) {
+      supabase
+        .from('profiles')
+        .update({ celebrated_streak_milestones: stillValidMilestones })
+        .eq('id', profile.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Failed to clear old milestones:', error);
+          } else {
+            refreshProfile();
+          }
+        });
+      return; // Wait for profile refresh before checking new milestones
+    }
+    
+    // Now check for new milestone achievements
+    if (currentStreak === 0) return;
     const currentTier = getStreakTier(currentStreak);
 
     // Only celebrate actual tier achievements (not 'none')
     if (currentTier.tier === 'none') return;
-    const celebratedMilestones = profile.celebrated_streak_milestones || [];
 
-    // Check if user just hit this milestone and hasn't celebrated it
-    if (currentStreak >= currentTier.minDays && !celebratedMilestones.includes(currentTier.minDays)) {
+    // Check if user just hit this milestone and hasn't celebrated it in this streak
+    if (currentStreak >= currentTier.minDays && !stillValidMilestones.includes(currentTier.minDays)) {
       setCelebratingTier(currentTier);
       setMilestoneDialogOpen(true);
       
+      // Get current achievement counts and increment for this milestone
+      const currentCounts = (profile.streak_achievement_counts || {}) as Record<string, number>;
+      const milestoneKey = currentTier.minDays.toString();
+      const newCounts = {
+        ...currentCounts,
+        [milestoneKey]: (currentCounts[milestoneKey] || 0) + 1,
+      };
+      
       // Persist to database
-      const newMilestones = [...celebratedMilestones, currentTier.minDays];
+      const newMilestones = [...stillValidMilestones, currentTier.minDays];
       supabase
         .from('profiles')
-        .update({ celebrated_streak_milestones: newMilestones })
+        .update({ 
+          celebrated_streak_milestones: newMilestones,
+          streak_achievement_counts: newCounts,
+        })
         .eq('id', profile.id)
         .then(({ error }) => {
           if (error) {
@@ -188,7 +223,13 @@ const Profile = () => {
                 <div className="space-y-1.5">
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
                   <p className="text-sm text-muted-foreground">@{profile?.username}</p>
-                  {practiceStats && <StreakBadges currentStreak={practiceStats.currentStreak} bestStreak={practiceStats.bestDailyStreak} />}
+                  {practiceStats && (
+                    <StreakBadges 
+                      currentStreak={practiceStats.currentStreak} 
+                      bestStreak={practiceStats.bestDailyStreak}
+                      achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
+                    />
+                  )}
                 </div>
               )}
             </div>

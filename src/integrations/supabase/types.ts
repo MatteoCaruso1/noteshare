@@ -580,6 +580,7 @@ export type Database = {
           name: string
           open_to_collaborate: boolean | null
           skill_level: string | null
+          streak_achievement_counts: Json | null
           updated_at: string
           user_id: string | null
           username: string
@@ -599,6 +600,7 @@ export type Database = {
           name: string
           open_to_collaborate?: boolean | null
           skill_level?: string | null
+          streak_achievement_counts?: Json | null
           updated_at?: string
           user_id?: string | null
           username: string
@@ -618,6 +620,7 @@ export type Database = {
           name?: string
           open_to_collaborate?: boolean | null
           skill_level?: string | null
+          streak_achievement_counts?: Json | null
           updated_at?: string
           user_id?: string | null
           username?: string

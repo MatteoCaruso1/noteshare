@@ -443,6 +443,8 @@ export function useSuggestedMusicians() {
           const meta = suggestionMap.get(p.id) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
           return {
             ...p,
+            // Cast JSONB field to proper type
+            streak_achievement_counts: (p.streak_achievement_counts || {}) as Record<string, number>,
             mutualCount: meta.mutualCount,
             reasons: Array.from(meta.reasons) as SuggestionReason[],
             matchingGenres: meta.matchingGenres,
