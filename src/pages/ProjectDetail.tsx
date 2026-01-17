@@ -245,7 +245,7 @@ const ProjectDetail = () => {
           {/* Project Description */}
           {project.description && (
             <div className="p-4 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground">{project.description}</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">{project.description}</p>
             </div>
           )}
 

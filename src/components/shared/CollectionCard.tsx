@@ -95,7 +95,7 @@ export const CollectionCard = ({
           )}
           
           {description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mt-1 break-words overflow-hidden">
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1 break-words overflow-hidden whitespace-pre-line">
               {description}
             </p>
           )}
