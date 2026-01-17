@@ -27,6 +27,7 @@ export interface Profile {
   following_count: number;
   current_streak: number;
   celebrated_streak_milestones: number[];
+  streak_achievement_counts: Record<string, number> | null;
   created_at: string;
   updated_at: string;
 }
