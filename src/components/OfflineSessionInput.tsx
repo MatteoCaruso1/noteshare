@@ -49,11 +49,11 @@ export function OfflineSessionInput() {
           Log Past Session
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-[calc(100vw-2rem)] sm:max-w-lg w-full">
         <DialogHeader>
           <DialogTitle>Log Past Practice Session</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 pt-4">
+        <div className="space-y-4 pt-4 overflow-x-hidden">
           {/* Date */}
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
