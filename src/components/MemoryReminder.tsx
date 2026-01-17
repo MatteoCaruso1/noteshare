@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,10 @@ import { Sparkles, Clock, X } from 'lucide-react';
 import { subWeeks, subMonths, differenceInDays } from 'date-fns';
 import { NoteWithAuthor } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
+
+// DEV_MODE: Set to true to bypass age restrictions and force refresh for testing
+// Set to false before production!
+const DEV_MODE = true;
 
 const MEMORY_REFRESH_DAYS = 5;
 const MIN_AGE_WEEKS = 2;
@@ -30,14 +34,22 @@ export const MemoryReminder = memo(function MemoryReminder() {
     }
   });
 
+  // DEV_MODE: Clear all cached memory state on mount for fresh testing
+  useEffect(() => {
+    if (DEV_MODE) {
+      localStorage.removeItem(STORAGE_KEY_CURRENT_MEMORY);
+      localStorage.removeItem(STORAGE_KEY_LAST_REFRESH);
+      localStorage.removeItem(STORAGE_KEY_DISMISSED);
+      setIsDismissed(false);
+    }
+  }, []);
+
   // Check if we should refresh memories (every 5 days)
-  // DEV: Add ?refresh-memory to URL to force refresh for testing
   const shouldRefresh = (): boolean => {
+    // DEV_MODE: Always refresh for testing
+    if (DEV_MODE) return true;
+    
     try {
-      // Dev bypass for testing
-      if (window.location.search.includes('refresh-memory')) {
-        return true;
-      }
       const lastRefresh = localStorage.getItem(STORAGE_KEY_LAST_REFRESH);
       if (!lastRefresh) return true;
       const daysSinceRefresh = differenceInDays(new Date(), new Date(lastRefresh));
@@ -79,17 +91,23 @@ export const MemoryReminder = memo(function MemoryReminder() {
         };
       }
 
-      // Fetch new memory - notes at least 2 weeks old with audio
+      // Fetch new memory - notes at least 2 weeks old with audio (or any age in DEV_MODE)
       const minDate = subWeeks(new Date(), MIN_AGE_WEEKS);
       
-      const { data } = await supabase
+      let query = supabase
         .from('notes')
         .select(`id, text_content, audio_files, created_at, author_id, profiles!notes_author_id_fkey (id, name, avatar)`)
         .eq('author_id', profile.id)
-        .lt('created_at', minDate.toISOString())
         .not('audio_files', 'is', null)
         .order('created_at', { ascending: false })
-        .limit(50); // Get a pool to filter from
+        .limit(50);
+      
+      // DEV_MODE: Skip age filter to allow any note with audio
+      if (!DEV_MODE) {
+        query = query.lt('created_at', minDate.toISOString());
+      }
+      
+      const { data } = await query;
 
       if (!data || data.length === 0) {
         localStorage.setItem(STORAGE_KEY_LAST_REFRESH, new Date().toISOString());
