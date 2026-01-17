@@ -24,10 +24,17 @@ function parseStorageRef(input: string): StorageRef | null {
     const u = new URL(input);
     // /storage/v1/object/public/{bucket}/{path}
     // /storage/v1/object/authenticated/{bucket}/{path}
+    // /storage/v1/object/sign/{bucket}/{path}?token=...
     // /storage/v1/object/{bucket}/{path}
-    const match = u.pathname.match(/\/storage\/v1\/object\/(?:public\/|authenticated\/)?([^/]+)\/(.+)/);
+    const match = u.pathname.match(/\/storage\/v1\/object\/(?:public\/|authenticated\/|sign\/)?([^/]+)\/(.+)/);
     if (!match) return null;
-    return { bucket: match[1], path: decodeURIComponent(match[2]) };
+    // For signed URLs, the path may have query params - strip them
+    let extractedPath = decodeURIComponent(match[2]);
+    // Remove any query string that got into the path
+    if (extractedPath.includes('?')) {
+      extractedPath = extractedPath.split('?')[0];
+    }
+    return { bucket: match[1], path: extractedPath };
   } catch {
     return null;
   }
@@ -113,16 +120,9 @@ const handler = async (req: Request): Promise<Response> => {
           return;
         }
 
-        // Already signed
-        try {
-          const u = new URL(input);
-          if (u.searchParams.has("token")) {
-            results[input] = input;
-            return;
-          }
-        } catch {
-          // ignore
-        }
+        // Previously: skip re-signing if URL has token
+        // Now: always re-sign to handle expired tokens
+        // The parseStorageRef will extract the path from signed URLs
 
         const ref = parseStorageRef(input);
         if (!ref) {

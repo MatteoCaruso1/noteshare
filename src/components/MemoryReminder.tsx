@@ -10,8 +10,8 @@ import { NoteWithAuthor } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 
 // DEV_MODE: Set to true to bypass age restrictions and force refresh for testing
-// Set to false before production!
-const DEV_MODE = true;
+// Set to false for production!
+const DEV_MODE = false;
 
 const MEMORY_REFRESH_DAYS = 5;
 const MEMORY_EXPIRATION_HOURS = 24; // Memory auto-expires after 24 hours
