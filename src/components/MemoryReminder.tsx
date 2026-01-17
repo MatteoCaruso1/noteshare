@@ -135,13 +135,13 @@ export const MemoryReminder = memo(function MemoryReminder() {
   });
 
   const handleDismiss = () => {
-    if (memory) {
+    if (memory?.note) {
       localStorage.setItem(STORAGE_KEY_DISMISSED, memory.note.id);
       setIsDismissed(true);
     }
   };
 
-  if (!memory || isDismissed) return null;
+  if (!memory?.note || isDismissed) return null;
 
   return (
     <div className="space-y-3">
