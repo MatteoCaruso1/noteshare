@@ -145,9 +145,13 @@ const PublicProfile = () => {
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-6">
           {/* Back Button */}
-          <Button variant="ghost" onClick={handleBack} className="-ml-2">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-          </Button>
+          <button 
+            onClick={handleBack} 
+            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
         </div>
       </PageHeader>
 

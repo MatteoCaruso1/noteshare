@@ -54,9 +54,13 @@ export const CollectionDetailHeader = ({
   return (
     <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
       <div className="flex items-center gap-3 mb-4">
-        <Button variant="ghost" size="icon" onClick={handleBack}>
+        <button 
+          onClick={handleBack}
+          className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+          aria-label="Go back"
+        >
           <ArrowLeft className="w-5 h-5" />
-        </Button>
+        </button>
         <div className="flex-1" />
         {showSettings && onSettingsClick && (
           <Button variant="ghost" size="icon" onClick={onSettingsClick}>

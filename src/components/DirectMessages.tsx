@@ -188,9 +188,13 @@ function NewMessageView({
   return (
     <Card className="p-4 bg-card border-border">
       <div className="flex items-center gap-3 mb-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
+        <button 
+          onClick={onBack}
+          className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         <h3 className="font-semibold">New Message</h3>
       </div>
 
@@ -267,8 +271,8 @@ function ChatView({ friend, onBack }: { friend: Profile; onBack: () => void }) {
       <div className="flex items-center gap-3 p-3 border-b border-border shrink-0 bg-background">
         <button 
           onClick={onBack}
-          className="flex items-center justify-center h-9 w-9 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors shrink-0"
-          aria-label="Close conversation"
+          className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors shrink-0"
+          aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
