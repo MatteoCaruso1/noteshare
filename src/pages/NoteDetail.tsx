@@ -101,9 +101,11 @@ const NoteDetail = () => {
     if (fromFriends) {
       navigate('/friends');
     } else if (fromProject) {
-      navigate(`/projects/${fromProject}`);
+      // Use replace to avoid back button loops between note and project
+      navigate(`/projects/${fromProject}`, { replace: true });
     } else if (fromGig) {
-      navigate(`/gigs/${fromGig}`);
+      // Use replace to avoid back button loops between note and gig
+      navigate(`/gigs/${fromGig}`, { replace: true });
     } else {
       navigate('/');
     }

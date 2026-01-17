@@ -422,11 +422,6 @@ const WorkingToward = () => {
                   <div className="flex items-center gap-3">
                     <Disc3 className={cn("w-5 h-5 transition-colors", projectsOpen ? "text-primary" : "text-foreground")} />
                     <span className="font-semibold">Projects</span>
-                    {myProjects && myProjects.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {myProjects.length}
-                      </Badge>
-                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>

@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 interface CollectionDetailHeaderProps {
   backPath?: string;
   useHistoryBack?: boolean;
+  fallbackPath?: string;
   title: string;
   date: string;
   dateLabel?: string;
@@ -26,6 +27,7 @@ interface CollectionDetailHeaderProps {
 export const CollectionDetailHeader = ({
   backPath,
   useHistoryBack = false,
+  fallbackPath = '/working-toward',
   title,
   date,
   dateLabel = 'Created',
@@ -43,11 +45,16 @@ export const CollectionDetailHeader = ({
 
   const handleBack = () => {
     if (useHistoryBack) {
-      navigate(-1);
+      // Check if we have history to go back to, otherwise use fallback
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate(fallbackPath, { replace: true });
+      }
     } else if (backPath) {
       navigate(backPath);
     } else {
-      navigate(-1);
+      navigate(fallbackPath, { replace: true });
     }
   };
 
