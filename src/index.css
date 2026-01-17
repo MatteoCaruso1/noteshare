@@ -212,8 +212,8 @@
     margin-right: 0 !important;
   }
 
-  /* Fix stuck hover states on touch devices (iOS Safari) */
-  @media (hover: none) {
+  /* Fix stuck hover/focus states on touch devices (iOS Safari) */
+  @media (hover: none) and (pointer: coarse) {
     button,
     a,
     [role="button"],
@@ -226,6 +226,28 @@
     a:hover,
     [role="button"]:hover {
       background-color: inherit;
+    }
+    
+    /* Clear focus-visible states immediately on touch devices */
+    button:focus,
+    button:focus-visible,
+    a:focus,
+    a:focus-visible,
+    [role="button"]:focus,
+    [role="button"]:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+      --tw-ring-shadow: none !important;
+      --tw-ring-color: transparent !important;
+    }
+    
+    /* Clear Radix UI component focus states */
+    [data-state]:focus,
+    [data-state]:focus-visible,
+    [data-radix-collection-item]:focus,
+    [data-radix-collection-item]:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
     }
   }
 

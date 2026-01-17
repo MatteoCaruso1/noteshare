@@ -36,8 +36,19 @@ export function MediaUploadButton({ onAudioUpload, onImageUpload, uploading, ico
     }
   };
 
+  // Handle touch end to blur button and prevent stuck focus states
+  const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur();
+  };
+
   const triggerButton = iconOnly ? (
-    <Button variant="ghost" size="icon" disabled={uploading} className="h-8 w-8">
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      disabled={uploading} 
+      className="h-8 w-8 focus:outline-none focus-visible:outline-none"
+      onTouchEnd={handleTouchEnd}
+    >
       {uploading ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
@@ -45,7 +56,12 @@ export function MediaUploadButton({ onAudioUpload, onImageUpload, uploading, ico
       )}
     </Button>
   ) : (
-    <Button variant="outline" disabled={uploading} className="gap-2">
+    <Button 
+      variant="outline" 
+      disabled={uploading} 
+      className="gap-2 focus:outline-none focus-visible:outline-none"
+      onTouchEnd={handleTouchEnd}
+    >
       {uploading ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (

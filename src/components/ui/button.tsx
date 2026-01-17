@@ -44,9 +44,25 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, onTouchEnd, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    
+    // Handle touch end to blur button and prevent stuck focus states on mobile
+    const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
+      // Blur the button after touch to clear focus state
+      (e.currentTarget as HTMLButtonElement).blur();
+      // Call any passed onTouchEnd handler
+      onTouchEnd?.(e);
+    };
+    
+    return (
+      <Comp 
+        className={cn(buttonVariants({ variant, size, className }))} 
+        ref={ref} 
+        onTouchEnd={handleTouchEnd}
+        {...props} 
+      />
+    );
   },
 );
 Button.displayName = "Button";
