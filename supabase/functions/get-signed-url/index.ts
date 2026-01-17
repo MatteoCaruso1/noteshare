@@ -49,10 +49,21 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const body = (await req.json()) as Body;
+    const toSign: string[] = "urls" in body ? body.urls : [body.url];
+    const expiresInSeconds =
+      ("expiresInSeconds" in body && body.expiresInSeconds) || 60 * 60 * 24; // 24h
+
     const authHeader = req.headers.get("Authorization");
+    
+    // If no auth, return original URLs so the app doesn't break
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+      console.log("[get-signed-url] No auth header, returning original URLs");
+      const results: Record<string, string> = {};
+      for (const url of toSign) {
+        if (url) results[url] = url;
+      }
+      return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -71,18 +82,17 @@ const handler = async (req: Request): Promise<Response> => {
       error: userError,
     } = await userClient.auth.getUser();
 
+    // If auth fails, return original URLs gracefully
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+      console.log("[get-signed-url] Auth failed, returning original URLs");
+      const results: Record<string, string> = {};
+      for (const url of toSign) {
+        if (url) results[url] = url;
+      }
+      return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const body = (await req.json()) as Body;
-    const expiresInSeconds =
-      ("expiresInSeconds" in body && body.expiresInSeconds) || 60 * 60 * 24; // 24h
-
-    const toSign: string[] = "urls" in body ? body.urls : [body.url];
 
     // Admin client bypasses storage RLS, but we still require an authenticated caller.
     const admin = createClient(supabaseUrl, serviceRoleKey);
