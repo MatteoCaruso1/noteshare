@@ -212,11 +212,6 @@ function NewMessageView({
                 <p className="font-medium text-sm truncate">{friend.name}</p>
                 <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
               </div>
-              {existingConversations.includes(friend.id) && (
-                <Badge variant="secondary" className="text-[10px]">
-                  Active
-                </Badge>
-              )}
             </div>
           ))}
         </div>
