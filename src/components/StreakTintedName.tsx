@@ -38,7 +38,7 @@ export const StreakTintedName = memo(function StreakTintedName({
             {showCount && (
               <span 
                 className={`absolute inset-0 flex items-center justify-center text-[6px] font-bold ${tier.colorClass}`}
-                style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-2px' }}
+                style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-3px' }}
               >
                 {countText}
               </span>

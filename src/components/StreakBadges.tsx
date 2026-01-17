@@ -20,7 +20,7 @@ function BadgeIcon({ tier, count }: { tier: StreakTierInfo; count?: number }) {
       {displayCount && (
         <span 
           className={`absolute inset-0 flex items-center justify-center text-[7px] font-bold ${tier.colorClass}`}
-          style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-2px' }}
+          style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-3px' }}
         >
           {displayCount}
         </span>
