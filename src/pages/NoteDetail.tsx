@@ -19,7 +19,7 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, User, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Trash2, SendHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -185,13 +185,13 @@ const NoteDetail = () => {
                     <AvatarImage src={profile.avatar || ''} />
                     <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 px-3 py-2 rounded-full border border-border bg-muted/30">
+                  <div className="flex-1">
                     <MentionInput
                       placeholder="Post a comment"
                       value={newComment}
                       onChange={setNewComment}
                       rows={1}
-                      className="resize-none text-sm min-h-[24px] bg-transparent border-0 focus-visible:ring-0 px-0 w-full"
+                      className="resize-none text-sm min-h-[36px] rounded-md border border-input bg-background px-3 py-2 w-full"
                     />
                   </div>
                   <VoiceReplyButton
@@ -201,12 +201,13 @@ const NoteDetail = () => {
                     onSuccess={() => queryClient.invalidateQueries({ queryKey: ['note-comments', id] })}
                   />
                   <Button
-                    size="sm"
-                    className="h-8 px-4 rounded-full bg-muted hover:bg-muted/80 text-foreground"
+                    size="icon"
+                    className="h-9 w-9 bg-gradient-primary text-primary-foreground"
                     onClick={handleAddComment}
                     disabled={createComment.isPending || !newComment.trim()}
+                    title="Post comment"
                   >
-                    Comment
+                    <SendHorizontal className="w-4 h-4" />
                   </Button>
                 </div>
               </Card>
