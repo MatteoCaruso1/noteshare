@@ -37,8 +37,8 @@ export const StreakTintedName = memo(function StreakTintedName({
             <Trophy className={`w-3.5 h-3.5 ${tier.colorClass} opacity-80`} />
             {showCount && (
               <span 
-                className={`absolute inset-0 flex items-center justify-center text-[6px] font-bold ${tier.colorClass} pt-0.5`}
-                style={{ textShadow: '0 0 2px hsl(var(--background))' }}
+                className={`absolute inset-0 flex items-center justify-center text-[6px] font-bold ${tier.colorClass}`}
+                style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-1px' }}
               >
                 {countText}
               </span>

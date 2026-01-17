@@ -19,8 +19,8 @@ function BadgeIcon({ tier, count }: { tier: StreakTierInfo; count?: number }) {
       <Trophy className={`w-4 h-4 ${tier.colorClass}`} />
       {displayCount && (
         <span 
-          className={`absolute inset-0 flex items-center justify-center text-[7px] font-bold ${tier.colorClass} pt-0.5`}
-          style={{ textShadow: '0 0 2px hsl(var(--background))' }}
+          className={`absolute inset-0 flex items-center justify-center text-[7px] font-bold ${tier.colorClass}`}
+          style={{ textShadow: '0 0 2px hsl(var(--background))', marginTop: '-1px' }}
         >
           {displayCount}
         </span>
