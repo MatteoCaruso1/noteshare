@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
 import { useMyPromoPosts, useFriendsPromoPosts, useCreatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { SimpleGoals } from '@/components/SimpleGoals';
@@ -40,30 +41,29 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Storage keys for persisting UI state
-const WORKING_TOWARD_STATE_KEY = 'noteshare_working_toward_state';
+// Storage keys for persisting UI state (not scroll - that's handled by useScrollRestoration)
+const WORKING_TOWARD_UI_STATE_KEY = 'noteshare_working_toward_ui_state';
 
-interface WorkingTowardState {
+interface WorkingTowardUIState {
   projectsOpen: boolean;
   gigsOpen: boolean;
   projectsTab: string;
   gigsTab: string;
-  scrollY: number;
 }
 
-const getStoredState = (): WorkingTowardState | null => {
+const getStoredUIState = (): WorkingTowardUIState | null => {
   try {
-    const stored = sessionStorage.getItem(WORKING_TOWARD_STATE_KEY);
+    const stored = sessionStorage.getItem(WORKING_TOWARD_UI_STATE_KEY);
     return stored ? JSON.parse(stored) : null;
   } catch {
     return null;
   }
 };
 
-const saveState = (state: Partial<WorkingTowardState>) => {
+const saveUIState = (state: Partial<WorkingTowardUIState>) => {
   try {
-    const current = getStoredState() || { projectsOpen: false, gigsOpen: false, projectsTab: 'mine', gigsTab: 'mine', scrollY: 0 };
-    sessionStorage.setItem(WORKING_TOWARD_STATE_KEY, JSON.stringify({ ...current, ...state }));
+    const current = getStoredUIState() || { projectsOpen: false, gigsOpen: false, projectsTab: 'mine', gigsTab: 'mine' };
+    sessionStorage.setItem(WORKING_TOWARD_UI_STATE_KEY, JSON.stringify({ ...current, ...state }));
   } catch {
     // Ignore storage errors
   }
@@ -72,10 +72,13 @@ const saveState = (state: Partial<WorkingTowardState>) => {
 const WorkingToward = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const isRestoringScroll = useRef(false);
   
-  // Get stored state for initial values
-  const storedState = getStoredState();
+  // Use the standard scroll restoration hook - this integrates with PageLayout
+  // to prevent header flash when returning to this page with a scroll position
+  useScrollRestoration('working-toward');
+  
+  // Get stored UI state for initial values (collapsible/tab states only)
+  const storedUIState = getStoredUIState();
   
   // Projects hooks
   const { data: myProjects, isLoading: myProjectsLoading } = useProjects();
@@ -90,43 +93,16 @@ const WorkingToward = () => {
   const deletePromoPost = useDeletePromoPost();
   
   // Collapsible states - initialize from stored state
-  const [projectsOpen, setProjectsOpen] = useState(storedState?.projectsOpen ?? false);
-  const [gigsOpen, setGigsOpen] = useState(storedState?.gigsOpen ?? false);
+  const [projectsOpen, setProjectsOpen] = useState(storedUIState?.projectsOpen ?? false);
+  const [gigsOpen, setGigsOpen] = useState(storedUIState?.gigsOpen ?? false);
   
   // Tab states - initialize from stored state
-  const [projectsTab, setProjectsTab] = useState(storedState?.projectsTab ?? 'mine');
-  const [gigsTab, setGigsTab] = useState(storedState?.gigsTab ?? 'mine');
-  
-  // Restore scroll position on mount
-  useLayoutEffect(() => {
-    const stored = getStoredState();
-    if (stored && stored.scrollY > 0) {
-      isRestoringScroll.current = true;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: stored.scrollY, left: 0, behavior: 'auto' });
-          setTimeout(() => {
-            isRestoringScroll.current = false;
-          }, 50);
-        });
-      });
-    }
-  }, []);
-  
-  // Save scroll position on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isRestoringScroll.current) {
-        saveState({ scrollY: window.scrollY });
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [projectsTab, setProjectsTab] = useState(storedUIState?.projectsTab ?? 'mine');
+  const [gigsTab, setGigsTab] = useState(storedUIState?.gigsTab ?? 'mine');
   
   // Save UI state when it changes
   useEffect(() => {
-    saveState({ projectsOpen, gigsOpen, projectsTab, gigsTab });
+    saveUIState({ projectsOpen, gigsOpen, projectsTab, gigsTab });
   }, [projectsOpen, gigsOpen, projectsTab, gigsTab]);
   
   // Project dialog state
