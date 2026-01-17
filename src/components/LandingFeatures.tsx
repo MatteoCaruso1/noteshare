@@ -107,7 +107,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
 export function LandingFeatures() {
   return (
-    <section className="bg-background py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full -mt-12">
+    <section className="bg-background py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-8">
       <div className="w-full max-w-7xl mx-auto space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
