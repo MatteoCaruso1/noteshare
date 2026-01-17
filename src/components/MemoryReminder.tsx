@@ -107,19 +107,16 @@ export const MemoryReminder = memo(function MemoryReminder() {
         <Sparkles className="w-4 h-4 text-primary" />
         <span>Musical Memories</span>
       </div>
-      {memories.map(({ note, label, color }) => (
-        <Card key={note.id} className="p-4 bg-gradient-card border-border">
+      {memories.map(({ note, label }) => (
+        <Card key={note.id} className="p-4 border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10">
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className={`text-xs ${color}`}>
+            <Badge variant="secondary" className="text-xs">
               <Clock className="w-3 h-3 mr-1" />
               {label}
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {format(new Date(note.created_at), 'MMM d, yyyy')}
-            </span>
           </div>
           {note.text_content && (
-            <p className="text-sm line-clamp-2">{note.text_content}</p>
+            <p className="text-sm whitespace-pre-wrap">{note.text_content}</p>
           )}
           {note.audio_files && note.audio_files.length > 0 && (
             <div className="mt-2">
