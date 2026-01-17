@@ -349,10 +349,20 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {isPracticeSession ? (
             isOwner && expanded ? (
               <Popover open={sessionDurationOpen} onOpenChange={handleSessionDurationOpenChange}>
-                <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Badge 
-                    variant="secondary" 
+                <PopoverTrigger asChild>
+                  <Badge
+                    variant="secondary"
+                    role="button"
+                    tabIndex={0}
                     className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        // Let Radix handle opening via click; we just synthesize one.
+                        (e.currentTarget as HTMLDivElement).click();
+                      }
+                    }}
                   >
                     <Clock className="w-3 h-3 mr-1" />
                     Practice Session
