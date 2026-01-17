@@ -54,13 +54,13 @@ const Projects = () => {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !profile) return;
 
     setIsUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `project-covers/${fileName}`;
+      const filePath = `${profile.id}/project-covers/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('practice-media')

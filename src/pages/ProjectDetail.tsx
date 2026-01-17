@@ -110,13 +110,13 @@ const ProjectDetail = () => {
 
   const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !profile) return;
 
     setIsUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `project-covers/${fileName}`;
+      const filePath = `${profile.id}/project-covers/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('practice-media')
@@ -124,11 +124,15 @@ const ProjectDetail = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Use signed URL for preview since the bucket is private
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('practice-media')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60); // 1 hour for preview
 
-      setEditCoverImage(urlData.publicUrl);
+      if (signedError) throw signedError;
+
+      // Store the path (not the signed URL) for saving to DB
+      setEditCoverImage(filePath);
       toast.success('Album art uploaded!');
     } catch (error) {
       console.error('Upload error:', error);
