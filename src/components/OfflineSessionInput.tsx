@@ -1,24 +1,22 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogOfflineSession } from '@/hooks/useSessions';
-import { useFriends } from '@/hooks/useFriendships';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CollaboratorPicker } from '@/components/CollaboratorPicker';
-import { Clock, Calendar, Plus, X } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function OfflineSessionInput() {
   const { profile } = useAuth();
   const logSession = useLogOfflineSession();
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [duration, setDuration] = useState('30');
+  const [duration, setDuration] = useState('');
   const [noteText, setNoteText] = useState('');
-  const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
 
   const handleSubmit = () => {
     if (!profile) return;
@@ -31,14 +29,12 @@ export function OfflineSessionInput() {
         date,
         durationMinutes,
         noteText: noteText || undefined,
-        collaboratorIds: collaboratorIds.length > 0 ? collaboratorIds : undefined,
       },
       {
         onSuccess: () => {
           setDate(new Date().toISOString().split('T')[0]);
-          setDuration('30');
+          setDuration('');
           setNoteText('');
-          setCollaboratorIds([]);
           setIsOpen(false);
         },
       }
@@ -68,6 +64,7 @@ export function OfflineSessionInput() {
               value={date}
               onChange={(e) => setDate(e.target.value)}
               max={new Date().toISOString().split('T')[0]}
+              autoFocus={!isMobile}
             />
           </div>
 
@@ -76,48 +73,27 @@ export function OfflineSessionInput() {
             <label className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
               <Clock className="w-4 h-4" /> Duration (minutes)
             </label>
-            <div className="flex gap-2">
-              {['15', '30', '45', '60', '90'].map((mins) => (
-                <Button
-                  key={mins}
-                  type="button"
-                  variant={duration === mins ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setDuration(mins)}
-                >
-                  {mins}m
-                </Button>
-              ))}
-              <Input
-                type="number"
-                placeholder="Custom"
-                value={!['15', '30', '45', '60', '90'].includes(duration) ? duration : ''}
-                onChange={(e) => setDuration(e.target.value)}
-                className="w-24"
-                min="1"
-              />
-            </div>
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Enter minutes"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              min="1"
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
           </div>
 
           {/* Notes */}
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              What did you practice? (optional)
+              What did you practice?
             </label>
             <Textarea
-              placeholder="Scales, sight-reading, working on a new piece..."
+              placeholder=""
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               rows={3}
-            />
-          </div>
-
-          {/* Collaborators */}
-          <div className="border-t border-border pt-4">
-            <CollaboratorPicker
-              selectedIds={collaboratorIds}
-              onSelect={setCollaboratorIds}
-              label="Tag Collaborators (optional)"
             />
           </div>
 
