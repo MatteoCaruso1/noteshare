@@ -85,21 +85,24 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       }`}>
         {feature.title}
       </h2>
-      <div 
-        className={`rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50 w-full max-w-lg ${
-          feature.cropTop ? 'h-[240px]' : ''
-        }`}
-        style={{ transform: `translateY(${parallaxOffset}px)` }}
-      >
-        <img
-          src={feature.image}
-          alt={feature.alt}
-          className={`w-full h-auto ${
-            feature.cropTop ? 'object-cover object-bottom' : ''
+      <div className="relative" style={{ transform: `translateY(${parallaxOffset}px)` }}>
+        {/* Glow effect */}
+        <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
+        <div 
+          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50 w-full max-w-lg ${
+            feature.cropTop ? 'h-[240px]' : ''
           }`}
-          style={feature.cropTop ? { marginTop: '-38%' } : undefined}
-          loading="lazy"
-        />
+        >
+          <img
+            src={feature.image}
+            alt={feature.alt}
+            className={`w-full h-auto ${
+              feature.cropTop ? 'object-cover object-bottom' : ''
+            }`}
+            style={feature.cropTop ? { marginTop: '-38%' } : undefined}
+            loading="lazy"
+          />
+        </div>
       </div>
     </div>
   );
@@ -107,7 +110,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
 export function LandingFeatures() {
   return (
-    <section className="bg-background py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-8">
+    <section className="bg-transparent py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-8">
       <div className="w-full max-w-7xl mx-auto space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />

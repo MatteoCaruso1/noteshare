@@ -57,7 +57,7 @@ export function WelcomeHero() {
 
   return (
     <div 
-      className={`bg-background flex flex-col -mt-16 transition-all duration-500 ease-out ${
+      className={`bg-transparent flex flex-col -mt-16 transition-all duration-500 ease-out relative z-10 ${
         isExiting 
           ? 'opacity-0 blur-sm scale-[1.02] overflow-hidden' 
           : 'animate-hero-enter'
