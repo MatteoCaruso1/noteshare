@@ -28,26 +28,35 @@ const features = [
 
 export function LandingFeatures() {
   return (
-    <section className="bg-background py-24 px-6 md:px-12 lg:px-24">
-      <div className="max-w-6xl mx-auto space-y-32">
-        {features.map((feature, index) => (
-          <div
-            key={index}
-            className="flex flex-col items-center gap-8"
-          >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground text-center max-w-2xl">
-              {feature.title}
-            </h2>
-            <div className="w-full max-w-4xl rounded-xl overflow-hidden shadow-2xl shadow-black/20 border border-border/50">
-              <img
-                src={feature.image}
-                alt={feature.alt}
-                className="w-full h-auto"
-                loading="lazy"
-              />
+    <section className="bg-background py-16 px-6 md:px-12 lg:px-24">
+      <div className="max-w-5xl mx-auto space-y-12">
+        {features.map((feature, index) => {
+          // Zig-zag pattern: 0,2 = left, 1,3 = right
+          const isRight = index % 2 === 1;
+          
+          return (
+            <div
+              key={index}
+              className={`flex flex-col gap-4 max-w-md ${
+                isRight ? 'ml-auto' : 'mr-auto'
+              }`}
+            >
+              <h2 className={`text-lg sm:text-xl font-semibold text-foreground ${
+                isRight ? 'text-right' : 'text-left'
+              }`}>
+                {feature.title}
+              </h2>
+              <div className="rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50">
+                <img
+                  src={feature.image}
+                  alt={feature.alt}
+                  className="w-full h-auto"
+                  loading="lazy"
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
