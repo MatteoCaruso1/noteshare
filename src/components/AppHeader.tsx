@@ -90,7 +90,7 @@ export function AppHeader() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
       <div className="container flex h-12 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/welcome" className="flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <span className="font-semibold text-foreground leading-tight">Noteshare</span>
