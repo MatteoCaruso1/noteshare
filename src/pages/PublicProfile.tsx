@@ -153,17 +153,6 @@ const PublicProfile = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            
-            {/* Message Button - only show if friend */}
-            {isFriend && (
-              <button 
-                onClick={() => setMessagesOpen(true)}
-                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-                aria-label="Send message"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </button>
-            )}
           </div>
         </div>
       </PageHeader>
@@ -171,7 +160,17 @@ const PublicProfile = () => {
       <PageBody>
         <div className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
           {/* Profile Header */}
-          <Card className="p-6 bg-card border-border">
+          <Card className="p-6 bg-card border-border relative">
+            {/* Message Button - only show if friend */}
+            {isFriend && (
+              <button 
+                onClick={() => setMessagesOpen(true)}
+                className="absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+                aria-label="Send message"
+              >
+                <MessageCircle className="w-5 h-5" />
+              </button>
+            )}
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="w-20 h-20 border-2 border-primary/20">
                 {signedAvatar ? (
@@ -241,6 +240,7 @@ const PublicProfile = () => {
               <DirectMessages 
                 embedded 
                 initialSelectedFriend={profile}
+                onClose={() => setMessagesOpen(false)}
               />
             </DialogContent>
           </Dialog>
