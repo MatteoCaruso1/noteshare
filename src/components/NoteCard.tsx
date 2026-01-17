@@ -50,7 +50,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, hasMedi
   const hasContent = textContent || focusTextSnapshot;
   if (!hasContent) return null;
 
-  const marginClass = hasMediaBelow ? 'mb-3' : '';
+  const marginClass = hasMediaBelow ? 'mb-3' : 'pb-1';
 
   // In expanded view, show everything without truncation
   if (expanded) {
