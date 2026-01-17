@@ -63,8 +63,13 @@ export function AppHeader() {
     };
   }, [activeSession]);
   
-  // Don't show on auth page
+  // Don't show on auth page or landing page (when not logged in)
   if (location.pathname === '/auth') {
+    return null;
+  }
+  
+  // Hide on landing page when not logged in (WelcomeHero has its own header)
+  if (location.pathname === '/' && !user) {
     return null;
   }
 
