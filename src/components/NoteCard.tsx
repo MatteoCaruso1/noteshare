@@ -274,11 +274,16 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     });
   }, [note.session_id, editedDuration, updateSessionDuration]);
 
-  // Handle popover open/close - start with empty input
+  // Counter to force fresh input mount on each open (prevents browser restore)
+  const [durationEditorKey, setDurationEditorKey] = useState(0);
+
+  // Handle popover open/close - always start with empty input
   const handleSessionDurationOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      // Clear when closing
-      setEditedDuration('');
+    // Clear on both open and close to guarantee blank state
+    setEditedDuration('');
+    if (open) {
+      // Increment key to force React to remount input, defeating browser restore
+      setDurationEditorKey(k => k + 1);
     }
     setSessionDurationOpen(open);
   }, []);
@@ -386,9 +391,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                     <p className="text-xs text-muted-foreground">Edit session duration</p>
                     <div className="flex items-center gap-2">
                       <Input
+                        key={`duration-input-${note.id}-${durationEditorKey}`}
                         type="text"
                         inputMode="numeric"
-                        autoComplete="off"
+                        name="sessionDurationMinutes"
+                        autoComplete="new-password"
                         value={editedDuration}
                         onChange={(e) => {
                           // Allow clearing; keep only digits
@@ -402,7 +409,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                           }
                         }}
                         className="h-7 w-16 text-sm focus-visible:ring-1 focus-visible:ring-ring/50"
-                        placeholder="30"
+                        placeholder="min"
                         aria-label="Session duration in minutes"
                         autoFocus
                       />
