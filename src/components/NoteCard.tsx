@@ -274,13 +274,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     });
   }, [note.session_id, editedDuration, updateSessionDuration]);
 
-  // Initialize session duration when popover opens
+  // Handle popover open/close - start with empty input
   const handleSessionDurationOpenChange = useCallback((open: boolean) => {
-    if (open && sessionDurationData) {
-      setEditedDuration(String(sessionDurationData.durationMinutes));
+    if (!open) {
+      // Clear when closing
+      setEditedDuration('');
     }
     setSessionDurationOpen(open);
-  }, [sessionDurationData]);
+  }, []);
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
