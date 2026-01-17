@@ -67,28 +67,21 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       }`}>
         {feature.title}
       </h2>
-      <div 
-        className="relative"
-        style={{ perspective: '1000px' }}
-      >
+      <div className="relative">
         {/* Glow effect */}
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
           className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-lg ${
-            feature.cropTop ? 'h-[240px]' : ''
+            feature.cropTop ? 'h-[200px]' : ''
           }`}
-          style={{ 
-            transform: 'rotateX(8deg) rotateY(0deg) scale(0.98)',
-            transformOrigin: 'center bottom'
-          }}
         >
           <img
             src={feature.image}
             alt={feature.alt}
-            className={`w-full h-auto ${
-              feature.cropTop ? 'object-cover object-bottom' : ''
+            className={`w-full ${
+              feature.cropTop ? 'h-[280px] object-cover object-top' : 'h-auto'
             }`}
-            style={feature.cropTop ? { marginTop: '-38%' } : undefined}
+            style={feature.cropTop ? { marginTop: '-55px' } : undefined}
             loading="lazy"
           />
         </div>
