@@ -144,14 +144,27 @@ const PublicProfile = () => {
     <PageLayout>
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-6">
-          {/* Back Button */}
-          <button 
-            onClick={handleBack} 
-            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+          <div className="flex items-center justify-between">
+            {/* Back Button */}
+            <button 
+              onClick={handleBack} 
+              className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            
+            {/* Message Button - only show if friend */}
+            {isFriend && (
+              <button 
+                onClick={() => setMessagesOpen(true)}
+                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+                aria-label="Send message"
+              >
+                <MessageCircle className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
       </PageHeader>
 
@@ -220,25 +233,15 @@ const PublicProfile = () => {
               </div>
             )}
 
-            {/* Message Button - only show if friend */}
-            {isFriend && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setMessagesOpen(true)}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Send Message
-                </Button>
-              </div>
-            )}
           </Card>
 
-          {/* Messages Dialog */}
+          {/* Messages Dialog - opens direct chat with this profile */}
           <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
-            <DialogContent className="max-w-md" hideCloseButton>
-              <DirectMessages embedded />
+            <DialogContent className="max-w-md p-0" hideCloseButton>
+              <DirectMessages 
+                embedded 
+                initialSelectedFriend={profile}
+              />
             </DialogContent>
           </Dialog>
 

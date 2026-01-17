@@ -17,13 +17,14 @@ interface DirectMessagesProps {
   showNewMessageView?: boolean;
   onNewMessageViewChange?: (show: boolean) => void;
   onInChatViewChange?: (inChat: boolean) => void;
+  initialSelectedFriend?: Profile | null;
 }
 
-export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange, onInChatViewChange }: DirectMessagesProps = {}) {
+export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewChange, onInChatViewChange, initialSelectedFriend }: DirectMessagesProps = {}) {
   const { profile } = useAuth();
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: friends } = useFriends();
-  const [selectedFriend, setSelectedFriend] = useState<Profile | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<Profile | null>(initialSelectedFriend || null);
   const [internalShowNewMessage, setInternalShowNewMessage] = useState(false);
   
   // Use external control if provided, otherwise internal state
