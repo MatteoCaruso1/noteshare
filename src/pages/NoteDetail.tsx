@@ -113,10 +113,10 @@ const NoteDetail = () => {
   const BackButton = () => (
     <button 
       onClick={handleBack}
-      className="flex items-center justify-center h-7 w-7 rounded-md bg-muted/80 hover:bg-muted text-foreground transition-colors"
+      className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
       aria-label="Go back"
     >
-      <ArrowLeft className="w-4 h-4" />
+      <ArrowLeft className="w-5 h-5" />
     </button>
   );
 
