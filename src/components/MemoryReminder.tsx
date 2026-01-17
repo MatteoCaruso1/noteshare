@@ -31,8 +31,13 @@ export const MemoryReminder = memo(function MemoryReminder() {
   });
 
   // Check if we should refresh memories (every 5 days)
+  // DEV: Add ?refresh-memory to URL to force refresh for testing
   const shouldRefresh = (): boolean => {
     try {
+      // Dev bypass for testing
+      if (window.location.search.includes('refresh-memory')) {
+        return true;
+      }
       const lastRefresh = localStorage.getItem(STORAGE_KEY_LAST_REFRESH);
       if (!lastRefresh) return true;
       const daysSinceRefresh = differenceInDays(new Date(), new Date(lastRefresh));
