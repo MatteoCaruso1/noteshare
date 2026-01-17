@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LandingFeatures } from './LandingFeatures';
+import { LandingTestimonial } from './LandingTestimonial';
 
 export function WelcomeHero() {
   const navigate = useNavigate();
@@ -110,6 +111,9 @@ export function WelcomeHero() {
 
       {/* Features Section */}
       <LandingFeatures />
+
+      {/* Testimonial Section */}
+      <LandingTestimonial />
     </div>
   );
 }
