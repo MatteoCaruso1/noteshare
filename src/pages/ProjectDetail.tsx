@@ -343,14 +343,6 @@ const ProjectDetail = () => {
               />
             </div>
             
-            <div className="flex items-center justify-between py-2">
-              <Label htmlFor="show-feed">Show on home feed</Label>
-              <Switch
-                id="show-feed"
-                checked={editShowOnFeed}
-                onCheckedChange={setEditShowOnFeed}
-              />
-            </div>
 
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
