@@ -49,7 +49,7 @@ export function WelcomeHero() {
       }`}
     >
       {/* Hero Section */}
-      <div className="min-h-[100dvh] flex flex-col overflow-hidden relative">
+      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative">
         {/* Header */}
         <header className="w-full px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
