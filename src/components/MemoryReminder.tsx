@@ -187,8 +187,8 @@ export const MemoryReminder = memo(function MemoryReminder() {
         <p className="text-sm whitespace-pre-wrap pr-6">{memory.note.text_content}</p>
       )}
       {memory.note.audio_files && memory.note.audio_files.length > 0 && (
-        <div className="mt-2 [&_button]:text-amber-600 dark:[&_button]:text-amber-500 [&_button:hover]:bg-amber-500/20 sepia-[.25]">
-          <WaveformPlayer src={memory.note.audio_files[0]} />
+        <div className="mt-2 [&_button]:text-amber-600 dark:[&_button]:text-amber-500 [&_button:hover]:bg-amber-500/20">
+          <WaveformPlayer src={memory.note.audio_files[0]} variant="sepia" />
         </div>
       )}
     </Card>

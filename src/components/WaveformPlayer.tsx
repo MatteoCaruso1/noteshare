@@ -11,6 +11,7 @@ interface WaveformPlayerProps {
   title?: string;
   onRename?: (newName: string) => void;
   onError?: () => void;
+  variant?: 'default' | 'sepia';
 }
 
 // Extract filename from URL for display - returns empty string for timestamp-only filenames
@@ -31,7 +32,7 @@ function extractFilename(url: string): string {
   }
 }
 
-export function WaveformPlayer({ src, title, onRename, onError }: WaveformPlayerProps) {
+export function WaveformPlayer({ src, title, onRename, onError, variant = 'default' }: WaveformPlayerProps) {
   const instanceId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -92,11 +93,17 @@ export function WaveformPlayer({ src, title, onRename, onError }: WaveformPlayer
     setIsLoading(true);
     setError(false);
     
+    // Sepia/amber colors for memory variant
+    const isSepia = variant === 'sepia';
+    const waveColor = isSepia ? 'rgba(180, 140, 100, 0.5)' : 'rgba(147, 197, 253, 0.5)';
+    const progressColor = isSepia ? 'rgb(180, 130, 70)' : 'hsl(var(--primary))';
+    const cursorColor = isSepia ? 'rgb(200, 150, 80)' : 'hsl(var(--primary))';
+
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
-      waveColor: 'rgba(147, 197, 253, 0.5)',
-      progressColor: 'hsl(var(--primary))',
-      cursorColor: 'hsl(var(--primary))',
+      waveColor,
+      progressColor,
+      cursorColor,
       cursorWidth: 2,
       barWidth: 3,
       barGap: 2,
