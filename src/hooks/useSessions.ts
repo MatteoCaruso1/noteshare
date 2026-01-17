@@ -517,10 +517,67 @@ export function useUpdateSessionDuration() {
       if (error) throw error;
       return data as PracticeSession;
     },
-    onSuccess: () => {
+    onSuccess: (updatedSession) => {
+      // Update all queries that might contain this session
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
+      
+      // Invalidate all notes queries (both list and individual)
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['note'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      
+      // Also optimistically update any cached notes that reference this session
+      queryClient.setQueriesData<any>(
+        { queryKey: ['notes'], exact: false },
+        (old: any) => {
+          if (!old) return old;
+          if (Array.isArray(old)) {
+            return old.map((note: any) => {
+              if (note.session_id === updatedSession.id && note.session) {
+                return {
+                  ...note,
+                  session: {
+                    ...note.session,
+                    ended_at: updatedSession.ended_at,
+                  },
+                };
+              }
+              return note;
+            });
+          }
+          // Single note object
+          if (old.session_id === updatedSession.id && old.session) {
+            return {
+              ...old,
+              session: {
+                ...old.session,
+                ended_at: updatedSession.ended_at,
+              },
+            };
+          }
+          return old;
+        }
+      );
+      
+      // Also update single note queries
+      queryClient.setQueriesData<any>(
+        { queryKey: ['note'], exact: false },
+        (old: any) => {
+          if (!old) return old;
+          if (old.session_id === updatedSession.id && old.session) {
+            return {
+              ...old,
+              session: {
+                ...old.session,
+                ended_at: updatedSession.ended_at,
+              },
+            };
+          }
+          return old;
+        }
+      );
+      
       toast.success('Session duration updated');
     },
     onError: (error) => {
