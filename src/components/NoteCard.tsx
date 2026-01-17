@@ -385,18 +385,24 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                     <p className="text-xs text-muted-foreground">Edit session duration</p>
                     <div className="flex items-center gap-2">
                       <Input
-                        type="number"
-                        min="1"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
                         value={editedDuration}
-                        onChange={(e) => setEditedDuration(e.target.value)}
+                        onChange={(e) => {
+                          // Allow clearing; keep only digits
+                          const next = e.target.value.replace(/[^0-9]/g, '');
+                          setEditedDuration(next);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
                             handleUpdateSessionDuration();
                           }
                         }}
-                        className="h-7 w-16 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus-visible:ring-1 focus-visible:ring-ring/50"
+                        className="h-7 w-16 text-sm focus-visible:ring-1 focus-visible:ring-ring/50"
                         placeholder="30"
+                        aria-label="Session duration in minutes"
                         autoFocus
                       />
                       <span className="text-sm text-muted-foreground">min</span>
