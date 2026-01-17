@@ -24,6 +24,105 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 
+// Combined text content component that handles line clamping for both note text and focus text together
+interface CombinedTextContentProps {
+  textContent: string | null;
+  focusTextSnapshot: string | null;
+  expanded?: boolean;
+  hasMediaBelow: boolean;
+  onShowMore: () => void;
+}
+
+function CombinedTextContent({ textContent, focusTextSnapshot, expanded, hasMediaBelow, onShowMore }: CombinedTextContentProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  // Check if the combined content exceeds 8 lines
+  useEffect(() => {
+    if (containerRef.current && !expanded) {
+      const element = containerRef.current;
+      setIsTruncated(element.scrollHeight > element.clientHeight);
+    }
+  }, [textContent, focusTextSnapshot, expanded]);
+
+  const hasContent = textContent || focusTextSnapshot;
+  if (!hasContent) return null;
+
+  const marginClass = hasMediaBelow ? 'mb-3' : '';
+
+  // In expanded view, show everything without truncation
+  if (expanded) {
+    return (
+      <div className={marginClass}>
+        {textContent && (
+          <RichTextContent 
+            content={textContent} 
+            className={focusTextSnapshot ? 'mb-3' : ''}
+          />
+        )}
+        {focusTextSnapshot && (
+          <div className="pl-3 border-l-2 border-primary/30">
+            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+              <ClipboardList className="w-3 h-3" />
+              Practice Board
+            </p>
+            <RichTextContent 
+              content={focusTextSnapshot} 
+              className="text-sm text-muted-foreground"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // In timeline view, apply line clamp to the combined container
+  return (
+    <div className={marginClass}>
+      <div 
+        ref={containerRef}
+        className="overflow-hidden"
+        style={{ 
+          display: '-webkit-box',
+          WebkitLineClamp: 8,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}
+      >
+        {textContent && (
+          <RichTextContent 
+            content={textContent} 
+            className={focusTextSnapshot ? 'mb-2' : ''}
+          />
+        )}
+        {focusTextSnapshot && (
+          <div className="pl-3 border-l-2 border-primary/30">
+            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+              <ClipboardList className="w-3 h-3" />
+              Practice Board
+            </p>
+            <RichTextContent 
+              content={focusTextSnapshot} 
+              className="text-sm text-muted-foreground"
+            />
+          </div>
+        )}
+      </div>
+      {isTruncated && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onShowMore();
+          }}
+          className="text-sm text-primary hover:underline mt-1 block"
+        >
+          Show more
+        </button>
+      )}
+    </div>
+  );
+}
+
 interface NoteCardProps {
   note: NoteWithAuthor;
   expanded?: boolean;
@@ -505,30 +604,13 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           </div>
         </div>
       ) : (
-        <>
-          {note.text_content && (
-            <RichTextContent 
-              content={note.text_content} 
-              className={`${(note.audio_files.length > 0 || note.image_files.length > 0 || note.focus_text_snapshot) ? 'mb-3' : ''}`}
-              lineClamp={!expanded ? 8 : undefined}
-              onShowMore={!expanded ? handleNavigateToNote : undefined}
-            />
-          )}
-
-          {/* Focus Text - displayed after user content */}
-          {note.focus_text_snapshot && (
-            <div className={`pl-3 border-l-2 border-primary/30 ${note.audio_files.length > 0 || note.image_files.length > 0 ? 'mb-3' : ''}`}>
-              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <ClipboardList className="w-3 h-3" />
-                Practice Board
-              </p>
-              <RichTextContent 
-                content={note.focus_text_snapshot} 
-                className="text-sm text-muted-foreground"
-              />
-            </div>
-          )}
-        </>
+        <CombinedTextContent
+          textContent={note.text_content}
+          focusTextSnapshot={note.focus_text_snapshot}
+          expanded={expanded}
+          hasMediaBelow={note.audio_files.length > 0 || note.image_files.length > 0}
+          onShowMore={handleNavigateToNote}
+        />
       )}
 
       {note.audio_files.length > 0 && (
