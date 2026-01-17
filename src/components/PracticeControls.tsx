@@ -123,6 +123,7 @@ export function PracticeControls() {
   );
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const [manuallyCollapsed, setManuallyCollapsed] = useState(false);
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   
   // Wrapper to persist attachFocus changes
@@ -761,18 +762,24 @@ export function PracticeControls() {
           <div className="flex items-center gap-2">
             {/* Audio Recorder - title attr for tooltip on desktop */}
             <div className="flex-[2]">
-              <AudioRecorder onRecorded={handleAudioRecorded} className="w-full" />
+              <AudioRecorder 
+                onRecorded={handleAudioRecorded} 
+                onRecordingChange={setIsRecordingAudio}
+                className="w-full" 
+              />
             </div>
             
-            {/* Pause/Resume button - mobile optimized */}
+            {/* Pause/Resume button - disabled during recording */}
             <Button
               variant="outline"
               size="icon"
-              className="h-9 flex-[3] focus:outline-none focus-visible:outline-none"
+              className={`h-9 flex-[3] focus:outline-none focus-visible:outline-none transition-opacity ${
+                isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
               onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
               onTouchEnd={(e) => e.currentTarget.blur()}
-              disabled={pauseSession.isPending || resumeSession.isPending}
-              title={isSessionPaused ? 'Resume' : 'Pause'}
+              disabled={pauseSession.isPending || resumeSession.isPending || isRecordingAudio}
+              title={isRecordingAudio ? 'Stop recording first' : (isSessionPaused ? 'Resume' : 'Pause')}
             >
               {isSessionPaused ? (
                 <Play className="w-4 h-4" />
@@ -780,15 +787,17 @@ export function PracticeControls() {
                 <Pause className="w-4 h-4" />
               )}
             </Button>
-            {/* End Session button - mobile optimized */}
+            {/* End Session button - disabled during recording */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   size="icon"
-                  className="h-9 flex-[3] bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none"
+                  className={`h-9 flex-[3] bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
+                    isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
+                  }`}
                   onTouchEnd={(e) => e.currentTarget.blur()}
-                  disabled={createNote.isPending || uploading || endSession.isPending}
-                  title="End Session"
+                  disabled={createNote.isPending || uploading || endSession.isPending || isRecordingAudio}
+                  title={isRecordingAudio ? 'Stop recording first' : 'End Session'}
                 >
                   <Square className="w-4 h-4 fill-current" />
                 </Button>

@@ -44,6 +44,7 @@ export function QuickNoteCapture() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [attachFocus, setAttachFocus] = useState(false);
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
 
   // Sync isOpen state with glint context
   useEffect(() => {
@@ -270,7 +271,11 @@ export function QuickNoteCapture() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex-[1]">
-                  <AudioRecorder onRecorded={handleAudioRecorded} className="w-full" />
+                  <AudioRecorder 
+                    onRecorded={handleAudioRecorded} 
+                    onRecordingChange={setIsRecordingAudio}
+                    className="w-full" 
+                  />
                 </div>
               </TooltipTrigger>
               <TooltipContent>Record audio</TooltipContent>
@@ -279,14 +284,17 @@ export function QuickNoteCapture() {
               <TooltipTrigger asChild>
                 <Button
                   size="icon"
-                  className="h-9 flex-[3] bg-gradient-primary text-primary-foreground"
+                  className={`h-9 flex-[3] bg-gradient-primary text-primary-foreground transition-opacity ${
+                    isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
+                  }`}
                   onClick={handleSaveNote}
-                  disabled={createNote.isPending || uploading || !hasContent}
+                  disabled={createNote.isPending || uploading || !hasContent || isRecordingAudio}
+                  title={isRecordingAudio ? 'Stop recording first' : 'Save note'}
                 >
                   <Save className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Save note</TooltipContent>
+              <TooltipContent>{isRecordingAudio ? 'Stop recording first' : 'Save note'}</TooltipContent>
             </Tooltip>
           </div>
 
