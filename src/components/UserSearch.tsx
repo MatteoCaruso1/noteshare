@@ -169,7 +169,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
 
   return (
     <div className="relative">
-      <div className="relative">
+      <div className="relative animate-fade-in">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           placeholder="Search by name or username..."

@@ -67,7 +67,7 @@ const FriendsJournals = () => {
                   <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                     <Bell className={`w-4 h-4 ${unreadNotificationCount && unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
                     {unreadNotificationCount !== undefined && unreadNotificationCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-destructive text-destructive-foreground">
+                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
                         {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                       </Badge>
                     )}
@@ -79,7 +79,7 @@ const FriendsJournals = () => {
                       <Bell className="w-5 h-5 text-primary" />
                       Notifications
                       {unreadNotificationCount !== undefined && unreadNotificationCount > 0 && (
-                        <Badge className="ml-2 bg-destructive text-destructive-foreground">
+                        <Badge className="ml-2 bg-primary text-primary-foreground">
                           {unreadNotificationCount}
                         </Badge>
                       )}

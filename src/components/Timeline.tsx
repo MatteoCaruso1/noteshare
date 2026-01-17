@@ -39,7 +39,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   if (notes.length === 0 && !loading && !isRefetching) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>No notes yet. Start practicing to capture your first note!</p>
+        <p>No notes</p>
       </div>
     );
   }

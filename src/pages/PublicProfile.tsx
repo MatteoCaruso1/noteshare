@@ -5,13 +5,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePublicNotes } from '@/hooks/usePublicNotes';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
+import { useFriends } from '@/hooks/useFriendships';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, MapPin, Flame } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { DirectMessages } from '@/components/DirectMessages';
+import { ArrowLeft, User, MapPin, Flame, MessageCircle } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
@@ -63,7 +66,12 @@ const PublicProfile = () => {
   const { profile: myProfile } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
+  const { data: friends } = useFriends();
   const [displayCount, setDisplayCount] = useState(10);
+  const [messagesOpen, setMessagesOpen] = useState(false);
+  
+  // Check if the profile user is a friend
+  const isFriend = friends?.some(f => f.id === profile?.id);
   
   // Get signed URL for avatar
   const { signedUrl: signedAvatar } = useSignedUrl(profile?.avatar);
@@ -207,7 +215,28 @@ const PublicProfile = () => {
                 ))}
               </div>
             )}
+
+            {/* Message Button - only show if friend */}
+            {isFriend && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setMessagesOpen(true)}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Send Message
+                </Button>
+              </div>
+            )}
           </Card>
+
+          {/* Messages Dialog */}
+          <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
+            <DialogContent className="max-w-md" hideCloseButton>
+              <DirectMessages embedded />
+            </DialogContent>
+          </Dialog>
 
           {/* Notes Section */}
           <div className="space-y-4">
