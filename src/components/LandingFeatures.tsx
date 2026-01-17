@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import landingFocus from '@/assets/landing-focus.png';
 import landingSessions from '@/assets/landing-sessions.png';
 import landingProgress from '@/assets/landing-progress.png';
@@ -20,7 +21,7 @@ const features = [
     title: 'Track your progress over time',
     image: landingProgress,
     alt: 'Progress charts showing practice minutes and streak',
-    cropTop: true, // Crop to show only bottom graph + stats
+    cropTop: true,
   },
   {
     title: 'See what your friends are working on',
@@ -30,42 +31,66 @@ const features = [
   },
 ];
 
+function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const isRight = index % 2 === 1;
+
+  return (
+    <div
+      ref={ref}
+      className={`flex items-center gap-8 md:gap-16 transition-all duration-700 ease-out ${
+        isRight ? 'justify-end flex-row-reverse' : 'justify-start flex-row'
+      } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+    >
+      <h2 className={`text-xl sm:text-2xl md:text-3xl font-semibold text-foreground max-w-[280px] ${
+        isRight ? 'text-right' : 'text-left'
+      }`}>
+        {feature.title}
+      </h2>
+      <div className={`rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50 w-full max-w-lg ${
+        feature.cropTop ? 'h-[200px]' : ''
+      }`}>
+        <img
+          src={feature.image}
+          alt={feature.alt}
+          className={`w-full h-auto ${
+            feature.cropTop ? 'object-cover object-bottom' : ''
+          }`}
+          style={feature.cropTop ? { marginTop: '-45%' } : undefined}
+          loading="lazy"
+        />
+      </div>
+    </div>
+  );
+}
+
 export function LandingFeatures() {
   return (
-    <section className="bg-background py-12 px-6 md:px-12 lg:px-24">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {features.map((feature, index) => {
-          // Zig-zag pattern: 0,2 = left, 1,3 = right
-          const isRight = index % 2 === 1;
-          
-          return (
-            <div
-              key={index}
-              className={`flex items-center gap-6 ${
-                isRight ? 'justify-end' : 'justify-start'
-              } ${isRight ? 'flex-row-reverse' : 'flex-row'}`}
-            >
-              <h2 className={`text-lg sm:text-xl font-semibold text-foreground max-w-[200px] ${
-                isRight ? 'text-right' : 'text-left'
-              }`}>
-                {feature.title}
-              </h2>
-              <div className={`rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50 max-w-sm ${
-                feature.cropTop ? 'h-[180px]' : ''
-              }`}>
-                <img
-                  src={feature.image}
-                  alt={feature.alt}
-                  className={`w-full h-auto ${
-                    feature.cropTop ? 'object-cover object-bottom' : ''
-                  }`}
-                  style={feature.cropTop ? { marginTop: '-45%' } : undefined}
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          );
-        })}
+    <section className="bg-background py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full">
+      <div className="w-full max-w-7xl mx-auto space-y-8">
+        {features.map((feature, index) => (
+          <FeatureCard key={index} feature={feature} index={index} />
+        ))}
       </div>
     </section>
   );
