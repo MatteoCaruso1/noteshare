@@ -1,12 +1,24 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function WelcomeHero() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isExiting, setIsExiting] = useState(false);
+
+  // Hide scrollbars during exit animation to prevent grey lines
+  useEffect(() => {
+    if (isExiting) {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, [isExiting]);
 
   const handleNavigate = (destination: 'auth' | 'app') => {
     setIsExiting(true);
@@ -28,7 +40,7 @@ export function WelcomeHero() {
 
   return (
     <div 
-      className={`min-h-[100dvh] bg-background flex flex-col -mt-16 transition-all duration-500 ease-out ${
+      className={`min-h-[100dvh] bg-background flex flex-col -mt-16 transition-all duration-500 ease-out overflow-hidden ${
         isExiting 
           ? 'opacity-0 blur-sm scale-[1.02]' 
           : 'animate-hero-enter'
