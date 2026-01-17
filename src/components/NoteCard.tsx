@@ -263,12 +263,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     });
   }, [note.session_id, editedDuration, updateSessionDuration]);
 
-  // Open session duration popover with current value
-  const handleOpenSessionDuration = useCallback(() => {
-    if (sessionDurationData) {
+  // Initialize session duration when popover opens
+  const handleSessionDurationOpenChange = useCallback((open: boolean) => {
+    if (open && sessionDurationData) {
       setEditedDuration(String(sessionDurationData.durationMinutes));
     }
-    setSessionDurationOpen(true);
+    setSessionDurationOpen(open);
   }, [sessionDurationData]);
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
@@ -348,15 +348,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         <div className="flex items-center gap-2 flex-wrap flex-1">
           {isPracticeSession ? (
             isOwner && expanded ? (
-              <Popover open={sessionDurationOpen} onOpenChange={setSessionDurationOpen}>
-                <PopoverTrigger asChild>
+              <Popover open={sessionDurationOpen} onOpenChange={handleSessionDurationOpenChange}>
+                <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
                   <Badge 
                     variant="secondary" 
                     className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenSessionDuration();
-                    }}
                   >
                     <Clock className="w-3 h-3 mr-1" />
                     Practice Session
