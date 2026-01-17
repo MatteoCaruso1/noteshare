@@ -438,23 +438,6 @@ const GigDetail = () => {
               />
             </div>
             
-            <div className="flex items-center justify-between py-2">
-              <Label htmlFor="show-feed">Show on home feed</Label>
-              <Switch
-                id="show-feed"
-                checked={editShowOnFeed}
-                onCheckedChange={setEditShowOnFeed}
-              />
-            </div>
-
-            <div className="flex items-center justify-between py-2">
-              <Label htmlFor="paid-opportunity">Paid Opportunity</Label>
-              <Switch
-                id="paid-opportunity"
-                checked={editIsPaidOpportunity}
-                onCheckedChange={setEditIsPaidOpportunity}
-              />
-            </div>
 
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
