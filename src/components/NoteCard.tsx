@@ -20,6 +20,7 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames, useUpdateNoteContent } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
+import { useUpdateSessionDuration } from '@/hooks/useSessions';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
@@ -139,6 +140,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const updateVisibility = useUpdateNoteVisibility();
   const updateAudioNames = useUpdateNoteAudioNames();
   const updateContent = useUpdateNoteContent();
+  const updateSessionDuration = useUpdateSessionDuration();
   const removeNoteFocus = useRemoveNoteFocus();
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
@@ -150,6 +152,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const [isEditing, setIsEditing] = useState(false);
   const [editedTextContent, setEditedTextContent] = useState('');
   const [editedFocusText, setEditedFocusText] = useState('');
+  const [sessionDurationOpen, setSessionDurationOpen] = useState(false);
+  const [editedDuration, setEditedDuration] = useState('');
 
   const canEditTags = expanded && onTagsChange;
 
@@ -219,7 +223,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   }, [note.visibility]);
 
   // Calculate session duration - memoized (accounting for paused time)
-  const sessionDuration = useMemo(() => {
+  const sessionDurationData = useMemo(() => {
     if (!note.session?.started_at || !note.session?.ended_at) return null;
     
     const start = new Date(note.session.started_at).getTime();
@@ -228,12 +232,44 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     const activeDurationMs = (end - start) - pausedMs;
     const durationMinutes = Math.round(activeDurationMs / 60000);
     
+    let displayDuration: string;
     if (durationMinutes < 5) {
-      return `~${Math.max(1, durationMinutes)}m`;
+      displayDuration = `~${Math.max(1, durationMinutes)}m`;
+    } else {
+      const rounded = Math.round(durationMinutes / 5) * 5;
+      displayDuration = `~${rounded}m`;
     }
-    const rounded = Math.round(durationMinutes / 5) * 5;
-    return `~${rounded}m`;
+    
+    return { durationMinutes, displayDuration };
   }, [note.session?.started_at, note.session?.ended_at, note.session?.paused_duration_ms]);
+
+  const sessionDuration = sessionDurationData?.displayDuration || null;
+
+  // Handler for updating session duration
+  const handleUpdateSessionDuration = useCallback(() => {
+    if (!note.session_id || !editedDuration) return;
+    
+    const minutes = parseInt(editedDuration, 10);
+    if (isNaN(minutes) || minutes < 1) return;
+    
+    updateSessionDuration.mutate({
+      sessionId: note.session_id,
+      durationMinutes: minutes,
+    }, {
+      onSuccess: () => {
+        setSessionDurationOpen(false);
+        setEditedDuration('');
+      }
+    });
+  }, [note.session_id, editedDuration, updateSessionDuration]);
+
+  // Open session duration popover with current value
+  const handleOpenSessionDuration = useCallback(() => {
+    if (sessionDurationData) {
+      setEditedDuration(String(sessionDurationData.durationMinutes));
+    }
+    setSessionDurationOpen(true);
+  }, [sessionDurationData]);
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -311,11 +347,61 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       <div className="flex items-start gap-2 mb-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap flex-1">
           {isPracticeSession ? (
-            <Badge variant="secondary" className="text-xs">
-              <Clock className="w-3 h-3 mr-1" />
-              Practice Session
-              {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
-            </Badge>
+            isOwner && expanded ? (
+              <Popover open={sessionDurationOpen} onOpenChange={setSessionDurationOpen}>
+                <PopoverTrigger asChild>
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenSessionDuration();
+                    }}
+                  >
+                    <Clock className="w-3 h-3 mr-1" />
+                    Practice Session
+                    {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
+                  </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-3 bg-popover" align="start" onClick={(e) => e.stopPropagation()}>
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">Edit session duration</p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={editedDuration}
+                        onChange={(e) => setEditedDuration(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleUpdateSessionDuration();
+                          }
+                        }}
+                        className="h-8 text-sm"
+                        placeholder="Minutes"
+                        autoFocus
+                      />
+                      <span className="text-sm text-muted-foreground">min</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={handleUpdateSessionDuration}
+                      disabled={updateSessionDuration.isPending || !editedDuration}
+                    >
+                      {updateSessionDuration.isPending ? 'Saving...' : 'Save'}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Badge variant="secondary" className="text-xs">
+                <Clock className="w-3 h-3 mr-1" />
+                Practice Session
+                {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
+              </Badge>
+            )
           ) : (
             <Badge variant="secondary" className="text-xs">
               <Music className="w-3 h-3 mr-1" />
