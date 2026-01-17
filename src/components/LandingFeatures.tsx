@@ -87,7 +87,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       </h2>
       <div 
         className={`rounded-lg overflow-hidden shadow-xl shadow-black/15 border border-border/50 w-full max-w-lg ${
-          feature.cropTop ? 'h-[200px]' : ''
+          feature.cropTop ? 'h-[240px]' : ''
         }`}
         style={{ transform: `translateY(${parallaxOffset}px)` }}
       >
@@ -97,7 +97,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           className={`w-full h-auto ${
             feature.cropTop ? 'object-cover object-bottom' : ''
           }`}
-          style={feature.cropTop ? { marginTop: '-45%' } : undefined}
+          style={feature.cropTop ? { marginTop: '-32%' } : undefined}
           loading="lazy"
         />
       </div>
