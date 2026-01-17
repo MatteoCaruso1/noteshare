@@ -6,10 +6,11 @@ import { audioManager } from '@/lib/audioManager';
 
 interface AudioRecorderProps {
   onRecorded: (blob: Blob, duration: number) => void;
+  onRecordingChange?: (isRecording: boolean) => void;
   className?: string;
 }
 
-export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
+export function AudioRecorder({ onRecorded, onRecordingChange, className }: AudioRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -219,6 +220,7 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
         mediaRecorder.start(1000);
       }
       setRecording(true);
+      onRecordingChange?.(true);
     } catch (err) {
       console.error('[AudioRecorder] Failed to start recording:', err);
       audioManager.setRecording(false);
@@ -248,6 +250,7 @@ export function AudioRecorder({ onRecorded, className }: AudioRecorderProps) {
         setProcessing(false);
       }
       setRecording(false);
+      onRecordingChange?.(false);
     }
   };
 
