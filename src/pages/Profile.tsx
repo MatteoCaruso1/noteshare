@@ -181,7 +181,7 @@ const Profile = () => {
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
-            <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate('/'); }}>
+            <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate('/welcome'); }}>
               <LogOut className="w-5 h-5" />
             </Button>
           </div>

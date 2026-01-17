@@ -13,6 +13,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+import Welcome from "./pages/Welcome";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import NoteDetail from "./pages/NoteDetail";
@@ -67,6 +68,7 @@ function AppInner() {
               <AddToHomescreenPrompt />
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/welcome" element={<Welcome />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/:id" element={<ProjectDetail />} />
                 <Route path="/notes/:id" element={<NoteDetail />} />
