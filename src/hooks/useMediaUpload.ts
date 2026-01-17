@@ -51,11 +51,10 @@ export function useMediaUpload() {
 
       if (error) throw error;
 
-      // Use signed URL for private bucket
-      const signedUrl = await getSignedUrl(data.path);
-      
+      // Return just the path - useSignedUrl hook will sign it on-demand
+      // This prevents storing URLs that can expire
       setProgress(100);
-      return signedUrl;
+      return data.path;
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload file');
