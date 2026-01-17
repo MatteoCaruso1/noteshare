@@ -63,13 +63,21 @@ export function AppHeader() {
     };
   }, [activeSession]);
   
-  // Don't show on auth page or landing page (when not logged in)
+  // Check if on welcome/landing page
+  const isOnWelcomePage = location.pathname === '/welcome';
+  
+  // Don't show on auth page
   if (location.pathname === '/auth') {
     return null;
   }
   
   // Hide on landing page when not logged in (WelcomeHero has its own header)
   if (location.pathname === '/' && !user) {
+    return null;
+  }
+  
+  // Hide completely on /welcome when not logged in
+  if (isOnWelcomePage && !user) {
     return null;
   }
 
@@ -100,8 +108,12 @@ export function AppHeader() {
           
         </div>
         
-        {/* Timer & Streak Indicator */}
-        <div className="flex items-center gap-2">
+        {/* Timer & Streak Indicator - fade out on welcome page */}
+        <div 
+          className={`flex items-center gap-2 transition-opacity duration-700 ${
+            isOnWelcomePage ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
           {/* Session Timer Indicator - moved to right side */}
           {user && (
             <Popover>
