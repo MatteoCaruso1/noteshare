@@ -245,6 +245,17 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   const sessionDuration = sessionDurationData?.displayDuration || null;
 
+  // Optimistic display duration (shows edited value immediately)
+  const displayDuration = useMemo(() => {
+    if (sessionDurationOpen && editedDuration) {
+      const mins = parseInt(editedDuration, 10);
+      if (!isNaN(mins) && mins >= 1) {
+        return `~${mins}m`;
+      }
+    }
+    return sessionDuration;
+  }, [sessionDurationOpen, editedDuration, sessionDuration]);
+
   // Handler for updating session duration
   const handleUpdateSessionDuration = useCallback(() => {
     if (!note.session_id || !editedDuration) return;
@@ -366,11 +377,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                   >
                     <Clock className="w-3 h-3 mr-1" />
                     Practice Session
-                    {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
+                    {displayDuration && <span className="ml-1 opacity-80">{displayDuration}</span>}
                   </Badge>
                 </PopoverTrigger>
-                <PopoverContent className="w-48 p-3 bg-popover" align="start" onClick={(e) => e.stopPropagation()}>
-                  <div className="space-y-3">
+                <PopoverContent className="w-44 p-2.5 bg-popover overflow-hidden" align="start" onClick={(e) => e.stopPropagation()}>
+                  <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">Edit session duration</p>
                     <div className="flex items-center gap-2">
                       <Input
@@ -384,15 +395,16 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                             handleUpdateSessionDuration();
                           }
                         }}
-                        className="h-8 text-sm"
-                        placeholder="Minutes"
+                        className="h-7 w-16 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus-visible:ring-1 focus-visible:ring-ring/50"
+                        placeholder="30"
                         autoFocus
                       />
                       <span className="text-sm text-muted-foreground">min</span>
                     </div>
                     <Button
                       size="sm"
-                      className="w-full"
+                      variant="secondary"
+                      className="w-full h-7 text-xs"
                       onClick={handleUpdateSessionDuration}
                       disabled={updateSessionDuration.isPending || !editedDuration}
                     >
