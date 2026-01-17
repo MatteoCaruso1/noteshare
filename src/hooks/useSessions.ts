@@ -479,3 +479,53 @@ export function useDeleteSession() {
     },
   });
 }
+
+export function useUpdateSessionDuration() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      durationMinutes,
+    }: {
+      sessionId: string;
+      durationMinutes: number;
+    }) => {
+      // First get the session to calculate new ended_at
+      const { data: session, error: fetchError } = await supabase
+        .from('practice_sessions')
+        .select('started_at, paused_duration_ms')
+        .eq('id', sessionId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Calculate new ended_at based on started_at + duration + paused time
+      const startedAt = new Date(session.started_at);
+      const pausedMs = session.paused_duration_ms || 0;
+      const newEndedAt = new Date(startedAt.getTime() + (durationMinutes * 60 * 1000) + pausedMs);
+
+      const { data, error } = await supabase
+        .from('practice_sessions')
+        .update({
+          ended_at: newEndedAt.toISOString(),
+        })
+        .eq('id', sessionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as PracticeSession;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
+      toast.success('Session duration updated');
+    },
+    onError: (error) => {
+      console.error('Error updating session duration:', error);
+      toast.error('Failed to update duration');
+    },
+  });
+}
