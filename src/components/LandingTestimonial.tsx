@@ -8,7 +8,7 @@ export function LandingTestimonial() {
         <div className="max-w-lg">
           <p className="text-gray-500 text-lg leading-relaxed">
             "Using Noteshare has greatly improved my musical life. The quality of my practice has skyrocketed"
-            <span className="block mt-3 text-muted-foreground text-base">
+            <span className="block mt-3 text-muted-foreground text-base text-right">
               Toronto Jazz Pianist
             </span>
           </p>
