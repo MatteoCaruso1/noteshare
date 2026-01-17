@@ -9,6 +9,7 @@ export function WelcomeHero() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isExiting, setIsExiting] = useState(false);
+  const [scrollOpacity, setScrollOpacity] = useState(1);
 
   // Hide scrollbars during exit animation to prevent grey lines
   useEffect(() => {
@@ -21,6 +22,20 @@ export function WelcomeHero() {
       document.body.style.overflow = '';
     };
   }, [isExiting]);
+
+  // Scroll-linked opacity for hero content
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const fadeStart = 0;
+      const fadeEnd = 400;
+      const opacity = Math.max(0, 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart));
+      setScrollOpacity(opacity);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleNavigate = (destination: 'auth' | 'app') => {
     setIsExiting(true);
@@ -50,7 +65,7 @@ export function WelcomeHero() {
     >
       {/* Hero Section */}
       <div className="min-h-[85dvh] flex flex-col overflow-hidden relative">
-        {/* Header */}
+        {/* Header - stays visible */}
         <header className="w-full px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl font-semibold tracking-tight">noteshare</span>
@@ -85,8 +100,11 @@ export function WelcomeHero() {
           </div>
         </header>
 
-        {/* Hero Content */}
-        <main className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 max-w-6xl">
+        {/* Hero Content - fades on scroll */}
+        <main 
+          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 max-w-6xl transition-opacity duration-100"
+          style={{ opacity: scrollOpacity }}
+        >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6">
             Noteshare is a purpose-built tool to help musicians practice smarter
           </h1>
