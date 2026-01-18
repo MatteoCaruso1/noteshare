@@ -29,6 +29,8 @@ import FriendsJournals from "./pages/FriendsJournals";
 import WorkingToward from "./pages/WorkingToward";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,6 +95,11 @@ function AppInner() {
                   <Route path="/friends" element={<FriendsJournals />} />
                   <Route path="/working-toward" element={<WorkingToward />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/admin/analytics" element={
+                    <AdminGuard>
+                      <AdminAnalytics />
+                    </AdminGuard>
+                  } />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

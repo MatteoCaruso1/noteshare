@@ -40,3 +40,6 @@ verify_jwt = false
 
 [functions.create-checkout-embedded]
 verify_jwt = false
+
+[functions.get-analytics]
+verify_jwt = false
