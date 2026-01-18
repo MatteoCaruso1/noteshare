@@ -50,7 +50,7 @@ export function PremiumDialog() {
         closeButtonClassName="h-6 w-6 top-3 right-3 z-10"
       >
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-4 shrink-0">
+        <div className="relative px-6 pt-10 pb-4 shrink-0">
           <h2 className="text-xl font-semibold pr-28">
             Practice smarter.<br />Progress faster.
           </h2>
@@ -58,7 +58,7 @@ export function PremiumDialog() {
             size="sm" 
             variant="hero" 
             onClick={handleStartTrial}
-            className="absolute right-3 top-10 gap-1"
+            className="absolute right-3 top-14 gap-1"
           >
             Start Free Trial
             <ArrowRight className="h-3.5 w-3.5" />
