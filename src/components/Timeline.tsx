@@ -73,7 +73,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
           <Music className="w-7 h-7 text-muted-foreground" />
         </div>
         <p>No notes yet</p>
-        <p className="text-sm mt-1">Start practicing to capture your first note!</p>
+        <p className="text-sm mt-1">Start a practice session or capture a quick note!</p>
       </div>
     );
   }
