@@ -27,6 +27,7 @@ export function DailyLimitBanner({ notesPostedToday, dailyLimit }: DailyLimitBan
       <Button 
         size="sm" 
         onClick={startCheckout}
+        variant="hero"
         className="gap-1.5"
       >
         <Sparkles className="h-3.5 w-3.5" />
