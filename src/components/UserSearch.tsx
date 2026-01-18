@@ -186,7 +186,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
       <div className="min-h-[120px]">
         {/* Initial hint when not searching */}
         {!showSearchResults && !showSuggestions && !suggestionsLoading && (
-          <div className="mt-4 text-center py-6 animate-fade-in">
+          <div className="mt-4 text-center py-6 opacity-0 animate-[fade-in_600ms_ease-out_forwards]">
             <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
               Search for musicians to add as friends
