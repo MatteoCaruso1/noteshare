@@ -600,6 +600,7 @@ export type Database = {
           location: string | null
           name: string
           open_to_collaborate: boolean | null
+          premium_override: boolean
           skill_level: string | null
           streak_achievement_counts: Json | null
           updated_at: string
@@ -620,6 +621,7 @@ export type Database = {
           location?: string | null
           name: string
           open_to_collaborate?: boolean | null
+          premium_override?: boolean
           skill_level?: string | null
           streak_achievement_counts?: Json | null
           updated_at?: string
@@ -640,6 +642,7 @@ export type Database = {
           location?: string | null
           name?: string
           open_to_collaborate?: boolean | null
+          premium_override?: boolean
           skill_level?: string | null
           streak_achievement_counts?: Json | null
           updated_at?: string
