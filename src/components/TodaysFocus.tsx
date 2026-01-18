@@ -533,7 +533,7 @@ export function TodaysFocus() {
                   setIsFocused(false);
                   handleBlur();
                 }}
-                placeholder="What will you work on today?"
+                placeholder="What are you practicing across sessions?"
                 className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
                 style={{ overscrollBehavior: 'contain' }}
                 rows={1}
