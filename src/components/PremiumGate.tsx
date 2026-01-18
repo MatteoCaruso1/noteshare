@@ -39,9 +39,37 @@ export function PremiumGate({
     return <>{children}</>;
   }
 
-  // Still loading subscription status - show content without gate
+  // Still loading subscription status - show gated view to prevent flickering
+  // This ensures content stays protected during initial load and refreshes
   if (isLoading) {
-    return <>{children}</>;
+    if (!showPreview) {
+      // Show a loading skeleton for non-preview gates
+      return (
+        <div className={cn("flex flex-col items-center justify-center gap-2 py-4 px-6", className)}>
+          <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+          <div className="w-32 h-4 bg-muted rounded animate-pulse" />
+          <div className="w-24 h-8 bg-muted rounded animate-pulse" />
+        </div>
+      );
+    }
+    // For preview gates, show blurred content without the upgrade button during load
+    return (
+      <div className={cn("relative", className)}>
+        <div 
+          className={cn(
+            "pointer-events-none select-none",
+            blur ? "blur-sm" : "opacity-40"
+          )}
+          aria-hidden="true"
+        >
+          {children}
+        </div>
+        {/* Subtle loading indicator instead of full gate overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[1px] rounded-lg">
+          <div className="w-6 h-6 rounded-full border-2 border-muted border-t-foreground animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   // Free user - gate the content
