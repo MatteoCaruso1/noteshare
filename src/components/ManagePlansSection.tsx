@@ -42,25 +42,29 @@ export function ManagePlansSection() {
 
       <div className="space-y-4">
         {/* Current Plan Display */}
-        <div className="flex items-center justify-center p-3 rounded-lg bg-muted/50 border border-border/50">
+        <div className={`flex items-center justify-center h-11 px-4 rounded-lg border ${
+          isPremium 
+            ? 'bg-amber-500/10 border-amber-500/30' 
+            : 'bg-muted/50 border-border/50'
+        }`}>
           {isPremium && (
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-              <Crown className="w-5 h-5 text-primary" />
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center mr-3">
+              <Crown className="w-4 h-4 text-amber-500" />
             </div>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
+            <span className={`text-sm font-medium ${isPremium ? 'text-amber-500' : ''}`}>
               {isPremium ? 'Noteshare Premium' : 'Noteshare Free'}
             </span>
             <Badge 
-              variant={isPremium ? 'default' : 'secondary'}
-              className="text-xs"
+              variant="secondary"
+              className={`text-xs ${isPremium ? 'bg-white text-foreground' : ''}`}
             >
               {isPremium ? 'Active' : 'Current'}
             </Badge>
           </div>
           {isPremium && subscriptionEnd && (
-            <p className="text-xs text-muted-foreground ml-2">
+            <p className="text-xs text-amber-500/70 ml-2">
               · Access until {formatSubscriptionEnd()}
             </p>
           )}
