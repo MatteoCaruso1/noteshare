@@ -25,28 +25,28 @@ function TierIcon({ tier }: { tier: StreakTierInfo }) {
 function getRewardDescription(tier: StreakTierInfo): string {
   switch (tier.tier) {
     case 'starter':
-      return 'A starter trophy badge appears next to your name — visible to everyone!';
+      return 'A starter trophy now appears beside your name.';
     case 'bronze':
-      return 'A bronze trophy badge now appears next to your name!';
+      return 'A bronze trophy now appears beside your name.';
     case 'silver':
-      return 'A silver trophy badge now appears next to your name!';
+      return 'A silver trophy now appears beside your name.';
     case 'gold':
-      return 'A gold trophy badge now appears next to your name!';
+      return 'A gold trophy now appears beside your name.';
     default:
       return '';
   }
 }
 
-function getNextMilestoneText(tier: StreakTierInfo): string {
+function getNextMilestoneDays(tier: StreakTierInfo): number | null {
   switch (tier.tier) {
     case 'starter':
-      return 'Keep going! Reach 30 days to upgrade to a bronze trophy badge.';
+      return 30;
     case 'bronze':
-      return 'Keep it up! Reach 90 days to upgrade to a silver trophy badge.';
+      return 90;
     case 'silver':
-      return 'Almost there! Reach 360 days to upgrade to a gold trophy badge.';
+      return 360;
     default:
-      return '';
+      return null;
   }
 }
 
@@ -58,7 +58,7 @@ export function StreakMilestoneDialog({
   hasNextMilestone,
 }: StreakMilestoneDialogProps) {
   const rewardDescription = getRewardDescription(tier);
-  const nextMilestoneText = getNextMilestoneText(tier);
+  const nextMilestoneDays = getNextMilestoneDays(tier);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -76,18 +76,18 @@ export function StreakMilestoneDialog({
           </div>
           <DialogDescription className="text-center space-y-3 pt-2">
             <p className="text-base">
-              Congratulations! You've practiced for{' '}
+              Congratulations! You've practiced{' '}
               <span className={`font-semibold ${tier.textColorClass}`}>
                 {streakDays} days
               </span>{' '}
               in a row!
             </p>
             <p className="text-sm">
-              <span className="font-medium">Your rewards:</span> {rewardDescription}
+              {rewardDescription}
             </p>
-            {hasNextMilestone && nextMilestoneText && (
+            {hasNextMilestone && nextMilestoneDays && (
               <p className="text-sm text-muted-foreground italic">
-                {nextMilestoneText}
+                Reach {nextMilestoneDays} days to obtain your next reward!
               </p>
             )}
           </DialogDescription>
