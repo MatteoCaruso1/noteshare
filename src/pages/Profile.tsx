@@ -268,8 +268,10 @@ const Profile = () => {
                       <Badge 
                         key={instrument} 
                         variant={instruments.includes(instrument) ? 'default' : 'secondary'} 
-                        className="cursor-pointer" 
+                        className="cursor-pointer"
+                        data-selected={instruments.includes(instrument) ? "true" : undefined}
                         onClick={() => toggleInstrument(instrument)}
+                        onTouchEnd={(e) => e.currentTarget.blur()}
                       >
                         {instrument}
                       </Badge>
@@ -284,8 +286,10 @@ const Profile = () => {
                       <Badge 
                         key={genre} 
                         variant={genres.includes(genre) ? 'default' : 'secondary'} 
-                        className="cursor-pointer" 
+                        className="cursor-pointer"
+                        data-selected={genres.includes(genre) ? "true" : undefined}
                         onClick={() => toggleGenre(genre)}
+                        onTouchEnd={(e) => e.currentTarget.blur()}
                       >
                         {genre}
                       </Badge>
