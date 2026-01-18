@@ -64,8 +64,9 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="sm:max-w-lg p-6 gap-0 max-h-[90vh] overflow-y-auto"
+        className="sm:max-w-lg p-6 pt-12 gap-0 max-h-[90vh] overflow-y-auto"
         hideCloseButton={false}
+        closeButtonClassName="h-6 w-6 right-3 top-3"
       >
         <div className="space-y-4">
           {/* Stripe Embedded Checkout */}
