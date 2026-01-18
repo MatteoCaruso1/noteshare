@@ -155,6 +155,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const [editedFocusText, setEditedFocusText] = useState('');
   const [sessionDurationOpen, setSessionDurationOpen] = useState(false);
   const [editedDuration, setEditedDuration] = useState('');
+  
+  // Delay hover state activation to prevent "stuck" highlight on page transition
+  const [enableHover, setEnableHover] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setEnableHover(true), 350);
+    return () => clearTimeout(timer);
+  }, []);
 
   const canEditTags = expanded && onTagsChange;
 
@@ -359,7 +367,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   return (
     <Card
-      className={`p-3 sm:p-4 bg-background text-foreground border border-border rounded-lg relative ${!expanded ? 'cursor-pointer hover:bg-muted/50' : ''} transition-colors duration-150`}
+      className={`p-3 sm:p-4 bg-background text-foreground border border-border rounded-lg relative ${!expanded ? 'cursor-pointer' : ''} ${!expanded && enableHover ? 'hover:bg-muted/50' : ''} transition-colors duration-150`}
       onClick={!expanded ? handleNavigateToNote : undefined}
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}
