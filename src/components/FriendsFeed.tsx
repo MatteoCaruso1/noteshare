@@ -76,17 +76,13 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
       <Card className="p-8 bg-card border-border text-center">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Users className="w-8 h-8 text-primary" />
+            <Users className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h3 className="font-semibold text-lg mb-2">No friends' notes yet</h3>
+        <h3 className="font-semibold text-lg mb-2">No Friends' notes yet</h3>
         <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-          Add a few friends to see their practice journals here. This isn't about going viral — it's about improving together.
+          Add friends to see what they're practicing!
         </p>
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span>Use the search above to find musicians</span>
-        </div>
       </Card>
     );
   }
