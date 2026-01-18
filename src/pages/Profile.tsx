@@ -13,7 +13,7 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Paintbrush } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Shield } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
@@ -262,21 +262,21 @@ const Profile = () => {
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
                   <p className="text-sm text-muted-foreground">@{profile?.username}</p>
                   <div className="flex items-center gap-2">
+                    {/* Noteshare Team badge - icon only, matching trophy badge styling */}
+                    {profile?.id === NOTESHARE_TEAM_PROFILE_ID && (
+                      <TapTooltip 
+                        content={<p>Noteshare Creator</p>}
+                        className="w-8 h-8 bg-primary/10 border-primary/30 ring-primary/20 border ring-1 hover:opacity-80 transition-opacity"
+                      >
+                        <Shield className="w-4 h-4 text-primary" />
+                      </TapTooltip>
+                    )}
                     {practiceStats && (
                       <StreakBadges 
                         currentStreak={practiceStats.currentStreak} 
                         bestStreak={practiceStats.bestDailyStreak}
                         achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
                       />
-                    )}
-                    {/* Noteshare Creator badge - always rightmost */}
-                    {profile?.id === NOTESHARE_TEAM_PROFILE_ID && (
-                      <TapTooltip 
-                        content={<p>Noteshare Creator</p>}
-                        className="w-8 h-8 bg-primary/10 border-primary/30 ring-primary/20 border ring-1 hover:opacity-80 transition-opacity"
-                      >
-                        <Paintbrush className="w-4 h-4 text-primary" />
-                      </TapTooltip>
                     )}
                   </div>
                 </div>
