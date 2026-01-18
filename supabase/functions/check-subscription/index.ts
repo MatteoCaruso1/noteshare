@@ -38,18 +38,19 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check for developer premium override first
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('premium_override')
+    // Check for developer premium override in dedicated table (no RLS - backend only)
+    const { data: override, error: overrideError } = await supabaseClient
+      .from('premium_overrides')
+      .select('enabled')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (!profileError && profile?.premium_override === true) {
+    if (!overrideError && override?.enabled === true) {
       logStep("Developer premium override active", { userId: user.id });
+      // Return the REAL premium product_id so frontend isPremium logic works
       return new Response(JSON.stringify({ 
         subscribed: true,
-        product_id: 'dev_override',
+        product_id: 'prod_ToONzcZjkyqsAJ',
         subscription_end: null
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
