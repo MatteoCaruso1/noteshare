@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Copy, Search, Trash2, Calendar } from 'lucide-react';
+import { Copy, Search, Trash2, Calendar, ClipboardList } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -96,7 +96,13 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
           <DialogTitle>Practice Board Backlog</DialogTitle>
         </DialogHeader>
 
-        <PremiumGate featureName="Practice Board Backlog" blur={false}>
+        <PremiumGate 
+          featureName="Practice Board Backlog" 
+          blur={false}
+          showPreview={false}
+          icon={ClipboardList}
+          description="Upgrade to Premium to revisit archived Practice Boards"
+        >
           {/* Search and Filter */}
           <div className="flex gap-2 mb-4">
             <div className="relative flex-1">
