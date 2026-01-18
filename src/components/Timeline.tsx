@@ -49,7 +49,7 @@ function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
           variant="hero"
         >
           <Sparkles className="w-4 h-4 mr-2" />
-          Upgrade to Premium
+          Try Premium for Free
         </Button>
       </div>
     </div>
