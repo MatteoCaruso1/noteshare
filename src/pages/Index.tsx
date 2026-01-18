@@ -21,7 +21,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
-  const { isPremium, openPremiumDialog } = usePremium();
+  const { isPremium, isLoading: premiumLoading, openPremiumDialog } = usePremium();
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
@@ -99,12 +99,13 @@ const Index = () => {
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
-            {!isPremium && (
+            {!premiumLoading && !isPremium && (
               <Button 
                 size="sm" 
                 variant="hero" 
                 onClick={openPremiumDialog}
-                className="gap-1 text-xs h-7 px-2"
+                className="gap-1 text-xs h-7 px-2 animate-fade-in"
+                style={{ animationDuration: '650ms' }}
               >
                 <Sparkles className="h-3 w-3" />
                 Try Premium for Free
