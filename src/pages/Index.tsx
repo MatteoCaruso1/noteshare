@@ -17,9 +17,11 @@ import { GlintProvider } from '@/contexts/GlintContext';
 const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
-  const isNotesBootstrapping = !!user && !profile;
+  
+  // Comprehensive bootstrapping detection: auth loading OR profile not yet available
+  const isBootstrapping = authLoading || (!!user && !profile);
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
@@ -77,7 +79,7 @@ const Index = () => {
     return filtered;
   }, [notes, searchQuery, focusDateFilter, tagFilter]);
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -151,7 +153,7 @@ const Index = () => {
               <div>
                 <Timeline 
                   notes={filteredNotes} 
-                  loading={notesLoading || isNotesBootstrapping} 
+                  loading={notesLoading || isBootstrapping} 
                   isRefetching={notesRefetching}
                   displayCount={displayCount}
                   onLoadMore={handleLoadMore}

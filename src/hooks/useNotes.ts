@@ -69,6 +69,9 @@ export function useNotes(projectId?: string) {
     placeholderData: (previousData) => previousData,
     // Refetch on focus but don't remove existing data
     refetchOnWindowFocus: true,
+    // Retry configuration for slow networks
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
 }
 
