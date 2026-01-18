@@ -26,6 +26,7 @@ import { StreakRewardsSection } from '@/components/StreakRewardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 
 // Noteshare Team profile ID (Matteo)
 const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
@@ -229,6 +230,8 @@ const Profile = () => {
 
   return (
     <PageLayout>
+      {/* Subscription Success Celebration */}
+      <SubscriptionSuccessCelebration />
       {/* Page Title - consistent with other pages */}
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
