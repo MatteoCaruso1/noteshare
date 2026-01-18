@@ -719,7 +719,7 @@ export function PracticeControls() {
           {/* Text Content - with list formatting support */}
           <div className="mb-4">
             <RichTextarea
-              placeholder="What are you practicing?"
+              placeholder="What are you practicing this session?"
               value={noteText}
               onChange={setNoteText}
             />
