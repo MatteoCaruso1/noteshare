@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Lock, Sparkles } from 'lucide-react';
+import { Lock, Sparkles, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePremium } from '@/contexts/PremiumContext';
 import { cn } from '@/lib/utils';
@@ -106,15 +106,15 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone }: GateOverla
       "flex flex-col items-center justify-center gap-3 p-6 text-center",
       !standalone && "absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-lg"
     )}>
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-        <Sparkles className="h-5 w-5 text-primary" />
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
+        <Target className="h-5 w-5 text-jazz-gold" />
       </div>
       <div className="space-y-1">
         <p className="text-sm font-medium text-foreground">
           {featureName}
         </p>
         <p className="text-xs text-muted-foreground">
-          Upgrade to Premium to unlock this feature
+          Upgrade to Premium to organize notes around your goals, projects, and gigs
         </p>
       </div>
       <Button 
