@@ -197,6 +197,7 @@
 
   html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -205,11 +206,9 @@
     overflow-y: scroll;
   }
   
-  /* Prevent layout shift when dialogs open by reserving scrollbar space */
-  html[data-scroll-locked], 
-  body[data-scroll-locked] {
+  /* Prevent Radix Dialog from adding padding compensation */
+  body[data-scroll-locked="1"] {
     padding-right: 0 !important;
-    margin-right: 0 !important;
   }
 
   /* Fix stuck hover/focus states on touch devices (iOS Safari) */
