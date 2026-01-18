@@ -235,9 +235,8 @@ const Profile = () => {
               )}
             </div>
             {!editing && (
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                <Settings className="w-4 h-4 mr-2" />
-                Edit
+              <Button variant="outline" size="icon" onClick={() => setEditing(true)}>
+                <Settings className="w-4 h-4" />
               </Button>
             )}
           </div>

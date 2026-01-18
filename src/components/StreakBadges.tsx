@@ -40,10 +40,9 @@ export function StreakBadges({ currentStreak, bestStreak, achievementCounts }: S
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${tier.bgColorClass} ${tier.colorClass} font-medium cursor-pointer hover:opacity-80 transition-opacity`}
+                  className={`flex items-center justify-center w-7 h-7 rounded-full ${tier.bgColorClass} cursor-pointer hover:opacity-80 transition-opacity`}
                 >
                   <TrophyBadge tier={tier} count={count} />
-                  <span>{tier.label}</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent>
