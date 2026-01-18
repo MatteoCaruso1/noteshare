@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { useEffect, useState, useMemo } from 'react';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { 
   EmbeddedCheckoutProvider, 
   EmbeddedCheckout 
@@ -13,8 +13,17 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { formatPrice, PREMIUM_PRICES } from '@/lib/currencyUtils';
 import { format, addDays } from 'date-fns';
 
-// Initialize Stripe with publishable key
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// Stripe publishable key - this is a public key, safe to include
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51RXGXkRovvYuNPKsGqJzP1LOGzTPJqEUZgGfWWdqHBkblwtpwqkJnuDL7OhnFGLLpJTQaUqJthxkKHDTBqZt7eUN00dFCrJoKt';
+
+// Lazily initialize Stripe only when needed
+let stripePromise: Promise<Stripe | null> | null = null;
+const getStripe = () => {
+  if (!stripePromise) {
+    stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+  }
+  return stripePromise;
+};
 
 interface CheckoutDialogProps {
   open: boolean;
@@ -97,7 +106,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
                 {clientSecret && (
                   <EmbeddedCheckoutProvider
-                    stripe={stripePromise}
+                    stripe={getStripe()}
                     options={{ clientSecret }}
                   >
                     <EmbeddedCheckout className="checkout-form" />
