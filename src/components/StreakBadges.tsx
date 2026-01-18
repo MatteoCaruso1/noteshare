@@ -40,7 +40,7 @@ export function StreakBadges({ currentStreak, bestStreak, achievementCounts }: S
             content={<p>{getBadgeDescription(tier, count)}</p>}
             className={`w-8 h-8 ${tier.bgColorClass} ${tier.borderColorClass} ${tier.ringColorClass} border ring-1 hover:opacity-80 transition-opacity`}
           >
-            <TrophyBadge tier={tier} count={count} />
+            <TrophyBadge tier={tier} count={count} size={20} />
           </TapTooltip>
         );
       })}
