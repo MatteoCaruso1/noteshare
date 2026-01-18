@@ -619,6 +619,7 @@ export type Database = {
           followers_count: number
           following_count: number
           genres: string[] | null
+          has_used_trial: boolean | null
           id: string
           instruments: string[] | null
           location: string | null
@@ -640,6 +641,7 @@ export type Database = {
           followers_count?: number
           following_count?: number
           genres?: string[] | null
+          has_used_trial?: boolean | null
           id?: string
           instruments?: string[] | null
           location?: string | null
@@ -661,6 +663,7 @@ export type Database = {
           followers_count?: number
           following_count?: number
           genres?: string[] | null
+          has_used_trial?: boolean | null
           id?: string
           instruments?: string[] | null
           location?: string | null
