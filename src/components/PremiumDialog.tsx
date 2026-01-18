@@ -41,27 +41,30 @@ export function PremiumDialog() {
   };
 
   const priceDisplay = formatPrice(detectedCurrency);
-  const altCurrency = detectedCurrency === 'CAD' ? 'USD' : 'CAD';
-  const altPrice = formatPrice(altCurrency);
 
   return (
     <Dialog open={isPremiumDialogOpen} onOpenChange={closePremiumDialog}>
       <DialogContent 
         className="sm:max-w-md p-0 gap-0 overflow-hidden"
         hideCloseButton={false}
+        closeButtonClassName="h-6 w-6 top-3 right-3"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4">
-          <h2 className="text-xl font-semibold">Practice smarter. Progress faster.</h2>
-          <Button 
-            size="sm" 
-            variant="hero" 
-            onClick={handleStartTrial}
-            className="gap-1 shrink-0"
-          >
-            Start Free Trial
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
+        <div className="px-6 pt-6 pb-4 space-y-3">
+          <div className="flex items-start justify-between gap-4 pr-6">
+            <h2 className="text-xl font-semibold">
+              Practice smarter.<br />Progress faster.
+            </h2>
+            <Button 
+              size="sm" 
+              variant="hero" 
+              onClick={handleStartTrial}
+              className="gap-1 shrink-0"
+            >
+              Start Free Trial
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Body */}
@@ -77,14 +80,6 @@ export function PremiumDialog() {
             <span className="text-muted-foreground">·</span>
             <span className="text-jazz-gold font-medium">30-day free trial</span>
           </div>
-
-          {/* Alt currency note */}
-          <p className="text-xs text-muted-foreground">
-            {detectedCurrency === 'CAD' 
-              ? `Pricing for Canada. US & other regions: ${altPrice}`
-              : `Pricing for US & other regions. Canada: ${altPrice}`
-            }
-          </p>
 
           {/* Benefits */}
           <div className="space-y-4 pt-2">
