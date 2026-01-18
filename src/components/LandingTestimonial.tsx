@@ -18,9 +18,9 @@ export function LandingTestimonial() {
       </section>
       
       {/* Footer */}
-      <footer className="bg-transparent py-6 px-6 md:px-12 lg:px-24 border-t border-border/20">
+      <footer className="bg-muted/80 backdrop-blur-sm py-3 px-6 md:px-12 lg:px-24 relative z-20">
         <div className="max-w-6xl mx-auto">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs italic">
             Built by Maruso
           </p>
         </div>
