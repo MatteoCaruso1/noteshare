@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
@@ -257,18 +257,12 @@ const Profile = () => {
                   <div className="flex items-center gap-2">
                     {/* Noteshare Team badge - icon only, matching trophy badge styling */}
                     {profile?.id === NOTESHARE_TEAM_PROFILE_ID && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/30 cursor-default">
-                              <Shield className="w-4 h-4 text-primary" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Noteshare Creator</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <TapTooltip 
+                        content={<p>Noteshare Creator</p>}
+                        className="w-8 h-8 bg-primary/10 border-primary/30 ring-primary/20 border ring-1 hover:opacity-80 transition-opacity"
+                      >
+                        <Shield className="w-4 h-4 text-primary" />
+                      </TapTooltip>
                     )}
                     {practiceStats && (
                       <StreakBadges 
