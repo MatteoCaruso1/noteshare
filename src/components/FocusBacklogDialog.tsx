@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { useFocusBacklog, FocusBacklogEntry } from '@/hooks/useFocusBacklog';
 import { toast } from 'sonner';
+import { PremiumGate } from '@/components/PremiumGate';
 
 interface FocusBacklogDialogProps {
   open: boolean;
@@ -95,61 +96,63 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
           <DialogTitle>Practice Board Backlog</DialogTitle>
         </DialogHeader>
 
-        {/* Search and Filter */}
-        <div className="flex gap-2 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search backlog..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              autoFocus={false}
-            />
+        <PremiumGate featureName="Practice Board Backlog" blur={false}>
+          {/* Search and Filter */}
+          <div className="flex gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search backlog..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                autoFocus={false}
+              />
+            </div>
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-[140px]">
+                <Calendar className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All time</SelectItem>
+                {availableMonths.map((month) => (
+                  <SelectItem key={month} value={month}>
+                    {format(parseISO(month + '-01'), 'MMM yyyy')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[140px]">
-              <Calendar className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All time</SelectItem>
-              {availableMonths.map((month) => (
-                <SelectItem key={month} value={month}>
-                  {format(parseISO(month + '-01'), 'MMM yyyy')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
-        {/* Entries List */}
-        <ScrollArea className="flex-1 -mx-6 px-6 min-h-0 overflow-y-auto">
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-muted/50 rounded animate-pulse" />
-              ))}
-            </div>
-          ) : filteredEntries.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {searchQuery || dateFilter !== 'all'
-                ? 'No matching entries found'
-                : 'No backlog entries yet'}
-            </div>
-          ) : (
-            <div className="space-y-3 pb-4">
-              {filteredEntries.map((entry) => (
-                <BacklogEntryCard
-                  key={entry.id}
-                  entry={entry}
-                  onCopy={() => handleCopy(entry.focus_text)}
-                  onDelete={() => handleDelete(entry.id)}
-                />
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+          {/* Entries List */}
+          <ScrollArea className="flex-1 -mx-6 px-6 min-h-0 overflow-y-auto">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 bg-muted/50 rounded animate-pulse" />
+                ))}
+              </div>
+            ) : filteredEntries.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery || dateFilter !== 'all'
+                  ? 'No matching entries found'
+                  : 'No backlog entries yet'}
+              </div>
+            ) : (
+              <div className="space-y-3 pb-4">
+                {filteredEntries.map((entry) => (
+                  <BacklogEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    onCopy={() => handleCopy(entry.focus_text)}
+                    onDelete={() => handleDelete(entry.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </PremiumGate>
       </DialogContent>
     </Dialog>
   );
