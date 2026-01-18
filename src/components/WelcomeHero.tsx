@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingTestimonial } from './LandingTestimonial';
+import { useAuth } from '@/hooks/useAuth';
 
 export function WelcomeHero() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isExiting, setIsExiting] = useState(false);
   const [scrollOpacity, setScrollOpacity] = useState(1);
@@ -38,7 +40,8 @@ export function WelcomeHero() {
   const handleStartPracticing = () => {
     setIsExiting(true);
     setTimeout(() => {
-      navigate('/auth');
+      // If already signed in, go to main app; otherwise go to auth
+      navigate(user ? '/' : '/auth');
     }, 400);
   };
 
