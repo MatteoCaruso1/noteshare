@@ -79,7 +79,7 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://noteshare.app";
 
-    // Create checkout session with ui_mode: 'custom' for embedded checkout
+    // Create checkout session with ui_mode: 'embedded' for embedded checkout
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -89,7 +89,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      ui_mode: "custom",
+      ui_mode: "embedded",
       subscription_data: {
         trial_period_days: 30,
       },
