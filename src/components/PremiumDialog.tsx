@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Infinity, History, TrendingUp, FolderKanban, Sparkles, ArrowRight } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { usePremium } from '@/contexts/PremiumContext';
+import { usePremium, setNavigateToCheckout } from '@/contexts/PremiumContext';
 import { formatPrice } from '@/lib/currencyUtils';
 
 const BENEFITS = [
@@ -28,16 +30,21 @@ const BENEFITS = [
 ];
 
 export function PremiumDialog() {
+  const navigate = useNavigate();
   const { 
     isPremiumDialogOpen, 
     closePremiumDialog, 
-    startCheckout, 
     detectedCurrency 
   } = usePremium();
 
-  const handleStartTrial = async () => {
+  // Set up navigation callback for PremiumContext
+  useEffect(() => {
+    setNavigateToCheckout(() => navigate('/checkout'));
+  }, [navigate]);
+
+  const handleStartTrial = () => {
     closePremiumDialog();
-    await startCheckout();
+    navigate('/checkout');
   };
 
   const priceDisplay = formatPrice(detectedCurrency);
