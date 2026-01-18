@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Music } from 'lucide-react';
+import { Music, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -21,6 +21,7 @@ const Auth = () => {
   const [name, setName] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   // Listen for password recovery event
   useEffect(() => {
@@ -43,11 +44,19 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [searchParams]);
 
+  // Reset password touched state when mode changes
+  useEffect(() => {
+    setPasswordTouched(false);
+  }, [mode]);
+
   // Only redirect if user is logged in AND not in password update mode
   if (user && mode !== 'update-password') {
     navigate('/');
     return null;
   }
+
+  const isPasswordValid = password.length >= 6;
+  const showPasswordHint = passwordTouched && !isPasswordValid && password.length > 0;
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +89,14 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Custom validation for password
+    if (mode !== 'forgot' && password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      setPasswordTouched(true);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -124,23 +141,31 @@ const Auth = () => {
         </div>
 
         {mode === 'update-password' ? (
-          <form onSubmit={handleUpdatePassword} className="space-y-4">
-            <Input
-              type="password"
-              placeholder="New password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete="new-password"
-            />
+          <form onSubmit={handleUpdatePassword} noValidate className="space-y-4">
+            <div className="space-y-1">
+              <Input
+                type="password"
+                placeholder="New password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setPasswordTouched(true)}
+                required
+                autoComplete="new-password"
+                className={showPasswordHint ? 'border-destructive focus-visible:ring-destructive' : ''}
+              />
+              {showPasswordHint && (
+                <p className="text-xs text-destructive flex items-center gap-1 px-1">
+                  <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                  <span>Password must be at least 6 characters</span>
+                </p>
+              )}
+            </div>
             <Input
               type="password"
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              minLength={6}
               autoComplete="new-password"
             />
             <Button
@@ -152,7 +177,7 @@ const Auth = () => {
             </Button>
           </form>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4" autoComplete="on">
             {mode === 'signup' && (
               <Input
                 placeholder="Your name"
@@ -172,16 +197,25 @@ const Auth = () => {
               name="email"
             />
             {mode !== 'forgot' && (
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                name="password"
-              />
+              <div className="space-y-1">
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => setPasswordTouched(true)}
+                  required
+                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  name="password"
+                  className={showPasswordHint ? 'border-destructive focus-visible:ring-destructive' : ''}
+                />
+                {showPasswordHint && (
+                  <p className="text-xs text-destructive flex items-center gap-1 px-1">
+                    <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                    <span>Password must be at least 6 characters</span>
+                  </p>
+                )}
+              </div>
             )}
             {mode === 'signin' && (
               <div className="flex items-center space-x-2">
