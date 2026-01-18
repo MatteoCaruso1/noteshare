@@ -6,6 +6,7 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
+import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
@@ -13,6 +14,7 @@ import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextarea } from '@/components/RichTextarea';
 import { TagInput } from '@/components/TagInput';
 import { SignedImage } from '@/components/SignedImage';
+import { DailyLimitBanner } from '@/components/DailyLimitBanner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -41,6 +43,7 @@ export function QuickNoteCapture() {
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   const recentTags = useRecentTags();
   const { setQuickNoteExpanded } = useGlint();
+  const { hasReachedLimit, notesPostedToday, dailyLimit, incrementCount, isPremium } = useDailyNoteLimit();
 
   const [isOpen, setIsOpen] = useState(false);
   const [attachFocus, setAttachFocus] = useState(false);
@@ -97,6 +100,11 @@ export function QuickNoteCapture() {
   };
 
   const handleSaveNote = () => {
+    if (hasReachedLimit) {
+      toast.error('Daily note limit reached. Upgrade to Premium for unlimited notes.');
+      return;
+    }
+    
     createNote.mutate(
       {
         authorId: profile.id,
@@ -114,6 +122,7 @@ export function QuickNoteCapture() {
       },
       {
         onSuccess: () => {
+          incrementCount(); // Update local count optimistically
           clearState();
           setIsOpen(false);
         },
@@ -142,6 +151,11 @@ export function QuickNoteCapture() {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="px-4 pb-4 space-y-4">
+          {/* Show daily limit banner if limit reached */}
+          {hasReachedLimit && (
+            <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
+          )}
+          
           {/* Compact toolbar row: Settings, Upload, Project, Focus toggle */}
           <TooltipProvider delayDuration={1000}>
             <div className="flex items-center gap-2 flex-wrap">

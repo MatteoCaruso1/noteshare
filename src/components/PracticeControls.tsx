@@ -7,6 +7,7 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useRecentTags } from '@/hooks/useRecentTags';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
+import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
@@ -15,6 +16,7 @@ import { OfflineSessionInput } from '@/components/OfflineSessionInput';
 import { RichTextarea } from '@/components/RichTextarea';
 import { TagInput } from '@/components/TagInput';
 import { SignedImage } from '@/components/SignedImage';
+import { DailyLimitBanner } from '@/components/DailyLimitBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -90,6 +92,7 @@ export function PracticeControls() {
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   const { isPaused, glintStyle, setPracticeExpanded } = useGlint();
+  const { hasReachedLimit, notesPostedToday, dailyLimit, incrementCount, isPremium } = useDailyNoteLimit();
 
   // Use persistent state for note content that survives navigation
   const {
@@ -409,6 +412,21 @@ export function PracticeControls() {
       const activeDurationMs = totalElapsedMs - pausedMs - currentPauseMs;
       const sessionDurationMinutes = Math.floor(activeDurationMs / 60000);
 
+      // Check daily limit before creating note (session can still be ended)
+      if (hasReachedLimit) {
+        endSession.mutate(
+          { sessionId: activeSession.id, userId: profile.id },
+          {
+            onSuccess: () => {
+              clearState();
+              clearSessionSettings();
+              toast.error('Session ended but note not saved - daily limit reached. Upgrade to Premium for unlimited notes.');
+            },
+          }
+        );
+        return;
+      }
+
       endSession.mutate(
         { sessionId: activeSession.id, userId: profile.id },
         {
@@ -430,6 +448,7 @@ export function PracticeControls() {
               },
               {
                 onSuccess: () => {
+                  incrementCount(); // Update local count optimistically
                   clearState();
                   clearSessionSettings();
                 },
@@ -720,6 +739,13 @@ export function PracticeControls() {
               )}
             </div>
           </TooltipProvider>
+
+          {/* Show daily limit banner if limit reached */}
+          {hasReachedLimit && (
+            <div className="mb-4">
+              <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
+            </div>
+          )}
 
           {/* Text Content - with list formatting support */}
           <div className="mb-4">
