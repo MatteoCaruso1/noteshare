@@ -17,7 +17,7 @@ export function DailyLimitBanner({ notesPostedToday, dailyLimit }: DailyLimitBan
           Daily note limit reached
         </p>
         <p className="text-xs text-muted-foreground">
-          Free users can post one note per day. Upgrade to Premium for unlimited notes.
+          Free users can post one note per day. Try Premium for Free for unlimited notes.
         </p>
       </div>
       <Button 
