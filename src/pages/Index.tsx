@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
+import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
@@ -21,6 +22,9 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
+  
+  // Track page views for analytics
+  usePageViewTracking('practice');
   const { isPremium, isLoading: premiumLoading, openPremiumDialog } = usePremium();
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   
