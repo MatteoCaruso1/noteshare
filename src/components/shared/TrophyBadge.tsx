@@ -28,7 +28,7 @@ export const TrophyBadge = memo(function TrophyBadge({
       <Trophy className={`w-3.5 h-3.5 ${tier.colorClass} opacity-80`} />
       {displayCount && (
         <span 
-          className={`absolute inset-0 flex items-center justify-center text-[6px] font-bold -translate-y-[2px] ${tier.colorClass}`}
+          className={`absolute inset-0 flex items-center justify-center text-[6px] font-bold -translate-x-[0.5px] -translate-y-[2px] ${tier.colorClass}`}
           style={{ textShadow: '0 0 2px hsl(var(--background))' }}
         >
           {displayCount}
