@@ -57,19 +57,16 @@ export function WelcomeHero() {
 
   return (
     <div 
-      className={`bg-transparent flex flex-col -mt-16 transition-all duration-500 ease-out relative z-10 ${
+      className={`bg-transparent flex flex-col transition-all duration-500 ease-out relative z-10 ${
         isExiting 
           ? 'opacity-0 blur-sm scale-[1.02] overflow-hidden' 
           : 'animate-hero-enter'
       }`}
     >
       {/* Hero Section */}
-      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative">
-        {/* Header - stays visible */}
-        <header className="w-full px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold tracking-tight">noteshare</span>
-          </div>
+      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative pt-4">
+        {/* Auth buttons - right aligned */}
+        <div className="w-full px-6 py-4 flex items-center justify-end">
           <div className="flex items-center gap-3">
             {user ? (
               <Button 
@@ -98,11 +95,11 @@ export function WelcomeHero() {
               </>
             )}
           </div>
-        </header>
+        </div>
 
         {/* Hero Content - fades on scroll */}
         <main 
-          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 max-w-6xl transition-opacity duration-100 pt-20 md:pt-28"
+          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 max-w-6xl transition-opacity duration-100 pt-12 md:pt-16"
           style={{ opacity: scrollOpacity }}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6">
