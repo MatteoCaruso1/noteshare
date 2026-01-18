@@ -778,7 +778,7 @@ export function PracticeControls() {
             <Button
               variant="outline"
               size="icon"
-              className={`h-9 flex-[3] focus:outline-none focus-visible:outline-none transition-opacity ${
+              className={`h-9 flex-[3] focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-opacity ${
                 isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
               }`}
               onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
