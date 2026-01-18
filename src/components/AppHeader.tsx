@@ -75,11 +75,6 @@ export function AppHeader() {
   if (location.pathname === '/' && !user) {
     return null;
   }
-  
-  // Hide completely on /welcome when not logged in
-  if (isOnWelcomePage && !user) {
-    return null;
-  }
 
   const handleEndSession = async () => {
     if (!activeSession || !profile) return;
