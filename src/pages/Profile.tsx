@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { BottomNav } from '@/components/BottomNav';
@@ -70,6 +70,9 @@ const Profile = () => {
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
   const { data: practiceStats } = usePracticeStats(profile?.id);
+  
+  // Guard ref to prevent duplicate milestone processing (race condition fix)
+  const processingMilestonesRef = useRef<Set<number>>(new Set());
 
   // Check for new streak milestones and persist to database
   // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
@@ -84,15 +87,22 @@ const Profile = () => {
     
     // If some milestones need to be cleared, update the database
     if (stillValidMilestones.length < celebratedMilestones.length) {
+      // Clear any processing flags for milestones being reset
+      celebratedMilestones.forEach(m => {
+        if (m > currentStreak) {
+          processingMilestonesRef.current.delete(m);
+        }
+      });
+      
       supabase
         .from('profiles')
         .update({ celebrated_streak_milestones: stillValidMilestones })
         .eq('id', profile.id)
-        .then(({ error }) => {
+        .then(async ({ error }) => {
           if (error) {
             console.error('Failed to clear old milestones:', error);
           } else {
-            refreshProfile();
+            await refreshProfile();
           }
         });
       return; // Wait for profile refresh before checking new milestones
@@ -105,8 +115,16 @@ const Profile = () => {
     // Only celebrate actual tier achievements (not 'none')
     if (currentTier.tier === 'none') return;
 
+    // Guard: Skip if already processing this milestone (prevents duplicate runs)
+    if (processingMilestonesRef.current.has(currentTier.minDays)) {
+      return;
+    }
+
     // Check if user just hit this milestone and hasn't celebrated it in this streak
     if (currentStreak >= currentTier.minDays && !stillValidMilestones.includes(currentTier.minDays)) {
+      // Mark as processing immediately to prevent duplicate runs
+      processingMilestonesRef.current.add(currentTier.minDays);
+      
       setCelebratingTier(currentTier);
       setMilestoneDialogOpen(true);
       
@@ -127,11 +145,15 @@ const Profile = () => {
           streak_achievement_counts: newCounts,
         })
         .eq('id', profile.id)
-        .then(({ error }) => {
+        .then(async ({ error }) => {
           if (error) {
             console.error('Failed to save milestone:', error);
+            // On error, allow retry by removing from processing set
+            processingMilestonesRef.current.delete(currentTier.minDays);
           } else {
-            refreshProfile();
+            await refreshProfile();
+            // Clear processing flag after state is synced
+            processingMilestonesRef.current.delete(currentTier.minDays);
           }
         });
     }
