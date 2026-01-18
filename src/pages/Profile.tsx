@@ -26,6 +26,7 @@ import { StreakRewardsSection } from '@/components/StreakRewardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 
 // Noteshare Team profile ID (Matteo)
@@ -401,6 +402,9 @@ const Profile = () => {
               <PracticeStats profileId={profile?.id} />
             </PremiumGate>
           )}
+
+          {/* Manage Plans Section - only in edit mode */}
+          {editing && <ManagePlansSection />}
 
           {/* Save/Cancel Buttons */}
           {editing && (
