@@ -207,9 +207,14 @@ const Profile = () => {
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
-            <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate('/welcome'); }}>
-              <LogOut className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={() => setEditing(true)}>
+                <Settings className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate('/welcome'); }}>
+                <LogOut className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </PageHeader>
@@ -250,15 +255,14 @@ const Profile = () => {
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
                   <p className="text-sm text-muted-foreground">@{profile?.username}</p>
                   <div className="flex items-center gap-2">
-                    {/* Noteshare Team badge */}
+                    {/* Noteshare Team badge - icon only, matching trophy badge styling */}
                     {profile?.id === NOTESHARE_TEAM_PROFILE_ID && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Badge className="text-xs py-0.5 px-2 gap-1 bg-primary/15 text-primary border-primary/30 cursor-default">
-                              <Shield className="w-3 h-3" />
-                              Noteshare Team
-                            </Badge>
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/30 cursor-default">
+                              <Shield className="w-4 h-4 text-primary" />
+                            </span>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Noteshare Creator</p>
@@ -278,12 +282,7 @@ const Profile = () => {
               )}
             </div>
             {!editing && (
-              <div className="flex items-center gap-2">
-                <PremiumUpgradeButton />
-                <Button variant="outline" size="icon" onClick={() => setEditing(true)}>
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </div>
+              <PremiumUpgradeButton />
             )}
           </div>
 
