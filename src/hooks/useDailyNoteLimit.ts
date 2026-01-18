@@ -1,15 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
+import { useCallback } from 'react';
 
 const FREE_DAILY_LIMIT = 1;
-
-interface DailyNoteLimitState {
-  notesPostedToday: number;
-  isLoading: boolean;
-  error: string | null;
-}
 
 /**
  * Returns the current date in YYYY-MM-DD format in local timezone
@@ -22,22 +17,13 @@ function getTodayLocalDate(): string {
 export function useDailyNoteLimit() {
   const { user } = useAuth();
   const { isPremium, isLoading: premiumLoading } = usePremium();
-  
-  const [state, setState] = useState<DailyNoteLimitState>({
-    notesPostedToday: 0,
-    isLoading: true,
-    error: null,
-  });
+  const queryClient = useQueryClient();
 
-  const fetchTodaysNotes = useCallback(async () => {
-    if (!user) {
-      setState({ notesPostedToday: 0, isLoading: false, error: null });
-      return;
-    }
+  const { data: notesPostedToday = 0, isLoading, error, refetch } = useQuery({
+    queryKey: ['daily-note-count', user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
       const today = getTodayLocalDate();
       const startOfDay = `${today}T00:00:00.000Z`;
       const endOfDay = `${today}T23:59:59.999Z`;
@@ -51,46 +37,38 @@ export function useDailyNoteLimit() {
 
       if (error) throw error;
 
-      setState({
-        notesPostedToday: count || 0,
-        isLoading: false,
-        error: null,
-      });
-    } catch (err) {
-      console.error('Error fetching daily note count:', err);
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: err instanceof Error ? err.message : 'Failed to check daily limit',
-      }));
-    }
-  }, [user]);
-
-  // Fetch on mount and when user changes
-  useEffect(() => {
-    fetchTodaysNotes();
-  }, [fetchTodaysNotes]);
+      return count || 0;
+    },
+    enabled: !!user,
+    staleTime: 30 * 1000, // Consider fresh for 30 seconds
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+  });
 
   // Premium users have unlimited notes
-  const hasReachedLimit = !isPremium && state.notesPostedToday >= FREE_DAILY_LIMIT;
-  const remainingNotes = isPremium ? Infinity : Math.max(0, FREE_DAILY_LIMIT - state.notesPostedToday);
+  const hasReachedLimit = !isPremium && notesPostedToday >= FREE_DAILY_LIMIT;
+  const remainingNotes = isPremium ? Infinity : Math.max(0, FREE_DAILY_LIMIT - notesPostedToday);
 
-  // Increment the local count after posting (optimistic update)
+  // Optimistically increment the count and invalidate the query
   const incrementCount = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      notesPostedToday: prev.notesPostedToday + 1,
-    }));
-  }, []);
+    // Optimistically update the cache
+    queryClient.setQueryData(['daily-note-count', user?.id], (old: number | undefined) => (old ?? 0) + 1);
+    // Then invalidate to refetch the actual count
+    queryClient.invalidateQueries({ queryKey: ['daily-note-count'] });
+  }, [queryClient, user?.id]);
+
+  // Refresh function for manual refresh
+  const refresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return {
-    notesPostedToday: state.notesPostedToday,
+    notesPostedToday,
     hasReachedLimit,
     remainingNotes,
     dailyLimit: isPremium ? Infinity : FREE_DAILY_LIMIT,
-    isLoading: state.isLoading || premiumLoading,
-    error: state.error,
-    refresh: fetchTodaysNotes,
+    isLoading: isLoading || premiumLoading,
+    error: error instanceof Error ? error.message : null,
+    refresh,
     incrementCount,
     isPremium,
   };
