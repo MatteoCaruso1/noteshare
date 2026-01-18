@@ -102,6 +102,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
           .from('notes')
           .select(`id, text_content, audio_files, created_at, author_id, profiles!notes_author_id_fkey (id, name, avatar)`)
           .eq('id', currentMemoryId)
+          .eq('author_id', profile.id) // Ensure we only fetch our own notes
           .maybeSingle();
 
         if (!data) return null;
