@@ -134,7 +134,7 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, descri
         className="gap-1.5"
       >
         <Sparkles className="h-3.5 w-3.5" />
-        Upgrade to Premium
+        Try Premium for Free
       </Button>
     </div>
   );
