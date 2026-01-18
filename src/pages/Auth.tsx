@@ -261,10 +261,10 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300"
+                className="w-full bg-zinc-400 text-zinc-900 hover:bg-zinc-500 border-zinc-400"
                 onClick={() => setMode('signin')}
               >
-                Sign In
+                Go back
               </Button>
             )}
             {mode === 'forgot' && (
@@ -277,13 +277,15 @@ const Auth = () => {
                 Back to Sign In
               </Button>
             )}
-            <button
-              type="button"
-              className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full text-center"
-              onClick={() => setMode('forgot')}
-            >
-              Forgot password?
-            </button>
+            {mode !== 'signup' && (
+              <button
+                type="button"
+                className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full text-center"
+                onClick={() => setMode('forgot')}
+              >
+                Forgot password?
+              </button>
+            )}
           </div>
         )}
       </Card>
