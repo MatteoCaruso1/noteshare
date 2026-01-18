@@ -4,7 +4,7 @@ export function LandingTestimonial() {
       <section className="bg-transparent pt-6 pb-12 px-6 md:px-12 lg:px-24">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-start md:justify-between gap-8">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground leading-tight max-w-md">
-            Empowering the world's best musicians
+            Empowering the world's musicians
           </h2>
           <div className="max-w-lg">
             <p className="text-gray-500 text-lg leading-relaxed">
