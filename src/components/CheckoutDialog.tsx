@@ -64,12 +64,12 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="sm:max-w-4xl p-0 gap-0 max-h-[90vh] overflow-hidden"
+        className="sm:max-w-4xl p-0 gap-0 max-h-[90vh] overflow-y-auto"
         hideCloseButton={false}
       >
-        <div className="grid grid-cols-1 md:grid-cols-5 max-h-[90vh]">
+        <div className="grid grid-cols-1 md:grid-cols-5">
           {/* Left column - Payment form (60%) */}
-          <div className="md:col-span-3 p-6 overflow-y-auto order-2 md:order-1 border-t md:border-t-0 md:border-r border-border/50">
+          <div className="md:col-span-3 p-6 order-2 md:order-1 border-t md:border-t-0 md:border-r border-border/50">
             <div className="space-y-4">
               <div>
                 <h1 className="text-xl font-bold">Upgrade to Premium</h1>
