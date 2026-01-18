@@ -13,7 +13,7 @@ import { NoteCard } from '@/components/NoteCard';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
@@ -181,10 +181,13 @@ const NoteDetail = () => {
             {profile && (
               <Card className="p-3 bg-background text-foreground border-border">
                 <div className="flex items-center gap-3">
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarImage src={profile.avatar || ''} />
-                    <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-                  </Avatar>
+                  <ClickableAvatar
+                    profileId={profile.id}
+                    avatar={profile.avatar}
+                    name={profile.name}
+                    size="md"
+                    className="flex-shrink-0"
+                  />
                   <div className="flex-1">
                     <MentionInput
                       placeholder="Post a comment"
@@ -223,10 +226,12 @@ const NoteDetail = () => {
                   return (
                     <Card key={comment.id} className="p-3 bg-background text-foreground border-border">
                       <div className="flex gap-3">
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={comment.author?.avatar || ''} />
-                          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-                        </Avatar>
+                        <ClickableAvatar
+                          profileId={comment.author?.id || comment.author_id}
+                          avatar={comment.author?.avatar}
+                          name={comment.author?.name}
+                          size="md"
+                        />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
