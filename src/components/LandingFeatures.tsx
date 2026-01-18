@@ -12,7 +12,7 @@ const features = [
     cropTop: false,
   },
   {
-    title: 'Log your sessions and record your playing',
+    title: 'Log practice sessions and record your playing',
     image: landingSessions,
     alt: 'Practice session with audio recording and comments',
     cropTop: false,
@@ -24,7 +24,7 @@ const features = [
     cropTop: false,
   },
   {
-    title: 'See what friends are working on',
+    title: 'See what your friends are working on',
     image: landingFriends,
     alt: 'Friends practice feed showing their sessions',
     cropTop: false,
