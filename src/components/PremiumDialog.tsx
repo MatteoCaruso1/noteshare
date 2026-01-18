@@ -45,7 +45,7 @@ export function PremiumDialog() {
   return (
     <Dialog open={isPremiumDialogOpen} onOpenChange={closePremiumDialog}>
       <DialogContent 
-        className="sm:max-w-md p-0 gap-0 overflow-hidden"
+        className="sm:max-w-md p-0 gap-0 overflow-hidden max-h-[90vh]"
         hideCloseButton={false}
         closeButtonClassName="h-6 w-6 top-3 right-3"
       >
@@ -68,18 +68,19 @@ export function PremiumDialog() {
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-6 space-y-5">
+        <div className="px-6 pb-6 space-y-5 overflow-y-auto">
           {/* Value prop */}
           <p className="text-muted-foreground">
             For the price of a latte ☕ each month, Premium helps you stay focused and see real progress.
           </p>
 
-          {/* Pricing badge */}
-          <div className="inline-flex items-center gap-2 bg-muted/50 rounded-full px-4 py-2">
-            <span className="font-medium">{priceDisplay}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-jazz-gold font-medium">30-day free trial</span>
-          </div>
+          {/* Pricing badge - clickable */}
+          <button 
+            onClick={handleStartTrial}
+            className="inline-flex items-center gap-2 bg-muted/50 hover:bg-muted/70 transition-colors rounded-full px-4 py-2 cursor-pointer"
+          >
+            <span className="font-medium">{priceDisplay} with 30-day free trial</span>
+          </button>
 
           {/* Benefits */}
           <div className="space-y-4 pt-2">
