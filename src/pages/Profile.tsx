@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Shield } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
@@ -25,6 +26,9 @@ import { StreakRewardsSection } from '@/components/StreakRewardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+
+// Noteshare Team profile ID (Matteo)
+const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
 
 // Premium upgrade button component for profile
 function PremiumUpgradeButton() {
@@ -245,13 +249,31 @@ const Profile = () => {
                 <div className="space-y-1.5">
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
                   <p className="text-sm text-muted-foreground">@{profile?.username}</p>
-                  {practiceStats && (
-                    <StreakBadges 
-                      currentStreak={practiceStats.currentStreak} 
-                      bestStreak={practiceStats.bestDailyStreak}
-                      achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
-                    />
-                  )}
+                  <div className="flex items-center gap-2">
+                    {/* Noteshare Team badge */}
+                    {profile?.id === NOTESHARE_TEAM_PROFILE_ID && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge className="text-xs py-0.5 px-2 gap-1 bg-primary/15 text-primary border-primary/30 cursor-default">
+                              <Shield className="w-3 h-3" />
+                              Noteshare Team
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Noteshare Creator</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    {practiceStats && (
+                      <StreakBadges 
+                        currentStreak={practiceStats.currentStreak} 
+                        bestStreak={practiceStats.bestDailyStreak}
+                        achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
+                      />
+                    )}
+                  </div>
                 </div>
               )}
             </div>
