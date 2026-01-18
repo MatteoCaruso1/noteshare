@@ -34,24 +34,19 @@ const LoadingSkeleton = ({ message }: { message?: string }) => (
 );
 
 // History gate component for older notes
-function OlderNotesGate({ olderNotesCount, onUpgrade }: { olderNotesCount: number; onUpgrade: () => void }) {
+function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
   return (
     <div className="relative rounded-lg border border-border bg-card/50 p-6 text-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="rounded-full bg-primary/10 p-3">
-          <Lock className="h-6 w-6 text-primary" />
+        <div className="rounded-full bg-jazz-gold/10 p-3">
+          <Lock className="h-6 w-6 text-jazz-gold" />
         </div>
-        <div>
-          <h3 className="font-semibold text-foreground">
-            {olderNotesCount} older {olderNotesCount === 1 ? 'note' : 'notes'} hidden
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Upgrade to Premium to access your full practice history
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Upgrade to Premium to access your full practice history
+        </p>
         <Button 
           onClick={onUpgrade}
-          className="mt-2 bg-gradient-primary"
+          variant="hero"
         >
           <Sparkles className="w-4 h-4 mr-2" />
           Upgrade to Premium
@@ -168,10 +163,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
       
       {/* Show upgrade prompt for older notes (free users only) */}
       {!isPremium && !isPremiumLoading && olderNotesCount > 0 && (
-        <OlderNotesGate 
-          olderNotesCount={olderNotesCount} 
-          onUpgrade={startCheckout}
-        />
+        <OlderNotesGate onUpgrade={startCheckout} />
       )}
       
       {/* Load more button for remaining recent notes */}

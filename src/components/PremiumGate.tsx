@@ -120,6 +120,7 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone }: GateOverla
       <Button 
         size="sm" 
         onClick={onUpgrade}
+        variant="hero"
         className="gap-1.5"
       >
         <Sparkles className="h-3.5 w-3.5" />
