@@ -73,6 +73,9 @@ const Profile = () => {
   
   // Guard ref to prevent duplicate milestone processing (race condition fix)
   const processingMilestonesRef = useRef<Set<number>>(new Set());
+  // Track milestones we've already celebrated in THIS browser session
+  // This prevents any re-celebration even across re-renders
+  const celebratedThisSessionRef = useRef<Set<number>>(new Set());
 
   // Check for new streak milestones and persist to database
   // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
@@ -91,6 +94,7 @@ const Profile = () => {
       celebratedMilestones.forEach(m => {
         if (m > currentStreak) {
           processingMilestonesRef.current.delete(m);
+          celebratedThisSessionRef.current.delete(m);
         }
       });
       
@@ -98,14 +102,13 @@ const Profile = () => {
         .from('profiles')
         .update({ celebrated_streak_milestones: stillValidMilestones })
         .eq('id', profile.id)
-        .then(async ({ error }) => {
+        .then(({ error }) => {
           if (error) {
             console.error('Failed to clear old milestones:', error);
-          } else {
-            await refreshProfile();
           }
+          // Don't refresh - let React Query handle cache invalidation
         });
-      return; // Wait for profile refresh before checking new milestones
+      return; // Wait for next render before checking new milestones
     }
     
     // Now check for new milestone achievements
@@ -115,48 +118,55 @@ const Profile = () => {
     // Only celebrate actual tier achievements (not 'none')
     if (currentTier.tier === 'none') return;
 
-    // Guard: Skip if already processing this milestone (prevents duplicate runs)
+    // GUARD 1: Already celebrated in this browser session? Skip
+    if (celebratedThisSessionRef.current.has(currentTier.minDays)) {
+      return;
+    }
+
+    // GUARD 2: Already in database? Skip
+    if (stillValidMilestones.includes(currentTier.minDays)) {
+      return;
+    }
+
+    // GUARD 3: Currently processing? Skip
     if (processingMilestonesRef.current.has(currentTier.minDays)) {
       return;
     }
 
-    // Check if user just hit this milestone and hasn't celebrated it in this streak
-    if (currentStreak >= currentTier.minDays && !stillValidMilestones.includes(currentTier.minDays)) {
-      // Mark as processing immediately to prevent duplicate runs
-      processingMilestonesRef.current.add(currentTier.minDays);
-      
-      setCelebratingTier(currentTier);
-      setMilestoneDialogOpen(true);
-      
-      // Get current achievement counts and increment for this milestone
-      const currentCounts = (profile.streak_achievement_counts || {}) as Record<string, number>;
-      const milestoneKey = currentTier.minDays.toString();
-      const newCounts = {
-        ...currentCounts,
-        [milestoneKey]: (currentCounts[milestoneKey] || 0) + 1,
-      };
-      
-      // Persist to database
-      const newMilestones = [...stillValidMilestones, currentTier.minDays];
-      supabase
-        .from('profiles')
-        .update({ 
-          celebrated_streak_milestones: newMilestones,
-          streak_achievement_counts: newCounts,
-        })
-        .eq('id', profile.id)
-        .then(async ({ error }) => {
-          if (error) {
-            console.error('Failed to save milestone:', error);
-            // On error, allow retry by removing from processing set
-            processingMilestonesRef.current.delete(currentTier.minDays);
-          } else {
-            await refreshProfile();
-            // Clear processing flag after state is synced
-            processingMilestonesRef.current.delete(currentTier.minDays);
-          }
-        });
-    }
+    // Mark as processing AND celebrated this session IMMEDIATELY (before any async work)
+    processingMilestonesRef.current.add(currentTier.minDays);
+    celebratedThisSessionRef.current.add(currentTier.minDays);
+    
+    setCelebratingTier(currentTier);
+    setMilestoneDialogOpen(true);
+    
+    // Get current achievement counts and increment for this milestone
+    const currentCounts = (profile.streak_achievement_counts || {}) as Record<string, number>;
+    const milestoneKey = currentTier.minDays.toString();
+    const newCounts = {
+      ...currentCounts,
+      [milestoneKey]: (currentCounts[milestoneKey] || 0) + 1,
+    };
+    
+    // Persist to database
+    const newMilestones = [...stillValidMilestones, currentTier.minDays];
+    supabase
+      .from('profiles')
+      .update({ 
+        celebrated_streak_milestones: newMilestones,
+        streak_achievement_counts: newCounts,
+      })
+      .eq('id', profile.id)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Failed to save milestone:', error);
+          // On error, allow retry by removing from processing set
+          // BUT keep in celebratedThisSession to prevent spam within session
+          processingMilestonesRef.current.delete(currentTier.minDays);
+        }
+        // DON'T call refreshProfile() - it causes re-renders that trigger the race condition
+        // Let React Query's normal cache invalidation handle the refresh
+      });
   }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones]);
 
   if (!user) {
