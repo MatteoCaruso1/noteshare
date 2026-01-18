@@ -18,6 +18,31 @@ interface ActivationRate {
   rate: number;
 }
 
+interface Day7Retention {
+  date: string;
+  cohortSize: number;
+  retained: number;
+  rate: number | null;
+}
+
+interface Day7RetentionToday {
+  cohortSize: number;
+  retained: number;
+  rate: number | null;
+}
+
+interface PaidConversion {
+  totalActive: number;
+  inTrial: number;
+  actuallyPaying: number;
+}
+
+interface TrialToPaidRate {
+  trialsEndedLast7Days: number;
+  converted: number;
+  rate: number;
+}
+
 interface AnalyticsData {
   noteActivatedUsers: {
     dailyCounts: DailyCount[];
@@ -26,6 +51,12 @@ interface AnalyticsData {
   noteActivationRate: {
     dailyRates: ActivationRate[];
   };
+  day7Retention: {
+    dailyRates: Day7Retention[];
+    today: Day7RetentionToday;
+  };
+  paidConversion: PaidConversion;
+  trialToPaidRate: TrialToPaidRate;
   metadata: {
     daysRequested: number;
     startDate: string;
@@ -41,13 +72,6 @@ export const useAnalytics = (days: number = 30) => {
   return useQuery<AnalyticsData>({
     queryKey: ['analytics', days],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-analytics', {
-        body: null,
-        method: 'GET',
-      });
-
-      // supabase.functions.invoke doesn't support query params directly,
-      // so we need to use a workaround with the URL
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-analytics?days=${days}`,
         {
