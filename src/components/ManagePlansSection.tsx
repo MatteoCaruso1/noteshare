@@ -42,32 +42,28 @@ export function ManagePlansSection() {
 
       <div className="space-y-4">
         {/* Current Plan Display */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
-          <div className="flex items-center gap-3">
-            {isPremium && (
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-primary" />
-              </div>
-            )}
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">
-                  {isPremium ? 'Noteshare Premium' : 'Noteshare Free'}
-                </span>
-                <Badge 
-                  variant={isPremium ? 'default' : 'secondary'}
-                  className="text-xs"
-                >
-                  {isPremium ? 'Active' : 'Current'}
-                </Badge>
-              </div>
-              {isPremium && subscriptionEnd && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Access until {formatSubscriptionEnd()}
-                </p>
-              )}
+        <div className="flex items-center justify-center p-3 rounded-lg bg-muted/50 border border-border/50">
+          {isPremium && (
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mr-3">
+              <Crown className="w-5 h-5 text-primary" />
             </div>
+          )}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {isPremium ? 'Noteshare Premium' : 'Noteshare Free'}
+            </span>
+            <Badge 
+              variant={isPremium ? 'default' : 'secondary'}
+              className="text-xs"
+            >
+              {isPremium ? 'Active' : 'Current'}
+            </Badge>
           </div>
+          {isPremium && subscriptionEnd && (
+            <p className="text-xs text-muted-foreground ml-2">
+              · Access until {formatSubscriptionEnd()}
+            </p>
+          )}
         </div>
 
         {/* Switch Plan Button */}
@@ -84,7 +80,7 @@ export function ManagePlansSection() {
         <div className="flex items-center justify-center gap-2 pt-2 border-t border-border/50">
           <Mail className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
-            Need help? Contact:{' '}
+            Contact for help:{' '}
             <a 
               href="mailto:matteo.m.caruso1@gmail.com" 
               className="text-primary hover:underline"
