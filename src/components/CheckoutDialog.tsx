@@ -68,13 +68,6 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
         hideCloseButton={false}
       >
         <div className="space-y-4">
-          <div>
-            <h1 className="text-xl font-bold">Upgrade to Premium</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Practice smarter. Progress faster.
-            </p>
-          </div>
-
           {/* Stripe Embedded Checkout */}
           <div className="bg-card rounded-lg border border-border/50 p-1 min-h-[350px]">
             {isLoading && (
