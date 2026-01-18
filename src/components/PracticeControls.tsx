@@ -420,7 +420,7 @@ export function PracticeControls() {
             onSuccess: () => {
               clearState();
               clearSessionSettings();
-              toast.error('Session ended but note not saved - daily limit reached. Upgrade to Premium for unlimited notes.');
+              toast.error('Session ended but note not saved - daily limit reached. Try Premium for Free for unlimited notes.');
             },
           }
         );
