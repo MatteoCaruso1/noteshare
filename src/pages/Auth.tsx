@@ -212,26 +212,43 @@ const Auth = () => {
         )}
 
         {mode !== 'update-password' && (
-          <div className="mt-4 text-center space-y-1">
+          <div className="mt-4 space-y-3">
             {mode === 'signin' && (
-              <button
+              <Button
                 type="button"
-                className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full"
-                onClick={() => setMode('forgot')}
+                variant="outline"
+                className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-white"
+                onClick={() => setMode('signup')}
               >
-                Forgot password?
-              </button>
+                Sign Up
+              </Button>
+            )}
+            {mode === 'signup' && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-white"
+                onClick={() => setMode('signin')}
+              >
+                Sign In
+              </Button>
+            )}
+            {mode === 'forgot' && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-white"
+                onClick={() => setMode('signin')}
+              >
+                Back to Sign In
+              </Button>
             )}
             <button
               type="button"
-              className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full"
-              onClick={() => setMode(mode === 'signup' ? 'signin' : mode === 'forgot' ? 'signin' : 'signup')}
+              className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full text-center"
+              onClick={() => setMode('forgot')}
             >
-              {mode === 'signup'
-                ? 'Sign in'
-                : mode === 'forgot'
-                  ? 'Back to sign in'
-                  : 'Sign up'}
+              Forgot password?
             </button>
           </div>
         )}
