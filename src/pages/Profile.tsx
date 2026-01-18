@@ -15,6 +15,7 @@ import { INSTRUMENTS, GENRES } from '@/types';
 import { LogOut, User, Settings, Camera, BookOpen } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
+import { PremiumGate } from '@/components/PremiumGate';
 import { FeedbackCard } from '@/components/FeedbackCard';
 import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 import { StreakBadges } from '@/components/StreakBadges';
@@ -321,8 +322,12 @@ const Profile = () => {
             )}
           </Card>
 
-          {/* Practice Stats - hide during editing */}
-          {!editing && <PracticeStats profileId={profile?.id} />}
+          {/* Practice Stats - hide during editing, premium feature */}
+          {!editing && (
+            <PremiumGate featureName="Practice Stats" blur={true}>
+              <PracticeStats profileId={profile?.id} />
+            </PremiumGate>
+          )}
 
           {/* Save/Cancel Buttons */}
           {editing && (
