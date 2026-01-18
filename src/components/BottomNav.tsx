@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Target, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,28 +20,44 @@ const routeScrollKeys: Record<string, string> = {
   '/profile': 'profile-top',
 };
 
-// Global flag to track if nav has already faded in once (persists across mounts)
-let hasInitiallyFadedIn = false;
+// Session key for tracking if nav has been shown this session
+const NAV_SHOWN_KEY = 'bottomnav_shown';
 
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
-  const { data: unreadCount, isLoading } = useUnreadNotificationCount();
+  const { data: unreadCount } = useUnreadNotificationCount();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   
-  // Only animate fade-in on the very first mount (coming from landing page)
-  const shouldAnimate = useRef(!hasInitiallyFadedIn);
-  const [isVisible, setIsVisible] = useState(hasInitiallyFadedIn);
+  // Check if this is the first visit in this session
+  const hasShownBefore = typeof window !== 'undefined' && sessionStorage.getItem(NAV_SHOWN_KEY) === 'true';
+  
+  // Start visible if we've shown before, otherwise start hidden for fade-in
+  const [isVisible, setIsVisible] = useState(hasShownBefore);
 
-  // Fade in after mount only on first ever appearance
+  // Fade in after mount only on first appearance in session
   useEffect(() => {
-    if (!hasInitiallyFadedIn) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-        hasInitiallyFadedIn = true;
-      }, 50);
-      return () => clearTimeout(timer);
+    if (!sessionStorage.getItem(NAV_SHOWN_KEY)) {
+      // First visit - animate in with requestAnimationFrame for reliable timing
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+          sessionStorage.setItem(NAV_SHOWN_KEY, 'true');
+        });
+      });
     }
   }, []);
+
+  // Safety fallback: ensure nav is always visible after 500ms max
+  useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      if (!isVisible) {
+        setIsVisible(true);
+        sessionStorage.setItem(NAV_SHOWN_KEY, 'true');
+      }
+    }, 500);
+    
+    return () => clearTimeout(fallbackTimer);
+  }, [isVisible]);
 
   // Detect keyboard open/close on mobile
   useEffect(() => {
@@ -102,17 +118,14 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
     markScrollToTop(to);
   };
 
-  // Hide bottom nav when keyboard is open on mobile
-  if (isKeyboardOpen) {
-    return null;
-  }
-
   return (
     <nav 
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
-        "transition-opacity duration-700",
-        isVisible ? "opacity-100" : "opacity-0"
+        "transition-all duration-700",
+        isVisible ? "opacity-100" : "opacity-0",
+        // Hide via transform when keyboard is open (instead of returning null)
+        isKeyboardOpen && "translate-y-full pointer-events-none"
       )}
     >
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
