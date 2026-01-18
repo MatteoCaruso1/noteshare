@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp } from 'lucide-react';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
 import { PremiumGate } from '@/components/PremiumGate';
@@ -324,7 +324,12 @@ const Profile = () => {
 
           {/* Practice Stats - hide during editing, premium feature */}
           {!editing && (
-            <PremiumGate featureName="Practice Stats" blur={true}>
+            <PremiumGate 
+              featureName="Practice Stats" 
+              blur={true}
+              icon={TrendingUp}
+              description="Upgrade to Premium to view detailed practice stats"
+            >
               <PracticeStats profileId={profile?.id} />
             </PremiumGate>
           )}

@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Lock, Sparkles, Target } from 'lucide-react';
+import { Lock, Sparkles, Target, TrendingUp, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePremium } from '@/contexts/PremiumContext';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,10 @@ interface PremiumGateProps {
   compact?: boolean;
   /** Whether to show the children at all when gated (false = completely hide) */
   showPreview?: boolean;
+  /** Custom icon to display */
+  icon?: LucideIcon;
+  /** Custom description text */
+  description?: string;
 }
 
 export function PremiumGate({ 
@@ -24,7 +28,9 @@ export function PremiumGate({
   blur = true,
   className,
   compact = false,
-  showPreview = true
+  showPreview = true,
+  icon,
+  description
 }: PremiumGateProps) {
   const { isPremium, isLoading, startCheckout } = usePremium();
 
@@ -46,6 +52,8 @@ export function PremiumGate({
         compact={compact} 
         onUpgrade={startCheckout}
         standalone
+        icon={icon}
+        description={description}
       />
     );
   }
@@ -68,6 +76,8 @@ export function PremiumGate({
         featureName={featureName} 
         compact={compact} 
         onUpgrade={startCheckout}
+        icon={icon}
+        description={description}
       />
     </div>
   );
@@ -78,9 +88,14 @@ interface GateOverlayProps {
   compact: boolean;
   onUpgrade: () => void;
   standalone?: boolean;
+  icon?: LucideIcon;
+  description?: string;
 }
 
-function GateOverlay({ featureName, compact, onUpgrade, standalone }: GateOverlayProps) {
+function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, description }: GateOverlayProps) {
+  const Icon = icon || Target;
+  const descriptionText = description || "Upgrade to Premium to organize\nnotes around goals, projects, and gigs";
+  
   if (compact) {
     return (
       <div className={cn(
@@ -107,11 +122,11 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone }: GateOverla
       !standalone && "absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-lg"
     )}>
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
-        <Target className="h-5 w-5 text-jazz-gold" />
+        <Icon className="h-5 w-5 text-jazz-gold" />
       </div>
       <div>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Upgrade to Premium to organize<br />notes around goals, projects, and gigs
+        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+          {descriptionText}
         </p>
       </div>
       <Button 
