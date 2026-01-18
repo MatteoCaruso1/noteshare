@@ -26,7 +26,7 @@ export function StreakBadges({ currentStreak, bestStreak, achievementCounts }: S
   }
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       {achievedTiers.map((tier) => {
         // Count includes current achievement if we're at/above this milestone
         // The DB count tracks completed milestones, but if we're currently AT the streak, it counts as 1

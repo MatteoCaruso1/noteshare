@@ -29,6 +29,7 @@ export const TrophyWithNumber = memo(function TrophyWithNumber({
   const colorMap: Record<string, string> = {
     'text-yellow-500': 'hsl(48, 96%, 53%)',
     'text-slate-400': 'hsl(215, 14%, 62%)',
+    'text-amber-500': 'hsl(38, 92%, 50%)',
     'text-amber-600': 'hsl(32, 95%, 44%)',
     'text-primary': 'hsl(var(--primary))',
   };
