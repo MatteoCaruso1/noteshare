@@ -79,7 +79,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
             <Users className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h3 className="font-semibold text-lg mb-2">No Friends' notes yet</h3>
+        <h3 className="font-semibold text-lg mb-2">No friends' notes yet</h3>
         <p className="text-muted-foreground text-sm max-w-sm mx-auto">
           Add friends to see what they're practicing!
         </p>
