@@ -43,11 +43,11 @@ function PremiumUpgradeButton() {
       size="sm" 
       variant="hero" 
       onClick={openPremiumDialog}
-      className="gap-1 text-xs h-8 px-2"
+      className="gap-1 text-xs h-8 px-2 self-start"
     >
       <Sparkles className="h-3 w-3" />
       <span className="hidden sm:inline">Try Premium for Free</span>
-      <span className="sm:hidden">Try Free</span>
+      <span className="sm:hidden">Try Premium</span>
     </Button>
   );
 }
