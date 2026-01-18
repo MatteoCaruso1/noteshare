@@ -261,7 +261,7 @@ export function QuickNoteCapture() {
 
           {/* Text Content */}
           <RichTextarea
-            placeholder="What are you working on?"
+            placeholder="What ideas or sounds do you want to save?"
             value={noteText}
             onChange={setNoteText}
           />
