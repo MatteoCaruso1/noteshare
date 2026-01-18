@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, subWeeks, subMonths, differenceInMinutes, parseISO, format, startOfMonth, endOfMonth, subDays, isWithinInterval } from 'date-fns';
+import { useAuth } from './useAuth';
 
 interface PracticeStats {
   // Number of sessions
@@ -24,6 +25,9 @@ interface PracticeStats {
 }
 
 export function usePracticeStats(profileId: string | undefined) {
+  const queryClient = useQueryClient();
+  const { refreshProfile } = useAuth();
+  
   return useQuery({
     queryKey: ['practice-stats', profileId],
     queryFn: async (): Promise<PracticeStats> => {
@@ -323,12 +327,18 @@ export function usePracticeStats(profileId: string | undefined) {
         .slice(0, 5)
         .map(([tag, count]) => ({ tag, count }));
 
-      // Update current_streak in profile (fire and forget)
+      // Update current_streak in profile and refresh cached data
       supabase
         .from('profiles')
         .update({ current_streak: currentStreak })
         .eq('id', profileId)
-        .then(() => {});
+        .then(() => {
+          // Refresh the auth context profile to update streak display
+          refreshProfile();
+          // Invalidate notes queries to refresh the nested profile data (for trophy badges)
+          queryClient.invalidateQueries({ queryKey: ['notes'] });
+          queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+        });
 
       return {
         sessionsThisWeek,
