@@ -3,7 +3,7 @@ import { NoteWithAuthor } from '@/types';
 import { NoteCard } from './NoteCard';
 import { Button } from '@/components/ui/button';
 import { useSignedUrlPrefetch } from '@/hooks/useSignedUrlPrefetch';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Music } from 'lucide-react';
 
 interface TimelineProps {
   notes: NoteWithAuthor[];
@@ -69,6 +69,9 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   if (notes.length === 0 && !loading && !isRefetching) {
     return (
       <div className="text-center py-12 text-muted-foreground">
+        <div className="w-14 h-14 mx-auto rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+          <Music className="w-7 h-7 text-muted-foreground" />
+        </div>
         <p>No notes yet</p>
         <p className="text-sm mt-1">Start practicing to capture your first note!</p>
       </div>
