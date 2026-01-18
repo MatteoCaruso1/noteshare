@@ -433,12 +433,7 @@ export function TodaysFocus() {
 
   const handleSaveToBacklog = () => {
     if (!isPremium) {
-      toast.error('Saved to backlog is a Premium feature', {
-        action: {
-          label: 'Upgrade',
-          onClick: openPremiumDialog,
-        },
-      });
+      toast.error('Saved to backlog is a Premium feature');
       return;
     }
     
