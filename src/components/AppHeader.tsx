@@ -63,16 +63,11 @@ export function AppHeader() {
     };
   }, [activeSession]);
   
-  // Check if on welcome/landing page
-  const isOnWelcomePage = location.pathname === '/welcome';
+  // Check if on welcome/landing page - include "/" for non-logged-in users
+  const isOnWelcomePage = location.pathname === '/welcome' || (location.pathname === '/' && !user);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
-    return null;
-  }
-  
-  // Hide on landing page when not logged in (WelcomeHero has its own header)
-  if (location.pathname === '/' && !user) {
     return null;
   }
 
