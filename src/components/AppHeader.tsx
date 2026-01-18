@@ -7,11 +7,13 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { StreakIndicator } from '@/components/StreakIndicator';
+import { usePremium } from '@/contexts/PremiumContext';
 
 export function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { isPremium } = usePremium();
   const { data: activeSession } = useActiveSession(profile?.id);
   const endSession = useEndSession();
   const createNote = useCreateNote();
@@ -89,9 +91,9 @@ export function AppHeader() {
       <div className="container flex h-12 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Link to="/welcome" className="flex items-center gap-2">
-            <Music className="h-5 w-5 text-primary" />
+            <Music className={`h-5 w-5 ${isPremium ? 'text-amber-500' : 'text-primary'}`} />
             <div className="flex flex-col">
-              <span className="font-semibold text-foreground leading-tight">Noteshare</span>
+              <span className={`font-semibold leading-tight ${isPremium ? 'text-amber-500' : 'text-foreground'}`}>Noteshare</span>
               <span className="text-[9px] text-muted-foreground leading-tight">Practice Smarter</span>
             </div>
           </Link>
