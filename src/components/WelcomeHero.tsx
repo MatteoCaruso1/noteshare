@@ -1,13 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingTestimonial } from './LandingTestimonial';
 
 export function WelcomeHero() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [isExiting, setIsExiting] = useState(false);
   const [scrollOpacity, setScrollOpacity] = useState(1);
 
@@ -37,22 +35,11 @@ export function WelcomeHero() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavigate = (destination: 'auth' | 'app') => {
+  const handleStartPracticing = () => {
     setIsExiting(true);
     setTimeout(() => {
-      navigate(destination === 'auth' ? '/auth' : '/');
+      navigate('/auth');
     }, 400);
-  };
-
-  const handleStartPracticing = () => {
-    // If user is already logged in, take them to the app
-    // Otherwise, take them to auth
-    handleNavigate(user ? 'app' : 'auth');
-  };
-
-  const handleAuthClick = () => {
-    // If user is logged in, go to app; otherwise go to auth
-    handleNavigate(user ? 'app' : 'auth');
   };
 
   return (
@@ -64,38 +51,7 @@ export function WelcomeHero() {
       }`}
     >
       {/* Hero Section */}
-      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative pt-4">
-        {/* Auth buttons - right aligned */}
-        <div className="w-full px-6 py-4 flex items-center justify-end">
-          <div className="flex items-center gap-3">
-            {user ? (
-              <Button 
-                variant="outline"
-                className="border-border hover:bg-accent"
-                onClick={() => handleNavigate('app')}
-              >
-                Go to app
-              </Button>
-            ) : (
-              <>
-                <Button 
-                  variant="ghost" 
-                  className="text-muted-foreground hover:text-foreground"
-                  onClick={handleAuthClick}
-                >
-                  Log in
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="border-border hover:bg-accent"
-                  onClick={handleAuthClick}
-                >
-                  Sign up
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
+      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative">
 
         {/* Hero Content - fades on scroll */}
         <main 
