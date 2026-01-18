@@ -217,7 +217,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-white"
+                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300"
                 onClick={() => setMode('signup')}
               >
                 Sign Up
@@ -227,7 +227,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-white"
+                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300"
                 onClick={() => setMode('signin')}
               >
                 Sign In
@@ -237,7 +237,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-white"
+                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300"
                 onClick={() => setMode('signin')}
               >
                 Back to Sign In
