@@ -51,19 +51,21 @@ export function PremiumDialog() {
       >
         {/* Header */}
         <div className="px-6 pt-6 pb-4 space-y-3">
-          <div className="flex items-start justify-between gap-4 pr-6">
+          <div className="flex flex-col gap-3 pr-8">
             <h2 className="text-xl font-semibold">
               Practice smarter.<br />Progress faster.
             </h2>
-            <Button 
-              size="sm" 
-              variant="hero" 
-              onClick={handleStartTrial}
-              className="gap-1 shrink-0"
-            >
-              Start Free Trial
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex justify-end">
+              <Button 
+                size="sm" 
+                variant="hero" 
+                onClick={handleStartTrial}
+                className="gap-1 shrink-0"
+              >
+                Start Free Trial
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -77,9 +79,10 @@ export function PremiumDialog() {
           {/* Pricing badge - clickable */}
           <button 
             onClick={handleStartTrial}
-            className="inline-flex items-center gap-2 bg-muted/50 hover:bg-muted/70 transition-colors rounded-full px-4 py-2 cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-muted/50 hover:bg-muted/70 transition-colors rounded-full px-4 py-2 cursor-pointer"
           >
-            <span className="font-medium">{priceDisplay} with 30-day free trial</span>
+            <span className="font-medium">{priceDisplay} with</span>
+            <span className="font-medium text-jazz-gold">30-day free trial</span>
           </button>
 
           {/* Benefits */}
