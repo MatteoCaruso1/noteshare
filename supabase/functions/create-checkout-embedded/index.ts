@@ -23,7 +23,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Use service role for profile updates
   const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
+  // Use anon key for auth
+  const supabaseAuth = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
@@ -45,7 +53,7 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data } = await supabaseAuth.auth.getUser(token);
     const user = data.user;
     
     if (!user?.email) {
@@ -73,11 +81,38 @@ serve(async (req) => {
       logStep("Created new customer", { customerId });
     }
 
+    // Check trial eligibility
+    let hasHadSubscription = false;
+    let hasUsedTrialLocally = false;
+
+    // Check Stripe subscription history (any past subscription means they've had access)
+    const allSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      limit: 1,
+    });
+    hasHadSubscription = allSubscriptions.data.length > 0;
+    logStep("Checked Stripe subscription history", { hasHadSubscription });
+
+    // Check local flag in profiles table
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('has_used_trial')
+      .eq('user_id', user.id)
+      .single();
+
+    hasUsedTrialLocally = profile?.has_used_trial === true;
+    logStep("Checked local trial flag", { hasUsedTrialLocally });
+
+    // Only offer trial if they've never had a subscription AND haven't used trial locally
+    const shouldOfferTrial = !hasHadSubscription && !hasUsedTrialLocally;
+    logStep("Trial eligibility determined", { shouldOfferTrial, hasHadSubscription, hasUsedTrialLocally });
+
     // Select price based on currency
     const priceId = PRICE_IDS[currency as keyof typeof PRICE_IDS] || PRICE_IDS.USD;
     logStep("Selected price", { priceId, currency });
 
     const origin = req.headers.get("origin") || "https://noteshare.app";
+    const trialDays = shouldOfferTrial ? 30 : 0;
 
     // Create checkout session with ui_mode: 'embedded' for embedded checkout
     const session = await stripe.checkout.sessions.create({
@@ -90,24 +125,42 @@ serve(async (req) => {
       ],
       mode: "subscription",
       ui_mode: "embedded",
-      subscription_data: {
-        trial_period_days: 30,
-      },
+      subscription_data: shouldOfferTrial 
+        ? { trial_period_days: 30 }
+        : {},
       return_url: `${origin}/profile?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
       payment_method_types: ["card"],
     });
 
     logStep("Checkout session created", { 
       sessionId: session.id, 
-      trialDays: 30,
+      trialOffered: shouldOfferTrial,
+      trialDays,
       hasClientSecret: !!session.client_secret 
     });
+
+    // Mark that this user has used their trial eligibility (if we're offering one)
+    if (shouldOfferTrial) {
+      const { error: updateError } = await supabaseClient
+        .from('profiles')
+        .update({ has_used_trial: true })
+        .eq('user_id', user.id);
+      
+      if (updateError) {
+        logStep("Warning: Failed to update has_used_trial flag", { error: updateError.message });
+      } else {
+        logStep("Marked user as having used trial");
+      }
+    }
 
     // Return the client secret for embedded checkout
     return new Response(JSON.stringify({ 
       clientSecret: session.client_secret,
       sessionId: session.id,
-      trialEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      trialEndDate: shouldOfferTrial 
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        : null,
+      trialOffered: shouldOfferTrial,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

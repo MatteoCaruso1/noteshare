@@ -23,7 +23,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Use service role for profile updates
   const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
+  // Use anon key for auth
+  const supabaseAuth = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
@@ -45,7 +53,7 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data } = await supabaseAuth.auth.getUser(token);
     const user = data.user;
     
     if (!user?.email) {
@@ -67,11 +75,39 @@ serve(async (req) => {
       logStep("No existing customer found, will create new");
     }
 
+    // Check trial eligibility
+    let hasHadSubscription = false;
+    let hasUsedTrialLocally = false;
+
+    // Check Stripe subscription history (any past subscription means they've had access)
+    if (customerId) {
+      const allSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 1,
+      });
+      hasHadSubscription = allSubscriptions.data.length > 0;
+      logStep("Checked Stripe subscription history", { hasHadSubscription });
+    }
+
+    // Check local flag in profiles table
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('has_used_trial')
+      .eq('user_id', user.id)
+      .single();
+
+    hasUsedTrialLocally = profile?.has_used_trial === true;
+    logStep("Checked local trial flag", { hasUsedTrialLocally });
+
+    // Only offer trial if they've never had a subscription AND haven't used trial locally
+    const shouldOfferTrial = !hasHadSubscription && !hasUsedTrialLocally;
+    logStep("Trial eligibility determined", { shouldOfferTrial, hasHadSubscription, hasUsedTrialLocally });
+
     // Select price based on currency
     const priceId = PRICE_IDS[currency as keyof typeof PRICE_IDS] || PRICE_IDS.USD;
     logStep("Selected price", { priceId, currency });
 
-    // Create checkout session for Noteshare Premium subscription with 30-day trial
+    // Create checkout session for Noteshare Premium subscription
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -82,16 +118,34 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      subscription_data: {
-        trial_period_days: 30,
-      },
+      subscription_data: shouldOfferTrial 
+        ? { trial_period_days: 30 }
+        : {},
       success_url: `${req.headers.get("origin")}/profile?subscription=success`,
       cancel_url: `${req.headers.get("origin")}/profile?subscription=cancelled`,
       payment_method_types: ["card"],
       allow_promotion_codes: true,
     });
 
-    logStep("Checkout session created", { sessionId: session.id, trialDays: 30 });
+    logStep("Checkout session created", { 
+      sessionId: session.id, 
+      trialOffered: shouldOfferTrial,
+      trialDays: shouldOfferTrial ? 30 : 0 
+    });
+
+    // Mark that this user has used their trial eligibility (if we're offering one)
+    if (shouldOfferTrial) {
+      const { error: updateError } = await supabaseClient
+        .from('profiles')
+        .update({ has_used_trial: true })
+        .eq('user_id', user.id);
+      
+      if (updateError) {
+        logStep("Warning: Failed to update has_used_trial flag", { error: updateError.message });
+      } else {
+        logStep("Marked user as having used trial");
+      }
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
