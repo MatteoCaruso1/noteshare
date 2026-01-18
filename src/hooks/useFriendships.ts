@@ -326,6 +326,9 @@ export type SuggestedProfile = Profile & {
   matchingGenres: string[];
 };
 
+// Default recommended profile ID (Matteo) - always shown as a suggestion
+const DEFAULT_RECOMMENDED_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
+
 export function useSuggestedMusicians() {
   const { profile } = useAuth();
 
@@ -434,6 +437,14 @@ export function useSuggestedMusicians() {
         }
       });
 
+      // Always add the default recommended profile (Matteo) if not excluded
+      if (!excludeIds.has(DEFAULT_RECOMMENDED_PROFILE_ID)) {
+        const existing = suggestionMap.get(DEFAULT_RECOMMENDED_PROFILE_ID) || { mutualCount: 0, reasons: new Set(), matchingGenres: [] };
+        // Add a special marker - will show as "collaborate" badge
+        existing.reasons.add('collaborate');
+        suggestionMap.set(DEFAULT_RECOMMENDED_PROFILE_ID, existing);
+      }
+
       // Fetch full profiles for suggestions
       const suggestionIds = Array.from(suggestionMap.keys());
       if (suggestionIds.length === 0) return [];
@@ -459,6 +470,10 @@ export function useSuggestedMusicians() {
           };
         })
         .sort((a, b) => {
+          // Prioritize the default recommended profile to always appear first
+          if (a.id === DEFAULT_RECOMMENDED_PROFILE_ID) return -1;
+          if (b.id === DEFAULT_RECOMMENDED_PROFILE_ID) return 1;
+          
           const scoreA = a.mutualCount * 3 + (a.reasons.includes('collaborate') ? 2 : 0) + (a.reasons.includes('genre') ? 1 : 0);
           const scoreB = b.mutualCount * 3 + (b.reasons.includes('collaborate') ? 2 : 0) + (b.reasons.includes('genre') ? 1 : 0);
           return scoreB - scoreA;
