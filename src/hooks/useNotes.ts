@@ -183,6 +183,8 @@ export function useCreateNote() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
+      // Quick notes count towards streak, so refresh practice stats to update streak immediately
+      queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       // Show appropriate message based on whether this is a session note
       toast.success(variables.sessionId ? 'Practice session saved' : 'Note saved!');
     },
