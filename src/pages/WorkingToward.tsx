@@ -7,6 +7,7 @@ import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { SimpleGoals } from '@/components/SimpleGoals';
+import { PremiumGate } from '@/components/PremiumGate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -386,9 +387,10 @@ const WorkingToward = () => {
       </PageHeader>
 
       <PageBody>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
-          {/* Musical Goals */}
-          {profile && <SimpleGoals profileId={profile.id} />}
+        <PremiumGate featureName="Working Towards" blur={true}>
+          <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
+            {/* Musical Goals */}
+            {profile && <SimpleGoals profileId={profile.id} />}
 
           {/* Projects Section - Collapsible */}
           <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
@@ -803,7 +805,8 @@ const WorkingToward = () => {
               </CollapsibleContent>
             </Card>
           </Collapsible>
-        </main>
+          </main>
+        </PremiumGate>
       </PageBody>
 
       <BottomNav />
