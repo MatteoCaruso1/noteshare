@@ -1,5 +1,6 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
 import { useSubscription, SUBSCRIPTION_TIERS } from '@/hooks/useSubscription';
+import { detectUserCurrency, SupportedCurrency } from '@/lib/currencyUtils';
 
 interface PremiumContextType {
   isPremium: boolean;
@@ -7,6 +8,12 @@ interface PremiumContextType {
   startCheckout: () => Promise<void>;
   openCustomerPortal: () => Promise<void>;
   checkSubscription: () => Promise<void>;
+  // Premium dialog state
+  isPremiumDialogOpen: boolean;
+  openPremiumDialog: () => void;
+  closePremiumDialog: () => void;
+  // Currency
+  detectedCurrency: SupportedCurrency;
 }
 
 const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
@@ -15,10 +22,33 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const { 
     isPremium, 
     isLoading, 
-    startCheckout, 
+    startCheckout: startCheckoutWithCurrency, 
     openCustomerPortal,
     checkSubscription 
   } = useSubscription();
+
+  // Premium dialog state
+  const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
+  
+  // Detect currency on mount
+  const [detectedCurrency, setDetectedCurrency] = useState<SupportedCurrency>('USD');
+  
+  useEffect(() => {
+    setDetectedCurrency(detectUserCurrency());
+  }, []);
+
+  const openPremiumDialog = useCallback(() => {
+    setIsPremiumDialogOpen(true);
+  }, []);
+
+  const closePremiumDialog = useCallback(() => {
+    setIsPremiumDialogOpen(false);
+  }, []);
+
+  // Wrap startCheckout to pass detected currency
+  const startCheckout = useCallback(async () => {
+    await startCheckoutWithCurrency(detectedCurrency);
+  }, [startCheckoutWithCurrency, detectedCurrency]);
 
   return (
     <PremiumContext.Provider value={{ 
@@ -26,7 +56,11 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       isLoading, 
       startCheckout, 
       openCustomerPortal,
-      checkSubscription 
+      checkSubscription,
+      isPremiumDialogOpen,
+      openPremiumDialog,
+      closePremiumDialog,
+      detectedCurrency,
     }}>
       {children}
     </PremiumContext.Provider>

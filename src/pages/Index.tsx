@@ -21,7 +21,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
-  const { isPremium, startCheckout } = usePremium();
+  const { isPremium, openPremiumDialog } = usePremium();
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
@@ -103,7 +103,7 @@ const Index = () => {
               <Button 
                 size="sm" 
                 variant="hero" 
-                onClick={startCheckout}
+                onClick={openPremiumDialog}
                 className="gap-1 text-xs h-7 px-2"
               >
                 <Sparkles className="h-3 w-3" />

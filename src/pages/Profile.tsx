@@ -32,7 +32,7 @@ const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
 
 // Premium upgrade button component for profile
 function PremiumUpgradeButton() {
-  const { isPremium, startCheckout } = usePremium();
+  const { isPremium, openPremiumDialog } = usePremium();
   
   if (isPremium) return null;
   
@@ -40,7 +40,7 @@ function PremiumUpgradeButton() {
     <Button 
       size="sm" 
       variant="hero" 
-      onClick={startCheckout}
+      onClick={openPremiumDialog}
       className="gap-1 text-xs h-8 px-2"
     >
       <Sparkles className="h-3 w-3" />

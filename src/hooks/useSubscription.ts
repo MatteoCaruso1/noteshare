@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { PREMIUM_PRICES, SupportedCurrency } from '@/lib/currencyUtils';
 
 // Product/Price mapping for Noteshare Premium
 export const SUBSCRIPTION_TIERS = {
   premium: {
-    price_id: "price_1SqlanGiNcIsULtkonowz5Fd",
     product_id: "prod_ToONzcZjkyqsAJ",
+    prices: PREMIUM_PRICES,
     name: "Premium",
-    price: 2.99,
   }
 } as const;
 
@@ -92,13 +92,15 @@ export function useSubscription() {
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
-  const startCheckout = async () => {
+  const startCheckout = async (currency: SupportedCurrency = 'USD') => {
     if (!user) {
       throw new Error('Must be logged in to subscribe');
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout');
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { currency }
+      });
       
       if (error) throw error;
       if (!data?.url) throw new Error('No checkout URL returned');
@@ -130,7 +132,12 @@ export function useSubscription() {
     }
   };
 
-  const isPremium = state.subscribed && state.productId === SUBSCRIPTION_TIERS.premium.product_id;
+  // Check against the premium product ID (supports both old and new products)
+  const isPremium = state.subscribed && (
+    state.productId === SUBSCRIPTION_TIERS.premium.product_id ||
+    state.productId === 'prod_TofQhqCDH1KicB' || // USD product
+    state.productId === 'prod_TofQx0QRLi6tEe'    // CAD product
+  );
 
   return {
     ...state,
