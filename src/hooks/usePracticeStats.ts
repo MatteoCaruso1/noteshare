@@ -29,9 +29,9 @@ export function usePracticeStats(profileId: string | undefined) {
     queryFn: async (): Promise<PracticeStats> => {
       if (!profileId) throw new Error('Profile ID required');
 
-      // Add timeout wrapper to prevent hanging requests
+      // Add timeout wrapper to prevent hanging requests (15s for slower mobile networks)
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 10000);
+        setTimeout(() => reject(new Error('Request timeout')), 15000);
       });
 
       const now = new Date();
