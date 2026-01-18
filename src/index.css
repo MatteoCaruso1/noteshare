@@ -221,10 +221,10 @@
       -webkit-tap-highlight-color: transparent;
     }
     
-    /* Reset any hover backgrounds that might get stuck */
-    button:hover,
+    /* Reset any hover backgrounds that might get stuck - exclude stateful buttons */
+    button:not([aria-pressed="true"]):hover,
     a:hover,
-    [role="button"]:hover,
+    [role="button"]:not([aria-pressed="true"]):hover,
     .cursor-pointer:hover {
       background-color: inherit;
     }
