@@ -77,7 +77,7 @@ const Profile = () => {
   // This prevents any re-celebration even across re-renders
   const celebratedThisSessionRef = useRef<Set<number>>(new Set());
 
-  // Check for new streak milestones and persist to database
+  // Check for new streak milestones using atomic backend RPC
   // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
   useEffect(() => {
     if (!profile) return;
@@ -106,7 +106,6 @@ const Profile = () => {
           if (error) {
             console.error('Failed to clear old milestones:', error);
           }
-          // Don't refresh - let React Query handle cache invalidation
         });
       return; // Wait for next render before checking new milestones
     }
@@ -123,51 +122,47 @@ const Profile = () => {
       return;
     }
 
-    // GUARD 2: Already in database? Skip
-    if (stillValidMilestones.includes(currentTier.minDays)) {
-      return;
-    }
-
-    // GUARD 3: Currently processing? Skip
+    // GUARD 2: Currently processing? Skip
     if (processingMilestonesRef.current.has(currentTier.minDays)) {
       return;
     }
 
-    // Mark as processing AND celebrated this session IMMEDIATELY (before any async work)
+    // Mark as processing IMMEDIATELY (before any async work)
     processingMilestonesRef.current.add(currentTier.minDays);
-    celebratedThisSessionRef.current.add(currentTier.minDays);
     
-    setCelebratingTier(currentTier);
-    setMilestoneDialogOpen(true);
-    
-    // Get current achievement counts and increment for this milestone
-    const currentCounts = (profile.streak_achievement_counts || {}) as Record<string, number>;
-    const milestoneKey = currentTier.minDays.toString();
-    const newCounts = {
-      ...currentCounts,
-      [milestoneKey]: (currentCounts[milestoneKey] || 0) + 1,
+    // Use atomic RPC to claim milestone - backend guarantees no duplicates
+    const claimMilestone = async () => {
+      const { data, error } = await supabase.rpc('claim_streak_milestone', {
+        p_profile_id: profile.id,
+        p_milestone: currentTier.minDays,
+      });
+      
+      if (error) {
+        console.error('Failed to claim milestone:', error);
+        processingMilestonesRef.current.delete(currentTier.minDays);
+        return;
+      }
+      
+      // Backend returns { claimed: boolean, ... }
+      const result = data as { claimed: boolean } | null;
+      
+      if (result?.claimed) {
+        // Successfully claimed! Show dialog and mark as celebrated
+        celebratedThisSessionRef.current.add(currentTier.minDays);
+        setCelebratingTier(currentTier);
+        setMilestoneDialogOpen(true);
+        // Refresh profile to get updated counts
+        await refreshProfile();
+      } else {
+        // Already claimed (milestone was in DB) - just mark as celebrated this session
+        celebratedThisSessionRef.current.add(currentTier.minDays);
+      }
+      
+      processingMilestonesRef.current.delete(currentTier.minDays);
     };
     
-    // Persist to database
-    const newMilestones = [...stillValidMilestones, currentTier.minDays];
-    supabase
-      .from('profiles')
-      .update({ 
-        celebrated_streak_milestones: newMilestones,
-        streak_achievement_counts: newCounts,
-      })
-      .eq('id', profile.id)
-      .then(({ error }) => {
-        if (error) {
-          console.error('Failed to save milestone:', error);
-          // On error, allow retry by removing from processing set
-          // BUT keep in celebratedThisSession to prevent spam within session
-          processingMilestonesRef.current.delete(currentTier.minDays);
-        }
-        // DON'T call refreshProfile() - it causes re-renders that trigger the race condition
-        // Let React Query's normal cache invalidation handle the refresh
-      });
-  }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones]);
+    claimMilestone();
+  }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
 
   if (!user) {
     navigate('/auth');
