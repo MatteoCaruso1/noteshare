@@ -13,11 +13,15 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { GlintProvider } from '@/contexts/GlintContext';
+import { usePremium } from '@/contexts/PremiumContext';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 
 const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
+  const { isPremium, startCheckout } = usePremium();
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
@@ -95,6 +99,18 @@ const Index = () => {
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
+            {!isPremium && (
+              <Button 
+                size="sm" 
+                variant="hero" 
+                onClick={startCheckout}
+                className="gap-1 text-xs h-7 px-2"
+              >
+                <Sparkles className="h-3 w-3" />
+                <span className="hidden xs:inline">Try Premium for Free</span>
+                <span className="xs:hidden">Try Free</span>
+              </Button>
+            )}
           </div>
         </div>
       </PageHeader>

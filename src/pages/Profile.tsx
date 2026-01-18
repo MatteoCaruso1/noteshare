@@ -12,7 +12,8 @@ import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles } from 'lucide-react';
+import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
 import { PremiumGate } from '@/components/PremiumGate';
@@ -24,6 +25,26 @@ import { StreakRewardsSection } from '@/components/StreakRewardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+
+// Premium upgrade button component for profile
+function PremiumUpgradeButton() {
+  const { isPremium, startCheckout } = usePremium();
+  
+  if (isPremium) return null;
+  
+  return (
+    <Button 
+      size="sm" 
+      variant="hero" 
+      onClick={startCheckout}
+      className="gap-1 text-xs h-8 px-2"
+    >
+      <Sparkles className="h-3 w-3" />
+      <span className="hidden sm:inline">Try Premium for Free</span>
+      <span className="sm:hidden">Try Free</span>
+    </Button>
+  );
+}
 
 const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -235,9 +256,12 @@ const Profile = () => {
               )}
             </div>
             {!editing && (
-              <Button variant="outline" size="icon" onClick={() => setEditing(true)}>
-                <Settings className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <PremiumUpgradeButton />
+                <Button variant="outline" size="icon" onClick={() => setEditing(true)}>
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </div>
             )}
           </div>
 
