@@ -79,8 +79,6 @@ export function WelcomeHero() {
           </div>
         </main>
 
-        {/* Gradient accent line at top */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-accent to-primary opacity-60" />
       </div>
 
       {/* Features Section */}
