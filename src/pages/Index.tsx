@@ -150,8 +150,8 @@ const Index = () => {
                 </p>
               )}
               
-              <div>
-                <Timeline 
+              <div className="pb-3 sm:pb-4">
+                <Timeline
                   notes={filteredNotes} 
                   loading={notesLoading || isBootstrapping} 
                   isRefetching={notesRefetching}
