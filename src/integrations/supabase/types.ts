@@ -756,7 +756,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_streak_milestone: {
+        Args: { p_milestone: number; p_profile_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       promo_type: "gig" | "release" | "event"
