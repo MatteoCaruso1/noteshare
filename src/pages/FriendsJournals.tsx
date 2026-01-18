@@ -34,6 +34,11 @@ const FriendsJournals = () => {
   const [addFriendOpen, setAddFriendOpen] = useState(false);
   const [inChatView, setInChatView] = useState(false);
   
+  // Track if user has ever clicked the add friend button
+  const [hasClickedAddFriend, setHasClickedAddFriend] = useState(() => {
+    return localStorage.getItem('hasClickedAddFriend') === 'true';
+  });
+  
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
   
@@ -160,10 +165,20 @@ const FriendsJournals = () => {
               </FriendsList>
 
               {/* Add Friend Button */}
-              <Dialog open={addFriendOpen} onOpenChange={setAddFriendOpen}>
+              <Dialog open={addFriendOpen} onOpenChange={(open) => {
+                setAddFriendOpen(open);
+                if (open && !hasClickedAddFriend) {
+                  setHasClickedAddFriend(true);
+                  localStorage.setItem('hasClickedAddFriend', 'true');
+                }
+              }}>
                 <DialogTrigger asChild>
-                  <div className="cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
-                    <UserPlus className="w-4 h-4 text-muted-foreground" />
+                  <div className={`cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${
+                    hasClickedAddFriend 
+                      ? 'bg-secondary/30 border border-border hover:bg-secondary/50' 
+                      : 'bg-primary/20 border-2 border-primary animate-pulse hover:bg-primary/30'
+                  }`}>
+                    <UserPlus className={`w-4 h-4 ${hasClickedAddFriend ? 'text-muted-foreground' : 'text-primary'}`} />
                   </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
