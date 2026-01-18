@@ -62,13 +62,13 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         isRight ? 'justify-end flex-row-reverse' : 'justify-start flex-row'
       } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
     >
-      <h2 className={`text-lg sm:text-2xl md:text-3xl font-semibold text-foreground max-w-[200px] sm:max-w-[320px] ${
+      <h2 className={`text-lg sm:text-2xl md:text-3xl font-semibold text-foreground sm:max-w-[320px] ${
         isRight ? 'text-right' : 'text-left'
       }`}>
         {Array.isArray(feature.title)
           ? feature.title.map((line, i) => (
-              <span key={i} className="block">
-                {line}
+              <span key={i} className="block sm:inline">
+                {line}{i < feature.title.length - 1 ? <span className="hidden sm:inline"> </span> : null}
               </span>
             ))
           : feature.title}
