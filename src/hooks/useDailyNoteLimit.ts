@@ -15,14 +15,14 @@ function getTodayLocalDate(): string {
 }
 
 export function useDailyNoteLimit() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const { isPremium, isLoading: premiumLoading } = usePremium();
   const queryClient = useQueryClient();
 
   const { data: notesPostedToday = 0, isLoading, error, refetch } = useQuery({
-    queryKey: ['daily-note-count', user?.id],
+    queryKey: ['daily-note-count', profile?.id],
     queryFn: async () => {
-      if (!user) return 0;
+      if (!profile) return 0;
 
       const today = getTodayLocalDate();
       const startOfDay = `${today}T00:00:00.000Z`;
@@ -31,7 +31,7 @@ export function useDailyNoteLimit() {
       const { count, error } = await supabase
         .from('notes')
         .select('id', { count: 'exact', head: true })
-        .eq('author_id', user.id)
+        .eq('author_id', profile.id)
         .gte('created_at', startOfDay)
         .lte('created_at', endOfDay);
 
@@ -39,7 +39,7 @@ export function useDailyNoteLimit() {
 
       return count || 0;
     },
-    enabled: !!user,
+    enabled: !!profile,
     staleTime: 30 * 1000, // Consider fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
@@ -51,10 +51,10 @@ export function useDailyNoteLimit() {
   // Optimistically increment the count and invalidate the query
   const incrementCount = useCallback(() => {
     // Optimistically update the cache
-    queryClient.setQueryData(['daily-note-count', user?.id], (old: number | undefined) => (old ?? 0) + 1);
+    queryClient.setQueryData(['daily-note-count', profile?.id], (old: number | undefined) => (old ?? 0) + 1);
     // Then invalidate to refetch the actual count
     queryClient.invalidateQueries({ queryKey: ['daily-note-count'] });
-  }, [queryClient, user?.id]);
+  }, [queryClient, profile?.id]);
 
   // Refresh function for manual refresh
   const refresh = useCallback(() => {
