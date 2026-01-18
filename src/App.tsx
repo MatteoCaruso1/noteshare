@@ -5,12 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { PremiumProvider } from "@/contexts/PremiumContext";
+import { PremiumProvider, usePremium } from "@/contexts/PremiumContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { PremiumDialog } from "@/components/PremiumDialog";
+import { CheckoutDialog } from "@/components/CheckoutDialog";
 
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -26,7 +27,6 @@ import Gigs from "./pages/Gigs";
 import GigDetail from "./pages/GigDetail";
 import FriendsJournals from "./pages/FriendsJournals";
 import WorkingToward from "./pages/WorkingToward";
-import Checkout from "./pages/Checkout";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +47,12 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Wrapper to connect CheckoutDialog with PremiumContext
+function CheckoutDialogWrapper() {
+  const { isCheckoutDialogOpen, closeCheckoutDialog } = usePremium();
+  return <CheckoutDialog open={isCheckoutDialogOpen} onOpenChange={closeCheckoutDialog} />;
+}
 
 function AppInner() {
   useEffect(() => {
@@ -71,6 +77,7 @@ function AppInner() {
                 <GlobalSessionBanner />
                 <AddToHomescreenPrompt />
                 <PremiumDialog />
+                <CheckoutDialogWrapper />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/welcome" element={<Welcome />} />
@@ -85,7 +92,6 @@ function AppInner() {
                   <Route path="/gigs/:id" element={<GigDetail />} />
                   <Route path="/friends" element={<FriendsJournals />} />
                   <Route path="/working-toward" element={<WorkingToward />} />
-                  <Route path="/checkout" element={<Checkout />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
