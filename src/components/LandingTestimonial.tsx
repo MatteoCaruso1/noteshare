@@ -1,7 +1,7 @@
 export function LandingTestimonial() {
   return (
     <>
-      <section className="bg-transparent pt-6 pb-20 px-6 md:px-12 lg:px-24">
+      <section className="bg-transparent pt-6 pb-24 px-6 md:px-12 lg:px-24">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-start md:justify-between gap-8">
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground leading-tight max-w-md mb-9 md:mb-0">
             Empowering the world's musicians
