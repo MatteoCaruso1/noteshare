@@ -57,7 +57,7 @@ export function useSubscription() {
 
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
-      
+
       if (error) throw error;
 
       setState({
@@ -69,12 +69,45 @@ export function useSubscription() {
         error: null,
       });
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       console.error('Error checking subscription:', err);
+
+      // If auth token is stale/expired, try a silent refresh once, then fall back to "not subscribed"
+      if (message.includes('Auth session missing')) {
+        try {
+          await supabase.auth.refreshSession();
+          const { data, error } = await supabase.functions.invoke('check-subscription');
+          if (!error) {
+            setState({
+              subscribed: data?.subscribed || false,
+              productId: data?.product_id || null,
+              subscriptionEnd: data?.subscription_end || null,
+              isLoading: false,
+              hasCheckedOnce: true,
+              error: null,
+            });
+            return;
+          }
+        } catch (refreshErr) {
+          console.warn('Subscription check: session refresh failed', refreshErr);
+        }
+
+        setState({
+          subscribed: false,
+          productId: null,
+          subscriptionEnd: null,
+          isLoading: false,
+          hasCheckedOnce: true,
+          error: null,
+        });
+        return;
+      }
+
       setState(prev => ({
         ...prev,
         isLoading: false,
         hasCheckedOnce: true, // Mark as checked even on error
-        error: err instanceof Error ? err.message : 'Failed to check subscription',
+        error: message || 'Failed to check subscription',
       }));
     }
   }, [user]);
