@@ -24,7 +24,7 @@ const features = [
     cropTop: false,
   },
   {
-    title: 'See what your friends are working on',
+    title: ['See what your', 'friends are', 'working on'],
     image: landingFriends,
     alt: 'Friends practice feed showing their sessions',
     cropTop: false,
@@ -62,10 +62,16 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         isRight ? 'justify-end flex-row-reverse' : 'justify-start flex-row'
       } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
     >
-      <h2 className={`text-lg sm:text-2xl md:text-3xl font-semibold text-foreground max-w-[265px] sm:max-w-[320px] ${
+      <h2 className={`text-lg sm:text-2xl md:text-3xl font-semibold text-foreground max-w-[200px] sm:max-w-[320px] ${
         isRight ? 'text-right' : 'text-left'
       }`}>
-        {feature.title}
+        {Array.isArray(feature.title)
+          ? feature.title.map((line, i) => (
+              <span key={i} className="block">
+                {line}
+              </span>
+            ))
+          : feature.title}
       </h2>
       <div className="relative">
         {/* Glow effect */}
