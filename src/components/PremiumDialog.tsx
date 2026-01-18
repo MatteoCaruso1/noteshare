@@ -85,8 +85,8 @@ export function PremiumDialog() {
               onClick={handleStartTrial}
               className="w-full flex items-center justify-center gap-1.5 bg-muted/50 hover:bg-muted/70 transition-colors rounded-full px-4 py-2.5 cursor-pointer"
             >
-              <span className="font-medium">{priceDisplay} with</span>
               <span className="font-medium text-jazz-gold">30-day free trial</span>
+              <span className="font-medium">, then {priceDisplay}</span>
             </button>
             <p className="text-xs text-muted-foreground italic text-center">Cancel anytime on Profile page</p>
           </div>
