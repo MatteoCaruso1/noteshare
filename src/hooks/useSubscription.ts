@@ -17,6 +17,7 @@ interface SubscriptionState {
   productId: string | null;
   subscriptionEnd: string | null;
   isLoading: boolean;
+  hasCheckedOnce: boolean;
   error: string | null;
 }
 
@@ -26,7 +27,8 @@ export function useSubscription() {
     subscribed: false,
     productId: null,
     subscriptionEnd: null,
-    isLoading: false,
+    isLoading: true, // Start with loading true for initial check
+    hasCheckedOnce: false,
     error: null,
   });
 
@@ -37,12 +39,21 @@ export function useSubscription() {
         productId: null,
         subscriptionEnd: null,
         isLoading: false,
+        hasCheckedOnce: true,
         error: null,
       });
       return;
     }
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    // Only show loading state on initial check, not on refreshes
+    // This prevents the premium gate from flickering during periodic checks
+    setState(prev => {
+      if (!prev.hasCheckedOnce) {
+        return { ...prev, isLoading: true, error: null };
+      }
+      // For refreshes, don't set isLoading - just clear errors silently
+      return { ...prev, error: null };
+    });
 
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
@@ -54,6 +65,7 @@ export function useSubscription() {
         productId: data.product_id || null,
         subscriptionEnd: data.subscription_end || null,
         isLoading: false,
+        hasCheckedOnce: true,
         error: null,
       });
     } catch (err) {
@@ -61,6 +73,7 @@ export function useSubscription() {
       setState(prev => ({
         ...prev,
         isLoading: false,
+        hasCheckedOnce: true, // Mark as checked even on error
         error: err instanceof Error ? err.message : 'Failed to check subscription',
       }));
     }
