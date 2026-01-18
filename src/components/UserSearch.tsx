@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles, Music, Handshake } from 'lucide-react';
+import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles, Music, Handshake, Shield } from 'lucide-react';
 import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians, SuggestionReason } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
 import { Profile } from '@/types';
 import { useNavigate } from 'react-router-dom';
+
+// Noteshare Team profile ID (Matteo)
+const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
 
 const ReasonBadge = ({ reason, matchingGenres }: { reason: SuggestionReason; matchingGenres?: string[] }) => {
   switch (reason) {
@@ -218,13 +221,21 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
                   <p className="font-medium text-sm truncate">{user.name}</p>
                   <p className="text-xs text-muted-foreground truncate mb-1">@{user.username}</p>
                   <div className="flex flex-wrap items-center gap-1">
+                    {/* Noteshare Team badge - show first for Matteo */}
+                    {user.id === NOTESHARE_TEAM_PROFILE_ID && (
+                      <Badge className="text-xs py-0 px-1.5 gap-0.5 bg-primary/15 text-primary border-primary/30">
+                        <Shield className="w-3 h-3" />
+                        Noteshare Team
+                      </Badge>
+                    )}
                     {user.mutualCount > 0 && (
                       <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-0.5">
                         <Users className="w-3 h-3" />
                         {user.mutualCount} mutual
                       </Badge>
                     )}
-                    {user.reasons.filter(r => r !== 'mutual').map((reason) => (
+                    {/* Don't show other badges for Noteshare Team member */}
+                    {user.id !== NOTESHARE_TEAM_PROFILE_ID && user.reasons.filter(r => r !== 'mutual').map((reason) => (
                       <ReasonBadge 
                         key={reason} 
                         reason={reason} 

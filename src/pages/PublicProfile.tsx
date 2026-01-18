@@ -15,10 +15,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DirectMessages } from '@/components/DirectMessages';
-import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volume2 } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volume2, Shield } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
+
+// Noteshare Team profile ID (Matteo)
+const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
 
 
 function usePublicProfile(profileId: string | undefined, username: string | undefined) {
@@ -282,6 +285,12 @@ const PublicProfile = () => {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
+                {profile.id === NOTESHARE_TEAM_PROFILE_ID && (
+                  <Badge className="text-xs py-0.5 px-2 gap-1 bg-primary/15 text-primary border-primary/30 w-fit">
+                    <Shield className="w-3 h-3" />
+                    Noteshare Team
+                  </Badge>
+                )}
                 {profile.location && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {profile.location}
