@@ -72,16 +72,16 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
           className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-lg ${
-            feature.cropTop ? 'h-[200px]' : ''
+            feature.cropTop ? 'h-[220px]' : ''
           }`}
         >
           <img
             src={feature.image}
             alt={feature.alt}
             className={`w-full ${
-              feature.cropTop ? 'h-[280px] object-cover object-top' : 'h-auto'
+              feature.cropTop ? 'object-cover object-[center_58%]' : 'h-auto'
             }`}
-            style={feature.cropTop ? { marginTop: '-55px' } : undefined}
+            style={feature.cropTop ? { height: '420px', maxWidth: 'none', width: '100%' } : undefined}
             loading="lazy"
           />
         </div>
