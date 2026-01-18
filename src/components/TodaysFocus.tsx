@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
+import { usePremium } from '@/contexts/PremiumContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +18,7 @@ export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
+  const { isPremium, openPremiumDialog } = usePremium();
   const [text, setText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -430,6 +432,16 @@ export function TodaysFocus() {
   }
 
   const handleSaveToBacklog = () => {
+    if (!isPremium) {
+      toast.error('Saved to backlog is a Premium feature', {
+        action: {
+          label: 'Upgrade',
+          onClick: openPremiumDialog,
+        },
+      });
+      return;
+    }
+    
     if (!text.trim()) {
       toast.error('Nothing to save');
       return;
