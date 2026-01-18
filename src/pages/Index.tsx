@@ -107,8 +107,7 @@ const Index = () => {
                 className="gap-1 text-xs h-7 px-2"
               >
                 <Sparkles className="h-3 w-3" />
-                <span className="hidden xs:inline">Try Premium for Free</span>
-                <span className="xs:hidden">Try Free</span>
+                Try Premium for Free
               </Button>
             )}
           </div>
