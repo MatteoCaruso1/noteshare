@@ -58,7 +58,7 @@ export function ManagePlansSection() {
             </span>
             <Badge 
               variant="secondary"
-              className={`text-xs ${isPremium ? 'bg-white text-foreground' : ''}`}
+              className={`text-xs ${isPremium ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : ''}`}
             >
               {isPremium ? 'Active' : 'Current'}
             </Badge>
@@ -74,10 +74,10 @@ export function ManagePlansSection() {
         <Button 
           onClick={handleSwitchPlan}
           variant={isPremium ? 'outline' : 'hero'}
-          className="w-full"
+          className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
           disabled={isLoading}
         >
-          {isPremium ? 'Switch to Free' : 'Upgrade to Premium'}
+          {isPremium ? 'Downgrade Plan' : 'Upgrade to Premium'}
         </Button>
 
         {/* Help Email */}
