@@ -5,7 +5,7 @@ import { detectUserCurrency, SupportedCurrency } from '@/lib/currencyUtils';
 interface PremiumContextType {
   isPremium: boolean;
   isLoading: boolean;
-  startCheckout: () => Promise<void>;
+  startCheckout: () => void;
   openCustomerPortal: () => Promise<void>;
   checkSubscription: () => Promise<void>;
   // Premium dialog state
@@ -14,15 +14,23 @@ interface PremiumContextType {
   closePremiumDialog: () => void;
   // Currency
   detectedCurrency: SupportedCurrency;
+  // Navigation function for checkout
+  navigateToCheckout: () => void;
 }
 
 const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
+
+// Navigation callback for checkout - set by component inside Router
+let navigateToCheckoutCallback: (() => void) | null = null;
+
+export function setNavigateToCheckout(fn: () => void) {
+  navigateToCheckoutCallback = fn;
+}
 
 export function PremiumProvider({ children }: { children: ReactNode }) {
   const { 
     isPremium, 
     isLoading, 
-    startCheckout: startCheckoutWithCurrency, 
     openCustomerPortal,
     checkSubscription 
   } = useSubscription();
@@ -45,10 +53,20 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     setIsPremiumDialogOpen(false);
   }, []);
 
-  // Wrap startCheckout to pass detected currency
-  const startCheckout = useCallback(async () => {
-    await startCheckoutWithCurrency(detectedCurrency);
-  }, [startCheckoutWithCurrency, detectedCurrency]);
+  // Navigate to embedded checkout page instead of Stripe redirect
+  const navigateToCheckout = useCallback(() => {
+    if (navigateToCheckoutCallback) {
+      navigateToCheckoutCallback();
+    } else {
+      // Fallback: direct navigation if callback not set
+      window.location.href = '/checkout';
+    }
+  }, []);
+
+  // startCheckout now navigates to the embedded checkout page
+  const startCheckout = useCallback(() => {
+    navigateToCheckout();
+  }, [navigateToCheckout]);
 
   return (
     <PremiumContext.Provider value={{ 
@@ -61,6 +79,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       openPremiumDialog,
       closePremiumDialog,
       detectedCurrency,
+      navigateToCheckout,
     }}>
       {children}
     </PremiumContext.Provider>
