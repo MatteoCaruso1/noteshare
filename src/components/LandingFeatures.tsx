@@ -21,7 +21,7 @@ const features = [
     title: 'Track your progress over time',
     image: landingProgress,
     alt: 'Progress charts showing practice minutes and streak',
-    cropTop: true,
+    cropTop: false,
   },
   {
     title: 'See what friends are working on',
@@ -71,7 +71,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {/* Glow effect */}
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
-          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-lg ${
+          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl ${
             feature.cropTop ? 'h-[220px]' : ''
           }`}
         >
