@@ -665,7 +665,7 @@ export function PracticeControls() {
                 iconOnly
               />
 
-              {/* Wake Lock toggle - mobile-optimized button */}
+              {/* Wake Lock toggle - mobile-optimized button with inline styles when enabled to prevent iOS sticky hover override */}
               <button
                 type="button"
                 aria-label={wakeLockEnabled ? "Screen unlock ON" : "Screen unlock OFF"}
@@ -679,11 +679,16 @@ export function PracticeControls() {
                   h-8 w-8 inline-flex items-center justify-center rounded-md
                   touch-manipulation select-none outline-none
                   focus:outline-none focus-visible:outline-none
+                  transition-colors duration-150
                   ${wakeLockEnabled 
-                    ? "bg-primary text-primary-foreground" 
+                    ? "" 
                     : "bg-transparent text-muted-foreground [@media(hover:hover)]:hover:bg-muted/50"
                   }
                 `}
+                style={wakeLockEnabled ? {
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'hsl(var(--primary-foreground))'
+                } : undefined}
                 title="Keep screen unlocked"
               >
                 <LockOpen className="w-4 h-4" />
