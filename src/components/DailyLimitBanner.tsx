@@ -8,7 +8,7 @@ interface DailyLimitBannerProps {
 }
 
 export function DailyLimitBanner({ notesPostedToday, dailyLimit }: DailyLimitBannerProps) {
-  const { startCheckout } = usePremium();
+  const { openPremiumDialog } = usePremium();
 
   return (
     <div className="flex flex-col items-center gap-2 p-3 bg-muted/50 rounded-lg border border-border text-center">
@@ -22,7 +22,7 @@ export function DailyLimitBanner({ notesPostedToday, dailyLimit }: DailyLimitBan
       </div>
       <Button 
         size="sm" 
-        onClick={startCheckout}
+        onClick={openPremiumDialog}
         variant="hero"
         className="gap-1.5"
       >

@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Price IDs for different currencies (with 30-day trial)
+const PRICE_IDS = {
+  USD: "price_1Sr25PGiNcIsULtkCe7dqa1V", // $3.49/month USD
+  CAD: "price_1Sr25dGiNcIsULtkcFRqzZi7", // $4.99/month CAD
+};
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
@@ -24,6 +30,18 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Parse request body for currency
+    let currency = "USD";
+    try {
+      const body = await req.json();
+      if (body.currency && (body.currency === "CAD" || body.currency === "USD")) {
+        currency = body.currency;
+      }
+    } catch {
+      // No body or invalid JSON, use default USD
+    }
+    logStep("Currency determined", { currency });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -49,24 +67,31 @@ serve(async (req) => {
       logStep("No existing customer found, will create new");
     }
 
-    // Create checkout session for Noteshare Premium subscription
+    // Select price based on currency
+    const priceId = PRICE_IDS[currency as keyof typeof PRICE_IDS] || PRICE_IDS.USD;
+    logStep("Selected price", { priceId, currency });
+
+    // Create checkout session for Noteshare Premium subscription with 30-day trial
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SqlanGiNcIsULtkonowz5Fd", // Noteshare Premium $2.99/month
+          price: priceId,
           quantity: 1,
         },
       ],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 30,
+      },
       success_url: `${req.headers.get("origin")}/profile?subscription=success`,
       cancel_url: `${req.headers.get("origin")}/profile?subscription=cancelled`,
       payment_method_types: ["card"],
       allow_promotion_codes: true,
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, trialDays: 30 });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -58,7 +58,7 @@ function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
 
 export const Timeline = memo(function Timeline({ notes, loading, isRefetching, displayCount, onLoadMore }: TimelineProps) {
   const [showSlowMessage, setShowSlowMessage] = useState(false);
-  const { isPremium, isLoading: isPremiumLoading, startCheckout } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   
   // Separate notes into recent (last 7 days) and older
   const { recentNotes, olderNotesCount, displayedNotes } = useMemo(() => {
@@ -163,7 +163,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
       
       {/* Show upgrade prompt for older notes (free users only) */}
       {!isPremium && !isPremiumLoading && olderNotesCount > 0 && (
-        <OlderNotesGate onUpgrade={startCheckout} />
+        <OlderNotesGate onUpgrade={openPremiumDialog} />
       )}
       
       {/* Load more button for remaining recent notes - hide when practice history gate is showing */}

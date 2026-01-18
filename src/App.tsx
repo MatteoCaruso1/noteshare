@@ -10,6 +10,7 @@ import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { PremiumDialog } from "@/components/PremiumDialog";
 
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -68,6 +69,7 @@ function AppInner() {
                 <AppHeader />
                 <GlobalSessionBanner />
                 <AddToHomescreenPrompt />
+                <PremiumDialog />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/welcome" element={<Welcome />} />

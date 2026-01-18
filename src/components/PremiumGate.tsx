@@ -32,7 +32,7 @@ export function PremiumGate({
   icon,
   description
 }: PremiumGateProps) {
-  const { isPremium, isLoading, startCheckout } = usePremium();
+  const { isPremium, isLoading, openPremiumDialog } = usePremium();
 
   // Premium users see content normally
   if (isPremium) {
@@ -78,7 +78,7 @@ export function PremiumGate({
       <GateOverlay 
         featureName={featureName} 
         compact={compact} 
-        onUpgrade={startCheckout}
+        onUpgrade={openPremiumDialog}
         standalone
         icon={icon}
         description={description}
@@ -103,7 +103,7 @@ export function PremiumGate({
       <GateOverlay 
         featureName={featureName} 
         compact={compact} 
-        onUpgrade={startCheckout}
+        onUpgrade={openPremiumDialog}
         icon={icon}
         description={description}
       />
@@ -178,7 +178,7 @@ export function PremiumBadge({
   featureName: string;
   className?: string;
 }) {
-  const { isPremium, startCheckout } = usePremium();
+  const { isPremium, openPremiumDialog } = usePremium();
 
   if (isPremium) return null;
 
@@ -190,7 +190,7 @@ export function PremiumBadge({
         "h-6 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground",
         className
       )}
-      onClick={startCheckout}
+      onClick={openPremiumDialog}
       title={`${featureName} is a Premium feature`}
     >
       <Lock className="h-3 w-3" />
