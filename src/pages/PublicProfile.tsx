@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DirectMessages } from '@/components/DirectMessages';
 import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volume2, Shield } from 'lucide-react';
@@ -286,10 +287,19 @@ const PublicProfile = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
                 {profile.id === NOTESHARE_TEAM_PROFILE_ID && (
-                  <Badge className="text-xs py-0.5 px-2 gap-1 bg-primary/15 text-primary border-primary/30 w-fit">
-                    <Shield className="w-3 h-3" />
-                    Noteshare Team
-                  </Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge className="text-xs py-0.5 px-2 gap-1 bg-primary/15 text-primary border-primary/30 w-fit cursor-default">
+                          <Shield className="w-3 h-3" />
+                          Noteshare Team
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Noteshare Creator</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {profile.location && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">

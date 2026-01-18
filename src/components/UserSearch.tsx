@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { Search, UserPlus, UserCheck, Clock, X, Users, Sparkles, Music, Handshake, Shield } from 'lucide-react';
 import { useSearchUsers, useSendFriendRequest, useFriendships, useRespondToFriendRequest, useSuggestedMusicians, SuggestionReason } from '@/hooks/useFriendships';
@@ -223,10 +224,19 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
                   <div className="flex flex-wrap items-center gap-1">
                     {/* Noteshare Team badge - show first for Matteo */}
                     {user.id === NOTESHARE_TEAM_PROFILE_ID && (
-                      <Badge className="text-xs py-0 px-1.5 gap-0.5 bg-primary/15 text-primary border-primary/30">
-                        <Shield className="w-3 h-3" />
-                        Noteshare Team
-                      </Badge>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge className="text-xs py-0 px-1.5 gap-0.5 bg-primary/15 text-primary border-primary/30 cursor-default">
+                              <Shield className="w-3 h-3" />
+                              Noteshare Team
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Noteshare Creator</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                     {user.mutualCount > 0 && (
                       <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-0.5">
