@@ -109,9 +109,9 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone }: GateOverla
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
         <Target className="h-5 w-5 text-jazz-gold" />
       </div>
-      <div className="max-w-[240px]">
+      <div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Upgrade to Premium to organize notes<br />around goals, projects, and gigs
+          Upgrade to Premium to organize<br />notes around goals, projects, and gigs
         </p>
       </div>
       <Button 
