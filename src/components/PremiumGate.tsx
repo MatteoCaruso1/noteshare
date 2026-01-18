@@ -118,17 +118,15 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, descri
 
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center gap-3 p-6 text-center",
+      "flex flex-col items-center justify-center gap-2 py-4 px-6 text-center",
       !standalone && "absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-lg"
     )}>
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
         <Icon className="h-5 w-5 text-jazz-gold" />
       </div>
-      <div>
-        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-          {descriptionText}
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+        {descriptionText}
+      </p>
       <Button 
         size="sm" 
         onClick={onUpgrade}

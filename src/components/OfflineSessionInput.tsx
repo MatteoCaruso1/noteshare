@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar, Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PremiumGate } from '@/components/PremiumGate';
 
@@ -53,7 +53,12 @@ export function OfflineSessionInput() {
         <DialogHeader>
           <DialogTitle>Log Past Practice Session</DialogTitle>
         </DialogHeader>
-        <PremiumGate featureName="Log Past Session" blur={false}>
+        <PremiumGate 
+          featureName="Log Past Session" 
+          blur={false}
+          icon={Play}
+          description="Upgrade to Premium to log past practice sessions"
+        >
           <div className="space-y-4 pt-4 overflow-x-hidden">
             {/* Date */}
             <div>
