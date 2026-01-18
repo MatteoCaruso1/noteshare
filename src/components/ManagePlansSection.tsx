@@ -1,4 +1,4 @@
-import { CreditCard, Mail, Crown, Sparkles } from 'lucide-react';
+import { CreditCard, Mail, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,13 +44,9 @@ export function ManagePlansSection() {
         {/* Current Plan Display */}
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
           <div className="flex items-center gap-3">
-            {isPremium ? (
+            {isPremium && (
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                 <Crown className="w-5 h-5 text-primary" />
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-muted-foreground" />
               </div>
             )}
             <div>
@@ -88,7 +84,7 @@ export function ManagePlansSection() {
         <div className="flex items-center justify-center gap-2 pt-2 border-t border-border/50">
           <Mail className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
-            Need help?{' '}
+            Need help? Contact:{' '}
             <a 
               href="mailto:matteo.m.caruso1@gmail.com" 
               className="text-primary hover:underline"
