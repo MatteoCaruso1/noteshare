@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Target, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,19 +20,27 @@ const routeScrollKeys: Record<string, string> = {
   '/profile': 'profile-top',
 };
 
+// Global flag to track if nav has already faded in once (persists across mounts)
+let hasInitiallyFadedIn = false;
+
 export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
   const location = useLocation();
   const { data: unreadCount, isLoading } = useUnreadNotificationCount();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  
+  // Only animate fade-in on the very first mount (coming from landing page)
+  const shouldAnimate = useRef(!hasInitiallyFadedIn);
+  const [isVisible, setIsVisible] = useState(hasInitiallyFadedIn);
 
-  // Fade in after mount to prevent jarring appearance
+  // Fade in after mount only on first ever appearance
   useEffect(() => {
-    // Small delay to ensure smooth fade-in after navigation
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 50);
-    return () => clearTimeout(timer);
+    if (!hasInitiallyFadedIn) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+        hasInitiallyFadedIn = true;
+      }, 50);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Detect keyboard open/close on mobile
