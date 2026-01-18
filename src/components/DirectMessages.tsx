@@ -82,7 +82,7 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
             {conversations.slice(0, 5).map((conv) => (
               <div
                 key={conv.friendId}
-                className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                className="flex items-center gap-2 p-2 rounded-lg [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 cursor-pointer transition-colors"
                 onClick={() => setSelectedFriend(conv.friend)}
               >
                 <ClickableAvatar
@@ -144,7 +144,7 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
           {conversations.map((conv) => (
             <div
               key={conv.friendId}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 cursor-pointer transition-colors"
               onClick={() => setSelectedFriend(conv.friend)}
             >
               <ClickableAvatar
@@ -214,7 +214,7 @@ function NewMessageView({
           {friends.map((friend) => (
             <div
               key={friend.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 cursor-pointer transition-colors"
               onClick={() => onSelect(friend)}
             >
               <ClickableAvatar
