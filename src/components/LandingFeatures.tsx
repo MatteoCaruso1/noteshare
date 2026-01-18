@@ -62,7 +62,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         isRight ? 'justify-end flex-row-reverse' : 'justify-start flex-row'
       } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
     >
-      <h2 className={`text-lg sm:text-2xl md:text-3xl font-semibold text-foreground max-w-[145px] sm:max-w-[320px] ${
+      <h2 className={`text-lg sm:text-2xl md:text-3xl font-semibold text-foreground max-w-[180px] sm:max-w-[320px] ${
         isRight ? 'text-right' : 'text-left'
       }`}>
         {feature.title}
@@ -71,7 +71,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {/* Glow effect */}
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
-          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-[220px] sm:max-w-xl ${
+          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl ${
             feature.cropTop ? 'h-[220px]' : ''
           }`}
         >
