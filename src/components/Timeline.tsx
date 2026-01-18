@@ -166,8 +166,8 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
         <OlderNotesGate onUpgrade={startCheckout} />
       )}
       
-      {/* Load more button for remaining recent notes */}
-      {hasMoreRecent && (
+      {/* Load more button for remaining recent notes - hide when practice history gate is showing */}
+      {hasMoreRecent && (isPremium || olderNotesCount === 0) && (
         <Button 
           variant="outline" 
           className="w-full" 
