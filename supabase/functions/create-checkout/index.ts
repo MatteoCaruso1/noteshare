@@ -9,8 +9,8 @@ const corsHeaders = {
 
 // Price IDs for different currencies (with 30-day trial)
 const PRICE_IDS = {
-  USD: "price_1Sr25PGiNcIsULtkCe7dqa1V", // $3.49/month USD
-  CAD: "price_1Sr25dGiNcIsULtkcFRqzZi7", // $4.99/month CAD
+  USD: "price_1SqlanGiNcIsULtkonowz5Fd", // $2.99/month USD
+  CAD: "price_1Sr1nPGiNcIsULtkfvqszh5A", // $3.99/month CAD
 };
 
 const logStep = (step: string, details?: any) => {
