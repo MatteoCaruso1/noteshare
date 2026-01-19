@@ -69,7 +69,7 @@ export function PremiumDialog() {
         <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6 space-y-5 pt-4">
           {/* Value prop */}
           <p className="text-muted-foreground">
-            For less than the price of a latte ☕, Premium helps you stay focused and see real progress.
+            For less than the price of a latte ☕, Premium helps you stay focused and see real progress
           </p>
 
           {/* Pricing badge - clickable, full width */}
