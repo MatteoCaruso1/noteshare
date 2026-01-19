@@ -16,9 +16,9 @@ export function StreakIndicator() {
   
   // Determine glow intensity based on milestone thresholds
   const getGlowClass = () => {
-    if (streak >= 360) return 'shadow-[0_0_4px_hsl(var(--primary)/0.5)]';
-    if (streak >= 90) return 'shadow-[0_0_2px_hsl(var(--primary)/0.5)]';
-    if (streak >= 30) return 'shadow-[0_0_1px_hsl(var(--primary)/0.5)]';
+    if (streak >= 360) return 'shadow-[0_0_6px_hsl(var(--primary)/0.5)]';
+    if (streak >= 90) return 'shadow-[0_0_4px_hsl(var(--primary)/0.5)]';
+    if (streak >= 30) return 'shadow-[0_0_2px_hsl(var(--primary)/0.5)]';
     return '';
   };
   
