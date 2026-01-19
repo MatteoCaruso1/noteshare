@@ -36,35 +36,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isPasswordResetFlow = window.location.search.includes('reset=true') || 
                                  window.location.hash.includes('type=recovery');
     
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      // If there's a session but "Remember me" was not checked and browser was closed
-      // BUT skip this check if we're in a password reset flow
-      if (session && !rememberMe && !sessionActive && !isPasswordResetFlow) {
-        // Sign out the user since they didn't want to be remembered
-        await supabase.auth.signOut();
+    // Wrap auth initialization in async function with error handling
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // Handle explicit errors from getSession (e.g., invalid refresh token)
+        if (error) {
+          console.warn('Auth session error:', error.message);
+          // Clear any stale auth data gracefully
+          try {
+            await supabase.auth.signOut();
+          } catch {
+            // Ignore signOut errors during cleanup
+          }
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        // If there's a session but "Remember me" was not checked and browser was closed
+        // BUT skip this check if we're in a password reset flow
+        if (session && !rememberMe && !sessionActive && !isPasswordResetFlow) {
+          // Sign out the user since they didn't want to be remembered
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        // Important: notes depend on profile.id (author_id), so keep the app "loading"
+        // until we have the profile to avoid a long "no notes" flash.
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        // Catch any unexpected errors during initialization (e.g., network issues, token refresh failures)
+        console.warn('Auth initialization error:', err);
+        // Gracefully degrade to logged-out state instead of crashing
         setSession(null);
         setUser(null);
         setProfile(null);
         setLoading(false);
-        return;
       }
+    };
 
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      // Important: notes depend on profile.id (author_id), so keep the app "loading"
-      // until we have the profile to avoid a long "no notes" flash.
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-
-      setLoading(false);
-    });
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Handle token refresh failures gracefully
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.warn('Token refresh failed, treating as signed out');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         
