@@ -81,31 +81,106 @@ serve(async (req) => {
       logStep("Created new customer", { customerId });
     }
 
-    // Check trial eligibility
-    let hasHadSubscription = false;
-    let hasUsedTrialLocally = false;
+    // Check trial eligibility with 5-minute grace period for accidental cancels
+    const GRACE_PERIOD_MS = 5 * 60 * 1000; // 5 minutes
+    let shouldOfferTrial = true;
+    let graceReason = "new_user";
 
-    // Check Stripe subscription history (any past subscription means they've had access)
+    // Check Stripe subscription history
     const allSubscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      limit: 1,
+      limit: 10, // Get more to check history properly
     });
-    hasHadSubscription = allSubscriptions.data.length > 0;
-    logStep("Checked Stripe subscription history", { hasHadSubscription });
+    logStep("Fetched subscription history", { count: allSubscriptions.data.length });
 
-    // Check local flag in profiles table
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('has_used_trial')
-      .eq('user_id', user.id)
-      .single();
+    if (allSubscriptions.data.length > 0) {
+      // Check if any subscription was ever active (converted from trial to paid)
+      const hasActiveHistory = allSubscriptions.data.some(
+        (sub: { status: string }) => sub.status === 'active' || sub.status === 'past_due'
+      );
 
-    hasUsedTrialLocally = profile?.has_used_trial === true;
-    logStep("Checked local trial flag", { hasUsedTrialLocally });
+      if (hasActiveHistory) {
+        // They've had a paid subscription - no trial
+        shouldOfferTrial = false;
+        graceReason = "had_active_subscription";
+        logStep("User had active subscription, no trial", { hasActiveHistory });
+      } else {
+        // All subscriptions were trialing or canceled trialing - check for grace period
+        const canceledTrials = allSubscriptions.data.filter(
+          (sub: { status: string; trial_end: number | null }) => sub.status === 'canceled' && sub.trial_end !== null
+        );
 
-    // Only offer trial if they've never had a subscription AND haven't used trial locally
-    const shouldOfferTrial = !hasHadSubscription && !hasUsedTrialLocally;
-    logStep("Trial eligibility determined", { shouldOfferTrial, hasHadSubscription, hasUsedTrialLocally });
+        if (canceledTrials.length > 0) {
+          // Check if the most recent canceled trial is within 5-minute grace period
+          const mostRecentTrial = canceledTrials[0] as { 
+            id: string; 
+            created: number; 
+            canceled_at: number | null;
+          };
+          const createdAt = mostRecentTrial.created * 1000; // Convert to ms
+          const canceledAt = mostRecentTrial.canceled_at
+            ? mostRecentTrial.canceled_at * 1000
+            : Date.now();
+
+          const durationMs = canceledAt - createdAt;
+          const wasQuickCancel = durationMs < GRACE_PERIOD_MS;
+
+          if (wasQuickCancel) {
+            // Grace period applies - allow trial
+            shouldOfferTrial = true;
+            graceReason = "grace_period_eligible";
+            logStep("Grace period eligible - quick cancel", {
+              subscriptionId: mostRecentTrial.id,
+              createdAt: new Date(createdAt).toISOString(),
+              canceledAt: new Date(canceledAt).toISOString(),
+              durationMinutes: Math.round(durationMs / 60000)
+            });
+          } else {
+            // Canceled after 5 minutes - no re-trial
+            shouldOfferTrial = false;
+            graceReason = "canceled_after_grace_period";
+            logStep("No trial - canceled after grace period", {
+              subscriptionId: mostRecentTrial.id,
+              durationMinutes: Math.round(durationMs / 60000)
+            });
+          }
+        } else {
+          // Has subscriptions but none are canceled trials with trial_end
+          // Check if there's a currently trialing subscription
+          const currentlyTrialing = allSubscriptions.data.some(
+            (sub: { status: string }) => sub.status === 'trialing'
+          );
+          if (currentlyTrialing) {
+            shouldOfferTrial = false;
+            graceReason = "already_trialing";
+            logStep("Already has active trial");
+          } else {
+            // Edge case: subscriptions exist but aren't active/trialing/canceled-trial
+            shouldOfferTrial = false;
+            graceReason = "has_subscription_history";
+            logStep("Has subscription history, no trial");
+          }
+        }
+      }
+    }
+
+    // Also check local flag (for users who never completed Stripe checkout)
+    // BUT allow grace period to override the local flag
+    if (shouldOfferTrial && graceReason !== "grace_period_eligible") {
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('has_used_trial')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.has_used_trial === true) {
+        shouldOfferTrial = false;
+        graceReason = "local_flag_set";
+        logStep("Local trial flag is set, no trial");
+      }
+    }
+
+    logStep("Trial eligibility determined", { shouldOfferTrial, graceReason });
 
     // Select price based on currency
     const priceId = PRICE_IDS[currency as keyof typeof PRICE_IDS] || PRICE_IDS.USD;
