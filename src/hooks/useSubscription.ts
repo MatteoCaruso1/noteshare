@@ -18,6 +18,7 @@ interface SubscriptionState {
   subscriptionEnd: string | null;
   isLoading: boolean;
   hasCheckedOnce: boolean;
+  hasValidatedWithUser: boolean;
   error: string | null;
 }
 
@@ -29,6 +30,7 @@ export function useSubscription() {
     subscriptionEnd: null,
     isLoading: true, // Start with loading true for initial check
     hasCheckedOnce: false,
+    hasValidatedWithUser: false,
     error: null,
   });
 
@@ -40,6 +42,7 @@ export function useSubscription() {
         subscriptionEnd: null,
         isLoading: false,
         hasCheckedOnce: true,
+        hasValidatedWithUser: false, // No user to validate
         error: null,
       });
       return;
@@ -66,6 +69,7 @@ export function useSubscription() {
         subscriptionEnd: data.subscription_end || null,
         isLoading: false,
         hasCheckedOnce: true,
+        hasValidatedWithUser: true, // Successfully validated with user
         error: null,
       });
     } catch (err) {
@@ -84,6 +88,7 @@ export function useSubscription() {
               subscriptionEnd: data?.subscription_end || null,
               isLoading: false,
               hasCheckedOnce: true,
+              hasValidatedWithUser: true,
               error: null,
             });
             return;
@@ -98,6 +103,7 @@ export function useSubscription() {
           subscriptionEnd: null,
           isLoading: false,
           hasCheckedOnce: true,
+          hasValidatedWithUser: false, // Session failed, no valid user
           error: null,
         });
         return;
@@ -172,8 +178,12 @@ export function useSubscription() {
     state.productId === 'prod_TofQx0QRLi6tEe'    // CAD product
   );
 
+  // Derive "truly loading" state: stay loading if user exists but we haven't validated yet
+  const isTrulyLoading = state.isLoading || (!!user && !state.hasValidatedWithUser);
+
   return {
     ...state,
+    isLoading: isTrulyLoading, // Override with derived loading state
     isPremium,
     checkSubscription,
     startCheckout,
