@@ -1,10 +1,10 @@
 import { memo, useMemo } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
-import { NoteCardSkeleton } from './NoteCardSkeleton';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Sparkles } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 
@@ -63,11 +63,13 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <NoteCardSkeleton key={i} />
-        ))}
-      </div>
+      <Card className="p-8 bg-card border-border text-center">
+        <div className="flex justify-center mb-4">
+          <Skeleton className="w-16 h-16 rounded-full" />
+        </div>
+        <Skeleton className="h-6 w-48 mx-auto mb-2" />
+        <Skeleton className="h-4 w-64 mx-auto" />
+      </Card>
     );
   }
 
