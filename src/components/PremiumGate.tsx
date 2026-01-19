@@ -52,9 +52,9 @@ export function PremiumGate({
         </div>
       );
     }
-    // For preview gates, show blurred content without the upgrade button during load
+    // For preview gates, show blurred content with a stable min-height to prevent jitter
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn("relative min-h-[400px]", className)}>
         <div 
           className={cn(
             "pointer-events-none select-none",
@@ -64,7 +64,7 @@ export function PremiumGate({
         >
           {children}
         </div>
-        {/* Subtle loading indicator instead of full gate overlay */}
+        {/* Centered loading indicator */}
         <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[1px] rounded-lg">
           <div className="w-6 h-6 rounded-full border-2 border-muted border-t-foreground animate-spin" />
         </div>
