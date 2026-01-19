@@ -36,10 +36,22 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error && typeof error === 'object' && 'status' in error) {
-          const status = (error as { status: number }).status;
-          if (status >= 400 && status < 500) {
+        // Don't retry on 4xx errors or auth-related errors
+        if (error && typeof error === 'object') {
+          const status = (error as { status?: number }).status;
+          const code = (error as { code?: string }).code;
+          const message = (error as { message?: string }).message;
+          
+          // Don't retry client errors (4xx)
+          if (status && status >= 400 && status < 500) {
+            return false;
+          }
+          // Don't retry auth token errors
+          if (code === 'refresh_token_not_found' || code === 'invalid_token') {
+            return false;
+          }
+          // Don't retry if message indicates auth failure
+          if (message?.toLowerCase().includes('refresh token')) {
             return false;
           }
         }
