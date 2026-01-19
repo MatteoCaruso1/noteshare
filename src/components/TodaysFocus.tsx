@@ -42,32 +42,45 @@ export function TodaysFocus() {
     setFocusFocused(isFocused);
   }, [isFocused, setFocusFocused]);
 
+  // Stable resize function for textarea
+  const adjustHeight = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
+    }
+  }, []);
+
   // Initialize text from focus data - only once on initial load
   useEffect(() => {
     if (!isInitialized && focus?.focus_text !== undefined) {
       setText(focus.focus_text);
       setIsInitialized(true);
+      
+      // Trigger resize after initialization if collapsible is open
+      if (isOpen) {
+        // Use multiple RAF frames to ensure CSS has settled
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(adjustHeight);
+          });
+        }, 50);
+      }
     }
-  }, [focus?.focus_text, isInitialized]);
+  }, [focus?.focus_text, isInitialized, isOpen, adjustHeight]);
 
-  // Auto-resize textarea - also triggers when collapsible opens
+  // Auto-resize textarea - also triggers when collapsible opens or text changes
   useEffect(() => {
     if (textareaRef.current && isOpen) {
-      const resize = () => {
-        if (textareaRef.current) {
-          textareaRef.current.style.height = 'auto';
-          textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
-        }
-      };
-      
-      // Use requestAnimationFrame for more reliable timing with CSS transitions
+      // Use multiple RAF frames + delay to ensure Radix Collapsible has finished its animation
       const timer = setTimeout(() => {
-        requestAnimationFrame(resize);
-      }, 100);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(adjustHeight);
+        });
+      }, 150);
       
       return () => clearTimeout(timer);
     }
-  }, [text, isOpen]);
+  }, [text, isOpen, isInitialized, adjustHeight]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
@@ -528,7 +541,7 @@ export function TodaysFocus() {
               </div>
             </button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-4 pb-4">
+          <CollapsibleContent className="px-4 pb-4" style={{ overflow: 'visible' }}>
             <div 
               className={isFocused ? '' : 'cursor-text'}
               onClick={() => {
@@ -552,7 +565,7 @@ export function TodaysFocus() {
                   handleBlur();
                 }}
                 placeholder="What are you practicing across sessions?"
-                className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden'}`}
+                className="min-h-[36px] resize-none text-sm caret-foreground overflow-y-auto"
                 style={{ overscrollBehavior: 'contain' }}
                 rows={1}
               />
