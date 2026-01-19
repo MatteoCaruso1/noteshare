@@ -146,14 +146,26 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
     );
   }
 
+  // Count total notes within free limit for comparison
+  const totalRecentNotesCount = useMemo(() => {
+    if (isPremium || isPremiumLoading) return notes.length;
+    const now = new Date();
+    return notes.filter(n => {
+      const daysAgo = differenceInDays(now, parseISO(n.created_at));
+      return daysAgo <= FREE_USER_DAYS_LIMIT;
+    }).length;
+  }, [notes, isPremium, isPremiumLoading]);
+
   // For premium users, show load more based on total notes
-  // For free users, only show if there are more recent notes to show
-  const hasMoreRecent = isPremium 
+  // For free users, show load more if there are more recent notes to load
+  const hasMoreRecentToLoad = isPremium 
     ? displayCount < notes.length
-    : displayedNotes.length < notes.filter(n => {
-        const daysAgo = differenceInDays(new Date(), parseISO(n.created_at));
-        return daysAgo <= FREE_USER_DAYS_LIMIT;
-      }).length;
+    : displayedNotes.length < totalRecentNotesCount;
+
+  // Only show the gate after all recent notes have been loaded
+  const showOlderNotesGate = !isPremium && !isPremiumLoading && 
+    olderNotesCount > 0 && 
+    displayedNotes.length >= totalRecentNotesCount;
 
   return (
     <div className="space-y-4">
@@ -161,13 +173,8 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
         <NoteCard key={note.id} note={note} />
       ))}
       
-      {/* Show upgrade prompt for older notes (free users only) */}
-      {!isPremium && !isPremiumLoading && olderNotesCount > 0 && (
-        <OlderNotesGate onUpgrade={openPremiumDialog} />
-      )}
-      
-      {/* Load more button for remaining recent notes - hide when practice history gate is showing */}
-      {hasMoreRecent && (isPremium || olderNotesCount === 0) && (
+      {/* Load more button - show if there are more recent notes to load */}
+      {hasMoreRecentToLoad && (
         <Button 
           variant="outline" 
           className="w-full" 
@@ -175,6 +182,11 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
         >
           Load more
         </Button>
+      )}
+      
+      {/* Show upgrade prompt for older notes after all recent notes are loaded */}
+      {showOlderNotesGate && (
+        <OlderNotesGate onUpgrade={openPremiumDialog} />
       )}
     </div>
   );
