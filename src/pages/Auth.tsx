@@ -170,7 +170,7 @@ const Auth = () => {
             />
             <Button
               type="submit"
-              className="w-full bg-gradient-primary text-primary-foreground"
+              className="w-full bg-gradient-primary text-white hover:opacity-90"
               disabled={loading}
             >
               {loading ? 'Updating...' : 'Update Password'}
@@ -231,7 +231,7 @@ const Auth = () => {
             )}
             <Button
               type="submit"
-              className="w-full bg-gradient-primary text-primary-foreground"
+              className="w-full bg-gradient-primary text-white hover:opacity-90"
               disabled={loading}
             >
               {loading 
