@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { usePremium } from '@/contexts/PremiumContext';
 
 // Simple confetti burst effect
 function ConfettiBurst() {
@@ -59,6 +60,7 @@ function ConfettiBurst() {
 export function SubscriptionSuccessCelebration() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCelebration, setShowCelebration] = useState(false);
+  const { checkSubscription } = usePremium();
 
   useEffect(() => {
     if (searchParams.get('subscription') === 'success') {
@@ -68,8 +70,11 @@ export function SubscriptionSuccessCelebration() {
       newParams.delete('subscription');
       newParams.delete('session_id');
       setSearchParams(newParams, { replace: true });
+      
+      // CRITICAL: Refresh subscription status after successful checkout
+      checkSubscription();
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, checkSubscription]);
 
   if (!showCelebration) return null;
 
