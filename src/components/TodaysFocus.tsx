@@ -422,6 +422,10 @@ export function TodaysFocus() {
     }
   }, [renumberList, autoCapitalizeAfterPrefix]);
 
+  // Read localStorage during loading to match the expected loaded state
+  const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
+  const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
+
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
@@ -429,9 +433,11 @@ export function TodaysFocus() {
           <ClipboardList className="w-5 h-5 text-muted-foreground" />
           <h2 className="font-semibold">Practice Board</h2>
         </div>
-        <div className="px-4 pb-4">
-          <div className="h-12 bg-muted/50 rounded animate-pulse" />
-        </div>
+        {willBeOpen && (
+          <div className="px-4 pb-4">
+            <div className="h-12 bg-muted/50 rounded animate-pulse" />
+          </div>
+        )}
       </Card>
     );
   }

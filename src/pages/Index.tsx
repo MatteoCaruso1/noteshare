@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
@@ -33,6 +33,17 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
+  const [showPremiumButton, setShowPremiumButton] = useState(false);
+
+  // Smooth fade-in for premium button using opacity transition
+  useEffect(() => {
+    if (!premiumLoading && !isPremium) {
+      const timer = setTimeout(() => setShowPremiumButton(true), 50);
+      return () => clearTimeout(timer);
+    } else {
+      setShowPremiumButton(false);
+    }
+  }, [premiumLoading, isPremium]);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
   
@@ -108,8 +119,9 @@ const Index = () => {
                 size="sm" 
                 variant="hero" 
                 onClick={openPremiumDialog}
-                className="gap-1 text-xs h-7 px-2 animate-fade-in"
-                style={{ animationDuration: '650ms' }}
+                className={`gap-1 text-xs h-7 px-2 transition-opacity duration-[650ms] ${
+                  showPremiumButton ? 'opacity-100' : 'opacity-0'
+                }`}
               >
                 <Sparkles className="h-3 w-3" />
                 Try Premium for Free
