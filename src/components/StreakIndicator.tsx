@@ -26,7 +26,7 @@ export function StreakIndicator() {
           }`}
         >
           <Flame 
-            className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : 'text-primary'}`}
+            className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : 'text-primary'} ${isMilestone ? 'animate-pulse-glow' : ''}`}
             fill={isMilestone ? 'currentColor' : 'none'}
           />
           <span>{streak}</span>
