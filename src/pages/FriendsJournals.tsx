@@ -204,7 +204,7 @@ const FriendsJournals = () => {
           <PendingFriendRequests />
 
           <section>
-            <div className="relative p-3 sm:p-4 border border-border rounded-lg bg-card z-10">
+            <div className="relative p-3 sm:p-4 border border-border rounded-lg bg-card z-10 min-h-[200px]">
               <FriendsFeed />
             </div>
           </section>
