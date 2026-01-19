@@ -1,7 +1,7 @@
 import { Flame } from 'lucide-react';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useAuth } from '@/hooks/useAuth';
-import { getStreakTier } from '@/lib/streakUtils';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export function StreakIndicator() {
@@ -13,7 +13,7 @@ export function StreakIndicator() {
   }
 
   const streak = stats.currentStreak;
-  const tier = getStreakTier(streak);
+  const isMilestone = streak >= 30; // Fill the icon at 30+ days
 
   return (
     <Popover>
@@ -22,12 +22,13 @@ export function StreakIndicator() {
           className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
             streak === 0
               ? 'bg-muted/30 text-muted-foreground/50'
-              : tier.tier !== 'none' 
-                ? `${tier.bgColorClass} ${tier.colorClass}` 
-                : 'bg-muted/50 text-muted-foreground'
+              : 'bg-primary/10 text-primary'
           }`}
         >
-          <Flame className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : tier.tier !== 'none' ? tier.colorClass : 'text-primary'}`} />
+          <Flame 
+            className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : 'text-primary'}`}
+            fill={isMilestone ? 'currentColor' : 'none'}
+          />
           <span>{streak}</span>
         </button>
       </PopoverTrigger>
