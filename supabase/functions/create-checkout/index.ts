@@ -75,6 +75,35 @@ serve(async (req) => {
       logStep("No existing customer found, will create new");
     }
 
+    // Check for existing active/trialing subscription to prevent duplicates
+    if (customerId) {
+      const activeSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+      
+      if (activeSubscriptions.data.length > 0) {
+        logStep("User already has active subscription", { 
+          subscriptionId: activeSubscriptions.data[0].id 
+        });
+        throw new Error("You already have an active subscription. Please manage it from your profile settings.");
+      }
+      
+      const trialingSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "trialing",
+        limit: 1,
+      });
+      
+      if (trialingSubscriptions.data.length > 0) {
+        logStep("User already has trialing subscription", { 
+          subscriptionId: trialingSubscriptions.data[0].id 
+        });
+        throw new Error("You already have an active trial. Please manage it from your profile settings.");
+      }
+    }
+
     // Check trial eligibility
     let hasHadSubscription = false;
     let hasUsedTrialLocally = false;
