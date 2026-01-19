@@ -69,7 +69,7 @@ export function PremiumDialog() {
         <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-6 space-y-5 pt-4">
           {/* Value prop */}
           <p className="text-muted-foreground">
-            For the price of a latte ☕ each month, Premium helps you stay focused and see real progress.
+            For less than the price of a latte ☕, Premium helps you stay focused and see real progress.
           </p>
 
           {/* Pricing badge - clickable, full width */}
@@ -78,7 +78,7 @@ export function PremiumDialog() {
               onClick={handleStartTrial}
               className="w-full flex items-center justify-center bg-muted/50 hover:bg-muted/70 transition-colors rounded-full px-4 py-2.5 cursor-pointer"
             >
-              <span className="font-medium"><span className="text-jazz-gold">30-day free trial</span>, then {priceDisplay}</span>
+              <span className="font-medium"><span className="text-jazz-gold">30-day free trial,</span> then {priceDisplay}</span>
             </button>
             <p className="text-xs text-muted-foreground italic text-center">Cancel anytime on Profile page</p>
           </div>
