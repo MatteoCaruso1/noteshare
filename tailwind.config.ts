@@ -217,8 +217,18 @@ export default {
 					filter: 'blur(0px)',
 					transform: 'scale(1) translateY(0)'
 				}
-			}
-  		},
+220: 			},
+221: 			'pulse-glow': {
+222: 				'0%, 100%': {
+223: 					opacity: '1',
+224: 					filter: 'drop-shadow(0 0 4px hsl(var(--primary) / 0.6))'
+225: 				},
+226: 				'50%': {
+227: 					opacity: '0.85',
+228: 					filter: 'drop-shadow(0 0 8px hsl(var(--primary) / 0.8))'
+229: 				}
+230: 			}
+231:   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
@@ -229,7 +239,8 @@ export default {
   			scaleIn: 'scaleIn 0.2s ease-out',
   			'float-down': 'floatDown 30s linear infinite',
   			'hero-enter': 'heroEnter 0.6s ease-out forwards',
-  			'auth-enter': 'authEnter 0.5s ease-out forwards'
+  			'auth-enter': 'authEnter 0.5s ease-out forwards',
+  			'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
   		},
 		backgroundImage: {
 			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
