@@ -8,12 +8,12 @@ import { useAuth } from '@/hooks/useAuth';
  * Only logs for authenticated users.
  */
 export const usePageViewTracking = (pageName: string) => {
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const hasTracked = useRef(false);
 
   useEffect(() => {
     // Only track once per mount and only for authenticated users
-    if (!profile?.id || hasTracked.current) return;
+    if (!user?.id || hasTracked.current) return;
     
     hasTracked.current = true;
 
@@ -21,7 +21,7 @@ export const usePageViewTracking = (pageName: string) => {
     supabase
       .from('page_views')
       .insert({
-        user_id: profile.id,
+        user_id: user.id,
         page_name: pageName,
       })
       .then(({ error }) => {
@@ -30,5 +30,5 @@ export const usePageViewTracking = (pageName: string) => {
           console.debug('Page view tracking error:', error.message);
         }
       });
-  }, [profile?.id, pageName]);
+  }, [user?.id, pageName]);
 };
