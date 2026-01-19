@@ -4,7 +4,7 @@ import {
   EmbeddedCheckoutProvider, 
   EmbeddedCheckout 
 } from '@stripe/react-stripe-js';
-import { Shield, Sparkles, Music } from 'lucide-react';
+import { Shield, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,7 +33,7 @@ interface CheckoutDialogProps {
 export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
   const { user } = useAuth();
   const { detectedCurrency } = usePremium();
-  const { clientSecret, isLoading, error, initializeCheckout, resetCheckout } = useEmbeddedCheckout();
+  const { clientSecret, isLoading, error, trialOffered, initializeCheckout, resetCheckout } = useEmbeddedCheckout();
   const [initError, setInitError] = useState<string | null>(null);
 
   // Initialize checkout session when dialog opens
@@ -69,6 +69,23 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
         closeButtonClassName="h-6 w-6 right-3 top-3"
       >
         <div className="space-y-4">
+          {/* Warning banner - only shown if trial has already been used */}
+          {trialOffered === false && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-medium text-amber-600 dark:text-amber-400">
+                    You'll be charged {priceInfo.label} today
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your free trial has already been used. You'll be billed monthly after subscribing.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Stripe Embedded Checkout */}
           <div className="bg-card rounded-lg border border-border/50 p-1 min-h-[350px]">
             {isLoading && (
