@@ -42,11 +42,11 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     
-    // Use getClaims for faster token validation without hitting the database
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    // Validate the JWT token and get user info
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
-    if (claimsError || !claimsData?.claims) {
-      logStep("Token validation failed, treating as unauthenticated", { error: claimsError?.message });
+    if (userError || !user) {
+      logStep("Token validation failed, treating as unauthenticated", { error: userError?.message });
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
@@ -57,11 +57,11 @@ serve(async (req) => {
       });
     }
     
-    const userId = claimsData.claims.sub as string;
-    const email = claimsData.claims.email as string;
+    const userId = user.id;
+    const email = user.email;
     
     if (!userId || !email) {
-      logStep("Missing user ID or email in claims");
+      logStep("Missing user ID or email");
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
