@@ -484,61 +484,55 @@ export function TodaysFocus() {
     <>
       <Card className="bg-card border-border">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <button className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group touch-manipulation">
-              <div className="flex items-center gap-2">
+          {/* Header row - trigger and action buttons are siblings, not nested */}
+          <div className="p-4 flex items-center justify-between">
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 group touch-manipulation">
                 <ClipboardList className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
                 <h2 className="font-semibold">Practice Board</h2>
-              </div>
-              <div className="flex items-center gap-1">
-                {/* Buttons fade in when open */}
-                <TooltipProvider delayDuration={300}>
-                  <div className={`flex gap-1 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 active:bg-transparent"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveToBacklog();
-                          }}
-                          disabled={isSaving || !text.trim()}
-                        >
-                          <Save className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Save to backlog</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 active:bg-transparent"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsBacklogOpen(true);
-                          }}
-                        >
-                          <FolderOpen className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>View backlog</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TooltipProvider>
                 {isOpen ? (
                   <ChevronDown className="w-5 h-5 text-muted-foreground" />
                 ) : (
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 )}
+              </button>
+            </CollapsibleTrigger>
+            
+            {/* Action buttons - separate from trigger to avoid button nesting */}
+            <TooltipProvider delayDuration={300}>
+              <div className={`flex gap-1 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 active:bg-transparent"
+                      onClick={handleSaveToBacklog}
+                      disabled={isSaving || !text.trim()}
+                    >
+                      <Save className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Save to backlog</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 active:bg-transparent"
+                      onClick={() => setIsBacklogOpen(true)}
+                    >
+                      <FolderOpen className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>View backlog</TooltipContent>
+                </Tooltip>
               </div>
-            </button>
-          </CollapsibleTrigger>
+            </TooltipProvider>
+          </div>
           <CollapsibleContent className="px-4 pb-4" style={{ overflow: 'visible' }}>
             <div 
               className={isFocused ? '' : 'cursor-text'}
