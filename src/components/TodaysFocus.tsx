@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
@@ -42,12 +42,12 @@ export function TodaysFocus() {
     setFocusFocused(isFocused);
   }, [isFocused, setFocusFocused]);
 
-  // Stable resize function for textarea
-  const adjustHeight = useCallback(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
-    }
+  // Stable autosize function - sets height to content without timeouts
+  const autosizeTextarea = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.max(36, textarea.scrollHeight)}px`;
   }, []);
 
   // Initialize text from focus data - only once on initial load
@@ -55,32 +55,30 @@ export function TodaysFocus() {
     if (!isInitialized && focus?.focus_text !== undefined) {
       setText(focus.focus_text);
       setIsInitialized(true);
-      
-      // Trigger resize after initialization if collapsible is open
-      if (isOpen) {
-        // Use multiple RAF frames to ensure CSS has settled
-        setTimeout(() => {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(adjustHeight);
-          });
-        }, 50);
-      }
     }
-  }, [focus?.focus_text, isInitialized, isOpen, adjustHeight]);
+  }, [focus?.focus_text, isInitialized]);
 
-  // Auto-resize textarea - also triggers when collapsible opens or text changes
+  // Deterministic autosize using useLayoutEffect - runs before paint
+  // Triggers on: isOpen change, text change, initialization
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    autosizeTextarea();
+  }, [isOpen, text, isInitialized, autosizeTextarea]);
+
+  // ResizeObserver to handle viewport/container size changes while open
   useEffect(() => {
-    if (textareaRef.current && isOpen) {
-      // Use multiple RAF frames + delay to ensure Radix Collapsible has finished its animation
-      const timer = setTimeout(() => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(adjustHeight);
-        });
-      }, 150);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [text, isOpen, isInitialized, adjustHeight]);
+    if (!isOpen) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const observer = new ResizeObserver(() => {
+      // Re-autosize when container width changes (affects text wrapping)
+      autosizeTextarea();
+    });
+
+    observer.observe(textarea);
+    return () => observer.disconnect();
+  }, [isOpen, autosizeTextarea]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
@@ -565,7 +563,7 @@ export function TodaysFocus() {
                   handleBlur();
                 }}
                 placeholder="What are you practicing across sessions?"
-                className="min-h-[36px] resize-none text-sm caret-foreground overflow-y-auto"
+                className="min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
                 style={{ overscrollBehavior: 'contain' }}
                 rows={1}
               />
