@@ -31,7 +31,22 @@ export function usePracticeStats(profileId: string | undefined) {
   return useQuery({
     queryKey: ['practice-stats', profileId],
     queryFn: async (): Promise<PracticeStats> => {
-      if (!profileId) throw new Error('Profile ID required');
+      // Return empty stats instead of throwing - prevents ErrorBoundary trigger during auth transitions
+      if (!profileId) {
+        return {
+          sessionsThisWeek: 0,
+          sessionsThisMonth: 0,
+          totalMinutesThisWeek: 0,
+          totalMinutesThisMonth: 0,
+          weeklyMinutesOverTime: [],
+          weeklyDaysPracticed: [],
+          currentStreak: 0,
+          bestDailyStreak: 0,
+          bestWeekMinutes: null,
+          topKeywordsThisMonth: [],
+          topTagsThisMonth: [],
+        };
+      }
 
       // Add timeout wrapper to prevent hanging requests (15s for slower mobile networks)
       const timeoutPromise = new Promise<never>((_, reject) => {
