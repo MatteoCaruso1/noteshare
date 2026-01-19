@@ -209,15 +209,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    // Clear remember me flags
+    // Clear remember me flags first
     localStorage.removeItem('noteshare_remember_me');
     sessionStorage.removeItem('noteshare_session_active');
     
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(error.message);
-      throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      // Ignore "session not found" errors - session is already gone, which is fine
+      if (error && !error.message.toLowerCase().includes('session')) {
+        console.warn('Sign out warning:', error.message);
+      }
+    } catch (err) {
+      // Silently handle any signOut errors - the goal is to clear local state
+      console.debug('SignOut caught error:', err);
     }
+    
+    // Always clear local auth state regardless of server response
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    queryClient.clear();
     toast.success('Signed out');
   };
 
