@@ -116,11 +116,22 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
+    // First check for active subscriptions
+    let subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 1,
     });
+    
+    // If no active subscription, check for trialing subscriptions
+    if (subscriptions.data.length === 0) {
+      logStep("No active subscription, checking for trialing");
+      subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "trialing",
+        limit: 1,
+      });
+    }
     
     const hasActiveSub = subscriptions.data.length > 0;
     let productId = null;
@@ -128,15 +139,24 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product;
-      logStep("Active subscription found", { 
+      const periodEnd = subscription.current_period_end;
+      
+      // Safely handle date conversion with defensive check
+      if (periodEnd && typeof periodEnd === 'number') {
+        subscriptionEnd = new Date(periodEnd * 1000).toISOString();
+      } else {
+        logStep("Warning: current_period_end is invalid", { periodEnd });
+      }
+      
+      productId = subscription.items.data[0]?.price?.product ?? null;
+      logStep("Subscription found", { 
         subscriptionId: subscription.id, 
+        status: subscription.status,
         productId,
         endDate: subscriptionEnd 
       });
     } else {
-      logStep("No active subscription found");
+      logStep("No active or trialing subscription found");
     }
 
     return new Response(JSON.stringify({

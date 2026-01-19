@@ -112,7 +112,8 @@ export function useSubscription() {
       setState(prev => ({
         ...prev,
         isLoading: false,
-        hasCheckedOnce: true, // Mark as checked even on error
+        hasCheckedOnce: true,
+        hasValidatedWithUser: true, // Mark as validated even on error to prevent infinite loading
         error: message || 'Failed to check subscription',
       }));
     }
