@@ -35,16 +35,16 @@ export function detectUserCurrency(): SupportedCurrency {
 
 export const PREMIUM_PRICES = {
   USD: { 
-    amount: 3.49, 
-    priceId: 'price_1Sr25PGiNcIsULtkCe7dqa1V',
+    amount: 2.99, 
+    priceId: 'price_1SqlanGiNcIsULtkonowz5Fd',
     symbol: '$',
-    label: '$3.49 USD'
+    label: '$2.99 USD'
   },
   CAD: { 
-    amount: 4.99, 
-    priceId: 'price_1Sr25dGiNcIsULtkcFRqzZi7',
+    amount: 3.99, 
+    priceId: 'price_1Sr1nPGiNcIsULtkfvqszh5A',
     symbol: '$',
-    label: '$4.99 CAD'
+    label: '$3.99 CAD'
   }
 } as const;
 
