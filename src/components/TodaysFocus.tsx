@@ -53,13 +53,18 @@ export function TodaysFocus() {
   // Auto-resize textarea - also triggers when collapsible opens
   useEffect(() => {
     if (textareaRef.current && isOpen) {
-      // Small delay to ensure the collapsible content is rendered
-      const timer = setTimeout(() => {
+      const resize = () => {
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
           textareaRef.current.style.height = `${Math.max(36, textareaRef.current.scrollHeight)}px`;
         }
-      }, 50);
+      };
+      
+      // Use requestAnimationFrame for more reliable timing with CSS transitions
+      const timer = setTimeout(() => {
+        requestAnimationFrame(resize);
+      }, 100);
+      
       return () => clearTimeout(timer);
     }
   }, [text, isOpen]);
@@ -541,7 +546,7 @@ export function TodaysFocus() {
                   handleBlur();
                 }}
                 placeholder="What are you practicing across sessions?"
-                className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden pointer-events-none'}`}
+                className={`min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? 'overflow-auto' : 'overflow-hidden'}`}
                 style={{ overscrollBehavior: 'contain' }}
                 rows={1}
               />
