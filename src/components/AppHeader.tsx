@@ -91,10 +91,12 @@ export function AppHeader() {
       <div className="container flex h-12 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Link to="/welcome" className="flex items-center gap-2">
-            <Music className={`h-5 w-5 ${isPremium ? 'text-amber-500' : 'text-primary'}`} />
+            <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
-              <span className={`font-semibold leading-tight ${isPremium ? 'text-amber-500' : 'text-foreground'}`}>Noteshare</span>
-              <span className="text-[9px] text-muted-foreground leading-tight">Practice Smarter</span>
+              <span className="font-semibold leading-tight text-foreground">Noteshare</span>
+              <span className={`text-[9px] leading-tight ${isPremium ? 'text-blue-500 italic' : 'text-muted-foreground'}`}>
+                {isPremium ? 'Premium' : 'Practice Smarter'}
+              </span>
             </div>
           </Link>
           
