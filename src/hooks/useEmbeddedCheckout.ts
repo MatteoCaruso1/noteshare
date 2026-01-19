@@ -6,6 +6,7 @@ interface EmbeddedCheckoutState {
   clientSecret: string | null;
   sessionId: string | null;
   trialEndDate: string | null;
+  trialOffered: boolean | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -15,6 +16,7 @@ export function useEmbeddedCheckout() {
     clientSecret: null,
     sessionId: null,
     trialEndDate: null,
+    trialOffered: null,
     isLoading: false,
     error: null,
   });
@@ -34,6 +36,7 @@ export function useEmbeddedCheckout() {
         clientSecret: data.clientSecret,
         sessionId: data.sessionId,
         trialEndDate: data.trialEndDate,
+        trialOffered: data.trialOffered ?? null,
         isLoading: false,
         error: null,
       });
@@ -55,6 +58,7 @@ export function useEmbeddedCheckout() {
       clientSecret: null,
       sessionId: null,
       trialEndDate: null,
+      trialOffered: null,
       isLoading: false,
       error: null,
     });
