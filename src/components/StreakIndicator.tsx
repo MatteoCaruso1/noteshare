@@ -13,7 +13,17 @@ export function StreakIndicator() {
   }
 
   const streak = stats.currentStreak;
-  const isMilestone = streak >= 30; // Fill the icon at 30+ days
+  
+  // Determine glow intensity based on milestone thresholds
+  const getGlowClass = () => {
+    if (streak >= 180) return 'animate-pulse-glow-intense';
+    if (streak >= 90) return 'animate-pulse-glow-medium';
+    if (streak >= 30) return 'animate-pulse-glow';
+    return '';
+  };
+  
+  const isMilestone = streak >= 30;
+  const glowClass = getGlowClass();
 
   return (
     <Popover>
@@ -26,7 +36,7 @@ export function StreakIndicator() {
           }`}
         >
           <Flame 
-            className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : 'text-primary'} ${isMilestone ? 'animate-pulse-glow' : ''}`}
+            className={`w-3.5 h-3.5 ${streak === 0 ? 'text-muted-foreground/40' : 'text-primary'} ${glowClass}`}
             fill={isMilestone ? 'currentColor' : 'none'}
           />
           <span>{streak}</span>
