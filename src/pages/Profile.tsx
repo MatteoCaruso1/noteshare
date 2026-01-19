@@ -13,7 +13,7 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Paintbrush } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
@@ -275,7 +275,7 @@ const Profile = () => {
                         content={<p>Noteshare Creator</p>}
                         className="w-8 h-8 bg-primary/10 border-primary/30 ring-primary/20 border ring-1 hover:opacity-80 transition-opacity"
                       >
-                        <Paintbrush className="w-4 h-4 text-primary" />
+                        <Music className="w-4 h-4 text-primary" />
                       </TapTooltip>
                     )}
                   </div>
