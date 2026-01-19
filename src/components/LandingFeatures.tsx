@@ -31,8 +31,19 @@ const features = [
   },
 ];
 
+// Preload all feature images on mount
+function usePreloadImages() {
+  useEffect(() => {
+    features.forEach((feature) => {
+      const img = new Image();
+      img.src = feature.image;
+    });
+  }, []);
+}
+
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,11 +89,11 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           <img
             src={feature.image}
             alt={feature.alt}
-            className={`w-full ${
+            className={`w-full transition-opacity duration-500 ease-out ${
               feature.cropTop ? 'object-cover object-[center_58%]' : 'h-auto'
-            }`}
+            } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             style={feature.cropTop ? { height: '420px', maxWidth: 'none', width: '100%' } : undefined}
-            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
           />
         </div>
       </div>
@@ -91,6 +102,9 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 }
 
 export function LandingFeatures() {
+  // Preload images when component mounts
+  usePreloadImages();
+
   return (
     <section className="bg-transparent py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-0 md:mt-2">
       <div className="w-full max-w-7xl mx-auto space-y-8">
