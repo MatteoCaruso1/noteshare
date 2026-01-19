@@ -16,7 +16,7 @@ interface TimelineProps {
 }
 
 const LOAD_MORE_COUNT = 10;
-const FREE_USER_DAYS_LIMIT = 7;
+const FREE_USER_DAYS_LIMIT = 14;
 
 // Loading skeleton component
 const LoadingSkeleton = ({ message }: { message?: string }) => (
