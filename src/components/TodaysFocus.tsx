@@ -62,7 +62,21 @@ export function TodaysFocus() {
   // Triggers on: isOpen change, text change, initialization
   useLayoutEffect(() => {
     if (!isOpen) return;
+    
+    // Run autosize immediately
     autosizeTextarea();
+    
+    // On mobile, the initial layout may not be complete yet when text is first set.
+    // Use requestAnimationFrame to ensure the textarea has fully rendered before measuring.
+    // This fixes the issue where the textarea doesn't expand on initial mobile load.
+    if (isInitialized) {
+      const rafId = requestAnimationFrame(() => {
+        autosizeTextarea();
+        // Double RAF to catch any delayed layout recalculations on mobile browsers
+        requestAnimationFrame(autosizeTextarea);
+      });
+      return () => cancelAnimationFrame(rafId);
+    }
   }, [isOpen, text, isInitialized, autosizeTextarea]);
 
   // ResizeObserver to handle viewport/container size changes while open
