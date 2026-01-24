@@ -94,8 +94,8 @@ export function AppHeader() {
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <span className="font-semibold leading-tight text-foreground">Noteshare</span>
-              <span className={`text-[9px] leading-tight ${isPremium ? 'text-primary' : 'text-muted-foreground'}`}>
-                {isPremium ? 'Premium' : 'Practice Smarter'}
+              <span className={`text-[9px] leading-tight ${isPremium ? 'text-primary' : 'text-primary italic'}`}>
+                {isPremium ? 'Premium' : 'Lite'}
               </span>
             </div>
           </Link>
