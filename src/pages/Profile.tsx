@@ -81,12 +81,34 @@ const Profile = () => {
 
   // Check for new streak milestones using atomic backend RPC
   // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
-  // Check for new streak milestones using atomic backend RPC
-  // NOTE: We no longer clear milestones when streak drops - once earned, always earned
-  // This prevents the "re-claim inflation" bug where counts kept incrementing
   useEffect(() => {
     if (!profile) return;
     const currentStreak = practiceStats?.currentStreak || 0;
+    const celebratedMilestones = profile?.celebrated_streak_milestones || [];
+    
+    // Clear milestones that are now above current streak (so they can be re-earned later)
+    // This allows users to earn the same milestone multiple times across different streaks
+    const milestonesToClear = celebratedMilestones.filter(
+      (milestone: number) => milestone > currentStreak
+    );
+    
+    if (milestonesToClear.length > 0) {
+      const clearMilestones = async () => {
+        const updatedMilestones = celebratedMilestones.filter(
+          (m: number) => !milestonesToClear.includes(m)
+        );
+        
+        await supabase
+          .from('profiles')
+          .update({ celebrated_streak_milestones: updatedMilestones })
+          .eq('id', profile.id);
+        
+        // Refresh profile to get updated state
+        await refreshProfile();
+      };
+      
+      clearMilestones();
+    }
     
     // Check for new milestone achievements
     if (currentStreak === 0) return;
@@ -264,7 +286,6 @@ const Profile = () => {
                   <div className="flex items-center gap-2">
                     {practiceStats && (
                       <StreakBadges 
-                        currentStreak={practiceStats.currentStreak} 
                         bestStreak={practiceStats.bestDailyStreak}
                         achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
                       />
