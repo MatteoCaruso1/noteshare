@@ -213,6 +213,8 @@
 @layer base {
   * {
     @apply border-border;
+    /* Disable default tap highlight on all elements for custom touch handling */
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
