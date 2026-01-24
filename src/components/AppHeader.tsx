@@ -95,7 +95,7 @@ export function AppHeader() {
             <div className="flex flex-col">
               <span className="font-semibold leading-tight text-foreground">Noteshare</span>
               <span className={`text-[9px] leading-tight ${isPremium ? 'text-primary' : 'text-primary italic'}`}>
-                {isPremium ? 'Premium' : 'Lite'}
+                {isPremium ? 'Premium' : 'Lite Version'}
               </span>
             </div>
           </Link>
