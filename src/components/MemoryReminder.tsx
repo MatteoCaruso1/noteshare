@@ -8,7 +8,7 @@ import { Sparkles, Clock, X } from 'lucide-react';
 import { subWeeks, subMonths, differenceInDays, differenceInHours } from 'date-fns';
 import { NoteWithAuthor } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
-
+import { RichTextContent } from '@/components/RichTextContent';
 // DEV_MODE: Set to true to bypass age restrictions and force refresh for testing
 // Set to false for production!
 const DEV_MODE = false;
@@ -207,7 +207,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
         </Badge>
       </div>
       {memory.note.text_content && (
-        <p className="text-sm whitespace-pre-wrap pr-6">{memory.note.text_content}</p>
+        <RichTextContent content={memory.note.text_content} className="text-sm pr-6" />
       )}
       {memory.note.audio_files && memory.note.audio_files.length > 0 && (
         <div className="mt-2 [&_button]:text-amber-600 dark:[&_button]:text-amber-500 [&_button:hover]:bg-amber-500/20">
