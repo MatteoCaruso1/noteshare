@@ -19,7 +19,7 @@ export function ManagePlansSection() {
         console.error('Failed to open customer portal:', error);
       }
     } else {
-      // Free user wants to upgrade - open checkout dialog
+      // Lite user wants to upgrade - open checkout dialog
       openCheckoutDialog();
     }
   };
@@ -54,7 +54,7 @@ export function ManagePlansSection() {
           )}
           <div className="flex items-center gap-2">
             <span className={`text-sm font-medium ${isPremium ? 'text-amber-500' : ''}`}>
-              {isPremium ? 'Noteshare Premium' : 'Noteshare Free'}
+              {isPremium ? 'Noteshare Premium' : 'Noteshare Lite'}
             </span>
             <Badge 
               variant="secondary"
