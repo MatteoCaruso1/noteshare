@@ -189,11 +189,22 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const isOwner = profile?.id === note.author_id;
   const isPracticeSession = !!note.session_id;
   
-  // Get streak from author's profile for tint display
+  // Get streak info from author's profile for badge display
   const streakDays = note.author?.current_streak || 0;
-  const streakAchievementCount = note.author?.streak_achievement_counts?.[
-    String(getStreakTier(streakDays).minDays)
-  ] || 0;
+  const achievementCounts = note.author?.streak_achievement_counts || {};
+  
+  // Find the best (highest) milestone ever achieved by looking at achievement counts
+  const achievedMilestones = Object.keys(achievementCounts)
+    .map(Number)
+    .filter(m => achievementCounts[String(m)] > 0);
+  const bestAchievedMilestone = achievedMilestones.length > 0 
+    ? Math.max(...achievedMilestones) 
+    : (streakDays >= 10 ? getStreakTier(streakDays).minDays : 0);
+  
+  // Get achievement count for the best milestone tier
+  const streakAchievementCount = bestAchievedMilestone > 0 
+    ? (achievementCounts[String(bestAchievedMilestone)] || 1)
+    : 0;
 
   const handleVisibilityChange = useCallback((value: string) => {
     updateVisibility.mutate({
@@ -636,6 +647,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           <StreakTintedName 
             name={note.author?.name || 'Unknown'} 
             streakDays={streakDays}
+            bestAchievedMilestone={bestAchievedMilestone}
             achievementCount={streakAchievementCount}
             className="text-sm font-medium truncate"
           />
