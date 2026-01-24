@@ -74,7 +74,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
       };
     }
     
-    // For free users, filter to last 7 days
+    // For Lite users, filter to last 7 days
     const recent: NoteWithAuthor[] = [];
     let olderCount = 0;
     
@@ -157,7 +157,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   }, [notes, isPremium, isPremiumLoading]);
 
   // For premium users, show load more based on total notes
-  // For free users, show load more if there are more recent notes to load
+  // For Lite users, show load more if there are more recent notes to load
   const hasMoreRecentToLoad = isPremium 
     ? displayCount < notes.length
     : displayedNotes.length < totalRecentNotesCount;
