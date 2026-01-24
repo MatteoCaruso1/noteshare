@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useConversations, useMessages, useSendMessage } from '@/hooks/useMessages';
 import { useFriends } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
+import { useTouchActive } from '@/hooks/useTouchActive';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +12,28 @@ import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { MessageCircle, Send, ArrowLeft, Users, PenSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { Profile } from '@/types';
+
+// Touchable list item that doesn't highlight during scroll
+function TouchableListItem({ 
+  children, 
+  onClick, 
+  className = '' 
+}: { 
+  children: React.ReactNode; 
+  onClick: () => void; 
+  className?: string;
+}) {
+  const { isPressed, touchHandlers } = useTouchActive(80);
+  return (
+    <div
+      className={`${className} [@media(hover:hover)]:hover:bg-muted/50 ${isPressed ? 'bg-muted/50' : ''} cursor-pointer transition-colors`}
+      onClick={onClick}
+      {...touchHandlers}
+    >
+      {children}
+    </div>
+  );
+}
 
 interface DirectMessagesProps {
   embedded?: boolean;
@@ -80,9 +103,9 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
         ) : conversations && conversations.length > 0 ? (
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {conversations.slice(0, 5).map((conv) => (
-              <div
+              <TouchableListItem
                 key={conv.friendId}
-                className="flex items-center gap-2 p-2 rounded-lg [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 cursor-pointer transition-colors"
+                className="flex items-center gap-2 p-2 rounded-lg"
                 onClick={() => setSelectedFriend(conv.friend)}
               >
                 <ClickableAvatar
@@ -105,7 +128,7 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
                     {conv.lastMessage.content}
                   </p>
                 </div>
-              </div>
+              </TouchableListItem>
             ))}
           </div>
         ) : (
@@ -142,9 +165,9 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
       ) : conversations && conversations.length > 0 ? (
         <div className="space-y-2">
           {conversations.map((conv) => (
-            <div
+            <TouchableListItem
               key={conv.friendId}
-              className="flex items-center gap-3 p-3 rounded-lg [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg"
               onClick={() => setSelectedFriend(conv.friend)}
             >
               <ClickableAvatar
@@ -170,7 +193,7 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
               <span className="text-[10px] text-muted-foreground">
                 {format(new Date(conv.lastMessage.created_at), 'MMM d')}
               </span>
-            </div>
+            </TouchableListItem>
           ))}
         </div>
       ) : (
@@ -212,9 +235,9 @@ function NewMessageView({
       {friends.length > 0 ? (
         <div className="space-y-2">
           {friends.map((friend) => (
-            <div
+            <TouchableListItem
               key={friend.id}
-              className="flex items-center gap-3 p-3 rounded-lg [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg"
               onClick={() => onSelect(friend)}
             >
               <ClickableAvatar
@@ -227,7 +250,7 @@ function NewMessageView({
                 <p className="font-medium text-sm truncate">{friend.name}</p>
                 <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
               </div>
-            </div>
+            </TouchableListItem>
           ))}
         </div>
       ) : (

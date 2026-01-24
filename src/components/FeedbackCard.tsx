@@ -2,10 +2,19 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { MessageSquareHeart, ChevronRight } from 'lucide-react';
 import { FeedbackDialog } from './FeedbackDialog';
+import { useTouchActive } from '@/hooks/useTouchActive';
+
 export function FeedbackCard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  return <>
-      <Card className="p-4 bg-card border-border cursor-pointer [@media(hover:hover)]:hover:bg-muted/50 active:bg-muted/50 transition-colors" onClick={() => setIsDialogOpen(true)}>
+  const { isPressed, touchHandlers } = useTouchActive(80);
+  
+  return (
+    <>
+      <Card 
+        className={`p-4 bg-card border-border cursor-pointer [@media(hover:hover)]:hover:bg-muted/50 ${isPressed ? 'bg-muted/50' : ''} transition-colors`} 
+        onClick={() => setIsDialogOpen(true)}
+        {...touchHandlers}
+      >
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <MessageSquareHeart className="w-5 h-5 text-primary" />
@@ -21,5 +30,6 @@ export function FeedbackCard() {
       </Card>
 
       <FeedbackDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
-    </>;
+    </>
+  );
 }
