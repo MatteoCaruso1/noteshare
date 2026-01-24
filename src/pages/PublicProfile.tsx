@@ -20,9 +20,34 @@ import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volu
 import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
+import { getStreakTier } from '@/lib/streakUtils';
 
 // Noteshare Team profile ID (Matteo)
 const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
+
+// Helper functions to get best achieved milestone from profile
+function getBestAchievedMilestone(profile: Profile): number {
+  const achievementCounts = profile.streak_achievement_counts || {};
+  const achievedMilestones = Object.keys(achievementCounts)
+    .map(Number)
+    .filter(m => (achievementCounts as Record<string, number>)[String(m)] > 0);
+  
+  if (achievedMilestones.length > 0) {
+    return Math.max(...achievedMilestones);
+  }
+  
+  // Fallback to current streak tier if no achievements recorded
+  const currentStreak = profile.current_streak || 0;
+  return currentStreak >= 10 ? getStreakTier(currentStreak).minDays : 0;
+}
+
+function getBestAchievementCount(profile: Profile): number {
+  const bestMilestone = getBestAchievedMilestone(profile);
+  if (bestMilestone === 0) return 0;
+  
+  const achievementCounts = profile.streak_achievement_counts || {};
+  return (achievementCounts as Record<string, number>)[String(bestMilestone)] || 1;
+}
 
 
 function usePublicProfile(profileId: string | undefined, username: string | undefined) {
@@ -276,6 +301,8 @@ const PublicProfile = () => {
                   <StreakTintedName 
                     name={profile.name}
                     streakDays={profile.current_streak || 0}
+                    bestAchievedMilestone={getBestAchievedMilestone(profile)}
+                    achievementCount={getBestAchievementCount(profile)}
                     className="text-xl font-bold truncate"
                   />
                   {(profile.current_streak || 0) > 0 && (
