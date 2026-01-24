@@ -40,6 +40,9 @@ export function WelcomeHero() {
   const handleStartPracticing = () => {
     setIsExiting(true);
     setTimeout(() => {
+      // Reset overflow BEFORE navigation to prevent stuck scroll locks
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
       // If already signed in, go to main app; otherwise go to auth
       navigate(user ? '/' : '/auth');
     }, 400);
