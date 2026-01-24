@@ -262,7 +262,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
   return (
     <div className={`flex items-center gap-2 ${className || ''}`}>
       {recording ? (
-        <div className="flex items-center gap-2 flex-1">
+        <>
           <Button
             variant="destructive"
             size="icon"
@@ -272,11 +272,11 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
           >
             <Square className="w-4 h-4 fill-current" />
           </Button>
-          <div className="flex items-center gap-2 text-sm text-destructive min-w-[60px]">
-            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse shrink-0" />
+          <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
+            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             <span className="tabular-nums">{formatTime(elapsedTime)}</span>
           </div>
-        </div>
+        </>
       ) : (
         <Button
           variant="outline"

@@ -791,20 +791,18 @@ export function PracticeControls() {
 
           {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
-            {/* Audio Recorder - title attr for tooltip on desktop */}
-            <div className="flex-[2]">
-              <AudioRecorder 
-                onRecorded={handleAudioRecorded} 
-                onRecordingChange={setIsRecordingAudio}
-                className="w-full" 
-              />
-            </div>
+            {/* Audio Recorder - when recording, shows stop + timer; otherwise mic button */}
+            <AudioRecorder 
+              onRecorded={handleAudioRecorded} 
+              onRecordingChange={setIsRecordingAudio}
+              className={isRecordingAudio ? 'shrink-0' : 'flex-1'}
+            />
             
             {/* Pause/Resume button - disabled during recording */}
             <Button
               variant="outline"
               size="icon"
-              className={`h-9 flex-[3] focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-opacity ${
+              className={`h-9 flex-1 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-opacity ${
                 isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
               }`}
               onClick={isSessionPaused ? handleResumeSession : handlePauseSession}
@@ -823,7 +821,7 @@ export function PracticeControls() {
               <AlertDialogTrigger asChild>
                 <Button
                   size="icon"
-                  className={`h-9 flex-[3] bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
+                  className={`h-9 flex-1 bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
                     isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
                   }`}
                   onTouchEnd={(e) => e.currentTarget.blur()}
