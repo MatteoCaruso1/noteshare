@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
@@ -14,9 +14,6 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { GlintProvider } from '@/contexts/GlintContext';
-import { usePremium } from '@/contexts/PremiumContext';
-import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
 
 const LOAD_MORE_COUNT = 10;
 
@@ -25,7 +22,7 @@ const Index = () => {
   
   // Track page views for analytics
   usePageViewTracking('practice');
-  const { isPremium, isLoading: premiumLoading, openPremiumDialog } = usePremium();
+  
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
@@ -33,17 +30,6 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
-  const [showPremiumButton, setShowPremiumButton] = useState(false);
-
-  // Smooth fade-in for premium button using opacity transition
-  useEffect(() => {
-    if (!premiumLoading && !isPremium) {
-      const timer = setTimeout(() => setShowPremiumButton(true), 50);
-      return () => clearTimeout(timer);
-    } else {
-      setShowPremiumButton(false);
-    }
-  }, [premiumLoading, isPremium]);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
   
@@ -114,19 +100,6 @@ const Index = () => {
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
-            {!premiumLoading && !isPremium && (
-              <Button 
-                size="sm" 
-                variant="hero" 
-                onClick={openPremiumDialog}
-                className={`gap-1 text-xs h-7 px-2 transition-opacity duration-[650ms] ${
-                  showPremiumButton ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <Sparkles className="h-3 w-3" />
-                Try Premium for Free
-              </Button>
-            )}
           </div>
         </div>
       </PageHeader>
