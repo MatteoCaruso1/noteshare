@@ -57,24 +57,28 @@ function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
 }
 
 export const Timeline = memo(function Timeline({ notes, loading, isRefetching, displayCount, onLoadMore }: TimelineProps) {
+  // ========================================
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
+  // React requires hooks to be called in the same order every render
+  // ========================================
+  
   const [showSlowMessage, setShowSlowMessage] = useState(false);
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   
-  // Separate notes into recent (last 7 days) and older
-  const { recentNotes, olderNotesCount, displayedNotes } = useMemo(() => {
+  // Separate notes into recent (last 14 days) and older
+  const { olderNotesCount, displayedNotes } = useMemo(() => {
     const now = new Date();
     const allDisplayed = notes.slice(0, displayCount);
     
     // For premium users or while loading, show all notes
     if (isPremium || isPremiumLoading) {
       return {
-        recentNotes: allDisplayed,
         olderNotesCount: 0,
         displayedNotes: allDisplayed,
       };
     }
     
-    // For Lite users, filter to last 7 days
+    // For Lite users, filter to last 14 days
     const recent: NoteWithAuthor[] = [];
     let olderCount = 0;
     
@@ -100,11 +104,20 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
     }
     
     return {
-      recentNotes: recent,
       olderNotesCount: olderCount,
       displayedNotes: recent,
     };
   }, [notes, displayCount, isPremium, isPremiumLoading]);
+
+  // Count total notes within free limit for comparison - MUST be before early returns
+  const totalRecentNotesCount = useMemo(() => {
+    if (isPremium || isPremiumLoading) return notes.length;
+    const now = new Date();
+    return notes.filter(n => {
+      const daysAgo = differenceInDays(now, parseISO(n.created_at));
+      return daysAgo <= FREE_USER_DAYS_LIMIT;
+    }).length;
+  }, [notes, isPremium, isPremiumLoading]);
 
   // Prefetch signed URLs for all displayed notes in a single batch
   useSignedUrlPrefetch(displayedNotes);
@@ -120,6 +133,10 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
     }
     setShowSlowMessage(false);
   }, [isLoading, notes.length]);
+
+  // ========================================
+  // EARLY RETURNS - Safe now that all hooks are called above
+  // ========================================
 
   // If we have no notes and are loading, show informative skeleton
   if (notes.length === 0 && isLoading) {
@@ -146,15 +163,9 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
     );
   }
 
-  // Count total notes within free limit for comparison
-  const totalRecentNotesCount = useMemo(() => {
-    if (isPremium || isPremiumLoading) return notes.length;
-    const now = new Date();
-    return notes.filter(n => {
-      const daysAgo = differenceInDays(now, parseISO(n.created_at));
-      return daysAgo <= FREE_USER_DAYS_LIMIT;
-    }).length;
-  }, [notes, isPremium, isPremiumLoading]);
+  // ========================================
+  // COMPUTED VALUES - Not hooks, safe after early returns
+  // ========================================
 
   // For premium users, show load more based on total notes
   // For Lite users, show load more if there are more recent notes to load

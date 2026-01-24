@@ -28,7 +28,20 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    const timestamp = new Date().toISOString();
+    
+    // Enhanced logging with structured data
+    console.error(`[ErrorBoundary] ${timestamp} - Error caught:`, {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorCount: this.state.errorCount + 1,
+    });
+    
+    // Log a cleaner summary for quick debugging
+    console.error(`[ErrorBoundary] Summary: "${error.message}" in component stack:\n${errorInfo.componentStack?.split('\n').slice(0, 5).join('\n')}`);
+    
     this.props.onError?.(error, errorInfo);
     
     // Increment error count
@@ -37,6 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Auto-reset after 3 seconds if error count is low
     if (this.state.errorCount < 3) {
       this.resetTimeout = setTimeout(() => {
+        console.log(`[ErrorBoundary] ${new Date().toISOString()} - Auto-resetting after error`);
         this.handleReset();
       }, 3000);
     }
