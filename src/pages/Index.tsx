@@ -32,25 +32,39 @@ const Index = () => {
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
-  const hasRestoredAnchor = useRef(false);
+  const anchorRestorationAttempted = useRef(false);
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
 
-  // Anchor-based scroll restoration: wait for notes to load, then restore position
+  // Anchor-based scroll restoration: runs AFTER notes load to correct the position
+  // PageLayout applies absolute scroll first, then this refines based on anchor element
   useEffect(() => {
-    // Only attempt restoration once per mount, and only when notes are loaded
-    if (hasRestoredAnchor.current || notesLoading || !notes?.length) return;
+    // Only attempt once per navigation back to this page
+    if (anchorRestorationAttempted.current) return;
+    // Wait for notes to be loaded and rendered
+    if (notesLoading || !notes?.length) return;
     
-    // Use requestAnimationFrame to ensure DOM is updated with note cards
-    requestAnimationFrame(() => {
+    // Small delay to ensure DOM is fully rendered with note cards
+    const timer = setTimeout(() => {
       const restored = restoreFromAnchor('index-timeline');
+      anchorRestorationAttempted.current = true;
+      // Log for debugging (can remove later)
       if (restored) {
-        hasRestoredAnchor.current = true;
+        console.log('[Scroll] Anchor restoration applied');
       }
-    });
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [notesLoading, notes?.length]);
+  
+  // Reset anchor restoration flag when navigating away
+  useEffect(() => {
+    return () => {
+      anchorRestorationAttempted.current = false;
+    };
+  }, []);
 
   // Collect all unique tags from notes
   const availableTags = useMemo(() => {
