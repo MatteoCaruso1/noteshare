@@ -10,24 +10,32 @@ const features = [
     image: landingFocus,
     alt: 'Practice Board showing exercises and songs to focus on',
     cropTop: false,
+    width: 1225,
+    height: 464,
   },
   {
     title: 'Log practice sessions and record your playing',
     image: landingSessions,
     alt: 'Practice session with audio recording and comments',
     cropTop: false,
+    width: 979,
+    height: 631,
   },
   {
     title: 'Track your progress over time',
     image: landingProgress,
     alt: 'Progress charts showing practice minutes and streak',
     cropTop: false,
+    width: 1075,
+    height: 488,
   },
   {
     title: 'See what your friends are working on',
     image: landingFriends,
     alt: 'Friends practice feed showing their sessions',
     cropTop: false,
+    width: 895,
+    height: 649,
   },
 ];
 
@@ -89,6 +97,8 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           <img
             src={feature.image}
             alt={feature.alt}
+            width={feature.width}
+            height={feature.height}
             className={`w-full transition-opacity duration-500 ease-out ${
               feature.cropTop ? 'object-cover object-[center_58%]' : 'h-auto'
             } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
