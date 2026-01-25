@@ -5,11 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ShareableNoteCard, CARD_STYLES, CardStyleId } from '@/components/ShareableNoteCard';
-import { Share, Instagram, MessageCircle, Loader2, Check } from 'lucide-react';
+import { Share, Instagram, MessageCircle, Loader2, Check, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+
+// Platform detection helpers
+const getDeviceInfo = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const isAndroid = /android/.test(ua);
+  const isMobile = isIOS || isAndroid;
+  const isDesktop = !isMobile;
+  
+  return { isIOS, isAndroid, isMobile, isDesktop };
+};
 
 // Helper to fetch audio file from signed URL and convert to File
 const fetchAudioAsFile = async (signedUrl: string, fileName: string): Promise<File | null> => {
@@ -54,6 +65,11 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
     () => (note.audio_files?.length || 0) > 0 ? [0] : []
   );
+
+  // Detect device type
+  const deviceInfo = useMemo(() => getDeviceInfo(), []);
+  const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
+  const canShareInstagram = deviceInfo.isMobile; // Only mobile can share to Instagram
 
   const audioFiles = useMemo(() => {
     return (note.audio_files || []).map((url, idx) => ({
@@ -322,36 +338,62 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             </div>
           )}
 
-          {/* Share Actions - Two buttons only */}
-          <div className="grid grid-cols-2 gap-2 pt-2">
+          {/* Share Actions - Three buttons */}
+          <div className="grid grid-cols-3 gap-2 pt-2">
+            {/* iMessage - iOS only */}
             <Button
               variant="secondary"
               size="sm"
               onClick={handleShare}
-              disabled={isExporting}
-              className="flex items-center gap-1.5 text-xs"
+              disabled={isExporting || !canShareIMessage}
+              className={cn(
+                "flex items-center justify-center gap-1.5 text-xs",
+                !canShareIMessage && "opacity-50 cursor-not-allowed"
+              )}
+              title={!canShareIMessage ? "iMessage sharing is only available on iOS" : undefined}
             >
               {isExporting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <MessageCircle className="w-3.5 h-3.5" />
               )}
-              Share via iMessage
+              <span className="hidden xs:inline">iMessage</span>
             </Button>
             
+            {/* Instagram - Mobile only */}
             <Button
               variant="secondary"
               size="sm"
               onClick={handleInstagramShare}
-              disabled={isExporting}
-              className="flex items-center gap-1.5 text-xs"
+              disabled={isExporting || !canShareInstagram}
+              className={cn(
+                "flex items-center justify-center gap-1.5 text-xs",
+                !canShareInstagram && "opacity-50 cursor-not-allowed"
+              )}
+              title={!canShareInstagram ? "Instagram sharing is only available on mobile" : undefined}
             >
               {isExporting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <Instagram className="w-3.5 h-3.5" />
               )}
-              Instagram Story
+              <span className="hidden xs:inline">Instagram</span>
+            </Button>
+
+            {/* Save Image - Available everywhere */}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleDownload}
+              disabled={isExporting}
+              className="flex items-center justify-center gap-1.5 text-xs"
+            >
+              {isExporting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              <span className="hidden xs:inline">Save Image</span>
             </Button>
           </div>
         </div>
