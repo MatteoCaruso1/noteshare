@@ -76,10 +76,9 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
   );
 }
 
-// Map route paths to scroll restoration keys (excluding home which uses anchor-based restoration)
+// Map route paths to scroll restoration keys
 function getScrollKeyForPath(pathname: string): string | null {
-  // Home route uses anchor-based restoration handled by Index.tsx
-  if (pathname === '/') return null;
+  if (pathname === '/') return 'index-timeline';
   if (pathname === '/friends') return 'friends-timeline';
   if (pathname === '/projects') return 'projects';
   if (pathname === '/working-toward') return 'working-toward';
@@ -89,13 +88,14 @@ function getScrollKeyForPath(pathname: string): string | null {
 /**
  * PageLayout - Wrapper for page content.
  * Handles scroll restoration without visibility toggling to prevent jitter.
- * Note: Home route (/) uses anchor-based restoration in Index.tsx instead.
+ * Note: Home route (/) uses anchor-based restoration in Index.tsx as primary,
+ * but we still apply absolute scroll here as an immediate best-effort.
  */
 export function PageLayout({ children }: PageLayoutProps) {
   const location = useLocation();
   const hasAppliedScroll = useRef(false);
   
-  // Apply scroll restoration synchronously before paint (for non-home routes)
+  // Apply scroll restoration synchronously before paint
   useLayoutEffect(() => {
     if (hasAppliedScroll.current) return;
     
