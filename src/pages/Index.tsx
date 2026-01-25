@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
-import { useScrollRestoration, restoreFromAnchor } from '@/hooks/useScrollRestoration';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -32,39 +32,10 @@ const Index = () => {
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
-  const anchorRestorationAttempted = useRef(false);
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
-
-  // Anchor-based scroll restoration: runs AFTER notes load to correct the position
-  // PageLayout applies absolute scroll first, then this refines based on anchor element
-  useEffect(() => {
-    // Only attempt once per navigation back to this page
-    if (anchorRestorationAttempted.current) return;
-    // Wait for notes to be loaded and rendered
-    if (notesLoading || !notes?.length) return;
-    
-    // Small delay to ensure DOM is fully rendered with note cards
-    const timer = setTimeout(() => {
-      const restored = restoreFromAnchor('index-timeline');
-      anchorRestorationAttempted.current = true;
-      // Log for debugging (can remove later)
-      if (restored) {
-        console.log('[Scroll] Anchor restoration applied');
-      }
-    }, 50);
-    
-    return () => clearTimeout(timer);
-  }, [notesLoading, notes?.length]);
-  
-  // Reset anchor restoration flag when navigating away
-  useEffect(() => {
-    return () => {
-      anchorRestorationAttempted.current = false;
-    };
-  }, []);
 
   // Collect all unique tags from notes
   const availableTags = useMemo(() => {
