@@ -71,6 +71,7 @@ export function OfflineSessionInput() {
                 onChange={(e) => setDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
                 autoFocus={!isMobile}
+                className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:text-left"
               />
             </div>
 
