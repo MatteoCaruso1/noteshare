@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  getCachedUrl, 
+  getCachedUrls, 
+  setCachedUrl, 
+  setCachedUrls,
+  clearPersistentCache 
+} from '@/lib/signedUrlPersistentCache';
 
-// Cache for signed URLs to avoid re-fetching
+// In-memory cache for signed URLs (fast, but clears on reload)
 const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
 
-// Export function to clear cache (useful for auth state transitions)
+// Export function to clear in-memory cache (call on token refresh)
 export function clearSignedUrlCache() {
   signedUrlCache.clear();
+}
+
+// Export function to clear ALL caches including persistent (call on sign-out)
+export function clearAllSignedUrlCaches() {
+  signedUrlCache.clear();
+  clearPersistentCache();
 }
 
 /**
@@ -146,11 +159,11 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
       return;
     }
 
-    // Check cache (use the path we're going to sign as key)
+    // Check in-memory cache first (fastest)
     const cacheKey = urlToSign;
-    const cached = signedUrlCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-      setSignedUrl(cached.url);
+    const memoryCached = signedUrlCache.get(cacheKey);
+    if (memoryCached && memoryCached.expiresAt > Date.now()) {
+      setSignedUrl(memoryCached.url);
       return;
     }
 
@@ -159,6 +172,19 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
 
     const run = async () => {
       try {
+        // Check persistent cache (survives page reloads)
+        const persistentCached = await getCachedUrl(cacheKey);
+        if (persistentCached) {
+          // Also populate in-memory cache
+          signedUrlCache.set(cacheKey, {
+            url: persistentCached,
+            expiresAt: Date.now() + 23 * 60 * 60 * 1000,
+          });
+          setSignedUrl(persistentCached);
+          setLoading(false);
+          return;
+        }
+
         const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
           body: { url: urlToSign, expiresInSeconds: 60 * 60 * 24 },
         });
@@ -184,11 +210,11 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
 
         const urlFromFn: string | undefined = data?.results?.[urlToSign];
         const finalUrl = urlFromFn || originalUrl;
+        const expiresAt = Date.now() + 23 * 60 * 60 * 1000;
 
-        signedUrlCache.set(cacheKey, {
-          url: finalUrl,
-          expiresAt: Date.now() + 23 * 60 * 60 * 1000,
-        });
+        // Save to both caches
+        signedUrlCache.set(cacheKey, { url: finalUrl, expiresAt });
+        setCachedUrl(cacheKey, finalUrl, expiresAt);
 
         setSignedUrl(finalUrl);
       } catch (err) {
@@ -249,7 +275,7 @@ export async function getSignedUrls(urls: string[]): Promise<Map<string, string>
       // not a URL
     }
 
-    // Check cache using the path we're going to sign
+    // Check in-memory cache using the path we're going to sign
     const cacheKey = urlToSign;
     const cached = signedUrlCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
@@ -267,34 +293,71 @@ export async function getSignedUrls(urls: string[]): Promise<Map<string, string>
 
   if (toSign.length === 0) return results;
 
-  // Build the array of paths to sign
-  const pathsToSign = toSign.map(url => originalToPath.get(url) || url);
+  // Check persistent cache for remaining URLs
+  const pathsToCheck = toSign.map(url => originalToPath.get(url) || url);
+  const persistentCached = await getCachedUrls(pathsToCheck);
+  
+  // Filter out URLs that were found in persistent cache
+  const stillNeedSigning: string[] = [];
+  for (let i = 0; i < toSign.length; i++) {
+    const originalUrl = toSign[i];
+    const pathSigned = pathsToCheck[i];
+    const cachedUrl = persistentCached.get(pathSigned);
+    
+    if (cachedUrl) {
+      // Found in persistent cache - add to results and memory cache
+      results.set(originalUrl, cachedUrl);
+      signedUrlCache.set(pathSigned, {
+        url: cachedUrl,
+        expiresAt: Date.now() + 23 * 60 * 60 * 1000,
+      });
+    } else {
+      stillNeedSigning.push(originalUrl);
+    }
+  }
+
+  if (stillNeedSigning.length === 0) return results;
+
+  // Build the array of paths to sign from the URLs that still need signing
+  const pathsToSignNow = stillNeedSigning.map(url => originalToPath.get(url) || url);
 
   try {
     const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
-      body: { urls: pathsToSign, expiresInSeconds: 60 * 60 * 24 },
+      body: { urls: pathsToSignNow, expiresInSeconds: 60 * 60 * 24 },
     });
 
     if (fnError) {
       // fall back to original
-      for (const u of toSign) results.set(u, u);
+      for (const u of stillNeedSigning) results.set(u, u);
       return results;
     }
 
     const returned: Record<string, string> = data?.results || {};
-    for (let i = 0; i < toSign.length; i++) {
-      const originalUrl = toSign[i];
-      const pathSigned = pathsToSign[i];
+    const entriesToCache: Array<{ path: string; signedUrl: string; expiresAt: number }> = [];
+    const expiresAt = Date.now() + 23 * 60 * 60 * 1000;
+
+    for (let i = 0; i < stillNeedSigning.length; i++) {
+      const originalUrl = stillNeedSigning[i];
+      const pathSigned = pathsToSignNow[i];
       const finalUrl = returned[pathSigned] || originalUrl;
       
-      signedUrlCache.set(pathSigned, {
-        url: finalUrl,
-        expiresAt: Date.now() + 23 * 60 * 60 * 1000,
-      });
+      // Add to in-memory cache
+      signedUrlCache.set(pathSigned, { url: finalUrl, expiresAt });
+      
+      // Collect for persistent cache batch write
+      if (returned[pathSigned]) {
+        entriesToCache.push({ path: pathSigned, signedUrl: finalUrl, expiresAt });
+      }
+      
       results.set(originalUrl, finalUrl);
     }
+
+    // Batch write to persistent cache
+    if (entriesToCache.length > 0) {
+      setCachedUrls(entriesToCache);
+    }
   } catch {
-    for (const u of toSign) results.set(u, u);
+    for (const u of stillNeedSigning) results.set(u, u);
   }
 
   return results;

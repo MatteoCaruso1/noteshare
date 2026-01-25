@@ -11,6 +11,7 @@ import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { PremiumDialog } from "@/components/PremiumDialog";
+import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 
 // Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
 // Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
@@ -85,6 +86,12 @@ function CheckoutDialogWrapper() {
   );
 }
 
+// Component to run avatar prefetch inside auth context
+function AvatarPrefetcher() {
+  useAvatarPrefetch();
+  return null;
+}
+
 function AppInner() {
   useEffect(() => {
     // Prevent mobile browsers from trying to restore scroll positions on SPA navigations.
@@ -109,6 +116,7 @@ function AppInner() {
                 <AddToHomescreenPrompt />
                 <PremiumDialog />
                 <CheckoutDialogWrapper />
+                <AvatarPrefetcher />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/welcome" element={<Welcome />} />
