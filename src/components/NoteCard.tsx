@@ -327,6 +327,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     }
   }, [navigate, note.gig_id]);
 
+  const handleNavigateToGoal = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/working-toward');
+  }, [navigate]);
+
   const projectName = note.project?.title || 'Project';
   const goalName = note.goal?.title || note.goal?.content || 'Goal';
   const gigName = note.gig?.title || 'Gig';
@@ -393,7 +398,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                     variant="secondary"
                     role="button"
                     tabIndex={0}
-                    className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
+                    className="inline-flex items-center text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
                     onPointerDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -403,8 +408,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                       }
                     }}
                   >
-                    <Clock className="w-3 h-3 mr-1" />
-                    Practice Session
+                    <Clock className="w-3 h-3 mr-1 shrink-0" />
+                    <span>Practice Session</span>
                     {displayDuration && <span className="ml-1 opacity-80">{displayDuration}</span>}
                   </Badge>
                 </PopoverTrigger>
@@ -450,16 +455,16 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                 </PopoverContent>
               </Popover>
             ) : (
-              <Badge variant="secondary" className="text-xs">
-                <Clock className="w-3 h-3 mr-1" />
-                Practice Session
+              <Badge variant="secondary" className="inline-flex items-center text-xs">
+                <Clock className="w-3 h-3 mr-1 shrink-0" />
+                <span>Practice Session</span>
                 {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
               </Badge>
             )
           ) : (
-            <Badge variant="secondary" className="text-xs">
-              <Music className="w-3 h-3 mr-1" />
-              Quick Note
+            <Badge variant="secondary" className="inline-flex items-center text-xs">
+              <Music className="w-3 h-3 mr-1 shrink-0" />
+              <span>Quick Note</span>
             </Badge>
           )}
           
@@ -467,14 +472,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {note.focus_date && (
             <Badge 
               variant="outline" 
-              className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              className="inline-flex items-center text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 setFocusDialogOpen(true);
               }}
             >
-              <ClipboardList className="w-3 h-3 mr-1" />
-              Practice Board
+              <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
+              <span>Practice Board</span>
             </Badge>
           )}
 
@@ -482,10 +487,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {note.goal_id && isOwner && (
             <Badge 
               variant="outline" 
-              className="text-xs border-primary/30 text-primary"
+              className="inline-flex items-center text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              onClick={handleNavigateToGoal}
             >
-              <Compass className="w-3 h-3 mr-1" />
-              {goalName}
+              <Compass className="w-3 h-3 mr-1 shrink-0" />
+              <span className="truncate max-w-[150px]">{goalName}</span>
             </Badge>
           )}
 
@@ -493,11 +499,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {note.project_id && (
             <Badge 
               variant="outline" 
-              className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              className="inline-flex items-center text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
               onClick={handleNavigateToProject}
             >
-              <Disc3 className="w-3 h-3 mr-1" />
-              {projectName}
+              <Disc3 className="w-3 h-3 mr-1 shrink-0" />
+              <span className="truncate max-w-[150px]">{projectName}</span>
             </Badge>
           )}
 
@@ -505,11 +511,11 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {note.gig_id && (
             <Badge 
               variant="outline" 
-              className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              className="inline-flex items-center text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
               onClick={handleNavigateToGig}
             >
-              <Calendar className="w-3 h-3 mr-1" />
-              {gigName}
+              <Calendar className="w-3 h-3 mr-1 shrink-0" />
+              <span className="truncate max-w-[150px]">{gigName}</span>
             </Badge>
           )}
         </div>
