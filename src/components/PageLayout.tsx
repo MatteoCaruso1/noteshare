@@ -78,7 +78,7 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
 
 // Map route paths to scroll restoration keys
 function getScrollKeyForPath(pathname: string): string | null {
-  if (pathname === '/') return 'home-timeline';
+  if (pathname === '/') return 'index-timeline';
   if (pathname === '/friends') return 'friends-timeline';
   if (pathname === '/projects') return 'projects';
   if (pathname === '/working-toward') return 'working-toward';
