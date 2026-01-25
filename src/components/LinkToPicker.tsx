@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Target, FolderOpen, Calendar, Flag } from 'lucide-react';
+import { Target, Disc3, Calendar, Compass } from 'lucide-react';
 import { Project, PromoPostWithAuthor, Goal } from '@/types';
 
 export type LinkType = 'project' | 'gig' | 'goal' | null;
@@ -41,15 +41,10 @@ export function LinkToPicker({
   // Filter to only active (non-completed) goals
   const activeGoals = goals.filter(g => !g.is_completed);
 
-  const handleTypeChange = (type: string) => {
-    if (type === 'none') {
-      setLinkType(null);
-      onLinkChange(null);
-    } else {
-      setLinkType(type as LinkType);
-      // Clear selection when switching types
-      onLinkChange(null);
-    }
+  const handleTypeSelect = (type: LinkType) => {
+    setLinkType(type);
+    // Clear selection when switching types
+    onLinkChange(null);
   };
 
   const handleItemSelect = (id: string) => {
@@ -75,6 +70,11 @@ export function LinkToPicker({
     });
   };
 
+  const handleClear = () => {
+    setLinkType(null);
+    onLinkChange(null);
+  };
+
   const getItems = () => {
     if (linkType === 'project') return projects;
     if (linkType === 'gig') return gigs;
@@ -90,6 +90,10 @@ export function LinkToPicker({
 
   const items = getItems();
   const isSelected = !!selectedLink;
+
+  const hasGoals = activeGoals.length > 0;
+  const hasProjects = projects.length > 0;
+  const hasGigs = gigs.length > 0;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -109,47 +113,67 @@ export function LinkToPicker({
       </Tooltip>
       <PopoverContent className="w-56 p-3 bg-popover" align="start">
         <div className="space-y-3">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Link type</p>
-            <Select value={linkType || 'none'} onValueChange={handleTypeChange}>
-              <SelectTrigger className="w-full h-8">
-                <SelectValue placeholder="Select type..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  <span className="text-muted-foreground">None</span>
-                </SelectItem>
-                {activeGoals.length > 0 && (
-                  <SelectItem value="goal">
-                    <div className="flex items-center gap-2">
-                      <Flag className="w-3 h-3" />
-                      Goal
-                    </div>
-                  </SelectItem>
-                )}
-                {projects.length > 0 && (
-                  <SelectItem value="project">
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="w-3 h-3" />
-                      Project
-                    </div>
-                  </SelectItem>
-                )}
-                {gigs.length > 0 && (
-                  <SelectItem value="gig">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-3 h-3" />
-                      Gig
-                    </div>
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {linkType && items.length > 0 && (
+          {/* Step 1: Type selection buttons */}
+          {!linkType && (
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground capitalize">Select {linkType}</p>
+              <p className="text-xs text-muted-foreground mb-2">Link to</p>
+              <div className="flex flex-col gap-1">
+                {hasGoals && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start h-9"
+                    onClick={() => handleTypeSelect('goal')}
+                  >
+                    <Compass className="w-4 h-4 mr-2" />
+                    Goal
+                  </Button>
+                )}
+                {hasProjects && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start h-9"
+                    onClick={() => handleTypeSelect('project')}
+                  >
+                    <Disc3 className="w-4 h-4 mr-2" />
+                    Project
+                  </Button>
+                )}
+                {hasGigs && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start h-9"
+                    onClick={() => handleTypeSelect('gig')}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Gig
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Item selection */}
+          {linkType && items.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground capitalize flex items-center gap-1.5">
+                  {linkType === 'goal' && <Compass className="w-3 h-3" />}
+                  {linkType === 'project' && <Disc3 className="w-3 h-3" />}
+                  {linkType === 'gig' && <Calendar className="w-3 h-3" />}
+                  Select {linkType}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={handleClear}
+                >
+                  Back
+                </Button>
+              </div>
               <Select 
                 value={selectedLink?.id || 'none'} 
                 onValueChange={handleItemSelect}
@@ -171,11 +195,12 @@ export function LinkToPicker({
             </div>
           )}
 
+          {/* Show linked item */}
           {selectedLink && (
             <div className="pt-2 border-t border-border">
               <div className="flex items-center gap-2 text-xs">
-                {selectedLink.type === 'goal' && <Flag className="w-3 h-3 text-primary" />}
-                {selectedLink.type === 'project' && <FolderOpen className="w-3 h-3 text-primary" />}
+                {selectedLink.type === 'goal' && <Compass className="w-3 h-3 text-primary" />}
+                {selectedLink.type === 'project' && <Disc3 className="w-3 h-3 text-primary" />}
                 {selectedLink.type === 'gig' && <Calendar className="w-3 h-3 text-primary" />}
                 <span className="text-muted-foreground">Linked to:</span>
                 <span className="font-medium truncate">{selectedLink.title}</span>

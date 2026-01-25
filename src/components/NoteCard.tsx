@@ -16,7 +16,7 @@ import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Target, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -614,7 +614,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       {/* Linked Goal - only visible to note owner since goals are private */}
       {note.goal_id && isOwner && (
         <div className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg">
-          <Target className="w-4 h-4 text-primary" />
+          <Compass className="w-4 h-4 text-primary" />
           <span className="text-sm text-primary truncate">{goalName}</span>
         </div>
       )}
