@@ -8,6 +8,7 @@ import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 import { PageLayout, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
+import { ShareNoteDialog } from '@/components/ShareNoteDialog';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,7 +18,7 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, User, Trash2, SendHorizontal } from 'lucide-react';
+import { ArrowLeft, User, Trash2, SendHorizontal, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,6 +36,7 @@ const NoteDetail = () => {
   const createNotification = useCreateNotification();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   
   const isOwner = profile?.id === note?.author_id;
   
@@ -112,24 +114,37 @@ const NoteDetail = () => {
     }
   }, [fromFriends, fromProject, fromGig, navigate]);
 
-  // Back button - static on all screen sizes, positioned on top of the note
-  const BackButton = () => (
-    <button 
-      onClick={handleBack}
-      className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-      aria-label="Go back"
-    >
-      <ArrowLeft className="w-5 h-5" />
-    </button>
+  // Navigation bar with back button and share
+  const NavBar = () => (
+    <div className="flex items-center justify-between">
+      <button 
+        onClick={handleBack}
+        className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+      
+      {/* Share button - only show for owner */}
+      {isOwner && note && (
+        <button
+          onClick={() => setShareDialogOpen(true)}
+          className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+          aria-label="Share note"
+        >
+          <Share2 className="w-5 h-5" />
+        </button>
+      )}
+    </div>
   );
 
   // Show skeleton with navigation while loading - don't block the UI
   if (isLoading) {
     return (
       <PageLayout>
-        <PageBody>
+      <PageBody>
           <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
-            <BackButton />
+            <NavBar />
             {/* Note skeleton */}
             <div className="h-48 bg-card rounded-lg animate-pulse" />
             {/* Comments section skeleton */}
@@ -146,9 +161,9 @@ const NoteDetail = () => {
   if (!note) {
     return (
       <PageLayout>
-        <PageBody>
+      <PageBody>
           <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
-            <BackButton />
+            <NavBar />
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4">Note not found</p>
               <Button variant="outline" onClick={() => navigate('/')}>
@@ -165,10 +180,10 @@ const NoteDetail = () => {
     <PageLayout>
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
-          <BackButton />
+          <NavBar />
 
           <NoteCard 
-            note={note} 
+            note={note}
             expanded 
           />
 
@@ -287,6 +302,15 @@ const NoteDetail = () => {
           </section>
         </main>
       </PageBody>
+      
+      {/* Share Dialog */}
+      {note && (
+        <ShareNoteDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          note={note}
+        />
+      )}
     </PageLayout>
   );
 };
