@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
@@ -10,13 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CollectionDetailHeader } from '@/components/shared/CollectionDetailHeader';
 import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
-import { Disc3, Upload, Trash2, Plus } from 'lucide-react';
+import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
+import { Disc3, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -89,11 +89,9 @@ const ProjectDetail = () => {
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
-  const [editShowOnFeed, setEditShowOnFeed] = useState(false);
   const [editCoverImage, setEditCoverImage] = useState<string | null>(null);
+  const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
   const [editReleaseDate, setEditReleaseDate] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isOwner = profile?.id === project?.owner_id;
   const isCollaborator = project?.collaborator_ids?.includes(profile?.id || '');
@@ -103,44 +101,10 @@ const ProjectDetail = () => {
     if (project) {
       setEditTitle(project.title);
       setEditDescription(project.description || '');
-      setEditShowOnFeed(project.show_on_feed || false);
       setEditCoverImage(project.cover_image || null);
+      setEditCoverPreview(null); // Will use ProjectCover component for display
       setEditReleaseDate(project.release_date || '');
       setIsSettingsOpen(true);
-    }
-  };
-
-  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
-
-    setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `${profile.id}/project-covers/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('practice-media')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Use signed URL for preview since the bucket is private
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('practice-media')
-        .createSignedUrl(filePath, 60 * 60); // 1 hour for preview
-
-      if (signedError) throw signedError;
-
-      // Store the path (not the signed URL) for saving to DB
-      setEditCoverImage(filePath);
-      toast.success('Album art uploaded!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -180,7 +144,6 @@ const ProjectDetail = () => {
         title: editTitle,
         description: editDescription,
         coverImage: editCoverImage || undefined,
-        showOnFeed: editShowOnFeed,
         releaseDate: editReleaseDate || undefined,
       },
       {
@@ -241,6 +204,7 @@ const ProjectDetail = () => {
           coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
           showSettings={isOwner}
           onSettingsClick={openSettings}
+          useProjectCover
         />
       </PageHeader>
 
@@ -293,32 +257,16 @@ const ProjectDetail = () => {
             <DialogDescription>Update your project details or delete the project.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            {/* Album Art Upload */}
-            <div className="flex flex-col items-center gap-3">
-              <div
-                className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {editCoverImage ? (
-                  <img src={editCoverImage} alt="" className="w-full h-full object-cover" />
-                ) : isUploading ? (
-                  <div className="text-xs text-muted-foreground">Uploading...</div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Upload className="w-6 h-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Album Art</span>
-                  </div>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverImageUpload}
-                className="hidden"
+            {/* Album Art / Icon Picker */}
+            {profile && (
+              <ProjectCoverPicker
+                value={editCoverImage}
+                onChange={setEditCoverImage}
+                profileId={profile.id}
+                previewUrl={editCoverPreview}
+                onPreviewUrlChange={setEditCoverPreview}
               />
-              <span className="text-xs text-muted-foreground">Click to change album art</span>
-            </div>
+            )}
 
             <div>
               <Label htmlFor="title">Title</Label>
@@ -351,7 +299,7 @@ const ProjectDetail = () => {
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
               onClick={handleSaveSettings}
-              disabled={updateProject.isPending || isUploading || !editTitle.trim()}
+              disabled={updateProject.isPending || !editTitle.trim()}
             >
               Save Changes
             </Button>

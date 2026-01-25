@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { SignedImage } from '@/components/SignedImage';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { ProjectCover } from '@/components/ProjectCoverPicker';
 import { Calendar, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -22,6 +23,8 @@ interface CollectionCardProps {
   badges?: ReactNode;
   actions?: ReactNode;
   dateLabel?: string;
+  /** When true, uses ProjectCover which handles icon: prefixed values */
+  useProjectCover?: boolean;
 }
 
 export const CollectionCard = ({
@@ -40,6 +43,7 @@ export const CollectionCard = ({
   badges,
   actions,
   dateLabel,
+  useProjectCover = false,
 }: CollectionCardProps) => {
   const navigate = useNavigate();
 
@@ -47,28 +51,41 @@ export const CollectionCard = ({
   const displayDate = releaseDate || date;
   const displayLabel = releaseDate ? 'Release' : (dateLabel || 'Created');
 
+  // Render cover based on whether we're using project covers (with icon support)
+  const renderCover = () => {
+    if (useProjectCover) {
+      return <ProjectCover value={coverImage} className="w-16 h-16" iconClassName="w-6 h-6" />;
+    }
+    
+    if (coverImage) {
+      return (
+        <SignedImage
+          src={coverImage}
+          alt={`${title} cover`}
+          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+          fallback={
+            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              {coverIcon || <ImageOff className="w-6 h-6 text-muted-foreground" />}
+            </div>
+          }
+        />
+      );
+    }
+    
+    return (
+      <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+        {coverIcon}
+      </div>
+    );
+  };
+
   return (
     <Card
       className="p-4 bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
       onClick={() => navigate(`${path}/${id}`)}
     >
       <div className="flex items-start gap-4">
-        {coverImage ? (
-          <SignedImage
-            src={coverImage}
-            alt={`${title} cover`}
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-            fallback={
-              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                {coverIcon || <ImageOff className="w-6 h-6 text-muted-foreground" />}
-              </div>
-            }
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-            {coverIcon}
-          </div>
-        )}
+        {renderCover()}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">

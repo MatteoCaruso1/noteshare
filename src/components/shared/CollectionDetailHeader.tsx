@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { SignedImage } from '@/components/SignedImage';
+import { ProjectCover } from '@/components/ProjectCoverPicker';
 import { ArrowLeft, Settings, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -22,6 +23,8 @@ interface CollectionDetailHeaderProps {
   showSettings?: boolean;
   onSettingsClick?: () => void;
   badges?: ReactNode;
+  /** When true, uses ProjectCover which handles icon: prefixed values */
+  useProjectCover?: boolean;
 }
 
 export const CollectionDetailHeader = ({
@@ -40,6 +43,7 @@ export const CollectionDetailHeader = ({
   showSettings = false,
   onSettingsClick,
   badges,
+  useProjectCover = false,
 }: CollectionDetailHeaderProps) => {
   const navigate = useNavigate();
 
@@ -56,6 +60,38 @@ export const CollectionDetailHeader = ({
     } else {
       navigate(fallbackPath, { replace: true });
     }
+  };
+
+  // Render cover based on whether we're using project covers (with icon support)
+  const renderCover = () => {
+    if (useProjectCover) {
+      return <ProjectCover value={coverImage} className="w-16 h-16" iconClassName="w-6 h-6" />;
+    }
+    
+    if (coverImage) {
+      return (
+        <SignedImage
+          src={coverImage}
+          alt=""
+          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+          fallback={
+            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              {coverIcon || <ImageOff className="w-6 h-6 text-muted-foreground" />}
+            </div>
+          }
+        />
+      );
+    }
+    
+    if (coverIcon) {
+      return (
+        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+          {coverIcon}
+        </div>
+      );
+    }
+    
+    return null;
   };
 
   return (
@@ -78,22 +114,7 @@ export const CollectionDetailHeader = ({
 
       <div className="flex items-start gap-4">
         {/* Cover image or icon */}
-        {coverImage ? (
-          <SignedImage
-            src={coverImage}
-            alt=""
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-            fallback={
-              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                {coverIcon || <ImageOff className="w-6 h-6 text-muted-foreground" />}
-              </div>
-            }
-          />
-        ) : coverIcon ? (
-          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-            {coverIcon}
-          </div>
-        ) : null}
+        {renderCover()}
 
         <div className="flex-1 min-w-0">
           {/* Author info */}
