@@ -107,7 +107,7 @@ export function LandingFeatures() {
 
   return (
     <section className="bg-transparent py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-0 md:mt-2">
-      <div className="w-full max-w-7xl mx-auto space-y-8">
+      <div className="w-full space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
         ))}
