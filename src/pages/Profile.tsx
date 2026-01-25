@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -428,7 +427,7 @@ const Profile = () => {
         </main>
       </PageBody>
 
-      <BottomNav />
+      
 
       {/* Streak Milestone Dialog */}
       {celebratingTier && (

@@ -5,10 +5,7 @@ import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
 import { markScrollToTop } from '@/components/ScrollToTop';
-
-interface BottomNavProps {
-  overrideActiveRoute?: string;
-}
+import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 
 // Map routes to their scroll restoration keys
 const routeScrollKeys: Record<string, string> = {
@@ -20,44 +17,20 @@ const routeScrollKeys: Record<string, string> = {
   '/profile': 'profile-top',
 };
 
-// Session key for tracking if nav has been shown this session
-const NAV_SHOWN_KEY = 'bottomnav_shown';
+// Routes where BottomNav should be hidden
+const hiddenRoutes = ['/welcome', '/auth'];
 
-export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
+export function BottomNav() {
   const location = useLocation();
   const { data: unreadCount } = useUnreadNotificationCount();
+  const { overrideActiveRoute } = useBottomNavOverride();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   
-  // Check if this is the first visit in this session
-  const hasShownBefore = typeof window !== 'undefined' && sessionStorage.getItem(NAV_SHOWN_KEY) === 'true';
-  
-  // Start visible if we've shown before, otherwise start hidden for fade-in
-  const [isVisible, setIsVisible] = useState(hasShownBefore);
+  // Simple visibility - always visible, no complex fade-in logic that could cause issues
+  const [isVisible, setIsVisible] = useState(true);
 
-  // Fade in after mount only on first appearance in session
-  useEffect(() => {
-    if (!sessionStorage.getItem(NAV_SHOWN_KEY)) {
-      // First visit - animate in with requestAnimationFrame for reliable timing
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true);
-          sessionStorage.setItem(NAV_SHOWN_KEY, 'true');
-        });
-      });
-    }
-  }, []);
-
-  // Safety fallback: ensure nav is always visible after 500ms max
-  useEffect(() => {
-    const fallbackTimer = setTimeout(() => {
-      if (!isVisible) {
-        setIsVisible(true);
-        sessionStorage.setItem(NAV_SHOWN_KEY, 'true');
-      }
-    }, 500);
-    
-    return () => clearTimeout(fallbackTimer);
-  }, [isVisible]);
+  // Hide on auth/welcome routes
+  const shouldHide = hiddenRoutes.includes(location.pathname);
 
   // Detect keyboard open/close on mobile
   useEffect(() => {
@@ -118,12 +91,13 @@ export function BottomNav({ overrideActiveRoute }: BottomNavProps = {}) {
     markScrollToTop(to);
   };
 
+  // Don't render on hidden routes
+  if (shouldHide) return null;
+
   return (
     <nav 
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
-        "transition-all duration-700",
-        isVisible ? "opacity-100" : "opacity-0",
         // Hide via transform when keyboard is open (instead of returning null)
         isKeyboardOpen && "translate-y-full pointer-events-none"
       )}

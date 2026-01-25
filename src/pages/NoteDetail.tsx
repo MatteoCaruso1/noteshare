@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
-import { BottomNav } from '@/components/BottomNav';
+import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 import { PageLayout, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 
@@ -27,6 +27,7 @@ const NoteDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
+  const { setOverrideActiveRoute } = useBottomNavOverride();
   const { data: note, isLoading } = useNote(id || '');
   const { data: comments, isLoading: commentsLoading } = useNoteComments(id || '');
   const createComment = useCreateNoteComment();
@@ -41,6 +42,15 @@ const NoteDetail = () => {
   const fromFriends = location.state?.fromFriends;
   const fromProject = location.state?.fromProject;
   const fromGig = location.state?.fromGig;
+
+  // Set the override for bottom nav active state based on where we came from
+  useEffect(() => {
+    const override = fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined;
+    setOverrideActiveRoute(override);
+    
+    // Cleanup on unmount
+    return () => setOverrideActiveRoute(undefined);
+  }, [fromFriends, fromProject, fromGig, setOverrideActiveRoute]);
 
   // Scroll to top instantly on mount
   useInstantScrollToTop([id]);
@@ -129,7 +139,6 @@ const NoteDetail = () => {
             </div>
           </main>
         </PageBody>
-        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
       </PageLayout>
     );
   }
@@ -148,7 +157,6 @@ const NoteDetail = () => {
             </div>
           </main>
         </PageBody>
-        <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
       </PageLayout>
     );
   }
@@ -279,8 +287,6 @@ const NoteDetail = () => {
           </section>
         </main>
       </PageBody>
-
-      <BottomNav overrideActiveRoute={fromFriends ? '/friends' : fromProject ? '/projects' : fromGig ? '/gigs' : undefined} />
     </PageLayout>
   );
 };

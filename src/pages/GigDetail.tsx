@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 import { Card } from '@/components/ui/card';
@@ -482,8 +481,6 @@ const GigDetail = () => {
           </div>
         </DialogContent>
       </Dialog>
-
-      <BottomNav />
     </PageLayout>
   );
 };

@@ -1,7 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { UserSearch } from '@/components/UserSearch';
 import { FriendsFeed } from '@/components/FriendsFeed';
@@ -211,7 +210,7 @@ const FriendsJournals = () => {
         </main>
       </PageBody>
 
-      <BottomNav />
+      
     </PageLayout>
   );
 };

@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
 import { useMyPromoPosts, useFriendsPromoPosts, useCreatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { SimpleGoals } from '@/components/SimpleGoals';
 import { PremiumGate } from '@/components/PremiumGate';
@@ -808,8 +807,6 @@ const WorkingToward = () => {
           </main>
         </PremiumGate>
       </PageBody>
-
-      <BottomNav />
     </PageLayout>
   );
 };

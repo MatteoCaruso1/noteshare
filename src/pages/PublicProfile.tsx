@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePublicNotes } from '@/hooks/usePublicNotes';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { useFriends, useRemoveFriend, useIsFriendMuted, useMuteFriend, useUnmuteFriend } from '@/hooks/useFriendships';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -169,7 +168,6 @@ const PublicProfile = () => {
             </Card>
           </div>
         </PageBody>
-        <BottomNav />
       </PageLayout>
     );
   }
@@ -186,7 +184,6 @@ const PublicProfile = () => {
             </Card>
           </div>
         </PageBody>
-        <BottomNav />
       </PageLayout>
     );
   }
@@ -385,8 +382,6 @@ const PublicProfile = () => {
           </div>
         </div>
       </PageBody>
-
-      <BottomNav />
     </PageLayout>
   );
 };
