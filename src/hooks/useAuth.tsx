@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Profile } from '@/types';
-import { clearSignedUrlCache } from '@/hooks/useSignedUrl';
+import { clearSignedUrlCache, clearAllSignedUrlCaches } from '@/hooks/useSignedUrl';
 
 interface AuthContextType {
   user: User | null;
@@ -109,11 +109,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Clear stale query cache and signed URL cache when auth state changes
+        // Clear stale query cache when auth state changes
+        // Only clear signed URL caches on SIGNED_OUT (not token refresh)
+        // to preserve cached avatar URLs across token refreshes
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
           queryClient.clear();
-          clearSignedUrlCache();
         }
+        if (event === 'SIGNED_OUT') {
+          clearAllSignedUrlCaches(); // Clear both memory and persistent cache
+        } else if (event === 'SIGNED_IN') {
+          clearSignedUrlCache(); // Only clear memory cache on sign-in (user might be different)
+        }
+        // Note: TOKEN_REFRESHED no longer clears any URL caches
         
         if (session?.user) {
           fetchProfile(session.user.id);
@@ -231,6 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setProfile(null);
     queryClient.clear();
+    clearAllSignedUrlCaches(); // Clear all caches including persistent on explicit sign-out
     toast.success('Signed out');
   };
 
