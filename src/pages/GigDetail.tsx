@@ -88,6 +88,7 @@ function useAddNoteToGig() {
       videoFiles = [],
       imageFiles = [],
       audioFiles = [],
+      audioFileNames = [],
     }: {
       authorId: string;
       gigId: string;
@@ -95,6 +96,7 @@ function useAddNoteToGig() {
       videoFiles?: string[];
       imageFiles?: string[];
       audioFiles?: string[];
+      audioFileNames?: string[];
     }) => {
       const { data, error } = await supabase
         .from('notes')
@@ -105,6 +107,7 @@ function useAddNoteToGig() {
           video_files: videoFiles,
           image_files: imageFiles,
           audio_files: audioFiles,
+          audio_file_names: audioFileNames,
           visibility: 'friends',
         })
         .select()
@@ -237,6 +240,7 @@ const GigDetail = () => {
   const handleAddNote = (data: {
     textContent?: string;
     audioFiles: string[];
+    audioFileNames?: string[];
     videoFiles: string[];
     imageFiles: string[];
   }) => {
@@ -250,6 +254,7 @@ const GigDetail = () => {
         videoFiles: data.videoFiles,
         imageFiles: data.imageFiles,
         audioFiles: data.audioFiles,
+        audioFileNames: data.audioFileNames,
       },
       {
         onSuccess: () => {
