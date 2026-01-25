@@ -26,6 +26,7 @@ import { useUpdateSessionDuration } from '@/hooks/useSessions';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
+import { saveAnchorPosition } from '@/hooks/useScrollRestoration';
 
 // Combined text content component that handles line clamping for both note text and focus text together
 interface CombinedTextContentProps {
@@ -325,6 +326,15 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   const handleNavigateToNote = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
+    
+    // Capture anchor position before navigating (for scroll restoration)
+    // Find the card element from the event target
+    const cardElement = (e?.currentTarget as HTMLElement)?.closest('[data-note-id]') as HTMLElement | null;
+    if (cardElement) {
+      const rect = cardElement.getBoundingClientRect();
+      saveAnchorPosition('index-timeline', note.id, rect.top);
+    }
+    
     const navState = fromFriends 
       ? { fromFriends: true } 
       : fromProject 
@@ -390,6 +400,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   return (
     <Card
+      data-note-id={note.id}
       className={`p-3 sm:p-4 bg-background text-foreground border border-border rounded-lg relative ${!expanded ? `cursor-pointer [@media(hover:hover)]:hover:bg-muted/50 ${isPressed ? 'bg-muted/50' : ''}` : ''} transition-colors duration-150`}
       onClick={!expanded ? handleNavigateToNote : undefined}
       onMouseEnter={handlePrefetch}

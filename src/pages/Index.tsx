@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
-import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { useScrollRestoration, restoreFromAnchor } from '@/hooks/useScrollRestoration';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -32,10 +32,25 @@ const Index = () => {
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
+  const hasRestoredAnchor = useRef(false);
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
+
+  // Anchor-based scroll restoration: wait for notes to load, then restore position
+  useEffect(() => {
+    // Only attempt restoration once per mount, and only when notes are loaded
+    if (hasRestoredAnchor.current || notesLoading || !notes?.length) return;
+    
+    // Use requestAnimationFrame to ensure DOM is updated with note cards
+    requestAnimationFrame(() => {
+      const restored = restoreFromAnchor('index-timeline');
+      if (restored) {
+        hasRestoredAnchor.current = true;
+      }
+    });
+  }, [notesLoading, notes?.length]);
 
   // Collect all unique tags from notes
   const availableTags = useMemo(() => {
