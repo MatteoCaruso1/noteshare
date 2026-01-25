@@ -11,7 +11,12 @@ import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { PremiumDialog } from "@/components/PremiumDialog";
-import { CheckoutDialog } from "@/components/CheckoutDialog";
+
+// Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
+// Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
+const CheckoutDialog = lazy(() => 
+  import("@/components/CheckoutDialog").then(module => ({ default: module.CheckoutDialog }))
+);
 
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -66,10 +71,18 @@ const queryClient = new QueryClient({
   },
 });
 
-// Wrapper to connect CheckoutDialog with PremiumContext
+// Wrapper to connect CheckoutDialog with PremiumContext - lazy loads Stripe.js only when opened
 function CheckoutDialogWrapper() {
   const { isCheckoutDialogOpen, closeCheckoutDialog } = usePremium();
-  return <CheckoutDialog open={isCheckoutDialogOpen} onOpenChange={closeCheckoutDialog} />;
+  
+  // Only render (and thus load Stripe.js) when checkout dialog is requested
+  if (!isCheckoutDialogOpen) return null;
+  
+  return (
+    <Suspense fallback={null}>
+      <CheckoutDialog open={isCheckoutDialogOpen} onOpenChange={closeCheckoutDialog} />
+    </Suspense>
+  );
 }
 
 function AppInner() {
