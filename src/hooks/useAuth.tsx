@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Profile } from '@/types';
+import { clearSignedUrlCache } from '@/hooks/useSignedUrl';
 
 interface AuthContextType {
   user: User | null;
@@ -108,9 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Clear stale query cache when auth state changes to avoid RLS failures
+        // Clear stale query cache and signed URL cache when auth state changes
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
           queryClient.clear();
+          clearSignedUrlCache();
         }
         
         if (session?.user) {
