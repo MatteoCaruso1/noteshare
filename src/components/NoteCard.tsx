@@ -477,6 +477,41 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               Practice Board
             </Badge>
           )}
+
+          {/* Linked Goal Badge - only visible to note owner since goals are private */}
+          {note.goal_id && isOwner && (
+            <Badge 
+              variant="outline" 
+              className="text-xs border-primary/30 text-primary"
+            >
+              <Compass className="w-3 h-3 mr-1" />
+              {goalName}
+            </Badge>
+          )}
+
+          {/* Linked Project Badge */}
+          {note.project_id && (
+            <Badge 
+              variant="outline" 
+              className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              onClick={handleNavigateToProject}
+            >
+              <Disc3 className="w-3 h-3 mr-1" />
+              {projectName}
+            </Badge>
+          )}
+
+          {/* Linked Gig Badge */}
+          {note.gig_id && (
+            <Badge 
+              variant="outline" 
+              className="text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
+              onClick={handleNavigateToGig}
+            >
+              <Calendar className="w-3 h-3 mr-1" />
+              {gigName}
+            </Badge>
+          )}
         </div>
 
         {/* Delete & Settings buttons - top-aligned with tags */}
@@ -600,35 +635,6 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </div>
       </div>
 
-      {/* Linked Project */}
-      {note.project_id && (
-        <div
-          className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg cursor-pointer hover:bg-primary/20 transition-colors"
-          onClick={handleNavigateToProject}
-        >
-          <Disc3 className="w-4 h-4 text-primary" />
-          <span className="text-sm text-primary truncate">{projectName}</span>
-        </div>
-      )}
-
-      {/* Linked Goal - only visible to note owner since goals are private */}
-      {note.goal_id && isOwner && (
-        <div className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg">
-          <Compass className="w-4 h-4 text-primary" />
-          <span className="text-sm text-primary truncate">{goalName}</span>
-        </div>
-      )}
-
-      {/* Linked Gig */}
-      {note.gig_id && (
-        <div
-          className="flex items-center gap-2 mb-3 p-2 bg-primary/10 rounded-lg cursor-pointer hover:bg-primary/20 transition-colors"
-          onClick={handleNavigateToGig}
-        >
-          <Calendar className="w-4 h-4 text-primary" />
-          <span className="text-sm text-primary truncate">{gigName}</span>
-        </div>
-      )}
 
       {/* Text Content - editable or display mode */}
       {isEditing ? (
