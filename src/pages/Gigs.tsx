@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
@@ -28,8 +28,8 @@ import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { SignedImage } from '@/components/SignedImage';
-import { Plus, Calendar, Music2, User, ExternalLink, DollarSign, Briefcase, Trash2, Upload, CalendarIcon, Clock } from 'lucide-react';
+import { ProjectCoverPicker, ProjectCover } from '@/components/ProjectCoverPicker';
+import { Plus, Calendar, Music2, ExternalLink, DollarSign, Briefcase, Trash2, CalendarIcon, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -55,43 +55,12 @@ const Gigs = () => {
   const [isPaidOpportunity, setIsPaidOpportunity] = useState(false);
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
   const [gigImage, setGigImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [gigImagePreviewUrl, setGigImagePreviewUrl] = useState<string | null>(null);
 
   if (!user) {
     navigate('/auth');
     return null;
   }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `gig-covers/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('practice-media')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('practice-media')
-        .getPublicUrl(filePath);
-
-      setGigImage(urlData.publicUrl);
-      toast.success('Image uploaded!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleCreate = () => {
     if (!profile || !title.trim()) return;
@@ -136,6 +105,7 @@ const Gigs = () => {
           setIsPaidOpportunity(false);
           setCollaboratorIds([]);
           setGigImage(null);
+          setGigImagePreviewUrl(null);
           setIsDialogOpen(false);
         },
       }
@@ -157,17 +127,8 @@ const Gigs = () => {
       onClick={() => navigate(`/gigs/${post.id}`)}
     >
       <div className="flex items-start gap-4">
-        {/* Gig image or icon - matching project card layout */}
-        <SignedImage
-          src={post.image || ''}
-          alt=""
-          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          fallback={
-            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-              <Music2 className="w-6 h-6 text-muted-foreground" />
-            </div>
-          }
-        />
+        {/* Gig image or icon - using ProjectCover for preset icon support */}
+        <ProjectCover value={post.image} className="w-16 h-16 flex-shrink-0" iconClassName="w-6 h-6" />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
@@ -273,32 +234,16 @@ const Gigs = () => {
                   <DialogTitle>Create New Gig</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
-                  {/* Gig Image Upload */}
-                  <div className="flex flex-col items-center gap-3">
-                    <div
-                      className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {gigImage ? (
-                        <img src={gigImage} alt="" className="w-full h-full object-cover" />
-                      ) : isUploading ? (
-                        <div className="text-xs text-muted-foreground">Uploading...</div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-1">
-                          <Upload className="w-6 h-6 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">Add Image</span>
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
+                  {/* Gig Cover Picker - with preset icons or custom upload */}
+                  {profile && (
+                    <ProjectCoverPicker
+                      value={gigImage}
+                      onChange={setGigImage}
+                      profileId={profile.id}
+                      previewUrl={gigImagePreviewUrl}
+                      onPreviewUrlChange={setGigImagePreviewUrl}
                     />
-                    <span className="text-xs text-muted-foreground">Optional gig image</span>
-                  </div>
+                  )}
 
                   <Input
                     placeholder="Gig title (e.g., Jazz Night at Blue Note)"
@@ -397,7 +342,7 @@ const Gigs = () => {
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"
                     onClick={handleCreate}
-                    disabled={createPromoPost.isPending || isUploading || !title.trim()}
+                    disabled={createPromoPost.isPending || !title.trim()}
                   >
                     Create Gig
                   </Button>

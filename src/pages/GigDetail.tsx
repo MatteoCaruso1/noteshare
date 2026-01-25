@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +18,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Music2, Calendar, ExternalLink, DollarSign, Upload, Trash2 } from 'lucide-react';
+import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
+import { Music2, Calendar, ExternalLink, DollarSign, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
@@ -150,8 +151,7 @@ const GigDetail = () => {
   const [editShowOnFeed, setEditShowOnFeed] = useState(false);
   const [editIsPaidOpportunity, setEditIsPaidOpportunity] = useState(false);
   const [editImage, setEditImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editImagePreviewUrl, setEditImagePreviewUrl] = useState<string | null>(null);
 
   const isOwner = profile?.id === gig?.author_id;
   const isCollaborator = gig?.collaborator_ids?.includes(profile?.id || '');
@@ -166,37 +166,8 @@ const GigDetail = () => {
       setEditShowOnFeed(gig.show_on_feed || false);
       setEditIsPaidOpportunity(gig.is_paid_opportunity || false);
       setEditImage(gig.image || null);
+      setEditImagePreviewUrl(null);
       setIsSettingsOpen(true);
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `gig-covers/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('practice-media')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('practice-media')
-        .getPublicUrl(filePath);
-
-      setEditImage(urlData.publicUrl);
-      toast.success('Image uploaded!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -299,6 +270,7 @@ const GigDetail = () => {
           coverIcon={<Music2 className="w-6 h-6 text-muted-foreground" />}
           showSettings={isOwner}
           onSettingsClick={openSettings}
+          useProjectCover={true}
           badges={
             gig.is_paid_opportunity ? (
               <Badge className="text-xs bg-green-600">
@@ -380,32 +352,16 @@ const GigDetail = () => {
             <DialogDescription>Update your gig details or delete the gig.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            {/* Gig Image Upload */}
-            <div className="flex flex-col items-center gap-3">
-              <div
-                className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {editImage ? (
-                  <img src={editImage} alt="" className="w-full h-full object-cover" />
-                ) : isUploading ? (
-                  <div className="text-xs text-muted-foreground">Uploading...</div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Upload className="w-6 h-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Gig Image</span>
-                  </div>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
+            {/* Gig Cover Picker - with preset icons or custom upload */}
+            {profile && (
+              <ProjectCoverPicker
+                value={editImage}
+                onChange={setEditImage}
+                profileId={profile.id}
+                previewUrl={editImagePreviewUrl}
+                onPreviewUrlChange={setEditImagePreviewUrl}
               />
-              <span className="text-xs text-muted-foreground">Click to add or change image</span>
-            </div>
+            )}
 
             <div>
               <Label htmlFor="title">Title</Label>
@@ -447,7 +403,7 @@ const GigDetail = () => {
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
               onClick={handleSaveSettings}
-              disabled={updateGig.isPending || isUploading || !editTitle.trim()}
+              disabled={updateGig.isPending || !editTitle.trim()}
             >
               Save Changes
             </Button>
