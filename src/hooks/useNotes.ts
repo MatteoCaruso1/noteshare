@@ -20,7 +20,8 @@ export function useNotes(projectId?: string) {
             profiles!notes_author_id_fkey (*),
             practice_sessions!notes_session_id_fkey (*),
             projects!notes_project_id_fkey (id, title),
-            goals!notes_goal_id_fkey (id, title, content)
+            goals!notes_goal_id_fkey (id, title, content),
+            promo_posts!notes_gig_id_fkey (id, title)
           `)
           .eq('project_id', projectId)
           .order('created_at', { ascending: false });
@@ -33,6 +34,7 @@ export function useNotes(projectId?: string) {
           session: note.practice_sessions,
           project: note.projects,
           goal: note.goals,
+          gig: note.promo_posts,
         })) as NoteWithAuthor[];
       }
 
@@ -46,7 +48,8 @@ export function useNotes(projectId?: string) {
           profiles!notes_author_id_fkey (*),
           practice_sessions!notes_session_id_fkey (*),
           projects!notes_project_id_fkey (id, title),
-          goals!notes_goal_id_fkey (id, title, content)
+          goals!notes_goal_id_fkey (id, title, content),
+          promo_posts!notes_gig_id_fkey (id, title)
         `)
         .eq('author_id', profile.id)
         .order('created_at', { ascending: false });
@@ -59,6 +62,7 @@ export function useNotes(projectId?: string) {
         session: note.practice_sessions,
         project: note.projects,
         goal: note.goals,
+        gig: note.promo_posts,
       })) as NoteWithAuthor[];
     },
     enabled: projectId ? true : !!profile?.id,
@@ -84,7 +88,8 @@ async function fetchNote(noteId: string) {
       profiles!notes_author_id_fkey (*),
       practice_sessions!notes_session_id_fkey (*),
       projects!notes_project_id_fkey (id, title),
-      goals!notes_goal_id_fkey (id, title, content)
+      goals!notes_goal_id_fkey (id, title, content),
+      promo_posts!notes_gig_id_fkey (id, title)
     `)
     .eq('id', noteId)
     .single();
@@ -97,6 +102,7 @@ async function fetchNote(noteId: string) {
     session: data.practice_sessions,
     project: data.projects,
     goal: data.goals,
+    gig: data.promo_posts,
   } as NoteWithAuthor;
 }
 
@@ -137,6 +143,7 @@ export function useCreateNote() {
       sessionId,
       projectId,
       goalId,
+      gigId,
       visibility = 'friends',
       focusEntryId,
       focusDate,
@@ -152,6 +159,7 @@ export function useCreateNote() {
       sessionId?: string;
       projectId?: string;
       goalId?: string;
+      gigId?: string;
       visibility?: 'private' | 'friends';
       focusEntryId?: string;
       focusDate?: string;
@@ -170,6 +178,7 @@ export function useCreateNote() {
           session_id: sessionId,
           project_id: projectId,
           goal_id: goalId,
+          gig_id: gigId,
           visibility,
           focus_entry_id: focusEntryId,
           focus_date: focusDate,

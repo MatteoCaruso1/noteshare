@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AudioFileWithName } from '@/types';
+import { LinkType, LinkSelection } from '@/components/LinkToPicker';
 
 interface PersistentNoteState {
   noteText: string;
@@ -7,6 +8,7 @@ interface PersistentNoteState {
   imageFiles: string[];
   tags: string[];
   selectedProjectId: string;
+  selectedLink: LinkSelection | null;
   visibility: 'private' | 'friends';
   pendingUploads?: PendingUpload[];
 }
@@ -87,6 +89,7 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
         imageFiles: [...(stored.imageFiles || []), ...completedImageUploads],
         tags: stored.tags || [],
         selectedProjectId: stored.selectedProjectId || '',
+        selectedLink: stored.selectedLink || null,
         visibility: stored.visibility || 'friends',
         pendingUploads: [], // Clear processed uploads
       };
@@ -99,6 +102,7 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
   const [imageFiles, setImageFilesState] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedLink, setSelectedLink] = useState<LinkSelection | null>(null);
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [initialized, setInitialized] = useState(false);
 
@@ -145,6 +149,7 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
     setImageFilesState(state.imageFiles);
     setTags(state.tags);
     setSelectedProjectId(state.selectedProjectId);
+    setSelectedLink(state.selectedLink);
     setVisibility(state.visibility);
     setInitialized(true);
   }, [profileId, loadState]);
@@ -159,6 +164,7 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
       imageFiles,
       tags,
       selectedProjectId,
+      selectedLink,
       visibility,
     };
 
@@ -171,7 +177,7 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
       // Clear storage if no content
       localStorage.removeItem(storageKey);
     }
-  }, [noteText, audioFiles, imageFiles, tags, selectedProjectId, visibility, storageKey, profileId, initialized]);
+  }, [noteText, audioFiles, imageFiles, tags, selectedProjectId, selectedLink, visibility, storageKey, profileId, initialized]);
 
   const clearState = useCallback(() => {
     setNoteText('');
@@ -179,6 +185,7 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
     setImageFilesState([]);
     setTags([]);
     setSelectedProjectId('');
+    setSelectedLink(null);
     setVisibility('friends');
     localStorage.removeItem(storageKey);
   }, [storageKey]);
@@ -255,6 +262,8 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
     setTags,
     selectedProjectId,
     setSelectedProjectId,
+    selectedLink,
+    setSelectedLink,
     visibility,
     setVisibility,
     clearState,
@@ -272,6 +281,7 @@ function getDefaultState(): PersistentNoteState {
     imageFiles: [],
     tags: [],
     selectedProjectId: '',
+    selectedLink: null,
     visibility: 'friends',
     pendingUploads: [],
   };

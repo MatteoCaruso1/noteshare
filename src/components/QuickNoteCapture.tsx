@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
+import { useGoals } from '@/hooks/useGoals';
+import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 
@@ -12,6 +14,7 @@ import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextarea } from '@/components/RichTextarea';
+import { LinkToPicker } from '@/components/LinkToPicker';
 
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
@@ -22,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { X, Save, Folder, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ClipboardList } from 'lucide-react';
+import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ClipboardList } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
@@ -38,6 +41,8 @@ function getTodayLocalDate(): string {
 export function QuickNoteCapture() {
   const { profile } = useAuth();
   const { data: projects } = useProjects();
+  const { data: goals } = useGoals(profile?.id);
+  const { data: gigs } = useMyPromoPosts(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
@@ -64,8 +69,8 @@ export function QuickNoteCapture() {
     setImageFiles,
     tags,
     setTags,
-    selectedProjectId,
-    setSelectedProjectId,
+    selectedLink,
+    setSelectedLink,
     visibility,
     setVisibility,
     clearState,
@@ -105,6 +110,11 @@ export function QuickNoteCapture() {
       return;
     }
     
+    // Determine projectId and goalId based on selectedLink
+    const projectId = selectedLink?.type === 'project' ? selectedLink.id : undefined;
+    const goalId = selectedLink?.type === 'goal' ? selectedLink.id : undefined;
+    const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
+    
     createNote.mutate(
       {
         authorId: profile.id,
@@ -113,7 +123,9 @@ export function QuickNoteCapture() {
         audioFileNames: audioFiles.map(a => a.name),
         imageFiles,
         tags,
-        projectId: selectedProjectId || undefined,
+        projectId,
+        goalId,
+        gigId,
         visibility,
         // Attach focus if toggle is on and focus exists - always use today's date
         focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
@@ -203,41 +215,14 @@ export function QuickNoteCapture() {
                 iconOnly
               />
 
-              {/* Project (icon dropdown) */}
-              {projects && projects.length > 0 && (
-                <Popover>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <PopoverTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={`h-8 w-8 ${selectedProjectId ? 'text-primary' : ''}`}
-                        >
-                          <Folder className="w-4 h-4" />
-                        </Button>
-                      </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Link to project</TooltipContent>
-                  </Tooltip>
-                  <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                    <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
-                      <SelectTrigger className="w-full h-8">
-                        <SelectValue placeholder="No project" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No project</SelectItem>
-                        {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </PopoverContent>
-                </Popover>
-              )}
-
+              {/* Link to Goal/Project/Gig */}
+              <LinkToPicker
+                projects={projects}
+                gigs={gigs}
+                goals={goals}
+                selectedLink={selectedLink}
+                onLinkChange={setSelectedLink}
+              />
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
