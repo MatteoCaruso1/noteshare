@@ -100,7 +100,7 @@ export function AppHeader() {
               </span>
               ) : (
                 <span className="text-[9px] leading-tight text-foreground">
-                  practice smarter
+                  Practice Smarter
                 </span>
               )}
             </div>
