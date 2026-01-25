@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
-import { BottomNav } from '@/components/BottomNav';
+
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
 import { WelcomeHero } from '@/components/WelcomeHero';
@@ -143,9 +143,6 @@ const Index = () => {
           </section>
         </main>
       </PageBody>
-
-      {/* Bottom Navigation */}
-      <BottomNav />
     </PageLayout>
   );
 };

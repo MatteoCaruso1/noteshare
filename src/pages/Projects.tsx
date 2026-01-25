@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -321,7 +320,7 @@ const Projects = () => {
         </main>
       </PageBody>
 
-      <BottomNav />
+      
     </PageLayout>
   );
 };

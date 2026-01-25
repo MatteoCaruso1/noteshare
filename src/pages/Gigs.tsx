@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -476,8 +475,6 @@ const Gigs = () => {
           </Tabs>
         </main>
       </PageBody>
-
-      <BottomNav />
     </PageLayout>
   );
 };

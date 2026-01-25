@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
 import { useNotes } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
-import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 import { Button } from '@/components/ui/button';
@@ -387,7 +386,7 @@ const ProjectDetail = () => {
         </DialogContent>
       </Dialog>
 
-      <BottomNav />
+      
     </PageLayout>
   );
 };
