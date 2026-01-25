@@ -87,7 +87,7 @@ export function PremiumGate({
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative min-h-[400px]", className)}>
       {/* Blurred/dimmed content */}
       <div 
         className={cn(
@@ -99,7 +99,7 @@ export function PremiumGate({
         {children}
       </div>
       
-      {/* Overlay with upgrade prompt */}
+      {/* Overlay with upgrade prompt - uses sticky positioning for stable placement */}
       <GateOverlay 
         featureName={featureName} 
         compact={compact} 
@@ -147,7 +147,7 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, descri
   return (
     <div className={cn(
       "flex flex-col items-center justify-center gap-2 py-4 px-6 text-center",
-      !standalone && "absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-lg"
+      !standalone && "absolute inset-x-0 top-[120px] bg-background/60 backdrop-blur-[2px] rounded-lg mx-auto w-fit"
     )}>
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
         <Icon className="h-5 w-5 text-jazz-gold" />
