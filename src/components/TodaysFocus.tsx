@@ -108,6 +108,19 @@ export function TodaysFocus() {
     }
   }, [isInitialized]); // Only trigger when isInitialized changes
 
+  // Dedicated effect for when text content changes after initial mount
+  // This handles the race condition where database data arrives after the 350ms fallback
+  useEffect(() => {
+    if (isOpen && text && isInitialized) {
+      // Double RAF ensures DOM has fully rendered the new text before measuring
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          autosizeTextarea();
+        });
+      });
+    }
+  }, [text, isOpen, isInitialized, autosizeTextarea]);
+
   // ResizeObserver to handle viewport/container size changes while open
   useEffect(() => {
     if (!isOpen) return;
