@@ -58,16 +58,25 @@ export function WelcomeHero() {
     >
       {/* Hero Section */}
       <div className="min-h-[85dvh] flex flex-col overflow-hidden relative w-full">
+        {/* Subtle gradient background effects - desktop only */}
+        <div className="absolute inset-0 pointer-events-none hidden md:block">
+          {/* Primary glow - top left */}
+          <div className="absolute top-1/4 -left-32 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />
+          {/* Secondary glow - bottom right */}
+          <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
+          {/* Subtle accent - center */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-br from-primary/3 via-transparent to-transparent rounded-full blur-[80px]" />
+        </div>
 
         {/* Hero Content - fades on scroll */}
         <main 
-          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 w-full transition-opacity duration-100 pt-12 md:pt-16"
+          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 w-full transition-opacity duration-100 pt-12 md:pt-16 relative z-10"
           style={{ opacity: scrollOpacity }}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl">
             Noteshare is a purpose-built tool to help musicians practice smarter
           </h1>
-          <p className="text-lg md:text-xl text-gray-500 max-w-2xl mb-8 leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 leading-relaxed">
             Organize, record, and share your practice. Manage your musical life, all in one place
           </p>
           <div className="flex items-center gap-4">
