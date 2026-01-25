@@ -104,16 +104,15 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   const truncatedNotes = useMemo(() => {
     if (!plainTextContent) return '';
     
-    // Base character limit - reduce if we have other content
-    let maxLength = 120;
+    // Higher base limit now that we have more space
+    let maxLength = 200;
     
     // Reduce limit if we have audio or images to display
-    if (hasAudio) maxLength -= 25;
-    if (hasImages) maxLength -= 20;
-    if (isPracticeSession && sessionDuration) maxLength -= 10;
+    if (hasAudio) maxLength -= 30;
+    if (hasImages) maxLength -= 25;
     
     // Ensure minimum
-    maxLength = Math.max(maxLength, 60);
+    maxLength = Math.max(maxLength, 100);
     
     if (plainTextContent.length > maxLength) {
       // Find last space before limit to avoid cutting words
@@ -123,7 +122,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
       return plainTextContent.slice(0, cutPoint).trim() + '...';
     }
     return plainTextContent;
-  }, [plainTextContent, hasAudio, hasImages, isPracticeSession, sessionDuration]);
+  }, [plainTextContent, hasAudio, hasImages]);
 
   return (
     <div
