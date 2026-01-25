@@ -31,7 +31,7 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
 /**
  * PageBody - Animated content area with subtle crossfade + blur transition.
  * Animation: opacity 0→1, blur 4px→0 for smooth page switching
- * Delay: 140ms, Duration: 280ms
+ * Delay: 120ms, Duration: 280ms
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
@@ -48,7 +48,7 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       // Delay before starting animation
       const delayTimer = setTimeout(() => {
         setIsVisible(true);
-      }, 140);
+      }, 120);
 
       return () => clearTimeout(delayTimer);
     } else if (initialMount.current) {
@@ -56,7 +56,7 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       initialMount.current = false;
       const delayTimer = setTimeout(() => {
         setIsVisible(true);
-      }, 140);
+      }, 120);
 
       return () => clearTimeout(delayTimer);
     }
