@@ -34,20 +34,20 @@ export function StreakRewardsSection({ currentStreak }: StreakRewardsSectionProp
               <Tooltip key={tier.tier}>
                 <TooltipTrigger asChild>
                   <div 
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs cursor-default ${
+                    className={`inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full text-xs leading-none cursor-default ${
                       achieved 
                         ? `${tier.bgColorClass} ${tier.colorClass} font-medium` 
                         : tier.tier === 'starter'
                           ? 'bg-primary/20 text-primary/60'
                           : tier.tier === 'bronze' 
-                            ? 'bg-amber-600/20 text-amber-700/60 dark:text-amber-500/60'
+                            ? 'bg-amber-500/20 text-amber-500/60'
                             : tier.tier === 'silver'
                               ? 'bg-slate-400/20 text-slate-500/60 dark:text-slate-300/60'
                               : 'bg-yellow-500/20 text-yellow-600/60 dark:text-yellow-400/60'
                     }`}
                   >
-                    <span>{tier.minDays}d</span>
-                    {achieved && <span>✓</span>}
+                    <span className="pt-px">{tier.minDays}d</span>
+                    {achieved && <span className="pt-px">✓</span>}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>{getTierTooltip(tier.tier, tier.minDays, achieved)}</TooltipContent>
