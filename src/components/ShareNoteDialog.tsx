@@ -19,7 +19,7 @@ interface ShareNoteDialogProps {
 export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
-  const [selectedStyle, setSelectedStyle] = useState<CardStyleId>('midnight');
+  const [selectedStyle, setSelectedStyle] = useState<CardStyleId>('dark');
   const [isExporting, setIsExporting] = useState(false);
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
     () => (note.audio_files || []).map((_, i) => i) // Include all by default
