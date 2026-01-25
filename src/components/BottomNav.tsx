@@ -32,15 +32,19 @@ export function BottomNav() {
   // Hide on auth/welcome routes
   const shouldHide = hiddenRoutes.includes(location.pathname);
 
-  // Detect keyboard open/close on mobile
+  // Detect keyboard open/close on mobile - only hide for large keyboards (not search bars)
   useEffect(() => {
     const handleResize = () => {
       // On mobile, when keyboard opens, the visual viewport height shrinks significantly
+      // Use a higher threshold (250px) to avoid hiding for minor viewport changes
+      // and only on actual mobile touch devices
       if (window.visualViewport) {
         const viewportHeight = window.visualViewport.height;
         const windowHeight = window.innerHeight;
-        // If viewport is significantly smaller than window, keyboard is likely open
-        setIsKeyboardOpen(windowHeight - viewportHeight > 150);
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        // Only consider keyboard open if viewport shrinks by more than 250px AND on touch device
+        const isKeyboard = isTouchDevice && (windowHeight - viewportHeight > 250);
+        setIsKeyboardOpen(isKeyboard);
       }
     };
 
