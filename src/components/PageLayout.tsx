@@ -76,9 +76,10 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
   );
 }
 
-// Map route paths to scroll restoration keys
+// Map route paths to scroll restoration keys (excluding home which uses anchor-based restoration)
 function getScrollKeyForPath(pathname: string): string | null {
-  if (pathname === '/') return 'index-timeline';
+  // Home route uses anchor-based restoration handled by Index.tsx
+  if (pathname === '/') return null;
   if (pathname === '/friends') return 'friends-timeline';
   if (pathname === '/projects') return 'projects';
   if (pathname === '/working-toward') return 'working-toward';
@@ -88,12 +89,13 @@ function getScrollKeyForPath(pathname: string): string | null {
 /**
  * PageLayout - Wrapper for page content.
  * Handles scroll restoration without visibility toggling to prevent jitter.
+ * Note: Home route (/) uses anchor-based restoration in Index.tsx instead.
  */
 export function PageLayout({ children }: PageLayoutProps) {
   const location = useLocation();
   const hasAppliedScroll = useRef(false);
   
-  // Apply scroll restoration synchronously before paint
+  // Apply scroll restoration synchronously before paint (for non-home routes)
   useLayoutEffect(() => {
     if (hasAppliedScroll.current) return;
     
