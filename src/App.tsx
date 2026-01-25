@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,21 +15,25 @@ import { CheckoutDialog } from "@/components/CheckoutDialog";
 
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+
+// Eagerly load the landing/welcome pages for fast FCP
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
-import Projects from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
-import NoteDetail from "./pages/NoteDetail";
-import Profile from "./pages/Profile";
-import PublicProfile from "./pages/PublicProfile";
-import Discover from "./pages/Discover";
-import Gigs from "./pages/Gigs";
-import GigDetail from "./pages/GigDetail";
-import FriendsJournals from "./pages/FriendsJournals";
-import WorkingToward from "./pages/WorkingToward";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import AdminAnalytics from "./pages/AdminAnalytics";
+
+// Lazy load all other pages to reduce initial bundle
+const Projects = lazy(() => import("./pages/Projects"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const NoteDetail = lazy(() => import("./pages/NoteDetail"));
+const Profile = lazy(() => import("./pages/Profile"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const Discover = lazy(() => import("./pages/Discover"));
+const Gigs = lazy(() => import("./pages/Gigs"));
+const GigDetail = lazy(() => import("./pages/GigDetail"));
+const FriendsJournals = lazy(() => import("./pages/FriendsJournals"));
+const WorkingToward = lazy(() => import("./pages/WorkingToward"));
+const Auth = lazy(() => import("./pages/Auth"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -95,24 +99,24 @@ function AppInner() {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/welcome" element={<Welcome />} />
-                  <Route path="/projects" element={<Projects />} />
-                  <Route path="/projects/:id" element={<ProjectDetail />} />
-                  <Route path="/notes/:id" element={<NoteDetail />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/user/:id" element={<PublicProfile />} />
-                  <Route path="/profile/:username" element={<PublicProfile />} />
-                  <Route path="/discover" element={<Discover />} />
-                  <Route path="/gigs" element={<Gigs />} />
-                  <Route path="/gigs/:id" element={<GigDetail />} />
-                  <Route path="/friends" element={<FriendsJournals />} />
-                  <Route path="/working-toward" element={<WorkingToward />} />
-                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/projects" element={<Suspense fallback={null}><Projects /></Suspense>} />
+                  <Route path="/projects/:id" element={<Suspense fallback={null}><ProjectDetail /></Suspense>} />
+                  <Route path="/notes/:id" element={<Suspense fallback={null}><NoteDetail /></Suspense>} />
+                  <Route path="/profile" element={<Suspense fallback={null}><Profile /></Suspense>} />
+                  <Route path="/user/:id" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
+                  <Route path="/profile/:username" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
+                  <Route path="/discover" element={<Suspense fallback={null}><Discover /></Suspense>} />
+                  <Route path="/gigs" element={<Suspense fallback={null}><Gigs /></Suspense>} />
+                  <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
+                  <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
+                  <Route path="/working-toward" element={<Suspense fallback={null}><WorkingToward /></Suspense>} />
+                  <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
                   <Route path="/admin/analytics" element={
                     <AdminGuard>
-                      <AdminAnalytics />
+                      <Suspense fallback={null}><AdminAnalytics /></Suspense>
                     </AdminGuard>
                   } />
-                  <Route path="*" element={<NotFound />} />
+                  <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
