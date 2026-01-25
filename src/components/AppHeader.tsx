@@ -13,7 +13,7 @@ export function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading } = usePremium();
   const { data: activeSession } = useActiveSession(profile?.id);
   const endSession = useEndSession();
   const createNote = useCreateNote();
@@ -94,7 +94,7 @@ export function AppHeader() {
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <span className="font-semibold leading-tight text-foreground">Noteshare</span>
-              {user ? (
+              {user && !isPremiumLoading ? (
               <span className="text-[9px] leading-tight text-primary">
                 {isPremium ? 'Premium' : 'Lite Version'}
               </span>
