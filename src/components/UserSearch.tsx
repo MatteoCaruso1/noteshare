@@ -268,17 +268,13 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
             <Skeleton className="w-4 h-4 rounded" />
             <Skeleton className="h-4 w-32" />
           </div>
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-3 p-2">
-                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-                <Skeleton className="h-7 w-14 rounded" />
-              </div>
-            ))}
+          <div className="flex items-center gap-3 p-2">
+            <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <Skeleton className="h-7 w-14 rounded" />
           </div>
         </div>
       )}
@@ -287,18 +283,16 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
       {showSearchResults && (
         <div className="mt-3 p-2 bg-secondary/20 rounded-lg border border-border max-h-[350px] overflow-y-auto animate-fade-in">
           {isLoading ? (
-            <div className="space-y-2 p-1">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3 py-3 px-2">
-                  <Skeleton className="w-12 h-12 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-3 w-20" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-8 w-24 rounded" />
+            <div className="p-1">
+              <div className="flex items-center gap-3 py-3 px-2">
+                <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3 w-24" />
                 </div>
-              ))}
+                <Skeleton className="h-8 w-24 rounded" />
+              </div>
             </div>
           ) : searchResults && searchResults.length > 0 ? (
             <div className="divide-y divide-border">
