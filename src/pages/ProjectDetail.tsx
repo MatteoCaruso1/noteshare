@@ -32,6 +32,7 @@ function useAddNoteToProject() {
       videoFiles = [],
       imageFiles = [],
       audioFiles = [],
+      audioFileNames = [],
     }: {
       authorId: string;
       projectId: string;
@@ -39,6 +40,7 @@ function useAddNoteToProject() {
       videoFiles?: string[];
       imageFiles?: string[];
       audioFiles?: string[];
+      audioFileNames?: string[];
     }) => {
       const { data, error } = await supabase
         .from('notes')
@@ -49,6 +51,7 @@ function useAddNoteToProject() {
           video_files: videoFiles,
           image_files: imageFiles,
           audio_files: audioFiles,
+          audio_file_names: audioFileNames,
           visibility: 'friends',
         })
         .select()
@@ -145,6 +148,7 @@ const ProjectDetail = () => {
   const handleAddNote = (data: {
     textContent?: string;
     audioFiles: string[];
+    audioFileNames?: string[];
     videoFiles: string[];
     imageFiles: string[];
   }) => {
@@ -158,6 +162,7 @@ const ProjectDetail = () => {
         videoFiles: data.videoFiles,
         imageFiles: data.imageFiles,
         audioFiles: data.audioFiles,
+        audioFileNames: data.audioFileNames,
       },
       {
         onSuccess: () => {
