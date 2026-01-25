@@ -23,19 +23,51 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
-  // Listen for password recovery event
+  // Listen for password recovery event and handle URL hash tokens
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] Auth state changed:', event);
       if (event === 'PASSWORD_RECOVERY') {
+        console.log('[Auth] Password recovery event detected');
         setMode('update-password');
       }
     });
 
-    // Check if arriving from reset link
+    // Parse URL hash for recovery tokens (Supabase puts tokens in hash fragment)
+    const hashFragment = window.location.hash;
+    if (hashFragment) {
+      const hashParams = new URLSearchParams(hashFragment.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const tokenType = hashParams.get('type');
+      const refreshToken = hashParams.get('refresh_token');
+      
+      console.log('[Auth] Hash params detected - type:', tokenType);
+      
+      if (accessToken && tokenType === 'recovery') {
+        console.log('[Auth] Recovery token found in URL hash, setting session');
+        // Set the session from the recovery tokens
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || '',
+        }).then(({ error }) => {
+          if (error) {
+            console.error('[Auth] Error setting session from recovery token:', error);
+            toast.error('Password reset link has expired. Please request a new one.');
+          } else {
+            console.log('[Auth] Session set successfully, switching to update-password mode');
+            setMode('update-password');
+            // Clear the hash from the URL for cleaner appearance
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        });
+      }
+    }
+
+    // Also check for reset=true search param (fallback)
     if (searchParams.get('reset') === 'true') {
-      // The user might already be in recovery mode
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
+          console.log('[Auth] Session found with reset param, switching to update-password');
           setMode('update-password');
         }
       });
