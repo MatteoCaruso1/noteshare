@@ -31,6 +31,7 @@ export function TodaysFocus() {
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const collapsibleContentRef = useRef<HTMLDivElement>(null);
 
   // Persist collapsed state to localStorage
   useEffect(() => {
@@ -60,24 +61,52 @@ export function TodaysFocus() {
 
   // Deterministic autosize using useLayoutEffect - runs before paint
   // Triggers on: isOpen change, text change, initialization
+  // IMPORTANT: Radix CollapsibleContent uses CSS animations for open/close transitions.
+  // We need to wait for the animation to complete before measuring scrollHeight.
   useLayoutEffect(() => {
     if (!isOpen) return;
     
-    // Run autosize immediately
+    // Run autosize immediately for already-expanded cases
     autosizeTextarea();
     
-    // On mobile, the initial layout may not be complete yet when text is first set.
-    // Use requestAnimationFrame to ensure the textarea has fully rendered before measuring.
-    // This fixes the issue where the textarea doesn't expand on initial mobile load.
-    if (isInitialized) {
-      const rafId = requestAnimationFrame(() => {
-        autosizeTextarea();
-        // Double RAF to catch any delayed layout recalculations on mobile browsers
-        requestAnimationFrame(autosizeTextarea);
-      });
-      return () => cancelAnimationFrame(rafId);
+    const contentEl = collapsibleContentRef.current;
+    
+    // Handler for when animation completes
+    const handleAnimationEnd = () => {
+      autosizeTextarea();
+    };
+    
+    // Listen for CSS transition/animation end events on the collapsible content
+    if (contentEl) {
+      contentEl.addEventListener('transitionend', handleAnimationEnd);
+      contentEl.addEventListener('animationend', handleAnimationEnd);
     }
+    
+    // Fallback timeout: Radix animations are typically ~200-300ms
+    // This ensures autosize runs even if animation events don't fire
+    // (e.g., prefers-reduced-motion, or if animation is already complete)
+    const fallbackTimeout = setTimeout(() => {
+      autosizeTextarea();
+    }, 350);
+    
+    return () => {
+      if (contentEl) {
+        contentEl.removeEventListener('transitionend', handleAnimationEnd);
+        contentEl.removeEventListener('animationend', handleAnimationEnd);
+      }
+      clearTimeout(fallbackTimeout);
+    };
   }, [isOpen, text, isInitialized, autosizeTextarea]);
+
+  // Special case: When data loads while the collapsible is already open,
+  // ensure we wait for any ongoing animations before final measurement
+  useEffect(() => {
+    if (isInitialized && isOpen) {
+      // Schedule autosize after typical Radix animation duration
+      const timeoutId = setTimeout(autosizeTextarea, 350);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isInitialized]); // Only trigger when isInitialized changes
 
   // ResizeObserver to handle viewport/container size changes while open
   useEffect(() => {
@@ -548,33 +577,35 @@ export function TodaysFocus() {
             </TooltipProvider>
           </div>
           <CollapsibleContent className="px-4 pb-4" style={{ overflow: 'visible' }}>
-            <div 
-              className={isFocused ? '' : 'cursor-text'}
-              onClick={() => {
-                if (!isFocused) {
-                  textareaRef.current?.focus({ preventScroll: true });
-                }
-              }}
-            >
-              <Textarea
-                ref={textareaRef}
-                value={text}
-                onInput={handleInput}
-                onPaste={handlePaste}
-                onKeyDown={handleKeyDown}
-                onFocus={(e) => {
-                  e.target.scrollIntoView = () => {};
-                  setIsFocused(true);
+            <div ref={collapsibleContentRef}>
+              <div 
+                className={isFocused ? '' : 'cursor-text'}
+                onClick={() => {
+                  if (!isFocused) {
+                    textareaRef.current?.focus({ preventScroll: true });
+                  }
                 }}
-                onBlur={() => {
-                  setIsFocused(false);
-                  handleBlur();
-                }}
-                placeholder="What are you practicing across sessions?"
-                className="min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
-                style={{ overscrollBehavior: 'contain' }}
-                rows={1}
-              />
+              >
+                <Textarea
+                  ref={textareaRef}
+                  value={text}
+                  onInput={handleInput}
+                  onPaste={handlePaste}
+                  onKeyDown={handleKeyDown}
+                  onFocus={(e) => {
+                    e.target.scrollIntoView = () => {};
+                    setIsFocused(true);
+                  }}
+                  onBlur={() => {
+                    setIsFocused(false);
+                    handleBlur();
+                  }}
+                  placeholder="What are you practicing across sessions?"
+                  className="min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
+                  style={{ overscrollBehavior: 'contain' }}
+                  rows={1}
+                />
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
