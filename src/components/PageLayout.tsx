@@ -29,9 +29,9 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
 }
 
 /**
- * PageBody - Animated content area that fades/slides in after a short delay.
- * Animation: opacity 0→1, translateY(6px)→0
- * Delay: 140ms, Duration: 220ms
+ * PageBody - Animated content area with subtle crossfade transition.
+ * Animation: opacity 0→1 (no vertical movement for smoother feel)
+ * Delay: 140ms, Duration: 200ms
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
@@ -67,8 +67,7 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(6px)',
-        transition: 'opacity 220ms cubic-bezier(0.2, 0, 0, 1), transform 220ms cubic-bezier(0.2, 0, 0, 1)',
+        transition: 'opacity 200ms ease-out',
       }}
     >
       {children}
