@@ -126,6 +126,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       
       const imageFile = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
       const shareText = 'Check out my session on Noteshare';
+      const shareUrl = 'https://notesharemusic.com';
       const files: File[] = [imageFile];
       
       // If audio is selected, fetch and include it
@@ -160,6 +161,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         await navigator.share({
           files,
           text: shareText,
+          url: shareUrl,
         });
         toast({ title: 'Shared successfully!' });
       } else if (navigator.share) {
@@ -167,7 +169,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         await navigator.share({
           title: 'My Practice Session',
           text: shareText,
-          url: window.location.href,
+          url: shareUrl,
         });
         toast({ title: 'Shared successfully!' });
       } else {
