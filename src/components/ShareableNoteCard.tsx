@@ -4,16 +4,16 @@ import { Clock, Music, Mic } from 'lucide-react';
 import { format, getHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-// Background style presets
+// Background style presets - ordered to work well with blue Noteshare logo
 export const CARD_STYLES = [
-  { id: 'dark', name: 'Dark', bgClass: 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900', textClass: 'text-white', accentClass: 'text-primary', mutedClass: 'text-zinc-400' },
-  { id: 'midnight', name: 'Midnight', bgClass: 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900', textClass: 'text-white', accentClass: 'text-indigo-400', mutedClass: 'text-indigo-300/70' },
-  { id: 'sunset', name: 'Sunset', bgClass: 'bg-gradient-to-br from-orange-600 via-rose-600 to-purple-700', textClass: 'text-white', accentClass: 'text-orange-200', mutedClass: 'text-white/70' },
-  { id: 'ocean', name: 'Ocean', bgClass: 'bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-800', textClass: 'text-white', accentClass: 'text-cyan-200', mutedClass: 'text-cyan-100/70' },
-  { id: 'forest', name: 'Forest', bgClass: 'bg-gradient-to-br from-emerald-700 via-green-800 to-teal-900', textClass: 'text-white', accentClass: 'text-emerald-300', mutedClass: 'text-emerald-200/70' },
-  { id: 'lavender', name: 'Lavender', bgClass: 'bg-gradient-to-br from-purple-600 via-violet-700 to-purple-800', textClass: 'text-white', accentClass: 'text-purple-200', mutedClass: 'text-purple-200/70' },
-  { id: 'cream', name: 'Cream', bgClass: 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50', textClass: 'text-zinc-800', accentClass: 'text-orange-600', mutedClass: 'text-zinc-500' },
-  { id: 'minimal', name: 'Minimal', bgClass: 'bg-white', textClass: 'text-zinc-900', accentClass: 'text-primary', mutedClass: 'text-zinc-500' },
+  { id: 'dark', name: 'Dark', bgClass: 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900', textClass: 'text-white', mutedClass: 'text-zinc-400' },
+  { id: 'midnight', name: 'Midnight', bgClass: 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900', textClass: 'text-white', mutedClass: 'text-indigo-300/70' },
+  { id: 'ocean', name: 'Ocean', bgClass: 'bg-gradient-to-br from-cyan-700 via-blue-800 to-indigo-900', textClass: 'text-white', mutedClass: 'text-cyan-100/70' },
+  { id: 'forest', name: 'Forest', bgClass: 'bg-gradient-to-br from-emerald-800 via-green-900 to-teal-950', textClass: 'text-white', mutedClass: 'text-emerald-200/70' },
+  { id: 'lavender', name: 'Lavender', bgClass: 'bg-gradient-to-br from-purple-700 via-violet-800 to-purple-900', textClass: 'text-white', mutedClass: 'text-purple-200/70' },
+  { id: 'sunset', name: 'Sunset', bgClass: 'bg-gradient-to-br from-orange-700 via-rose-700 to-purple-800', textClass: 'text-white', mutedClass: 'text-white/70' },
+  { id: 'cream', name: 'Cream', bgClass: 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50', textClass: 'text-zinc-800', mutedClass: 'text-zinc-500' },
+  { id: 'minimal', name: 'Minimal', bgClass: 'bg-white', textClass: 'text-zinc-900', mutedClass: 'text-zinc-500' },
 ] as const;
 
 export type CardStyleId = typeof CARD_STYLES[number]['id'];
@@ -119,18 +119,8 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
     >
       {/* Top Section - Type & Date */}
       <div className="mb-4">
-        <div className={cn('flex items-center gap-1.5 text-xs font-medium mb-0.5', style.accentClass)}>
-          {isPracticeSession ? (
-            <>
-              <Clock className="w-3.5 h-3.5" />
-              <span>{timeOfDay} Practice Session</span>
-            </>
-          ) : (
-            <>
-              <Music className="w-3.5 h-3.5" />
-              <span>Quick Note</span>
-            </>
-          )}
+        <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-0.5">
+          <span>{isPracticeSession ? `${timeOfDay} Practice Session` : 'Quick Note'}</span>
         </div>
         <span className={cn('text-xs', style.mutedClass)}>
           {format(new Date(note.created_at), 'MMMM d, yyyy')}
@@ -146,10 +136,10 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               Duration
             </span>
             <div className={cn(
-              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-lg font-bold',
+              'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-bold',
               style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
             )}>
-              <Clock className="w-4 h-4" />
+              <Clock className="w-3 h-3" />
               <span>{sessionDuration}</span>
             </div>
           </div>
@@ -221,14 +211,11 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto pt-3 border-t border-current/10 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-              <Music className="w-3.5 h-3.5 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-xs">Noteshare</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+            <Music className="w-3 h-3 text-primary-foreground" />
           </div>
-          <span className={cn('text-[10px]', style.mutedClass)}>Practice your way</span>
+          <span className="font-semibold text-xs">Noteshare</span>
         </div>
       </div>
     </div>
