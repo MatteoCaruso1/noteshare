@@ -4,6 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 // Cache for signed URLs to avoid re-fetching
 const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
 
+// Export function to clear cache (useful for auth state transitions)
+export function clearSignedUrlCache() {
+  signedUrlCache.clear();
+}
+
 /**
  * Check if a URL is an external (non-storage) URL that should pass through
  */
@@ -82,6 +87,12 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    // Reset retry count when URL changes
+    setRetryCount(0);
+  }, [originalUrl]);
 
   useEffect(() => {
     if (!originalUrl) {
@@ -153,6 +164,18 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
         });
 
         if (fnError) {
+          // If auth error and we haven't retried much, try again after a delay
+          // This handles the case where auth state is still propagating after login
+          const isAuthError = fnError.message?.toLowerCase().includes('auth') || 
+                             fnError.message?.toLowerCase().includes('unauthorized') ||
+                             fnError.message?.toLowerCase().includes('jwt');
+          
+          if (isAuthError && retryCount < 3) {
+            console.log('[useSignedUrl] Auth error, retrying in 500ms... (attempt', retryCount + 1, ')');
+            setTimeout(() => setRetryCount(c => c + 1), 500);
+            return;
+          }
+          
           console.error('[useSignedUrl] get-signed-url error:', fnError);
           setError(new Error(fnError.message));
           setSignedUrl(originalUrl);
@@ -178,7 +201,7 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
     };
 
     run();
-  }, [originalUrl]);
+  }, [originalUrl, retryCount]);
 
   return { signedUrl, loading, error };
 }
