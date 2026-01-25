@@ -16,7 +16,7 @@ import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar } from 'lucide-react';
+import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -149,9 +149,10 @@ interface NoteCardProps {
   fromFriends?: boolean;
   fromProject?: string;
   fromGig?: string;
+  onShareClick?: () => void;
 }
 
-export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig }: NoteCardProps) {
+export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig, onShareClick }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { isPremium, isLoading: isPremiumLoading } = usePremium();
@@ -540,43 +541,25 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           )}
         </div>
 
-        {/* Delete & Settings buttons - top-aligned with tags */}
+        {/* Share & Settings buttons - top-aligned with tags */}
         {isOwner && expanded && (
           <div className="flex items-center gap-1 shrink-0">
-            {/* Delete Button - standalone grey button */}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-muted-foreground hover:bg-muted"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Delete {isPracticeSession ? 'session' : 'note'}?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Share Button */}
+            {onShareClick && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShareClick();
+                }}
+              >
+                <Share className="w-4 h-4" />
+              </Button>
+            )}
 
-            {/* Settings Menu */}
+            {/* Settings Menu (includes Delete) */}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -612,6 +595,37 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                     </>
                   )}
                 </DropdownMenuItem>
+                {/* Delete option */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      className="cursor-pointer text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Delete {isPracticeSession ? 'session' : 'note'}?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
