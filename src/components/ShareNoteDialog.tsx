@@ -197,8 +197,6 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   }, [generateImage, handleDownload, toast, audioToInclude, note.audio_files, note.audio_file_names]);
 
   const handleInstagramShare = useCallback(async () => {
-    // Instagram Stories can be shared via Web Share API on iOS
-    // or users can copy image to clipboard and paste in Instagram
     setIsExporting(true);
     try {
       const blob = await generateImage();
@@ -206,18 +204,25 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       
       const file = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
       
-      // Try native share first (works on iOS with Instagram installed)
+      // Try native share with just the image (cleaner for Instagram)
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
         });
-        toast({ title: 'Opening share menu...' });
+        
+        // Show helpful toast AFTER share completes
+        toast({ 
+          title: 'Image shared!',
+          description: 'Tip: Add a link sticker to notesharemusic.com in Instagram',
+          duration: 5000,
+        });
       } else {
-        // Fallback: download and instruct
+        // Fallback: download and provide instructions
         await handleDownload();
         toast({ 
-          title: 'Image saved!', 
-          description: 'Open Instagram and share from your photo library' 
+          title: 'Image saved to your device!', 
+          description: 'Open Instagram → Create Story → Select from Photos. Add a link sticker to notesharemusic.com',
+          duration: 6000,
         });
       }
     } catch (err) {
@@ -225,7 +230,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         await handleDownload();
         toast({ 
           title: 'Image saved!', 
-          description: 'Open Instagram and share from your photo library' 
+          description: 'Open Instagram and share from your photo library. Add a link sticker to notesharemusic.com',
+          duration: 6000,
         });
       }
     } finally {
