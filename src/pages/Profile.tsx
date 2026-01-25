@@ -71,6 +71,7 @@ const Profile = () => {
   // Streak milestone dialog state
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
+  const [celebratingAchievementCount, setCelebratingAchievementCount] = useState(1);
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
   // Guard ref to prevent duplicate milestone processing (race condition fix)
@@ -143,13 +144,17 @@ const Profile = () => {
         return;
       }
       
-      // Backend returns { claimed: boolean, ... }
-      const result = data as { claimed: boolean } | null;
+      // Backend returns { claimed: boolean, streak_achievement_counts: {...}, ... }
+      const result = data as { claimed: boolean; streak_achievement_counts?: Record<string, number> } | null;
       
       if (result?.claimed) {
-        // Successfully claimed! Show dialog and mark as celebrated
+        // Successfully claimed! Get the count for this milestone
+        const achievementCount = result.streak_achievement_counts?.[String(currentTier.minDays)] || 1;
+        
+        // Show dialog with the count and mark as celebrated
         celebratedThisSessionRef.current.add(currentTier.minDays);
         setCelebratingTier(currentTier);
+        setCelebratingAchievementCount(achievementCount);
         setMilestoneDialogOpen(true);
         // Refresh profile to get updated counts
         await refreshProfile();
@@ -433,6 +438,7 @@ const Profile = () => {
           tier={celebratingTier}
           streakDays={practiceStats?.currentStreak || 0}
           hasNextMilestone={true}
+          achievementCount={celebratingAchievementCount}
         />
       )}
     </PageLayout>
