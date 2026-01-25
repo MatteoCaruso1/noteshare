@@ -502,7 +502,8 @@ export function TodaysFocus() {
         </div>
         {willBeOpen && (
           <div className="px-4 pb-4">
-            <div className="h-12 bg-muted/50 rounded animate-pulse" />
+            {/* Reserve realistic height to prevent layout shift during scroll restoration */}
+            <div className="min-h-[120px] bg-muted/50 rounded animate-pulse" />
           </div>
         )}
       </Card>
