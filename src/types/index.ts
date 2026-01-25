@@ -51,6 +51,7 @@ export interface Note {
   session_id: string | null;
   project_id: string | null;
   goal_id: string | null;
+  gig_id: string | null;
   focus_entry_id: string | null;
   focus_date: string | null;
   focus_text_snapshot: string | null;
@@ -71,6 +72,7 @@ export interface NoteWithAuthor extends Note {
   session?: PracticeSession | null;
   project?: { id: string; title: string } | null;
   goal?: { id: string; title: string | null; content: string } | null;
+  gig?: { id: string; title: string } | null;
 }
 
 export interface Project {

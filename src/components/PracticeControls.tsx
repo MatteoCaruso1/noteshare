@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession, useDeleteSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
+import { useGoals } from '@/hooks/useGoals';
+import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 
@@ -14,6 +16,7 @@ import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
 import { RichTextarea } from '@/components/RichTextarea';
+import { LinkToPicker } from '@/components/LinkToPicker';
 
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
@@ -26,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Folder, Lock, Users, Settings, ClipboardList, Pause, ChevronDown, ChevronRight, Trash2, LockOpen } from 'lucide-react';
+import { Play, Square, Clock, X, Lock, Users, Settings, ClipboardList, Pause, ChevronDown, ChevronRight, Trash2, LockOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -81,6 +84,8 @@ export function PracticeControls() {
   const { profile } = useAuth();
   const { data: activeSession } = useActiveSession(profile?.id);
   const { data: projects } = useProjects();
+  const { data: goals } = useGoals(profile?.id);
+  const { data: gigs } = useMyPromoPosts(profile?.id);
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
   
@@ -104,8 +109,8 @@ export function PracticeControls() {
     setImageFiles,
     tags,
     setTags,
-    selectedProjectId,
-    setSelectedProjectId,
+    selectedLink,
+    setSelectedLink,
     visibility,
     setVisibility,
     clearState,
@@ -431,6 +436,11 @@ export function PracticeControls() {
         { sessionId: activeSession.id, userId: profile.id },
         {
           onSuccess: () => {
+            // Determine projectId, goalId, and gigId based on selectedLink
+            const projectId = selectedLink?.type === 'project' ? selectedLink.id : undefined;
+            const goalId = selectedLink?.type === 'goal' ? selectedLink.id : undefined;
+            const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
+            
             createNote.mutate(
               {
                 authorId: profile.id,
@@ -440,7 +450,9 @@ export function PracticeControls() {
                 imageFiles,
                 tags,
                 sessionId: activeSession.id,
-                projectId: selectedProjectId || undefined,
+                projectId,
+                goalId,
+                gigId,
                 visibility,
                 focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
                 focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
@@ -641,41 +653,14 @@ export function PracticeControls() {
                 iconOnly
               />
 
-              {/* Project (icon dropdown) */}
-              {projects && projects.length > 0 && (
-                <Popover>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <PopoverTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={`h-8 w-8 ${selectedProjectId ? 'text-primary' : ''}`}
-                        >
-                          <Folder className="w-4 h-4" />
-                        </Button>
-                      </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Link to project</TooltipContent>
-                  </Tooltip>
-                  <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                    <Select value={selectedProjectId || "none"} onValueChange={(v) => setSelectedProjectId(v === "none" ? "" : v)}>
-                      <SelectTrigger className="w-full h-8">
-                        <SelectValue placeholder="No project" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No project</SelectItem>
-                        {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </PopoverContent>
-                </Popover>
-              )}
-
+              {/* Link to Goal/Project/Gig */}
+              <LinkToPicker
+                projects={projects}
+                gigs={gigs}
+                goals={goals}
+                selectedLink={selectedLink}
+                onLinkChange={setSelectedLink}
+              />
 
               {/* Wake Lock toggle - mobile-optimized button with inline styles when enabled to prevent iOS sticky hover override */}
               <button
