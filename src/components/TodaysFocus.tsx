@@ -611,7 +611,7 @@ export function TodaysFocus() {
                     handleBlur();
                   }}
                   placeholder="What are you practicing across sessions?"
-                  className="min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
+                  className="practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
                   style={{ overscrollBehavior: 'contain' }}
                   rows={1}
                 />
