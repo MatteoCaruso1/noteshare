@@ -95,9 +95,9 @@ export function AppHeader() {
             <div className="flex flex-col">
               <span className="font-semibold leading-tight text-foreground">Noteshare</span>
               {user ? (
-                <span className={`text-[9px] leading-tight ${isPremium ? 'text-primary' : 'text-primary italic'}`}>
-                  {isPremium ? 'Premium' : 'Lite Version'}
-                </span>
+              <span className="text-[9px] leading-tight text-primary">
+                {isPremium ? 'Premium' : 'Lite Version'}
+              </span>
               ) : (
                 <span className="text-[9px] leading-tight text-foreground">
                   practice smarter
