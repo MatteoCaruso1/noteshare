@@ -85,28 +85,45 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
     return tmp.textContent || tmp.innerText || '';
   }, [note.text_content]);
 
-  // Get audio files to display
-  const audioFiles = useMemo(() => {
-    return (note.audio_files || [])
+  // Get audio files to display - limit to 1 max
+  const audioFile = useMemo(() => {
+    const included = (note.audio_files || [])
       .map((url, idx) => ({
         url,
         name: note.audio_file_names?.[idx] || `Recording ${idx + 1}`,
         included: audioToInclude.includes(idx),
       }))
       .filter(a => a.included);
+    return included.length > 0 ? included[0] : null;
   }, [note.audio_files, note.audio_file_names, audioToInclude]);
 
   const hasImages = (note.image_files?.length || 0) > 0;
+  const hasAudio = !!audioFile;
 
-  // Limit notes to fit card - use shorter limit and truncate
+  // Dynamically calculate max text length based on what else is displayed
   const truncatedNotes = useMemo(() => {
     if (!plainTextContent) return '';
-    const maxLength = 180;
+    
+    // Base character limit - reduce if we have other content
+    let maxLength = 120;
+    
+    // Reduce limit if we have audio or images to display
+    if (hasAudio) maxLength -= 25;
+    if (hasImages) maxLength -= 20;
+    if (isPracticeSession && sessionDuration) maxLength -= 10;
+    
+    // Ensure minimum
+    maxLength = Math.max(maxLength, 60);
+    
     if (plainTextContent.length > maxLength) {
-      return plainTextContent.slice(0, maxLength).trim() + '...';
+      // Find last space before limit to avoid cutting words
+      const trimmed = plainTextContent.slice(0, maxLength);
+      const lastSpace = trimmed.lastIndexOf(' ');
+      const cutPoint = lastSpace > maxLength * 0.7 ? lastSpace : maxLength;
+      return plainTextContent.slice(0, cutPoint).trim() + '...';
     }
     return plainTextContent;
-  }, [plainTextContent]);
+  }, [plainTextContent, hasAudio, hasImages, isPracticeSession, sessionDuration]);
 
   return (
     <div
@@ -131,8 +148,8 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Duration Section (for practice sessions) */}
         {isPracticeSession && sessionDuration && (
-          <div className="mb-4 flex-shrink-0">
-            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block', style.mutedClass)}>
+          <div className="mb-3 flex-shrink-0">
+            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
               Duration
             </span>
             <div className={cn(
@@ -145,62 +162,52 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </div>
         )}
 
-        {/* Text Content Section - allow shrinking with line clamp */}
+        {/* Text Content Section - smaller font, tighter spacing */}
         {truncatedNotes && (
-          <div className="mb-4 flex-shrink overflow-hidden">
-            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block flex-shrink-0', style.mutedClass)}>
+          <div className="mb-3 flex-shrink-0">
+            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
               {isPracticeSession ? 'Session Notes' : 'Notes'}
             </span>
-            <p className="text-sm leading-relaxed">
+            <p className="text-xs leading-snug">
               {truncatedNotes}
             </p>
           </div>
         )}
 
-        {/* Audio Files Section */}
-        {audioFiles.length > 0 && (
-          <div className="mb-4 flex-shrink-0">
-            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block', style.mutedClass)}>
-              Recordings
+        {/* Audio File Section - single recording only */}
+        {audioFile && (
+          <div className="mb-3 flex-shrink-0">
+            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
+              Recording
             </span>
-            <div className="space-y-1.5">
-              {audioFiles.slice(0, 2).map((audio, idx) => (
-                <div
-                  key={idx}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-xl',
-                    style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
-                  )}
-                >
-                  <div className={cn(
-                    'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-                    style.id === 'cream' || style.id === 'minimal' ? 'bg-primary/10' : 'bg-white/20'
-                  )}>
-                    <Mic className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{audio.name}</p>
-                    <p className={cn('text-[10px]', style.mutedClass)}>Audio Recording</p>
-                  </div>
-                </div>
-              ))}
-              {audioFiles.length > 2 && (
-                <p className={cn('text-[10px] pl-1', style.mutedClass)}>
-                  +{audioFiles.length - 2} more recording{audioFiles.length > 3 ? 's' : ''}
-                </p>
+            <div
+              className={cn(
+                'flex items-center gap-2 px-2.5 py-1.5 rounded-xl',
+                style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
               )}
+            >
+              <div className={cn(
+                'w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0',
+                style.id === 'cream' || style.id === 'minimal' ? 'bg-primary/10' : 'bg-white/20'
+              )}>
+                <Mic className="w-3 h-3" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-medium truncate">{audioFile.name}</p>
+                <p className={cn('text-[9px]', style.mutedClass)}>Audio Recording</p>
+              </div>
             </div>
           </div>
         )}
 
         {/* Image indicator */}
         {hasImages && (
-          <div className="mb-4 flex-shrink-0">
-            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block', style.mutedClass)}>
+          <div className="mb-3 flex-shrink-0">
+            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
               Photos
             </span>
             <div className={cn(
-              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs',
+              'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]',
               style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
             )}>
               📸 {note.image_files!.length} photo{note.image_files!.length > 1 ? 's' : ''}

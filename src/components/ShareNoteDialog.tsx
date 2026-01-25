@@ -21,8 +21,9 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const cardRef = useRef<HTMLDivElement>(null);
   const [selectedStyle, setSelectedStyle] = useState<CardStyleId>('dark');
   const [isExporting, setIsExporting] = useState(false);
+  // Default to first audio file if any exist
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
-    () => (note.audio_files || []).map((_, i) => i) // Include all by default
+    () => (note.audio_files?.length || 0) > 0 ? [0] : []
   );
 
   const audioFiles = useMemo(() => {
@@ -224,11 +225,11 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             </div>
           </div>
 
-          {/* Audio Selection */}
+          {/* Audio Selection - max 1 */}
           {audioFiles.length > 0 && (
             <div>
               <Label className="text-sm text-muted-foreground mb-2 block">
-                Audio to display on card
+                Select one recording to display
               </Label>
               <div className="space-y-2">
                 {audioFiles.map((audio) => (
@@ -236,7 +237,14 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                     <Checkbox
                       id={`audio-${audio.index}`}
                       checked={audioToInclude.includes(audio.index)}
-                      onCheckedChange={() => toggleAudio(audio.index)}
+                      onCheckedChange={(checked) => {
+                        // Only allow one selection - replace instead of toggle
+                        if (checked) {
+                          setAudioToInclude([audio.index]);
+                        } else {
+                          setAudioToInclude([]);
+                        }
+                      }}
                     />
                     <Label 
                       htmlFor={`audio-${audio.index}`}
@@ -248,7 +256,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Note: Audio files will need to be shared separately via message
+                Audio files must be shared separately via message
               </p>
             </div>
           )}
