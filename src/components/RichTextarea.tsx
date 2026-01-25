@@ -359,7 +359,7 @@ export function RichTextarea({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={rows}
-        className={cn("resize-none text-sm min-h-[36px]", className)}
+        className={cn("practice-board-textarea resize-none text-sm min-h-[36px]", className)}
       />
     </div>
   );
