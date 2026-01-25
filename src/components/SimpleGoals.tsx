@@ -94,10 +94,10 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   // Icon should light up when editing or adding
   const isActive = isAdding || editingId !== null;
 
-  // Show loading skeleton
+  // Show loading skeleton with stable min-height to prevent layout shifts
   if (isLoading) {
     return (
-      <Card className="bg-card border-border p-4">
+      <Card className="bg-card border-border p-4 min-h-[140px]">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Compass className="w-5 h-5 text-foreground" />
@@ -119,7 +119,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   }
 
   return (
-    <Card className="bg-card border-border p-4">
+    <Card className="bg-card border-border p-4 min-h-[140px]">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Compass className={`w-5 h-5 transition-colors ${isActive ? 'text-primary' : 'text-foreground'}`} />

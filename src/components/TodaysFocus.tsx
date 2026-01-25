@@ -493,9 +493,10 @@ export function TodaysFocus() {
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
   const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
 
+  // Loading state with stable min-height to prevent layout shifts
   if (isLoading) {
     return (
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border min-h-[60px]">
         <div className="p-4 flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-muted-foreground" />
           <h2 className="font-semibold">Practice Board</h2>
