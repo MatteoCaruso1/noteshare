@@ -60,9 +60,9 @@ export function PremiumDialog() {
           <div className="space-y-1">
             <button 
               onClick={handleStartTrial}
-              className="w-full flex items-center justify-center bg-jazz-gold hover:bg-jazz-gold/90 text-black transition-colors rounded-full px-4 py-2.5 cursor-pointer"
+              className="w-full flex items-center justify-center bg-gradient-to-r from-jazz-gold to-jazz-amber text-jazz-midnight transition-all rounded-full px-4 py-2.5 cursor-pointer shadow-lg [@media(hover:hover)]:hover:shadow-xl [@media(hover:hover)]:hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="font-medium"><span className="text-black">30-day free trial,</span> <span className="text-black/60">then {priceDisplay}</span></span>
+              <span><span className="font-semibold">30-day free trial,</span> then {priceDisplay}</span>
             </button>
             <p className="text-xs text-muted-foreground italic text-center">Cancel anytime</p>
           </div>
