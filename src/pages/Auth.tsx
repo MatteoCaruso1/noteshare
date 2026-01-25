@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Music, AlertCircle } from 'lucide-react';
+import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -162,7 +162,18 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-auth-enter">
-      <Card className="w-full max-w-md p-8 bg-card border-border">
+      <div className="w-full max-w-md">
+        {/* Back to landing button */}
+        <button
+          type="button"
+          onClick={() => navigate('/welcome')}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
+        
+        <Card className="w-full p-8 bg-card border-border">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-primary mb-3">
             <Music className="w-7 h-7 text-primary-foreground" />
@@ -324,7 +335,8 @@ const Auth = () => {
             )}
           </div>
         )}
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
