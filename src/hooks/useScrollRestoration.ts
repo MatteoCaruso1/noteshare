@@ -3,9 +3,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 interface StoredState {
   scrollY: number;
   displayCount: number;
-  // Anchor-based restoration: store note ID and its viewport offset
-  anchorNoteId?: string;
-  anchorOffsetFromTop?: number;
 }
 
 const storedStates = new Map<string, StoredState>();
@@ -32,54 +29,6 @@ export function getSavedScrollPosition(key: string): number | null {
     return saved.scrollY;
   }
   return null;
-}
-
-// Save anchor position before navigating to a note
-export function saveAnchorPosition(key: string, noteId: string, offsetFromTop: number) {
-  const current = storedStates.get(key);
-  storedStates.set(key, {
-    scrollY: current?.scrollY ?? window.scrollY,
-    displayCount: current?.displayCount ?? 10,
-    anchorNoteId: noteId,
-    anchorOffsetFromTop: offsetFromTop,
-  });
-}
-
-// Restore scroll position based on anchor element
-// Returns true if restoration was attempted, false if no anchor found
-export function restoreFromAnchor(key: string): boolean {
-  const saved = storedStates.get(key);
-  if (!saved?.anchorNoteId || saved.anchorOffsetFromTop === undefined) {
-    return false;
-  }
-  
-  // Find the anchor element by data-note-id attribute
-  const anchorElement = document.querySelector(`[data-note-id="${saved.anchorNoteId}"]`);
-  if (!anchorElement) {
-    return false;
-  }
-  
-  // Calculate where we need to scroll to put this element at the same viewport offset
-  const currentRect = anchorElement.getBoundingClientRect();
-  const currentOffsetFromTop = currentRect.top;
-  const scrollAdjustment = currentOffsetFromTop - saved.anchorOffsetFromTop;
-  const targetScroll = window.scrollY + scrollAdjustment;
-  
-  isRestoringScroll = true;
-  window.scrollTo({ top: Math.max(0, targetScroll), left: 0, behavior: 'auto' });
-  
-  // Clear anchor after restoration to prevent re-triggering
-  storedStates.set(key, {
-    ...saved,
-    anchorNoteId: undefined,
-    anchorOffsetFromTop: undefined,
-  });
-  
-  requestAnimationFrame(() => {
-    isRestoringScroll = false;
-  });
-  
-  return true;
 }
 
 export function useScrollRestoration(key: string, initialDisplayCount: number = 10) {
