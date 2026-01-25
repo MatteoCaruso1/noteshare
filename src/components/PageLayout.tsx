@@ -29,9 +29,9 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
 }
 
 /**
- * PageBody - Animated content area with subtle crossfade transition.
- * Animation: opacity 0→1 (no vertical movement for smoother feel)
- * Delay: 140ms, Duration: 200ms
+ * PageBody - Animated content area with subtle crossfade + blur transition.
+ * Animation: opacity 0→1, blur 4px→0 for smooth page switching
+ * Delay: 140ms, Duration: 280ms
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
@@ -67,7 +67,8 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 200ms ease-out',
+        filter: isVisible ? 'blur(0px)' : 'blur(4px)',
+        transition: 'opacity 280ms ease-out, filter 280ms ease-out',
       }}
     >
       {children}
