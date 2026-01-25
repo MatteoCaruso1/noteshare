@@ -4,8 +4,6 @@ import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNotification } from '@/hooks/useNotifications';
-import { useUpdateNoteTags } from '@/hooks/useUpdateNote';
-import { useRecentTags } from '@/hooks/useRecentTags';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { BottomNav } from '@/components/BottomNav';
 import { PageLayout, PageBody } from '@/components/PageLayout';
@@ -34,17 +32,10 @@ const NoteDetail = () => {
   const createComment = useCreateNoteComment();
   const deleteComment = useDeleteNoteComment();
   const createNotification = useCreateNotification();
-  const updateTags = useUpdateNoteTags();
-  const recentTags = useRecentTags();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   
   const isOwner = profile?.id === note?.author_id;
-  
-  const handleTagsChange = useCallback((newTags: string[]) => {
-    if (!id) return;
-    updateTags.mutate({ noteId: id, tags: newTags });
-  }, [id, updateTags]);
   
   // Check where we came from for proper back navigation
   const fromFriends = location.state?.fromFriends;
@@ -171,8 +162,6 @@ const NoteDetail = () => {
           <NoteCard 
             note={note} 
             expanded 
-            onTagsChange={isOwner ? handleTagsChange : undefined}
-            recentTags={isOwner ? recentTags : undefined}
           />
 
           {/* Comments Section */}

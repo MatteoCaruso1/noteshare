@@ -5,7 +5,7 @@ import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
-import { useRecentTags } from '@/hooks/useRecentTags';
+
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
@@ -14,7 +14,7 @@ import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
 import { RichTextarea } from '@/components/RichTextarea';
-import { TagInput } from '@/components/TagInput';
+
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,7 @@ export function PracticeControls() {
   const { data: projects } = useProjects();
   const { data: recentNotes } = useRecentSessionNotes(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
-  const recentTags = useRecentTags();
+  
   const startSession = useStartSession();
   const endSession = useEndSession();
   const deleteSession = useDeleteSession();
@@ -676,13 +676,6 @@ export function PracticeControls() {
                 </Popover>
               )}
 
-              {/* Tags (icon dropdown) */}
-              <TagInput
-                tags={tags}
-                onChange={setTags}
-                recentTags={recentTags}
-                iconOnly
-              />
 
               {/* Wake Lock toggle - mobile-optimized button with inline styles when enabled to prevent iOS sticky hover override */}
               <button
