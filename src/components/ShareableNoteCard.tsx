@@ -98,109 +98,119 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
   const hasImages = (note.image_files?.length || 0) > 0;
 
+  // Limit notes to fit card - use shorter limit and truncate
+  const truncatedNotes = useMemo(() => {
+    if (!plainTextContent) return '';
+    const maxLength = 180;
+    if (plainTextContent.length > maxLength) {
+      return plainTextContent.slice(0, maxLength).trim() + '...';
+    }
+    return plainTextContent;
+  }, [plainTextContent]);
+
   return (
     <div
       className={cn(
-        'relative w-full aspect-[9/16] rounded-2xl overflow-hidden p-6 flex flex-col',
+        'relative w-full aspect-[9/16] rounded-2xl overflow-hidden p-5 flex flex-col',
         style.bgClass,
         style.textClass,
         className
       )}
     >
       {/* Top Section - Type & Date */}
-      <div className="mb-6">
-        <div className={cn('flex items-center gap-2 text-sm font-medium mb-1', style.accentClass)}>
+      <div className="mb-4">
+        <div className={cn('flex items-center gap-1.5 text-xs font-medium mb-0.5', style.accentClass)}>
           {isPracticeSession ? (
             <>
-              <Clock className="w-4 h-4" />
+              <Clock className="w-3.5 h-3.5" />
               <span>{timeOfDay} Practice Session</span>
             </>
           ) : (
             <>
-              <Music className="w-4 h-4" />
+              <Music className="w-3.5 h-3.5" />
               <span>Quick Note</span>
             </>
           )}
         </div>
-        <span className={cn('text-sm', style.mutedClass)}>
+        <span className={cn('text-xs', style.mutedClass)}>
           {format(new Date(note.created_at), 'MMMM d, yyyy')}
         </span>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content Area - use flex-1 with overflow hidden */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Duration Section (for practice sessions) */}
         {isPracticeSession && sessionDuration && (
-          <div className="mb-5">
-            <span className={cn('text-xs font-medium uppercase tracking-wider mb-2 block', style.mutedClass)}>
+          <div className="mb-4 flex-shrink-0">
+            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block', style.mutedClass)}>
               Duration
             </span>
             <div className={cn(
-              'inline-flex items-center gap-2 px-4 py-2 rounded-full text-2xl font-bold',
+              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-lg font-bold',
               style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
             )}>
-              <Clock className="w-5 h-5" />
+              <Clock className="w-4 h-4" />
               <span>{sessionDuration}</span>
             </div>
           </div>
         )}
 
-        {/* Text Content Section */}
-        {plainTextContent && (
-          <div className="mb-5">
-            <span className={cn('text-xs font-medium uppercase tracking-wider mb-2 block', style.mutedClass)}>
+        {/* Text Content Section - allow shrinking with line clamp */}
+        {truncatedNotes && (
+          <div className="mb-4 flex-shrink overflow-hidden">
+            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block flex-shrink-0', style.mutedClass)}>
               {isPracticeSession ? 'Session Notes' : 'Notes'}
             </span>
-            <p className={cn(
-              'leading-relaxed',
-              plainTextContent.length > 150 ? 'text-base' : 'text-lg'
-            )}>
-              {plainTextContent.length > 280 
-                ? plainTextContent.slice(0, 280) + '...' 
-                : plainTextContent}
+            <p className="text-sm leading-relaxed">
+              {truncatedNotes}
             </p>
           </div>
         )}
 
         {/* Audio Files Section */}
         {audioFiles.length > 0 && (
-          <div className="mb-5">
-            <span className={cn('text-xs font-medium uppercase tracking-wider mb-2 block', style.mutedClass)}>
+          <div className="mb-4 flex-shrink-0">
+            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block', style.mutedClass)}>
               Recordings
             </span>
-            <div className="space-y-2">
-              {audioFiles.map((audio, idx) => (
+            <div className="space-y-1.5">
+              {audioFiles.slice(0, 2).map((audio, idx) => (
                 <div
                   key={idx}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl',
+                    'flex items-center gap-2 px-3 py-2 rounded-xl',
                     style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
                   )}
                 >
                   <div className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center',
+                    'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
                     style.id === 'cream' || style.id === 'minimal' ? 'bg-primary/10' : 'bg-white/20'
                   )}>
-                    <Mic className="w-5 h-5" />
+                    <Mic className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{audio.name}</p>
-                    <p className={cn('text-xs', style.mutedClass)}>Audio Recording</p>
+                    <p className="text-xs font-medium truncate">{audio.name}</p>
+                    <p className={cn('text-[10px]', style.mutedClass)}>Audio Recording</p>
                   </div>
                 </div>
               ))}
+              {audioFiles.length > 2 && (
+                <p className={cn('text-[10px] pl-1', style.mutedClass)}>
+                  +{audioFiles.length - 2} more recording{audioFiles.length > 3 ? 's' : ''}
+                </p>
+              )}
             </div>
           </div>
         )}
 
         {/* Image indicator */}
         {hasImages && (
-          <div className="mb-5">
-            <span className={cn('text-xs font-medium uppercase tracking-wider mb-2 block', style.mutedClass)}>
+          <div className="mb-4 flex-shrink-0">
+            <span className={cn('text-[10px] font-medium uppercase tracking-wider mb-1.5 block', style.mutedClass)}>
               Photos
             </span>
             <div className={cn(
-              'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm',
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs',
               style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
             )}>
               📸 {note.image_files!.length} photo{note.image_files!.length > 1 ? 's' : ''}
@@ -210,18 +220,15 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
       </div>
 
       {/* Bottom Branding */}
-      <div className="mt-auto pt-4 border-t border-current/10">
+      <div className="mt-auto pt-3 border-t border-current/10 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm',
-              style.id === 'cream' || style.id === 'minimal' ? 'bg-primary text-primary-foreground' : 'bg-white/20'
-            )}>
-              n
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+              <Music className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-sm">noteshare</span>
+            <span className="font-semibold text-xs">Noteshare</span>
           </div>
-          <span className={cn('text-xs', style.mutedClass)}>Practice your way</span>
+          <span className={cn('text-[10px]', style.mutedClass)}>Practice your way</span>
         </div>
       </div>
     </div>
