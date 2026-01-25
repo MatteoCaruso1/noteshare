@@ -73,10 +73,10 @@ export function WelcomeHero() {
           className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 w-full transition-opacity duration-100 pt-12 md:pt-16 relative z-10"
           style={{ opacity: scrollOpacity }}
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl lg:max-w-6xl">
             Noteshare is a purpose-built tool to help musicians practice smarter
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl lg:max-w-3xl mb-8 leading-relaxed">
             Organize, record, and share your practice. Manage your musical life, all in one place
           </p>
           <div className="flex items-center gap-4">
