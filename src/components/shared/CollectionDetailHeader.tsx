@@ -106,9 +106,6 @@ export const CollectionDetailHeader = ({
                 size="sm"
               />
               <span className="text-sm text-muted-foreground">{authorName}</span>
-              {authorUsername && (
-                <span className="text-xs text-muted-foreground">@{authorUsername}</span>
-              )}
             </div>
           )}
 
