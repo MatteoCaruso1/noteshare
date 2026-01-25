@@ -5,6 +5,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Target, Disc3, Calendar, Compass } from 'lucide-react';
 import { Project, PromoPostWithAuthor, Goal } from '@/types';
+import { usePremium } from '@/contexts/PremiumContext';
+import { useToast } from '@/hooks/use-toast';
 
 export type LinkType = 'project' | 'gig' | 'goal' | null;
 
@@ -33,10 +35,24 @@ export function LinkToPicker({
 }: LinkToPickerProps) {
   const [linkType, setLinkType] = useState<LinkType>(selectedLink?.type || null);
   const [open, setOpen] = useState(false);
+  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { toast } = useToast();
 
   const hasItems = projects.length > 0 || gigs.length > 0 || goals.length > 0;
 
   if (!hasItems) return null;
+
+  const handleOpenChange = (newOpen: boolean) => {
+    // If lite user tries to open, show toast and block
+    if (newOpen && !isPremiumLoading && !isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: "Linking notes to goals, projects, and gigs is available for Premium users.",
+      });
+      return;
+    }
+    setOpen(newOpen);
+  };
 
   // Filter to only active (non-completed) goals
   const activeGoals = goals.filter(g => !g.is_completed);
@@ -96,7 +112,7 @@ export function LinkToPicker({
   const hasGigs = gigs.length > 0;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>

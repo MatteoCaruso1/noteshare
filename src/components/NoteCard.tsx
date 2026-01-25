@@ -26,6 +26,8 @@ import { useUpdateSessionDuration } from '@/hooks/useSessions';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
+import { usePremium } from '@/contexts/PremiumContext';
+import { useToast } from '@/hooks/use-toast';
 
 
 // Combined text content component that handles line clamping for both note text and focus text together
@@ -152,6 +154,8 @@ interface NoteCardProps {
 export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { toast } = useToast();
   const updateVisibility = useUpdateNoteVisibility();
   const updateAudioNames = useUpdateNoteAudioNames();
   const updateContent = useUpdateNoteContent();
@@ -315,17 +319,33 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   const handleNavigateToProject = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (note.project_id) {
-      navigate(`/projects/${note.project_id}`);
+    if (!note.project_id) return;
+    
+    // If non-owner (viewing friend's note) and not premium, show toast
+    if (!isOwner && !isPremiumLoading && !isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: "Viewing linked projects, gigs, and goals is available for Premium users.",
+      });
+      return;
     }
-  }, [navigate, note.project_id]);
+    navigate(`/projects/${note.project_id}`);
+  }, [navigate, note.project_id, isOwner, isPremium, isPremiumLoading, toast]);
 
   const handleNavigateToGig = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (note.gig_id) {
-      navigate(`/gigs/${note.gig_id}`);
+    if (!note.gig_id) return;
+    
+    // If non-owner (viewing friend's note) and not premium, show toast
+    if (!isOwner && !isPremiumLoading && !isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: "Viewing linked projects, gigs, and goals is available for Premium users.",
+      });
+      return;
     }
-  }, [navigate, note.gig_id]);
+    navigate(`/gigs/${note.gig_id}`);
+  }, [navigate, note.gig_id, isOwner, isPremium, isPremiumLoading, toast]);
 
   const handleNavigateToGoal = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
