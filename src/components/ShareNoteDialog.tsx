@@ -262,29 +262,33 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
           )}
 
           {/* Share Actions - Two buttons only */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-2 gap-2 pt-2">
             <Button
+              variant="secondary"
+              size="sm"
               onClick={handleShare}
               disabled={isExporting}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 text-xs"
             >
               {isExporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-3.5 h-3.5" />
               )}
               Share via iMessage
             </Button>
             
             <Button
+              variant="secondary"
+              size="sm"
               onClick={handleInstagramShare}
               disabled={isExporting}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 text-xs"
             >
               {isExporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Instagram className="w-4 h-4" />
+                <Instagram className="w-3.5 h-3.5" />
               )}
               Instagram Story
             </Button>
