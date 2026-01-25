@@ -545,9 +545,10 @@ textarea::-webkit-scrollbar {
 }
 
 /* Practice Board textarea - hanging indent for text-based bullets 
-   Uses negative text-indent with matching padding to create hanging effect */
+   Uses negative text-indent with matching padding to create hanging effect.
+   Base padding (0.75rem) + hanging indent (1.25rem) = total padding-left (2rem) */
 textarea.practice-board-textarea {
-  padding-left: 1.25rem;
+  padding-left: 2rem;
   text-indent: -1.25rem;
   line-height: 1.6;
 }
