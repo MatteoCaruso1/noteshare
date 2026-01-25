@@ -9,6 +9,35 @@ import { Share, Instagram, MessageCircle, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+// Helper to fetch audio file from signed URL and convert to File
+const fetchAudioAsFile = async (signedUrl: string, fileName: string): Promise<File | null> => {
+  try {
+    const response = await fetch(signedUrl);
+    if (!response.ok) throw new Error('Failed to fetch audio');
+    
+    const blob = await response.blob();
+    // Determine MIME type from blob or filename
+    const extension = fileName.split('.').pop()?.toLowerCase() || 'mp3';
+    const mimeTypeMap: Record<string, string> = {
+      'webm': 'audio/webm',
+      'ogg': 'audio/ogg',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/wav',
+      'm4a': 'audio/mp4',
+      'mp4': 'audio/mp4',
+    };
+    const mimeType = blob.type || mimeTypeMap[extension] || 'audio/mpeg';
+    
+    // Create clean filename for sharing
+    const cleanName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    return new File([blob], cleanName, { type: mimeType });
+  } catch (err) {
+    console.error('Error fetching audio file:', err);
+    return null;
+  }
+};
 
 interface ShareNoteDialogProps {
   open: boolean;
@@ -95,19 +124,46 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       const blob = await generateImage();
       if (!blob) throw new Error('Failed to generate image');
       
-      const file = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
-      const shareText = 'Check out my practice on Noteshare';
+      const imageFile = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
+      const shareText = 'Check out my session on Noteshare';
+      const files: File[] = [imageFile];
       
-      // Check if Web Share API is available and supports files
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      // If audio is selected, fetch and include it
+      if (audioToInclude.length > 0) {
+        const audioIndex = audioToInclude[0];
+        const audioUrl = note.audio_files?.[audioIndex];
+        const audioName = note.audio_file_names?.[audioIndex] || `recording-${audioIndex + 1}.mp3`;
+        
+        if (audioUrl) {
+          try {
+            // Get signed URL for the audio file
+            const { data, error } = await supabase.functions.invoke('get-signed-url', {
+              body: { url: audioUrl }
+            });
+            
+            if (!error && data?.results?.[audioUrl]) {
+              const signedAudioUrl = data.results[audioUrl];
+              const audioFile = await fetchAudioAsFile(signedAudioUrl, audioName);
+              if (audioFile) {
+                files.push(audioFile);
+              }
+            }
+          } catch (audioErr) {
+            console.warn('Could not fetch audio for sharing:', audioErr);
+            // Continue without audio
+          }
+        }
+      }
+      
+      // Check if Web Share API is available and supports our files
+      if (navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({
-          files: [file],
-          title: 'My Practice Session',
+          files,
           text: shareText,
         });
         toast({ title: 'Shared successfully!' });
       } else if (navigator.share) {
-        // Share without file (text only)
+        // Share without files (text only)
         await navigator.share({
           title: 'My Practice Session',
           text: shareText,
@@ -136,7 +192,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     } finally {
       setIsExporting(false);
     }
-  }, [generateImage, handleDownload, toast]);
+  }, [generateImage, handleDownload, toast, audioToInclude, note.audio_files, note.audio_file_names]);
 
   const handleInstagramShare = useCallback(async () => {
     // Instagram Stories can be shared via Web Share API on iOS
@@ -255,9 +311,6 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Audio files must be shared separately via message
-              </p>
             </div>
           )}
 
