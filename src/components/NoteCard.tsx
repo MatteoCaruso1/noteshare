@@ -32,29 +32,31 @@ interface CombinedTextContentProps {
   textContent: string | null;
   focusTextSnapshot: string | null;
   expanded?: boolean;
+  inlineExpanded?: boolean;
   hasMediaBelow: boolean;
   onShowMore: () => void;
+  onShowLess?: () => void;
 }
 
-function CombinedTextContent({ textContent, focusTextSnapshot, expanded, hasMediaBelow, onShowMore }: CombinedTextContentProps) {
+function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineExpanded, hasMediaBelow, onShowMore, onShowLess }: CombinedTextContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
   // Check if the combined content exceeds 8 lines
   useEffect(() => {
-    if (containerRef.current && !expanded) {
+    if (containerRef.current && !expanded && !inlineExpanded) {
       const element = containerRef.current;
       setIsTruncated(element.scrollHeight > element.clientHeight);
     }
-  }, [textContent, focusTextSnapshot, expanded]);
+  }, [textContent, focusTextSnapshot, expanded, inlineExpanded]);
 
   const hasContent = textContent || focusTextSnapshot;
   if (!hasContent) return null;
 
   const marginClass = hasMediaBelow ? 'mb-3' : 'pb-1';
 
-  // In expanded view, show everything without truncation
-  if (expanded) {
+  // In expanded view (detail page) or inline expanded, show everything without truncation
+  if (expanded || inlineExpanded) {
     return (
       <div className={marginClass}>
         {textContent && (
@@ -74,6 +76,18 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, hasMedi
               className="text-sm text-muted-foreground"
             />
           </div>
+        )}
+        {/* Show less button when inline expanded on timeline */}
+        {inlineExpanded && onShowLess && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowLess();
+            }}
+            className="text-sm text-primary hover:underline mt-2 block"
+          >
+            Show less
+          </button>
         )}
       </div>
     );
@@ -156,6 +170,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const [editedFocusText, setEditedFocusText] = useState('');
   const [sessionDurationOpen, setSessionDurationOpen] = useState(false);
   const [editedDuration, setEditedDuration] = useState('');
+  const [isInlineExpanded, setIsInlineExpanded] = useState(false);
   
   // Touch state management for mobile - prevents highlight on scroll
   const { isPressed, touchHandlers } = useTouchActive(80);
@@ -748,8 +763,10 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           textContent={note.text_content}
           focusTextSnapshot={note.focus_text_snapshot}
           expanded={expanded}
+          inlineExpanded={isInlineExpanded}
           hasMediaBelow={note.audio_files.length > 0 || note.image_files.length > 0}
-          onShowMore={handleNavigateToNote}
+          onShowMore={() => setIsInlineExpanded(true)}
+          onShowLess={() => setIsInlineExpanded(false)}
         />
       )}
 
