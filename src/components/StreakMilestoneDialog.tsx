@@ -15,6 +15,7 @@ interface StreakMilestoneDialogProps {
   tier: StreakTierInfo;
   streakDays: number;
   hasNextMilestone: boolean;
+  achievementCount?: number; // How many times this milestone has been achieved
 }
 
 function TierIcon({ tier }: { tier: StreakTierInfo }) {
@@ -22,18 +23,35 @@ function TierIcon({ tier }: { tier: StreakTierInfo }) {
   return <Trophy className={`w-12 h-12 ${tier.colorClass}`} />;
 }
 
-function getRewardDescription(tier: StreakTierInfo): string {
-  switch (tier.tier) {
-    case 'starter':
-      return 'A starter trophy now appears beside your name.';
-    case 'bronze':
-      return 'A bronze trophy now appears beside your name.';
-    case 'silver':
-      return 'A silver trophy now appears beside your name.';
-    case 'gold':
-      return 'A gold trophy now appears beside your name.';
-    default:
-      return '';
+function getRewardDescription(tier: StreakTierInfo, isRepeat: boolean): string {
+  if (isRepeat) {
+    // Repeat achievement - trophy counter increased
+    switch (tier.tier) {
+      case 'starter':
+        return 'Your starter trophy counter has been increased!';
+      case 'bronze':
+        return 'Your bronze trophy counter has been increased!';
+      case 'silver':
+        return 'Your silver trophy counter has been increased!';
+      case 'gold':
+        return 'Your gold trophy counter has been increased!';
+      default:
+        return '';
+    }
+  } else {
+    // First time achievement - new trophy earned
+    switch (tier.tier) {
+      case 'starter':
+        return 'A starter trophy now appears beside your name.';
+      case 'bronze':
+        return 'A bronze trophy now appears beside your name.';
+      case 'silver':
+        return 'A silver trophy now appears beside your name.';
+      case 'gold':
+        return 'A gold trophy now appears beside your name.';
+      default:
+        return '';
+    }
   }
 }
 
@@ -56,8 +74,10 @@ export function StreakMilestoneDialog({
   tier,
   streakDays,
   hasNextMilestone,
+  achievementCount = 1,
 }: StreakMilestoneDialogProps) {
-  const rewardDescription = getRewardDescription(tier);
+  const isRepeatAchievement = achievementCount > 1;
+  const rewardDescription = getRewardDescription(tier, isRepeatAchievement);
   const nextMilestoneDays = getNextMilestoneDays(tier);
 
   return (
@@ -80,7 +100,7 @@ export function StreakMilestoneDialog({
               <span className={`font-semibold ${tier.textColorClass}`}>
                 {streakDays} days
               </span>{' '}
-              in a row!
+              in a row{isRepeatAchievement ? ' again' : ''}!
             </p>
             <p className="text-sm">
               {rewardDescription}
