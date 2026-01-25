@@ -29,7 +29,6 @@ const Index = () => {
   const isBootstrapping = authLoading || (!!user && !profile);
   const [searchQuery, setSearchQuery] = useState('');
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
-  const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-feed', 10);
   
@@ -37,15 +36,6 @@ const Index = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
 
-  // Collect all unique tags from notes
-  const availableTags = useMemo(() => {
-    if (!notes) return [];
-    const tagSet = new Set<string>();
-    notes.forEach(note => {
-      note.tags.forEach(tag => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort();
-  }, [notes]);
 
   // Filter notes based on search query, date, and tag
   const filteredNotes = useMemo(() => {
@@ -60,11 +50,6 @@ const Index = () => {
         const noteDate = format(new Date(note.created_at), 'yyyy-MM-dd');
         return noteDate === filterDateStr;
       });
-    }
-    
-    // Filter by tag
-    if (tagFilter) {
-      filtered = filtered.filter((note) => note.tags.includes(tagFilter));
     }
     
     // Filter by search query
@@ -82,7 +67,7 @@ const Index = () => {
     }
     
     return filtered;
-  }, [notes, searchQuery, focusDateFilter, tagFilter]);
+  }, [notes, searchQuery, focusDateFilter]);
 
   if (authLoading) {
     return <div className="min-h-screen bg-background" />;
@@ -133,20 +118,14 @@ const Index = () => {
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <TimelineSearch 
                     onSearch={setSearchQuery} 
-                    onFocusDateFilter={setFocusDateFilter}
-                    focusDate={focusDateFilter}
-                    onTagFilter={setTagFilter}
-                    selectedTag={tagFilter}
-                    availableTags={availableTags}
                   />
                 </div>
               </div>
               
-              {(searchQuery || focusDateFilter || tagFilter) && (
+              {(searchQuery || focusDateFilter) && (
                 <p className="text-sm text-muted-foreground pb-3">
                   {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''}
                   {searchQuery && ` for "${searchQuery}"`}
-                  {tagFilter && ` tagged "${tagFilter}"`}
                   {focusDateFilter && ` on ${format(focusDateFilter, 'MMM d, yyyy')}`}
                 </p>
               )}

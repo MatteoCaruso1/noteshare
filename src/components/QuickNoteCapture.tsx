@@ -4,7 +4,7 @@ import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
-import { useRecentTags } from '@/hooks/useRecentTags';
+
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
@@ -12,7 +12,7 @@ import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextarea } from '@/components/RichTextarea';
-import { TagInput } from '@/components/TagInput';
+
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ export function QuickNoteCapture() {
   const { data: currentFocus } = useCurrentFocusEntry();
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
-  const recentTags = useRecentTags();
+  
   const { setQuickNoteExpanded } = useGlint();
   const { hasReachedLimit, notesPostedToday, dailyLimit, incrementCount, isPremium } = useDailyNoteLimit();
 
@@ -238,13 +238,6 @@ export function QuickNoteCapture() {
                 </Popover>
               )}
 
-              {/* Tags (icon dropdown) */}
-              <TagInput
-                tags={tags}
-                onChange={setTags}
-                recentTags={recentTags}
-                iconOnly
-              />
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
