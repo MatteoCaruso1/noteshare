@@ -57,14 +57,14 @@ export function WelcomeHero() {
       }`}
     >
       {/* Hero Section */}
-      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative">
+      <div className="min-h-[85dvh] flex flex-col overflow-hidden relative w-full">
 
         {/* Hero Content - fades on scroll */}
         <main 
-          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 max-w-6xl transition-opacity duration-100 pt-12 md:pt-16"
+          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 w-full transition-opacity duration-100 pt-12 md:pt-16"
           style={{ opacity: scrollOpacity }}
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl">
             Noteshare is a purpose-built tool to help musicians practice smarter
           </h1>
           <p className="text-lg md:text-xl text-gray-500 max-w-2xl mb-8 leading-relaxed">
