@@ -18,7 +18,7 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, User, Trash2, SendHorizontal, Share2 } from 'lucide-react';
+import { ArrowLeft, User, Trash2, SendHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -114,7 +114,7 @@ const NoteDetail = () => {
     }
   }, [fromFriends, fromProject, fromGig, navigate]);
 
-  // Navigation bar with back button and share
+  // Navigation bar with back button only
   const NavBar = () => (
     <div className="flex items-center justify-between">
       <button 
@@ -124,17 +124,6 @@ const NoteDetail = () => {
       >
         <ArrowLeft className="w-5 h-5" />
       </button>
-      
-      {/* Share button - only show for owner */}
-      {isOwner && note && (
-        <button
-          onClick={() => setShareDialogOpen(true)}
-          className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-          aria-label="Share note"
-        >
-          <Share2 className="w-5 h-5" />
-        </button>
-      )}
     </div>
   );
 
@@ -184,7 +173,8 @@ const NoteDetail = () => {
 
           <NoteCard 
             note={note}
-            expanded 
+            expanded
+            onShareClick={() => setShareDialogOpen(true)}
           />
 
           {/* Comments Section */}
