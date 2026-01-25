@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ShareableNoteCard, CARD_STYLES, CardStyleId } from '@/components/ShareableNoteCard';
-import { Share, Download, Instagram, MessageCircle, Loader2, Check } from 'lucide-react';
+import { Share, Instagram, MessageCircle, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
@@ -261,49 +261,34 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             </div>
           )}
 
-          {/* Share Actions */}
+          {/* Share Actions - Two buttons only */}
           <div className="grid grid-cols-2 gap-3 pt-2">
             <Button
-              variant="outline"
-              onClick={handleDownload}
+              onClick={handleShare}
               disabled={isExporting}
               className="flex items-center gap-2"
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Download className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4" />
               )}
-              Save Image
+              Share via iMessage
             </Button>
             
             <Button
-              onClick={handleShare}
+              onClick={handleInstagramShare}
               disabled={isExporting}
-              className="flex items-center gap-2 bg-gradient-primary"
+              className="flex items-center gap-2"
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <MessageCircle className="w-4 h-4" />
+                <Instagram className="w-4 h-4" />
               )}
-              Share
+              Instagram Story
             </Button>
           </div>
-
-          <Button
-            variant="outline"
-            onClick={handleInstagramShare}
-            disabled={isExporting}
-            className="w-full flex items-center gap-2"
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Instagram className="w-4 h-4" />
-            )}
-            Share to Instagram Story
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
