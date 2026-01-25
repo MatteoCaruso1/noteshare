@@ -31,6 +31,7 @@ import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { CollectionCard } from '@/components/shared/CollectionCard';
+import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
@@ -109,11 +110,9 @@ const WorkingToward = () => {
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const [newProjectTitle, setNewProjectTitle] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
-  const [projectCoverImagePath, setProjectCoverImagePath] = useState<string | null>(null);
-  const [projectCoverImagePreview, setProjectCoverImagePreview] = useState<string | null>(null);
+  const [projectCoverValue, setProjectCoverValue] = useState<string | null>(null);
+  const [projectCoverPreview, setProjectCoverPreview] = useState<string | null>(null);
   const [projectReleaseDate, setProjectReleaseDate] = useState<Date | undefined>(undefined);
-  const [isProjectUploading, setIsProjectUploading] = useState(false);
-  const projectFileInputRef = useRef<HTMLInputElement>(null);
   
   // Gig dialog state
   const [isGigDialogOpen, setIsGigDialogOpen] = useState(false);
@@ -133,40 +132,6 @@ const WorkingToward = () => {
     return null;
   }
 
-  // Project image upload
-  const handleProjectImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
-
-    setIsProjectUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `${profile.id}/project-covers/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('practice-media')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Use signed URL for preview since the bucket is private
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('practice-media')
-        .createSignedUrl(filePath, 60 * 60); // 1 hour for preview
-
-      if (signedError) throw signedError;
-
-      setProjectCoverImagePath(filePath);
-      setProjectCoverImagePreview(signedData.signedUrl);
-      toast.success('Album art uploaded!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setIsProjectUploading(false);
-    }
-  };
 
   // Gig image upload
   const handleGigImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,7 +172,7 @@ const WorkingToward = () => {
         ownerId: profile.id,
         title: newProjectTitle,
         description: newProjectDescription,
-        coverImage: projectCoverImagePath || undefined,
+        coverImage: projectCoverValue || undefined,
         showOnFeed: true,
         collaboratorIds: [],
         releaseDate: projectReleaseDate ? format(projectReleaseDate, 'yyyy-MM-dd') : undefined,
@@ -216,8 +181,8 @@ const WorkingToward = () => {
         onSuccess: () => {
           setNewProjectTitle('');
           setNewProjectDescription('');
-          setProjectCoverImagePath(null);
-          setProjectCoverImagePreview(null);
+          setProjectCoverValue(null);
+          setProjectCoverPreview(null);
           setProjectReleaseDate(undefined);
           setIsProjectDialogOpen(false);
         },
@@ -417,30 +382,16 @@ const WorkingToward = () => {
                           <DialogTitle>Create New Project</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
-                          <div className="flex flex-col items-center gap-3">
-                            <div
-                              className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                              onClick={() => projectFileInputRef.current?.click()}
-                            >
-                              {projectCoverImagePreview ? (
-                                <img src={projectCoverImagePreview} alt="" className="w-full h-full object-cover" />
-                              ) : isProjectUploading ? (
-                                <div className="text-xs text-muted-foreground">Uploading...</div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-1">
-                                  <Upload className="w-6 h-6 text-muted-foreground" />
-                                  <span className="text-xs text-muted-foreground">Album Art</span>
-                                </div>
-                              )}
-                            </div>
-                            <input
-                              ref={projectFileInputRef}
-                              type="file"
-                              accept="image/*"
-                              onChange={handleProjectImageUpload}
-                              className="hidden"
+                          {/* Album Art / Icon Picker */}
+                          {profile && (
+                            <ProjectCoverPicker
+                              value={projectCoverValue}
+                              onChange={setProjectCoverValue}
+                              profileId={profile.id}
+                              previewUrl={projectCoverPreview}
+                              onPreviewUrlChange={setProjectCoverPreview}
                             />
-                          </div>
+                          )}
 
                           <Input
                             placeholder="Project title (e.g., Jazz Standards Album)"
@@ -486,7 +437,7 @@ const WorkingToward = () => {
                           <Button
                             className="w-full bg-gradient-primary text-primary-foreground"
                             onClick={handleCreateProject}
-                            disabled={createProject.isPending || !newProjectTitle.trim() || isProjectUploading}
+                            disabled={createProject.isPending || !newProjectTitle.trim()}
                           >
                             Create Project
                           </Button>
@@ -526,6 +477,7 @@ const WorkingToward = () => {
                               coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
                               date={project.created_at}
                               releaseDate={project.release_date}
+                              useProjectCover
                               actions={
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
@@ -587,6 +539,7 @@ const WorkingToward = () => {
                               coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
                               date={project.created_at}
                               releaseDate={project.release_date}
+                              useProjectCover
                               showOwner
                               ownerId={project.owner_id}
                               ownerName={project.owner?.name}
