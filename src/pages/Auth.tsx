@@ -265,12 +265,14 @@ const Auth = () => {
                 htmlFor="remember" 
                 className="flex items-center gap-3 py-3 -my-1 cursor-pointer touch-manipulation select-none"
               >
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  className="h-5 w-5"
-                />
+                <div className="p-1 -m-1">
+                  <Checkbox
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                    className="h-5 w-5"
+                  />
+                </div>
                 <span className="text-sm text-muted-foreground">
                   Stay signed in
                 </span>
