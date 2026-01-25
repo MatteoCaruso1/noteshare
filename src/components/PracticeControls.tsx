@@ -503,7 +503,7 @@ export function PracticeControls() {
   };
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-card border-border min-h-[60px]">
       <Collapsible open={isExpanded} onOpenChange={handlePracticeOpen}>
         <CollapsibleTrigger asChild>
           <button 
