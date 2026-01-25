@@ -31,7 +31,7 @@ const Index = () => {
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   const [tagFilter, setTagFilter] = useState<string | undefined>(undefined);
   
-  const { displayCount, setDisplayCount } = useScrollRestoration('index-timeline', 10);
+  const { displayCount, setDisplayCount } = useScrollRestoration('index-feed', 10);
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
