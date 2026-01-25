@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getSavedScrollPosition } from '@/hooks/useScrollRestoration';
 
@@ -87,45 +87,32 @@ function getScrollKeyForPath(pathname: string): string | null {
 
 /**
  * PageLayout - Wrapper for page content.
- * Handles preventing header flash when restoring scroll position.
+ * Handles scroll restoration without visibility toggling to prevent jitter.
  */
 export function PageLayout({ children }: PageLayoutProps) {
   const location = useLocation();
-  const [isReady, setIsReady] = useState(false);
   const hasAppliedScroll = useRef(false);
   
-  // Check if we need to restore scroll position before first paint
+  // Apply scroll restoration synchronously before paint
   useLayoutEffect(() => {
+    if (hasAppliedScroll.current) return;
+    
     const scrollKey = getScrollKeyForPath(location.pathname);
     const savedScrollY = scrollKey ? getSavedScrollPosition(scrollKey) : null;
     
-    if (savedScrollY && savedScrollY > 100 && !hasAppliedScroll.current) {
-      // We have a significant scroll position to restore
-      // Apply it immediately and then show content
+    if (savedScrollY && savedScrollY > 100) {
       hasAppliedScroll.current = true;
       window.scrollTo({ top: savedScrollY, left: 0, behavior: 'auto' });
-      // Show content after scroll is applied
-      requestAnimationFrame(() => {
-        setIsReady(true);
-      });
-    } else {
-      // No scroll to restore or already at top, show immediately
-      setIsReady(true);
     }
   }, [location.pathname]);
 
-  // Reset when route changes
+  // Reset flag when route changes
   useEffect(() => {
     hasAppliedScroll.current = false;
   }, [location.pathname]);
 
   return (
-    <div 
-      className="min-h-screen bg-background pb-20 pt-12"
-      style={{
-        visibility: isReady ? 'visible' : 'hidden',
-      }}
-    >
+    <div className="min-h-screen bg-background pb-20 pt-12">
       {children}
     </div>
   );
