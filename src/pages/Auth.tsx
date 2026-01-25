@@ -287,7 +287,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300"
+                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300 transform-gpu"
                 onClick={() => setMode('signup')}
               >
                 Sign Up
