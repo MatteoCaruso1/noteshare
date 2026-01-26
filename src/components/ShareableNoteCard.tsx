@@ -30,7 +30,6 @@ interface ShareableNoteCardProps {
   instruments?: string[]; // list of instruments
   jammers?: JammerInfo[]; // list of jammers with profile pics
   className?: string;
-  debugMode?: boolean;
 }
 
 // Get time of day label based on session start time
@@ -64,7 +63,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   instruments = [],
   jammers = [],
   className,
-  debugMode = false,
 }: ShareableNoteCardProps) {
   const style = CARD_STYLES.find(s => s.id === styleId) || CARD_STYLES[0];
   const isPracticeSession = !!note.session_id;
@@ -181,7 +179,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 fontSize: '13px',
                 display: 'inline-block',
                 lineHeight: '12px',
-                ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
               }}
             >
               <span style={{ 
@@ -189,7 +186,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 verticalAlign: 'middle',
                 lineHeight: '1',
                 fontSize: '13px',
-                ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
               }}>
                 ⏱️ {sessionDuration}
               </span>
@@ -197,28 +193,14 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </div>
         )}
 
-        {/* Debug Legend - compact single line */}
-        {debugMode && (
-          <div style={{ 
-            marginBottom: '6px', 
-            padding: '4px 8px', 
-            background: 'rgba(0,0,0,0.7)', 
-            fontSize: '7px',
-            color: '#fff',
-            fontFamily: 'monospace',
-            borderRadius: '4px',
-          }}>
-            🔴Con | 🔵Icon | 🟢SVG | 🟡Text | 🟠Inst | 🟣Tag | 🔵Jam | 🟢Av
-          </div>
-        )}
 
         {/* Instruments Section */}
         {hasInstruments && (
-          <div style={{ marginBottom: '10px', ...(debugMode && { border: '2px solid orange', background: 'rgba(255,165,0,0.1)' }) }} className="flex-shrink-0">
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Instruments
             </span>
-            <div className="flex flex-wrap gap-1" style={{ ...(debugMode && { border: '1px dashed orange' }) }}>
+            <div className="flex flex-wrap gap-1">
               {instruments.slice(0, 3).map((instrument, idx) => (
                 <div
                   key={idx}
@@ -231,7 +213,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                     fontSize: '10px',
                     display: 'inline-block',
                     lineHeight: '1',
-                    ...(debugMode && { border: '1px solid magenta' }),
                   }}
                 >
                   {instrument}
@@ -249,13 +230,13 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
         {/* Jammers Section */}
         {hasJammers && (
-          <div style={{ marginBottom: '10px', ...(debugMode && { border: '2px solid cyan', background: 'rgba(0,255,255,0.1)' }) }} className="flex-shrink-0">
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Jamming With
             </span>
-            <div className="flex items-center gap-1.5" style={{ ...(debugMode && { border: '1px dashed cyan' }) }}>
+            <div className="flex items-center gap-1.5">
               {/* Stacked avatars */}
-              <div className="flex" style={{ marginLeft: '4px', ...(debugMode && { border: '1px solid lime' }) }}>
+              <div className="flex" style={{ marginLeft: '4px' }}>
                 {jammers.slice(0, 4).map((jammer, idx) => (
                   <div
                     key={jammer.id}
@@ -276,7 +257,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                         alt={jammer.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => {
-                          // Hide broken image, show fallback background
                           e.currentTarget.style.display = 'none';
                         }}
                       />
@@ -295,7 +275,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 ))}
               </div>
               {/* All names */}
-              <span style={{ fontSize: '10px', marginLeft: '4px', ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }) }}>
+              <span style={{ fontSize: '10px', marginLeft: '4px' }}>
                 {jammers.map(j => j.name).join(', ')}
               </span>
             </div>
@@ -378,17 +358,13 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
-        <div style={{
-          display: 'inline-block',
-          ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
-        }}>
+        <div style={{ display: 'inline-block' }}>
           <div 
             style={{ 
               display: 'inline-block',
               verticalAlign: 'middle',
               marginRight: '8px',
               fontSize: '12px',
-              ...(debugMode && { border: '1px solid purple' }),
             }}
           >
             🎵
@@ -400,13 +376,11 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               display: 'inline-block',
               verticalAlign: 'middle',
               lineHeight: '18px',
-              ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
             }}
           >
             Noteshare
           </span>
         </div>
-        
       </div>
     </div>
   );
