@@ -178,17 +178,15 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               style={{
                 padding: '6px 12px',
                 fontSize: '13px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
+                display: 'inline-table',
               }}
             >
-              <Clock style={{
-                width: '12px', 
-                height: '12px', 
-                flexShrink: 0,
-              }} />
-              <span>{sessionDuration}</span>
+              <span style={{ display: 'table-cell', verticalAlign: 'middle', paddingRight: '6px' }}>
+                <Clock style={{ width: '12px', height: '12px', display: 'block' }} />
+              </span>
+              <span style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+                {sessionDuration}
+              </span>
             </div>
           </div>
         )}
@@ -315,10 +313,21 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               >
                 <Mic style={{ width: '11px', height: '11px' }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate" style={{ fontSize: '10px' }}>{audioFile.name}</p>
-                <p className={style.mutedClass} style={{ fontSize: '8px' }}>Audio Recording</p>
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <p 
+                      className="font-medium" 
+                      style={{ 
+                        fontSize: '10px', 
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        lineHeight: '1.3',
+                      }}
+                    >
+                      {audioFile.name}
+                    </p>
+                    <p className={style.mutedClass} style={{ fontSize: '8px', lineHeight: '1.2' }}>Audio Recording</p>
+                  </div>
             </div>
           </div>
         )}
@@ -344,30 +353,32 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
-        <div style={{ display: 'inline-block' }}>
-          <div 
-            className="rounded-full bg-primary" 
-            style={{ 
-              width: '18px', 
-              height: '18px',
-              display: 'inline-block',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-              lineHeight: '18px',
-            }}
-          >
-            <Music className="text-primary-foreground" style={{ 
-              width: '10px', 
-              height: '10px',
-            }} />
-          </div>
+        <div style={{ display: 'inline-table' }}>
+          <span style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+            <div 
+              className="rounded-full bg-primary" 
+              style={{ 
+                width: '18px', 
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Music className="text-primary-foreground" style={{ 
+                width: '10px', 
+                height: '10px',
+                display: 'block',
+              }} />
+            </div>
+          </span>
           <span 
             className="font-semibold" 
             style={{ 
               fontSize: '11px',
-              display: 'inline-block',
+              display: 'table-cell',
               verticalAlign: 'middle',
-              marginLeft: '6px',
+              paddingLeft: '6px',
             }}
           >
             Noteshare
