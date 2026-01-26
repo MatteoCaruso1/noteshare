@@ -40,25 +40,21 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
   const initialMount = useRef(true);
 
   useEffect(() => {
-    // On route change, reset visibility and animate in
+    // On route change, animate in using requestAnimationFrame for smoother timing
     if (location.pathname !== prevPathRef.current) {
       prevPathRef.current = location.pathname;
-      setIsVisible(false);
-      
-      // Delay before starting animation
-      const delayTimer = setTimeout(() => {
-        setIsVisible(true);
-      }, 120);
-
-      return () => clearTimeout(delayTimer);
+      // Use rAF to ensure we're synchronized with the browser's render cycle
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+        });
+      });
     } else if (initialMount.current) {
-      // Initial mount - animate in after delay
+      // Initial mount - immediate visibility, no delay
       initialMount.current = false;
-      const delayTimer = setTimeout(() => {
+      requestAnimationFrame(() => {
         setIsVisible(true);
-      }, 120);
-
-      return () => clearTimeout(delayTimer);
+      });
     }
   }, [location.pathname]);
 
@@ -67,8 +63,8 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        filter: isVisible ? 'blur(0px)' : 'blur(4px)',
-        transition: 'opacity 280ms ease-out, filter 280ms ease-out',
+        filter: isVisible ? 'blur(0px)' : 'blur(2px)',
+        transition: 'opacity 280ms cubic-bezier(0.4, 0, 0.2, 1), filter 280ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {children}
