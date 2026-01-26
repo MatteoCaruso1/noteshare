@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { NoteWithAuthor, Profile } from '@/types';
-import { Clock, Music, Mic, Guitar } from 'lucide-react';
+import { Clock, Music, Mic } from 'lucide-react';
 import { format, getHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -198,12 +198,11 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 <div
                   key={idx}
                   className={cn(
-                    'inline-flex items-center gap-1 rounded-full',
+                    'inline-flex items-center rounded-full',
                     style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
                   )}
                   style={{ padding: '3px 8px', fontSize: '10px' }}
                 >
-                  <Guitar style={{ width: '10px', height: '10px' }} />
                   <span>{instrument}</span>
                 </div>
               ))}
@@ -222,13 +221,13 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Jamming With
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {/* Stacked avatars */}
               <div className="flex" style={{ marginLeft: '4px' }}>
                 {jammers.slice(0, 4).map((jammer, idx) => (
                   <div
                     key={jammer.id}
-                    className="rounded-full border-2 overflow-hidden"
+                    className="rounded-full border-2 overflow-hidden flex items-center justify-center"
                     style={{
                       width: '24px',
                       height: '24px',
@@ -236,24 +235,36 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                       borderColor: style.id === 'cream' || style.id === 'minimal' ? '#fff' : 'rgba(0,0,0,0.3)',
                       zIndex: 10 - idx,
                       position: 'relative',
+                      backgroundColor: style.id === 'cream' || style.id === 'minimal' ? '#e5e5e5' : 'rgba(255,255,255,0.2)',
                     }}
                   >
-                    <img
-                      src={jammer.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${jammer.id}`}
-                      alt={jammer.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      crossOrigin="anonymous"
-                    />
+                    {jammer.avatar ? (
+                      <img
+                        src={jammer.avatar}
+                        alt={jammer.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => {
+                          // Hide broken image, show fallback background
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <span 
+                      style={{ 
+                        fontSize: '10px', 
+                        fontWeight: 600,
+                        position: 'absolute',
+                        display: jammer.avatar ? 'none' : 'block',
+                      }}
+                    >
+                      {jammer.name.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                 ))}
               </div>
-              {/* Names */}
+              {/* All names */}
               <span style={{ fontSize: '10px', marginLeft: '4px' }}>
-                {jammers.length === 1
-                  ? jammers[0].name
-                  : jammers.length === 2
-                  ? `${jammers[0].name} & ${jammers[1].name}`
-                  : `${jammers[0].name} +${jammers.length - 1}`}
+                {jammers.map(j => j.name).join(', ')}
               </span>
             </div>
           </div>

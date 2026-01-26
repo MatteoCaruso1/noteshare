@@ -397,15 +397,15 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                     <button
                       key={friend.id}
                       onClick={() => setSelectedJammerIds(prev => [...prev, friend.id])}
-                      className="flex items-center gap-1.5 bg-secondary hover:bg-secondary/80 rounded-full pl-1 pr-2 py-0.5 transition-colors"
+                      className="flex items-center gap-1.5 bg-primary/15 hover:bg-primary/25 text-foreground rounded-full pl-1 pr-2 py-0.5 transition-colors border border-primary/20"
                     >
                       <Avatar className="w-5 h-5">
                         <AvatarImage src={friend.avatar || undefined} />
-                        <AvatarFallback className="text-[10px]">
+                        <AvatarFallback className="text-[10px] bg-primary/20 text-foreground">
                           {friend.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs">{friend.name}</span>
+                      <span className="text-xs font-medium">{friend.name}</span>
                     </button>
                   ))}
               </div>
