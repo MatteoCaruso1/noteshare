@@ -178,11 +178,12 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               style={{
                 padding: '4px 10px',
                 fontSize: '13px',
-                lineHeight: '1',
+                display: 'inline-flex',
+                alignItems: 'center',
               }}
             >
               <Clock style={{ width: '12px', height: '12px', flexShrink: 0 }} />
-              <span style={{ lineHeight: '1' }}>{sessionDuration}</span>
+              <span style={{ lineHeight: '1', display: 'inline-flex', alignItems: 'center' }}>{sessionDuration}</span>
             </div>
           </div>
         )}
@@ -201,7 +202,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                     'inline-flex items-center rounded-full',
                     style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
                   )}
-                  style={{ padding: '3px 8px', fontSize: '10px' }}
+                  style={{ padding: '3px 8px', fontSize: '10px', display: 'inline-flex', alignItems: 'center', lineHeight: '1' }}
                 >
                   <span>{instrument}</span>
                 </div>
@@ -337,7 +338,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           <div className="rounded-full bg-primary flex items-center justify-center" style={{ width: '18px', height: '18px' }}>
             <Music className="text-primary-foreground" style={{ width: '10px', height: '10px' }} />
           </div>
-          <span className="font-semibold" style={{ fontSize: '11px' }}>Noteshare</span>
+          <span className="font-semibold" style={{ fontSize: '11px', lineHeight: '18px', display: 'inline-flex', alignItems: 'center' }}>Noteshare</span>
         </div>
       </div>
     </div>

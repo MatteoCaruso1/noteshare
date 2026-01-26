@@ -86,47 +86,71 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         .map(id => friends.find(f => f.id === id))
         .filter((f): f is NonNullable<typeof f> => f !== null && !!f.avatar);
       
-      if (friendsWithAvatars.length === 0) return;
-      
-      // Collect avatar URLs that need signing (relative paths or public/sign URLs)
-      const urlsToSign = friendsWithAvatars
-        .map(f => f.avatar!)
-        .filter(url => !url.startsWith('http') || url.includes('/storage/v1/object/public/') || url.includes('/storage/v1/object/sign/'));
-      
-      if (urlsToSign.length === 0) {
-        // All URLs are already valid external URLs
-        const validAvatars: Record<string, string> = {};
-        friendsWithAvatars.forEach(f => {
-          if (f.avatar) validAvatars[f.id] = f.avatar;
-        });
-        setJammerAvatars(validAvatars);
+      if (friendsWithAvatars.length === 0) {
+        setJammerAvatars({});
         return;
       }
       
-      try {
-        const { data, error } = await supabase.functions.invoke('get-signed-url', {
-          body: { urls: urlsToSign }
-        });
+      // Separate URLs by whether they need signing
+      const needsSigning: Array<{ friendId: string; url: string }> = [];
+      const alreadyValid: Record<string, string> = {};
+      
+      friendsWithAvatars.forEach(friend => {
+        const url = friend.avatar!;
         
-        if (!error && data?.results) {
-          const newAvatars: Record<string, string> = {};
-          friendsWithAvatars.forEach(friend => {
-            if (friend.avatar && data.results[friend.avatar]) {
-              newAvatars[friend.id] = data.results[friend.avatar];
-            } else if (friend.avatar && !urlsToSign.includes(friend.avatar)) {
-              // Use original URL if it didn't need signing
-              newAvatars[friend.id] = friend.avatar;
-            }
-          });
-          setJammerAvatars(newAvatars);
+        // External URLs (dicebear, etc) - use directly
+        // Check if it's an external URL that's NOT a Supabase storage URL
+        if (url.startsWith('http') && !url.includes('/storage/v1/object/')) {
+          alreadyValid[friend.id] = url;
+        } 
+        // Storage URLs or relative paths - need signing
+        else {
+          needsSigning.push({ friendId: friend.id, url });
         }
-      } catch (err) {
-        console.warn('Could not fetch signed URLs for jammer avatars:', err);
+      });
+      
+      // Start with valid URLs
+      const newAvatars = { ...alreadyValid };
+      
+      // Sign the rest if needed
+      if (needsSigning.length > 0) {
+        try {
+          const { data, error } = await supabase.functions.invoke('get-signed-url', {
+            body: { urls: needsSigning.map(n => n.url) }
+          });
+          
+          if (!error && data?.results) {
+            needsSigning.forEach(({ friendId, url }) => {
+              if (data.results[url]) {
+                newAvatars[friendId] = data.results[url];
+              } else {
+                // Fallback to original if signing failed
+                newAvatars[friendId] = url;
+              }
+            });
+          } else {
+            console.warn('Failed to fetch signed URLs:', error);
+            // Use original URLs as fallback
+            needsSigning.forEach(({ friendId, url }) => {
+              newAvatars[friendId] = url;
+            });
+          }
+        } catch (err) {
+          console.warn('Could not fetch signed URLs for jammer avatars:', err);
+          // Use original URLs as fallback
+          needsSigning.forEach(({ friendId, url }) => {
+            newAvatars[friendId] = url;
+          });
+        }
       }
+      
+      setJammerAvatars(newAvatars);
     };
     
     if (selectedJammerIds.length > 0) {
       fetchAvatars();
+    } else {
+      setJammerAvatars({});
     }
   }, [selectedJammerIds, friends]);
   
