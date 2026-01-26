@@ -199,6 +199,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 display: 'inline-block',
                 verticalAlign: 'middle',
                 lineHeight: '1',
+               transform: 'translateY(-3px)',
                 ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
               }}>
                 {sessionDuration}
@@ -241,6 +242,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                     fontSize: '10px',
                     display: 'inline-block',
                     lineHeight: '1',
+                   transform: 'translateY(-3px)',
                     ...(debugMode && { border: '1px solid magenta' }),
                   }}
                 >
@@ -305,7 +307,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 ))}
               </div>
               {/* All names */}
-              <span style={{ fontSize: '10px', marginLeft: '4px', ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }) }}>
+             <span style={{ fontSize: '10px', marginLeft: '4px', transform: 'translateY(-3px)', ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }) }}>
                 {jammers.map(j => j.name).join(', ')}
               </span>
             </div>
@@ -357,6 +359,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                     whiteSpace: 'nowrap',
                     lineHeight: '1.4',
                     paddingBottom: '1px',
+                   transform: 'translateY(-3px)',
                   }}
                 >
                   {audioFile.name}
@@ -423,6 +426,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               display: 'inline-block',
               verticalAlign: 'middle',
               lineHeight: '18px',
+             transform: 'translateY(-3px)',
               ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
             }}
           >
