@@ -180,27 +180,24 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               style={{
                 padding: '6px 12px',
                 fontSize: '13px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                lineHeight: '1',
+                display: 'inline-block',
+                lineHeight: '12px',
                 ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
               }}
             >
+              <Clock 
+                size={12}
+                strokeWidth={2}
+                style={{ 
+                  display: 'inline-block',
+                  verticalAlign: 'middle',
+                  marginRight: '6px',
+                  ...(debugMode && { border: '1px solid green' }),
+                }} 
+              />
               <span style={{ 
-                display: 'inline-flex',
-                ...(debugMode && { border: '1px solid blue', background: 'rgba(0,0,255,0.1)' }),
-              }}>
-                <Clock 
-                  size={12}
-                  strokeWidth={2}
-                  style={{ 
-                    display: 'block',
-                    ...(debugMode && { border: '1px solid green' }),
-                  }} 
-                />
-              </span>
-              <span style={{ 
+                display: 'inline-block',
+                verticalAlign: 'middle',
                 lineHeight: '1',
                 ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
               }}>
@@ -391,42 +388,40 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
-        <div style={{ 
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
+        <div style={{
+          display: 'inline-block',
           ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
         }}>
-          <span style={{ 
-            display: 'inline-flex',
-            ...(debugMode && { border: '1px solid blue', background: 'rgba(0,0,255,0.1)' }),
-          }}>
-            <div 
-              className="rounded-full bg-primary" 
+          <div 
+            className="rounded-full bg-primary" 
+            style={{ 
+              width: '18px', 
+              height: '18px',
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              marginRight: '6px',
+              textAlign: 'center',
+              lineHeight: '18px',
+              ...(debugMode && { border: '1px solid purple' }),
+            }}
+          >
+            <Music 
+              className="text-primary-foreground" 
+              size={10}
+              strokeWidth={2}
               style={{ 
-                width: '18px', 
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...(debugMode && { border: '1px solid purple' }),
-              }}
-            >
-              <Music 
-                className="text-primary-foreground" 
-                size={10}
-                strokeWidth={2}
-                style={{ 
-                  display: 'block',
-                  ...(debugMode && { border: '1px solid green' }),
-                }} 
-              />
-            </div>
-          </span>
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                ...(debugMode && { border: '1px solid green' }),
+              }} 
+            />
+          </div>
           <span 
             className="font-semibold" 
             style={{ 
               fontSize: '11px',
+              display: 'inline-block',
+              verticalAlign: 'middle',
               lineHeight: '18px',
               ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
             }}
