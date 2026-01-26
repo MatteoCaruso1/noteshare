@@ -25,6 +25,23 @@ const getDeviceInfo = () => {
   return { isIOS, isAndroid, isMobile, isDesktop };
 };
 
+// Helper to convert image URL to base64 data URL (for html2canvas CORS compatibility)
+const convertToBase64 = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url, { mode: 'cors' });
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
 // Helper to fetch audio file from signed URL and convert to File
 // Uses m4a format for iMessage compatibility
 const fetchAudioAsFile = async (signedUrl: string, fileName: string): Promise<File | null> => {
@@ -79,7 +96,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
   const [jammerAvatars, setJammerAvatars] = useState<Record<string, string>>({});
   
-  // Fetch signed URLs for jammer avatars
+  // Fetch and convert jammer avatars to base64 for html2canvas compatibility
   useEffect(() => {
     const fetchAvatars = async () => {
       const friendsWithAvatars = selectedJammerIds
@@ -93,26 +110,24 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       
       // Separate URLs by whether they need signing
       const needsSigning: Array<{ friendId: string; url: string }> = [];
-      const alreadyValid: Record<string, string> = {};
+      const alreadyValid: Array<{ friendId: string; url: string }> = [];
       
       friendsWithAvatars.forEach(friend => {
         const url = friend.avatar!;
         
-        // External URLs (dicebear, etc) - use directly
-        // Check if it's an external URL that's NOT a Supabase storage URL
+        // External URLs (dicebear, etc) - use directly but still convert to base64
         if (url.startsWith('http') && !url.includes('/storage/v1/object/')) {
-          alreadyValid[friend.id] = url;
+          alreadyValid.push({ friendId: friend.id, url });
         } 
-        // Storage URLs or relative paths - need signing
+        // Storage URLs or relative paths - need signing first
         else {
           needsSigning.push({ friendId: friend.id, url });
         }
       });
       
-      // Start with valid URLs
-      const newAvatars = { ...alreadyValid };
+      const urlsToConvert: Array<{ friendId: string; url: string }> = [...alreadyValid];
       
-      // Sign the rest if needed
+      // Sign storage URLs if needed
       if (needsSigning.length > 0) {
         try {
           const { data, error } = await supabase.functions.invoke('get-signed-url', {
@@ -121,30 +136,40 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
           
           if (!error && data?.results) {
             needsSigning.forEach(({ friendId, url }) => {
-              if (data.results[url]) {
-                newAvatars[friendId] = data.results[url];
-              } else {
-                // Fallback to original if signing failed
-                newAvatars[friendId] = url;
-              }
+              const signedUrl = data.results[url] || url;
+              urlsToConvert.push({ friendId, url: signedUrl });
             });
           } else {
-            console.warn('Failed to fetch signed URLs:', error);
             // Use original URLs as fallback
             needsSigning.forEach(({ friendId, url }) => {
-              newAvatars[friendId] = url;
+              urlsToConvert.push({ friendId, url });
             });
           }
         } catch (err) {
-          console.warn('Could not fetch signed URLs for jammer avatars:', err);
-          // Use original URLs as fallback
+          console.warn('Could not fetch signed URLs:', err);
           needsSigning.forEach(({ friendId, url }) => {
-            newAvatars[friendId] = url;
+            urlsToConvert.push({ friendId, url });
           });
         }
       }
       
-      setJammerAvatars(newAvatars);
+      // Convert all URLs to base64 for html2canvas compatibility
+      const base64Avatars: Record<string, string> = {};
+      
+      await Promise.all(
+        urlsToConvert.map(async ({ friendId, url }) => {
+          const base64 = await convertToBase64(url);
+          if (base64) {
+            base64Avatars[friendId] = base64;
+          }
+          // If conversion fails, still try to use original URL
+          else {
+            base64Avatars[friendId] = url;
+          }
+        })
+      );
+      
+      setJammerAvatars(base64Avatars);
     };
     
     if (selectedJammerIds.length > 0) {
