@@ -147,20 +147,18 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       if (!blob) throw new Error('Failed to generate image');
       
       const imageFile = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
-      const shareText = 'Check out my session on Noteshare';
-      const shareUrl = 'https://notesharemusic.com';
+      
+      // Order: 1. Practice card (image), 2. Audio file, 3. Text + link
       const files: File[] = [imageFile];
       
-      // If audio is selected, fetch and include it
+      // Fetch and add audio file if selected (comes after image)
       if (audioToInclude.length > 0) {
         const audioIndex = audioToInclude[0];
         const audioUrl = note.audio_files?.[audioIndex];
-        // Use custom name if available, fallback to generic name
         const rawName = note.audio_file_names?.[audioIndex] || `Recording ${audioIndex + 1}`;
         
         if (audioUrl) {
           try {
-            // Get signed URL for the audio file
             const { data, error } = await supabase.functions.invoke('get-signed-url', {
               body: { url: audioUrl }
             });
@@ -174,17 +172,20 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             }
           } catch (audioErr) {
             console.warn('Could not fetch audio for sharing:', audioErr);
-            // Continue without audio
           }
         }
       }
+      
+      // Text content with link at the end (plain text to avoid preview expansion)
+      // Include URL as plain text, NOT in the url property to prevent rich link preview
+      const shareText = 'Check out my session on Noteshare\n\nnotesharemusic.com';
       
       // Check if Web Share API is available and supports our files
       if (navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({
           files,
           text: shareText,
-          url: shareUrl,
+          // Don't include url property - prevents rich link preview in iMessage
         });
         toast({ title: 'Shared successfully!' });
       } else if (navigator.share) {
@@ -192,7 +193,6 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         await navigator.share({
           title: 'My Practice Session',
           text: shareText,
-          url: shareUrl,
         });
         toast({ title: 'Shared successfully!' });
       } else {
