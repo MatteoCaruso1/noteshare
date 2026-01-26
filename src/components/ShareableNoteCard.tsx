@@ -178,20 +178,17 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               style={{
                 padding: '6px 12px',
                 fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              <Clock style={{ 
+              <Clock style={{
                 width: '12px', 
                 height: '12px', 
-                display: 'inline-block',
-                verticalAlign: 'middle',
-                marginRight: '6px',
-                marginTop: '-2px',
+                flexShrink: 0,
               }} />
-              <span style={{ 
-                display: 'inline-block',
-                verticalAlign: 'middle',
-              }}>{sessionDuration}</span>
+              <span>{sessionDuration}</span>
             </div>
           </div>
         )}
@@ -362,9 +359,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
             <Music className="text-primary-foreground" style={{ 
               width: '10px', 
               height: '10px',
-              display: 'inline-block',
-              verticalAlign: 'middle',
-              marginTop: '-2px',
             }} />
           </div>
           <span 

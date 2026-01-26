@@ -99,77 +99,30 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   // Fetch and convert jammer avatars to base64 for html2canvas compatibility
   useEffect(() => {
     const fetchAvatars = async () => {
+      console.log('[Avatar Debug] Starting fetch for IDs:', selectedJammerIds);
+      
       const friendsWithAvatars = selectedJammerIds
         .map(id => friends.find(f => f.id === id))
         .filter((f): f is NonNullable<typeof f> => f !== null && !!f.avatar);
+      
+      console.log('[Avatar Debug] Friends with avatars:', friendsWithAvatars.map(f => ({ id: f.id, name: f.name, avatar: f.avatar })));
       
       if (friendsWithAvatars.length === 0) {
         setJammerAvatars({});
         return;
       }
       
-      // Separate URLs by whether they need signing
-      const needsSigning: Array<{ friendId: string; url: string }> = [];
-      const alreadyValid: Array<{ friendId: string; url: string }> = [];
+      // Try simpler approach: use URLs directly without base64 conversion
+      const avatarMap: Record<string, string> = {};
       
       friendsWithAvatars.forEach(friend => {
         const url = friend.avatar!;
-        
-        // External URLs (dicebear, etc) - use directly but still convert to base64
-        if (url.startsWith('http') && !url.includes('/storage/v1/object/')) {
-          alreadyValid.push({ friendId: friend.id, url });
-        } 
-        // Storage URLs or relative paths - need signing first
-        else {
-          needsSigning.push({ friendId: friend.id, url });
-        }
+        console.log('[Avatar Debug] Processing friend:', friend.name, 'URL:', url);
+        avatarMap[friend.id] = url;
       });
       
-      const urlsToConvert: Array<{ friendId: string; url: string }> = [...alreadyValid];
-      
-      // Sign storage URLs if needed
-      if (needsSigning.length > 0) {
-        try {
-          const { data, error } = await supabase.functions.invoke('get-signed-url', {
-            body: { urls: needsSigning.map(n => n.url) }
-          });
-          
-          if (!error && data?.results) {
-            needsSigning.forEach(({ friendId, url }) => {
-              const signedUrl = data.results[url] || url;
-              urlsToConvert.push({ friendId, url: signedUrl });
-            });
-          } else {
-            // Use original URLs as fallback
-            needsSigning.forEach(({ friendId, url }) => {
-              urlsToConvert.push({ friendId, url });
-            });
-          }
-        } catch (err) {
-          console.warn('Could not fetch signed URLs:', err);
-          needsSigning.forEach(({ friendId, url }) => {
-            urlsToConvert.push({ friendId, url });
-          });
-        }
-      }
-      
-      // Convert all URLs to base64 for html2canvas compatibility
-      const base64Avatars: Record<string, string> = {};
-      
-      await Promise.all(
-        urlsToConvert.map(async ({ friendId, url }) => {
-          const base64 = await convertToBase64(url);
-          if (base64) {
-            base64Avatars[friendId] = base64;
-          }
-          // If conversion fails, still try to use original URL
-          else {
-            base64Avatars[friendId] = url;
-          }
-        })
-      );
-      
-      setJammerAvatars(base64Avatars);
+      console.log('[Avatar Debug] Setting avatar map:', avatarMap);
+      setJammerAvatars(avatarMap);
     };
     
     if (selectedJammerIds.length > 0) {
