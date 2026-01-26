@@ -233,11 +233,11 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
         {/* Instruments Section */}
         {hasInstruments && (
-          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+          <div style={{ marginBottom: '10px', ...(debugMode && { border: '2px solid orange', background: 'rgba(255,165,0,0.1)' }) }} className="flex-shrink-0">
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Instruments
             </span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1" style={{ ...(debugMode && { border: '1px dashed orange' }) }}>
               {instruments.slice(0, 3).map((instrument, idx) => (
                 <div
                   key={idx}
@@ -250,6 +250,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                     fontSize: '10px',
                     display: 'inline-block',
                     lineHeight: '1',
+                    ...(debugMode && { border: '1px solid magenta' }),
                   }}
                 >
                   {instrument}
@@ -264,15 +265,32 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </div>
         )}
 
+        {/* Instruments Debug Info */}
+        {debugMode && hasInstruments && (
+          <div style={{ 
+            marginBottom: '10px', 
+            padding: '8px', 
+            background: 'rgba(255,255,255,0.9)', 
+            fontSize: '8px',
+            color: '#000',
+            fontFamily: 'monospace',
+            lineHeight: '1.4',
+          }}>
+            <div><strong>INSTRUMENTS DEBUG:</strong></div>
+            <div>Tags: inline-block, padding:5px 10px, line-height:1</div>
+            <div>🟠 Orange=Section | 🟣 Magenta=Tag</div>
+          </div>
+        )}
+
         {/* Jammers Section */}
         {hasJammers && (
-          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+          <div style={{ marginBottom: '10px', ...(debugMode && { border: '2px solid cyan', background: 'rgba(0,255,255,0.1)' }) }} className="flex-shrink-0">
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Jamming With
             </span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" style={{ ...(debugMode && { border: '1px dashed cyan' }) }}>
               {/* Stacked avatars */}
-              <div className="flex" style={{ marginLeft: '4px' }}>
+              <div className="flex" style={{ marginLeft: '4px', ...(debugMode && { border: '1px solid lime' }) }}>
                 {jammers.slice(0, 4).map((jammer, idx) => (
                   <div
                     key={jammer.id}
@@ -312,10 +330,28 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 ))}
               </div>
               {/* All names */}
-              <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+              <span style={{ fontSize: '10px', marginLeft: '4px', ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }) }}>
                 {jammers.map(j => j.name).join(', ')}
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Jammers Debug Info */}
+        {debugMode && hasJammers && (
+          <div style={{ 
+            marginBottom: '10px', 
+            padding: '8px', 
+            background: 'rgba(255,255,255,0.9)', 
+            fontSize: '8px',
+            color: '#000',
+            fontFamily: 'monospace',
+            lineHeight: '1.4',
+          }}>
+            <div><strong>JAMMERS DEBUG:</strong></div>
+            <div>Avatars: 24x24px, stacked with margin-left:-8px</div>
+            <div>Names: font-size:10px</div>
+            <div>🔵 Cyan=Section | 🟢 Lime=Avatar group | 🟡 Yellow=Names</div>
           </div>
         )}
 
