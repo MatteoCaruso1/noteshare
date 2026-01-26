@@ -1,6 +1,5 @@
 import { memo, useMemo } from 'react';
 import { NoteWithAuthor, Profile } from '@/types';
-import { Clock, Music, Mic } from 'lucide-react';
 import { format, getHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -185,23 +184,14 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
               }}
             >
-              <Clock 
-                size={12}
-                strokeWidth={2}
-                style={{ 
-                  display: 'inline-block',
-                  verticalAlign: 'middle',
-                  marginRight: '6px',
-                  ...(debugMode && { border: '1px solid green' }),
-                }} 
-              />
               <span style={{ 
                 display: 'inline-block',
                 verticalAlign: 'middle',
                 lineHeight: '1',
+                fontSize: '13px',
                 ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
               }}>
-                {sessionDuration}
+                ⏱️ {sessionDuration}
               </span>
             </div>
           </div>
@@ -345,7 +335,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 )}
                 style={{ width: '22px', height: '22px' }}
               >
-                <Mic style={{ width: '11px', height: '11px' }} />
+                <span style={{ fontSize: '11px' }}>🎤</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p 
@@ -393,28 +383,15 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
         }}>
           <div 
-            className="rounded-full bg-primary" 
             style={{ 
-              width: '18px', 
-              height: '18px',
               display: 'inline-block',
               verticalAlign: 'middle',
-              marginRight: '6px',
-              textAlign: 'center',
-              lineHeight: '18px',
+              marginRight: '8px',
+              fontSize: '12px',
               ...(debugMode && { border: '1px solid purple' }),
             }}
           >
-            <Music 
-              className="text-primary-foreground" 
-              size={10}
-              strokeWidth={2}
-              style={{ 
-                display: 'inline-block',
-                verticalAlign: 'middle',
-                ...(debugMode && { border: '1px solid green' }),
-              }} 
-            />
+            🎵
           </div>
           <span 
             className="font-semibold" 
