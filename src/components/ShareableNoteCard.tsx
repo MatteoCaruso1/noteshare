@@ -31,6 +31,7 @@ interface ShareableNoteCardProps {
   instruments?: string[]; // list of instruments
   jammers?: JammerInfo[]; // list of jammers with profile pics
   className?: string;
+  debugMode?: boolean;
 }
 
 // Get time of day label based on session start time
@@ -64,6 +65,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   instruments = [],
   jammers = [],
   className,
+  debugMode = false,
 }: ShareableNoteCardProps) {
   const style = CARD_STYLES.find(s => s.id === styleId) || CARD_STYLES[0];
   const isPracticeSession = !!note.session_id;
@@ -177,26 +179,54 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               )}
               style={{
                 padding: '6px 12px',
-                paddingLeft: '30px',
                 fontSize: '13px',
-                position: 'relative',
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
                 lineHeight: '1',
-                height: '24px',
+                ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
               }}
             >
-              <Clock 
-                size={12}
-                strokeWidth={2}
-                style={{ 
-                  position: 'absolute',
-                  left: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  display: 'block',
-                }} 
-              />
-              <span style={{ lineHeight: '24px' }}>{sessionDuration}</span>
+              <span style={{ 
+                display: 'inline-flex',
+                ...(debugMode && { border: '1px solid blue', background: 'rgba(0,0,255,0.1)' }),
+              }}>
+                <Clock 
+                  size={12}
+                  strokeWidth={2}
+                  style={{ 
+                    display: 'block',
+                    ...(debugMode && { border: '1px solid green' }),
+                  }} 
+                />
+              </span>
+              <span style={{ 
+                lineHeight: '1',
+                ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
+              }}>
+                {sessionDuration}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Debug Info */}
+        {debugMode && (
+          <div style={{ 
+            marginBottom: '10px', 
+            padding: '8px', 
+            background: 'rgba(255,255,255,0.9)', 
+            fontSize: '8px',
+            color: '#000',
+            fontFamily: 'monospace',
+            lineHeight: '1.4',
+          }}>
+            <div><strong>DURATION BADGE DEBUG:</strong></div>
+            <div>Clock: 12×12px, display:block</div>
+            <div>Text: font-size:13px, line-height:1</div>
+            <div>Container: inline-flex, align-items:center, gap:6px, line-height:1</div>
+            <div style={{ marginTop: '4px' }}>
+              🔴 Red=Container | 🔵 Blue=Icon wrapper | 🟢 Green=SVG | 🟡 Yellow=Text
             </div>
           </div>
         )}
@@ -364,38 +394,68 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
-        <div style={{ position: 'relative', display: 'inline-block', paddingLeft: '24px', height: '18px' }}>
-          <div 
-            className="rounded-full bg-primary" 
-            style={{ 
-              width: '18px', 
-              height: '18px',
-              position: 'absolute',
-              left: '0',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Music 
-              className="text-primary-foreground" 
-              size={10}
-              strokeWidth={2}
-              style={{ display: 'block' }} 
-            />
-          </div>
+        <div style={{ 
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          ...(debugMode && { border: '2px solid red', background: 'rgba(255,0,0,0.1)' }),
+        }}>
+          <span style={{ 
+            display: 'inline-flex',
+            ...(debugMode && { border: '1px solid blue', background: 'rgba(0,0,255,0.1)' }),
+          }}>
+            <div 
+              className="rounded-full bg-primary" 
+              style={{ 
+                width: '18px', 
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...(debugMode && { border: '1px solid purple' }),
+              }}
+            >
+              <Music 
+                className="text-primary-foreground" 
+                size={10}
+                strokeWidth={2}
+                style={{ 
+                  display: 'block',
+                  ...(debugMode && { border: '1px solid green' }),
+                }} 
+              />
+            </div>
+          </span>
           <span 
             className="font-semibold" 
             style={{ 
               fontSize: '11px',
               lineHeight: '18px',
+              ...(debugMode && { border: '1px solid yellow', background: 'rgba(255,255,0,0.1)' }),
             }}
           >
             Noteshare
           </span>
         </div>
+        
+        {/* Debug Info for Branding */}
+        {debugMode && (
+          <div style={{ 
+            marginTop: '8px', 
+            padding: '8px', 
+            background: 'rgba(255,255,255,0.9)', 
+            fontSize: '8px',
+            color: '#000',
+            fontFamily: 'monospace',
+            lineHeight: '1.4',
+          }}>
+            <div><strong>BRANDING DEBUG:</strong></div>
+            <div>Icon container: 18×18px, flex, center</div>
+            <div>Music icon: 10×10px, display:block</div>
+            <div>Text: font-size:11px, line-height:18px</div>
+            <div>Container: inline-flex, align-items:center, gap:6px</div>
+          </div>
+        )}
       </div>
     </div>
   );
