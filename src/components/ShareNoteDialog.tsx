@@ -12,6 +12,7 @@ import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFriends } from '@/hooks/useFriendships';
+import { getSignedUrls } from '@/hooks/useSignedUrl';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 // Platform detection helpers
@@ -96,33 +97,39 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
   const [jammerAvatars, setJammerAvatars] = useState<Record<string, string>>({});
   
-  // Fetch and convert jammer avatars to base64 for html2canvas compatibility
+  // Fetch and sign jammer avatars using the existing useSignedUrl logic
   useEffect(() => {
     const fetchAvatars = async () => {
-      console.log('[Avatar Debug] Starting fetch for IDs:', selectedJammerIds);
-      
       const friendsWithAvatars = selectedJammerIds
         .map(id => friends.find(f => f.id === id))
         .filter((f): f is NonNullable<typeof f> => f !== null && !!f.avatar);
-      
-      console.log('[Avatar Debug] Friends with avatars:', friendsWithAvatars.map(f => ({ id: f.id, name: f.name, avatar: f.avatar })));
       
       if (friendsWithAvatars.length === 0) {
         setJammerAvatars({});
         return;
       }
       
-      // Try simpler approach: use URLs directly without base64 conversion
-      const avatarMap: Record<string, string> = {};
+      // Use the existing getSignedUrls batch function - handles external URLs,
+      // public storage URLs, and relative paths with caching
+      const urlsToSign = friendsWithAvatars.map(f => f.avatar!);
       
-      friendsWithAvatars.forEach(friend => {
-        const url = friend.avatar!;
-        console.log('[Avatar Debug] Processing friend:', friend.name, 'URL:', url);
-        avatarMap[friend.id] = url;
-      });
-      
-      console.log('[Avatar Debug] Setting avatar map:', avatarMap);
-      setJammerAvatars(avatarMap);
+      try {
+        const signedUrlMap = await getSignedUrls(urlsToSign);
+        
+        // Map friend IDs to their signed URLs
+        const avatarMap: Record<string, string> = {};
+        friendsWithAvatars.forEach(friend => {
+          const signedUrl = signedUrlMap.get(friend.avatar!);
+          if (signedUrl) {
+            avatarMap[friend.id] = signedUrl;
+          }
+        });
+        
+        setJammerAvatars(avatarMap);
+      } catch (err) {
+        console.error('[ShareNoteDialog] Failed to get signed URLs:', err);
+        setJammerAvatars({});
+      }
     };
     
     if (selectedJammerIds.length > 0) {

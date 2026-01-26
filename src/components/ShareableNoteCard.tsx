@@ -172,13 +172,13 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
             </span>
             <div
               className={cn(
-                'inline-block rounded-full font-bold',
+                'rounded-full font-bold',
                 style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
               )}
               style={{
                 padding: '6px 12px',
                 fontSize: '13px',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
@@ -204,14 +204,14 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 <div
                   key={idx}
                   className={cn(
-                    'inline-block rounded-full',
+                    'rounded-full',
                     style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
                   )}
                   style={{ 
                     padding: '5px 10px', 
                     fontSize: '10px',
+                    display: 'inline-block',
                     lineHeight: '1',
-                    verticalAlign: 'middle',
                   }}
                 >
                   {instrument}
