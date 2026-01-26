@@ -114,6 +114,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   }, []);
 
   const handleDownload = useCallback(async () => {
+    if (isExporting) return; // Prevent double-click
     setIsExporting(true);
     try {
       const blob = await generateImage();
@@ -128,19 +129,21 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      toast({ title: 'Image saved!' });
+      toast({ title: 'Image saved!', duration: 2000 });
     } catch (err) {
       toast({ 
         title: 'Failed to save image', 
         description: 'Please try again',
-        variant: 'destructive' 
+        variant: 'destructive',
+        duration: 3000,
       });
     } finally {
       setIsExporting(false);
     }
-  }, [generateImage, note.id, toast]);
+  }, [generateImage, note.id, toast, isExporting]);
 
   const handleShare = useCallback(async () => {
+    if (isExporting) return; // Prevent double-click
     setIsExporting(true);
     try {
       const blob = await generateImage();
@@ -187,20 +190,21 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
           text: shareText,
           // Don't include url property - prevents rich link preview in iMessage
         });
-        toast({ title: 'Shared successfully!' });
+        toast({ title: 'Shared successfully!', duration: 2000 });
       } else if (navigator.share) {
         // Share without files (text only)
         await navigator.share({
           title: 'My Practice Session',
           text: shareText,
         });
-        toast({ title: 'Shared successfully!' });
+        toast({ title: 'Shared successfully!', duration: 2000 });
       } else {
         // Fallback: download and show message
         await handleDownload();
         toast({ 
           title: 'Image saved!', 
-          description: 'Share it manually to your favorite app' 
+          description: 'Share it manually to your favorite app',
+          duration: 3000,
         });
       }
     } catch (err) {
@@ -210,16 +214,18 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         toast({ 
           title: 'Could not share', 
           description: 'Image has been saved instead',
-          variant: 'destructive' 
+          variant: 'destructive',
+          duration: 3000,
         });
         await handleDownload();
       }
     } finally {
       setIsExporting(false);
     }
-  }, [generateImage, handleDownload, toast, audioToInclude, note.audio_files, note.audio_file_names]);
+  }, [generateImage, handleDownload, toast, audioToInclude, note.audio_files, note.audio_file_names, isExporting]);
 
   const handleInstagramShare = useCallback(async () => {
+    if (isExporting) return; // Prevent double-click
     setIsExporting(true);
     try {
       const blob = await generateImage();
@@ -260,7 +266,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     } finally {
       setIsExporting(false);
     }
-  }, [generateImage, handleDownload, toast]);
+  }, [generateImage, handleDownload, toast, isExporting]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
