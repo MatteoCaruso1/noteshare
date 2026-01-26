@@ -78,6 +78,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const cardRef = useRef<HTMLDivElement>(null);
   const [selectedStyle, setSelectedStyle] = useState<CardStyleId>('dark');
   const [isExporting, setIsExporting] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
   // Default to first audio file if any exist
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
     () => (note.audio_files?.length || 0) > 0 ? [0] : []
@@ -377,8 +378,21 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                 audioToInclude={audioToInclude}
                 instruments={instruments}
                 jammers={selectedJammers}
+                debugMode={debugMode}
               />
             </div>
+          </div>
+
+          {/* Debug Mode Toggle */}
+          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+            <Checkbox 
+              id="debug-mode" 
+              checked={debugMode}
+              onCheckedChange={(checked) => setDebugMode(checked as boolean)}
+            />
+            <Label htmlFor="debug-mode" className="text-sm cursor-pointer">
+              🔍 Show alignment debug boxes
+            </Label>
           </div>
 
           {/* Style Selector */}
