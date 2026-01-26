@@ -179,9 +179,9 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         }
       }
       
-      // Text content with link at the end (plain text to avoid preview expansion)
-      // Include URL as plain text, NOT in the url property to prevent rich link preview
-      const shareText = 'Check out my session on Noteshare\n\nnotesharemusic.com';
+      // Use short link format: notesharemusic.com/n/{first 8 chars of note ID}
+      const shortId = note.id.slice(0, 8);
+      const shareText = `Check out my session on Noteshare\n\nnotesharemusic.com/n/${shortId}`;
       
       // Check if Web Share API is available and supports our files
       if (navigator.share && navigator.canShare?.({ files })) {
