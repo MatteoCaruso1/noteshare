@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { NoteWithAuthor, Profile } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -74,17 +74,73 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       .filter(s => s.length > 0);
   }, [instrumentsInput]);
   
-  // Jammers (friends) picker
+  // Jammers (friends) picker with signed URL support
   const { data: friends = [] } = useFriends();
   const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
+  const [jammerAvatars, setJammerAvatars] = useState<Record<string, string>>({});
+  
+  // Fetch signed URLs for jammer avatars
+  useEffect(() => {
+    const fetchAvatars = async () => {
+      const friendsWithAvatars = selectedJammerIds
+        .map(id => friends.find(f => f.id === id))
+        .filter((f): f is NonNullable<typeof f> => f !== null && !!f.avatar);
+      
+      if (friendsWithAvatars.length === 0) return;
+      
+      // Collect avatar URLs that need signing (relative paths or public/sign URLs)
+      const urlsToSign = friendsWithAvatars
+        .map(f => f.avatar!)
+        .filter(url => !url.startsWith('http') || url.includes('/storage/v1/object/public/') || url.includes('/storage/v1/object/sign/'));
+      
+      if (urlsToSign.length === 0) {
+        // All URLs are already valid external URLs
+        const validAvatars: Record<string, string> = {};
+        friendsWithAvatars.forEach(f => {
+          if (f.avatar) validAvatars[f.id] = f.avatar;
+        });
+        setJammerAvatars(validAvatars);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('get-signed-url', {
+          body: { urls: urlsToSign }
+        });
+        
+        if (!error && data?.results) {
+          const newAvatars: Record<string, string> = {};
+          friendsWithAvatars.forEach(friend => {
+            if (friend.avatar && data.results[friend.avatar]) {
+              newAvatars[friend.id] = data.results[friend.avatar];
+            } else if (friend.avatar && !urlsToSign.includes(friend.avatar)) {
+              // Use original URL if it didn't need signing
+              newAvatars[friend.id] = friend.avatar;
+            }
+          });
+          setJammerAvatars(newAvatars);
+        }
+      } catch (err) {
+        console.warn('Could not fetch signed URLs for jammer avatars:', err);
+      }
+    };
+    
+    if (selectedJammerIds.length > 0) {
+      fetchAvatars();
+    }
+  }, [selectedJammerIds, friends]);
+  
   const selectedJammers: JammerInfo[] = useMemo(() => {
     return selectedJammerIds
       .map(id => {
         const friend = friends.find(f => f.id === id);
-        return friend ? { id: friend.id, name: friend.name, avatar: friend.avatar } : null;
+        if (!friend) return null;
+        // Use signed URL if available, otherwise use original
+        const avatar = jammerAvatars[id] || friend.avatar;
+        return { id: friend.id, name: friend.name, avatar };
       })
       .filter((j): j is JammerInfo => j !== null);
-  }, [selectedJammerIds, friends]);
+  }, [selectedJammerIds, friends, jammerAvatars]);
 
   // Detect device type
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
