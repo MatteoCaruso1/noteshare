@@ -210,24 +210,18 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </div>
         )}
 
-        {/* Debug Info */}
+        {/* Debug Legend - compact single line */}
         {debugMode && (
           <div style={{ 
-            marginBottom: '10px', 
-            padding: '8px', 
-            background: 'rgba(255,255,255,0.9)', 
-            fontSize: '8px',
-            color: '#000',
+            marginBottom: '6px', 
+            padding: '4px 8px', 
+            background: 'rgba(0,0,0,0.7)', 
+            fontSize: '7px',
+            color: '#fff',
             fontFamily: 'monospace',
-            lineHeight: '1.4',
+            borderRadius: '4px',
           }}>
-            <div><strong>DURATION BADGE DEBUG:</strong></div>
-            <div>Clock: 12×12px, display:block</div>
-            <div>Text: font-size:13px, line-height:1</div>
-            <div>Container: inline-flex, align-items:center, gap:6px, line-height:1</div>
-            <div style={{ marginTop: '4px' }}>
-              🔴 Red=Container | 🔵 Blue=Icon wrapper | 🟢 Green=SVG | 🟡 Yellow=Text
-            </div>
+            🔴Con | 🔵Icon | 🟢SVG | 🟡Text | 🟠Inst | 🟣Tag | 🔵Jam | 🟢Av
           </div>
         )}
 
@@ -265,22 +259,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </div>
         )}
 
-        {/* Instruments Debug Info */}
-        {debugMode && hasInstruments && (
-          <div style={{ 
-            marginBottom: '10px', 
-            padding: '8px', 
-            background: 'rgba(255,255,255,0.9)', 
-            fontSize: '8px',
-            color: '#000',
-            fontFamily: 'monospace',
-            lineHeight: '1.4',
-          }}>
-            <div><strong>INSTRUMENTS DEBUG:</strong></div>
-            <div>Tags: inline-block, padding:5px 10px, line-height:1</div>
-            <div>🟠 Orange=Section | 🟣 Magenta=Tag</div>
-          </div>
-        )}
 
         {/* Jammers Section */}
         {hasJammers && (
@@ -337,23 +315,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </div>
         )}
 
-        {/* Jammers Debug Info */}
-        {debugMode && hasJammers && (
-          <div style={{ 
-            marginBottom: '10px', 
-            padding: '8px', 
-            background: 'rgba(255,255,255,0.9)', 
-            fontSize: '8px',
-            color: '#000',
-            fontFamily: 'monospace',
-            lineHeight: '1.4',
-          }}>
-            <div><strong>JAMMERS DEBUG:</strong></div>
-            <div>Avatars: 24x24px, stacked with margin-left:-8px</div>
-            <div>Names: font-size:10px</div>
-            <div>🔵 Cyan=Section | 🟢 Lime=Avatar group | 🟡 Yellow=Names</div>
-          </div>
-        )}
 
         {/* Text Content Section - smaller font, tighter spacing */}
         {truncatedNotes && (
@@ -474,24 +435,6 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
           </span>
         </div>
         
-        {/* Debug Info for Branding */}
-        {debugMode && (
-          <div style={{ 
-            marginTop: '8px', 
-            padding: '8px', 
-            background: 'rgba(255,255,255,0.9)', 
-            fontSize: '8px',
-            color: '#000',
-            fontFamily: 'monospace',
-            lineHeight: '1.4',
-          }}>
-            <div><strong>BRANDING DEBUG:</strong></div>
-            <div>Icon container: 18×18px, flex, center</div>
-            <div>Music icon: 10×10px, display:block</div>
-            <div>Text: font-size:11px, line-height:18px</div>
-            <div>Container: inline-flex, align-items:center, gap:6px</div>
-          </div>
-        )}
       </div>
     </div>
   );
