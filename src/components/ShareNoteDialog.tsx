@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { ShareableNoteCard, CARD_STYLES, CardStyleId, JammerInfo } from '@/components/ShareableNoteCard';
 import { Share, Instagram, MessageCircle, Loader2, Check, Download, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFriends } from '@/hooks/useFriendships';
@@ -180,21 +180,16 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       // Ensure element is fully visible and rendered
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Get the actual rendered dimensions
-      const rect = cardRef.current.getBoundingClientRect();
-      
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 3, // Higher resolution for quality
-        useCORS: true,
-        logging: false,
-        width: rect.width,
-        height: rect.height,
+      // Use html-to-image for pixel-perfect capture of the rendered DOM
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 1.0,
+        pixelRatio: 3, // Higher resolution
+        cacheBust: true,
       });
       
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
-      });
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      return await response.blob();
     } catch (err) {
       console.error('Error generating image:', err);
       return null;
