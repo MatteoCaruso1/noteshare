@@ -23,27 +23,23 @@ const getDeviceInfo = () => {
 };
 
 // Helper to fetch audio file from signed URL and convert to File
+// Uses m4a format for iMessage compatibility
 const fetchAudioAsFile = async (signedUrl: string, fileName: string): Promise<File | null> => {
   try {
     const response = await fetch(signedUrl);
     if (!response.ok) throw new Error('Failed to fetch audio');
     
     const blob = await response.blob();
-    // Determine MIME type from blob or filename
-    const extension = fileName.split('.').pop()?.toLowerCase() || 'mp3';
-    const mimeTypeMap: Record<string, string> = {
-      'webm': 'audio/webm',
-      'ogg': 'audio/ogg',
-      'mp3': 'audio/mpeg',
-      'wav': 'audio/wav',
-      'm4a': 'audio/mp4',
-      'mp4': 'audio/mp4',
-    };
-    const mimeType = blob.type || mimeTypeMap[extension] || 'audio/mpeg';
     
-    // Create clean filename for sharing
-    const cleanName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    return new File([blob], cleanName, { type: mimeType });
+    // Clean the base filename (remove extension if any)
+    const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
+    
+    // Always use m4a format for iMessage compatibility (like Voice Memos)
+    // Even though the actual content may be different, iMessage handles this better
+    const outputFileName = `${baseName}.m4a`;
+    
+    // Use audio/mp4 MIME type for m4a files
+    return new File([blob], outputFileName, { type: 'audio/mp4' });
   } catch (err) {
     console.error('Error fetching audio file:', err);
     return null;
@@ -91,11 +87,21 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     if (!cardRef.current) return null;
 
     try {
+      // Get the actual rendered dimensions
+      const rect = cardRef.current.getBoundingClientRect();
+      
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
-        scale: 2, // Higher resolution for quality
+        scale: 3, // Higher resolution for quality
         useCORS: true,
         logging: false,
+        width: rect.width,
+        height: rect.height,
+        // Ensure consistent font rendering
+        onclone: (clonedDoc, element) => {
+          // Force computed styles to be applied
+          element.style.fontFamily = window.getComputedStyle(cardRef.current!).fontFamily;
+        },
       });
       
       return new Promise((resolve) => {
@@ -149,7 +155,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       if (audioToInclude.length > 0) {
         const audioIndex = audioToInclude[0];
         const audioUrl = note.audio_files?.[audioIndex];
-        const audioName = note.audio_file_names?.[audioIndex] || `recording-${audioIndex + 1}.mp3`;
+        // Use custom name if available, fallback to generic name
+        const rawName = note.audio_file_names?.[audioIndex] || `Recording ${audioIndex + 1}`;
         
         if (audioUrl) {
           try {
@@ -160,7 +167,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             
             if (!error && data?.results?.[audioUrl]) {
               const signedAudioUrl = data.results[audioUrl];
-              const audioFile = await fetchAudioAsFile(signedAudioUrl, audioName);
+              const audioFile = await fetchAudioAsFile(signedAudioUrl, rawName);
               if (audioFile) {
                 files.push(audioFile);
               }

@@ -127,11 +127,17 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   return (
     <div
       className={cn(
-        'relative w-full aspect-[9/16] rounded-2xl overflow-hidden p-5 flex flex-col',
+        'relative rounded-2xl overflow-hidden flex flex-col',
         style.bgClass,
         style.textClass,
         className
       )}
+      style={{
+        // Use explicit dimensions for consistent html2canvas rendering
+        width: '100%',
+        aspectRatio: '9 / 16',
+        padding: '20px',
+      }}
     >
       {/* Top Section - Type & Date */}
       <div className="mb-4">
