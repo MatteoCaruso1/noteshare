@@ -177,22 +177,26 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               )}
               style={{
                 padding: '6px 12px',
+                paddingLeft: '30px',
                 fontSize: '13px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
+                position: 'relative',
+                display: 'inline-block',
                 lineHeight: '1',
+                height: '24px',
               }}
             >
               <Clock 
                 size={12}
                 strokeWidth={2}
                 style={{ 
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   display: 'block',
-                  flexShrink: 0,
                 }} 
               />
-              <span style={{ lineHeight: '1' }}>{sessionDuration}</span>
+              <span style={{ lineHeight: '24px' }}>{sessionDuration}</span>
             </div>
           </div>
         )}
@@ -360,20 +364,19 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
-        <div style={{ 
-          display: 'inline-flex', 
-          alignItems: 'center', 
-          gap: '6px',
-        }}>
+        <div style={{ position: 'relative', display: 'inline-block', paddingLeft: '24px', height: '18px' }}>
           <div 
             className="rounded-full bg-primary" 
             style={{ 
               width: '18px', 
               height: '18px',
+              position: 'absolute',
+              left: '0',
+              top: '50%',
+              transform: 'translateY(-50%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexShrink: 0,
             }}
           >
             <Music 
