@@ -177,49 +177,27 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     if (!cardRef.current) return null;
 
     try {
+      // Ensure element is fully visible and rendered
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Get the actual rendered dimensions
       const rect = cardRef.current.getBoundingClientRect();
-      const scale = 3; // Higher resolution for quality
       
-      // Use html2canvas with foreignObjectRendering for more accurate capture
-      // This renders the actual DOM as-is instead of re-interpreting styles
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
-        scale,
+        scale: 3, // Higher resolution for quality
         useCORS: true,
-        allowTaint: true,
         logging: false,
         width: rect.width,
         height: rect.height,
-        // Use foreignObject rendering - captures actual rendered pixels
-        foreignObjectRendering: true,
       });
       
       return new Promise((resolve) => {
         canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
       });
     } catch (err) {
-      console.error('Error with foreignObject, falling back:', err);
-      
-      // Fallback to standard html2canvas if foreignObject fails
-      try {
-        const rect = cardRef.current!.getBoundingClientRect();
-        const canvas = await html2canvas(cardRef.current!, {
-          backgroundColor: null,
-          scale: 3,
-          useCORS: true,
-          logging: false,
-          width: rect.width,
-          height: rect.height,
-        });
-        
-        return new Promise((resolve) => {
-          canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
-        });
-      } catch (fallbackErr) {
-        console.error('Fallback also failed:', fallbackErr);
-        return null;
-      }
+      console.error('Error generating image:', err);
+      return null;
     }
   }, []);
 
