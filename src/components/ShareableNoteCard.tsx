@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
-import { NoteWithAuthor } from '@/types';
-import { Clock, Music, Mic } from 'lucide-react';
+import { NoteWithAuthor, Profile } from '@/types';
+import { Clock, Music, Mic, Guitar } from 'lucide-react';
 import { format, getHours } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -18,10 +18,18 @@ export const CARD_STYLES = [
 
 export type CardStyleId = typeof CARD_STYLES[number]['id'];
 
+export interface JammerInfo {
+  id: string;
+  name: string;
+  avatar: string | null;
+}
+
 interface ShareableNoteCardProps {
   note: NoteWithAuthor;
   styleId: CardStyleId;
   audioToInclude: number[]; // indices of audio files to include
+  instruments?: string[]; // list of instruments
+  jammers?: JammerInfo[]; // list of jammers with profile pics
   className?: string;
 }
 
@@ -53,6 +61,8 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   note,
   styleId,
   audioToInclude,
+  instruments = [],
+  jammers = [],
   className,
 }: ShareableNoteCardProps) {
   const style = CARD_STYLES.find(s => s.id === styleId) || CARD_STYLES[0];
@@ -99,30 +109,33 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
   const hasImages = (note.image_files?.length || 0) > 0;
   const hasAudio = !!audioFile;
+  const hasInstruments = instruments.length > 0;
+  const hasJammers = jammers.length > 0;
 
   // Dynamically calculate max text length based on what else is displayed
   const truncatedNotes = useMemo(() => {
     if (!plainTextContent) return '';
     
-    // Higher base limit now that we have more space
-    let maxLength = 200;
+    // Lower base limit to fit more sections
+    let maxLength = 150;
     
-    // Reduce limit if we have audio or images to display
-    if (hasAudio) maxLength -= 30;
-    if (hasImages) maxLength -= 25;
+    // Reduce limit if we have other sections to display
+    if (hasAudio) maxLength -= 25;
+    if (hasImages) maxLength -= 20;
+    if (hasInstruments) maxLength -= 20;
+    if (hasJammers) maxLength -= 25;
     
     // Ensure minimum
-    maxLength = Math.max(maxLength, 100);
+    maxLength = Math.max(maxLength, 60);
     
     if (plainTextContent.length > maxLength) {
-      // Find last space before limit to avoid cutting words
       const trimmed = plainTextContent.slice(0, maxLength);
       const lastSpace = trimmed.lastIndexOf(' ');
       const cutPoint = lastSpace > maxLength * 0.7 ? lastSpace : maxLength;
       return plainTextContent.slice(0, cutPoint).trim() + '...';
     }
     return plainTextContent;
-  }, [plainTextContent, hasAudio, hasImages]);
+  }, [plainTextContent, hasAudio, hasImages, hasInstruments, hasJammers]);
 
   return (
     <div
@@ -136,12 +149,12 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
         // Use explicit dimensions for consistent html2canvas rendering
         width: '100%',
         aspectRatio: '9 / 16',
-        padding: '20px',
+        padding: '16px',
       }}
     >
       {/* Top Section - Type & Date */}
-      <div className="mb-4">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-0.5">
+      <div style={{ marginBottom: '12px' }}>
+        <div className="flex items-center gap-1.5 text-xs font-medium text-primary" style={{ marginBottom: '2px' }}>
           <span>{isPracticeSession ? `${timeOfDay} Practice Session` : 'Quick Note'}</span>
         </div>
         <span className={cn('text-xs', style.mutedClass)}>
@@ -153,27 +166,106 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Duration Section (for practice sessions) */}
         {isPracticeSession && sessionDuration && (
-          <div className="mb-3 flex-shrink-0">
-            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+            <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Duration
             </span>
-            <div className={cn(
-              'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-bold',
-              style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
-            )}>
-              <Clock className="w-3 h-3" />
-              <span>{sessionDuration}</span>
+            <div
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full font-bold',
+                style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
+              )}
+              style={{
+                padding: '4px 10px',
+                fontSize: '13px',
+                lineHeight: '1',
+              }}
+            >
+              <Clock style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+              <span style={{ lineHeight: '1' }}>{sessionDuration}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Instruments Section */}
+        {hasInstruments && (
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+            <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
+              Instruments
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {instruments.slice(0, 3).map((instrument, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full',
+                    style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
+                  )}
+                  style={{ padding: '3px 8px', fontSize: '10px' }}
+                >
+                  <Guitar style={{ width: '10px', height: '10px' }} />
+                  <span>{instrument}</span>
+                </div>
+              ))}
+              {instruments.length > 3 && (
+                <span className={cn('text-xs', style.mutedClass)} style={{ fontSize: '10px', padding: '3px 4px' }}>
+                  +{instruments.length - 3} more
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Jammers Section */}
+        {hasJammers && (
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+            <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
+              Jamming With
+            </span>
+            <div className="flex items-center gap-1">
+              {/* Stacked avatars */}
+              <div className="flex" style={{ marginLeft: '4px' }}>
+                {jammers.slice(0, 4).map((jammer, idx) => (
+                  <div
+                    key={jammer.id}
+                    className="rounded-full border-2 overflow-hidden"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      marginLeft: idx === 0 ? 0 : '-8px',
+                      borderColor: style.id === 'cream' || style.id === 'minimal' ? '#fff' : 'rgba(0,0,0,0.3)',
+                      zIndex: 10 - idx,
+                      position: 'relative',
+                    }}
+                  >
+                    <img
+                      src={jammer.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${jammer.id}`}
+                      alt={jammer.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      crossOrigin="anonymous"
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Names */}
+              <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                {jammers.length === 1
+                  ? jammers[0].name
+                  : jammers.length === 2
+                  ? `${jammers[0].name} & ${jammers[1].name}`
+                  : `${jammers[0].name} +${jammers.length - 1}`}
+              </span>
             </div>
           </div>
         )}
 
         {/* Text Content Section - smaller font, tighter spacing */}
         {truncatedNotes && (
-          <div className="mb-3 flex-shrink-0">
-            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+            <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               {isPracticeSession ? 'Session Notes' : 'Notes'}
             </span>
-            <p className="text-xs leading-snug">
+            <p style={{ fontSize: '11px', lineHeight: '1.4' }}>
               {truncatedNotes}
             </p>
           </div>
@@ -181,25 +273,29 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
         {/* Audio File Section - single recording only */}
         {audioFile && (
-          <div className="mb-3 flex-shrink-0">
-            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+            <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Recording
             </span>
             <div
               className={cn(
-                'flex items-center gap-2 px-2.5 py-1.5 rounded-xl',
+                'flex items-center gap-2 rounded-xl',
                 style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
               )}
+              style={{ padding: '6px 10px' }}
             >
-              <div className={cn(
-                'w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0',
-                style.id === 'cream' || style.id === 'minimal' ? 'bg-primary/10' : 'bg-white/20'
-              )}>
-                <Mic className="w-3 h-3" />
+              <div
+                className={cn(
+                  'rounded-full flex items-center justify-center flex-shrink-0',
+                  style.id === 'cream' || style.id === 'minimal' ? 'bg-primary/10' : 'bg-white/20'
+                )}
+                style={{ width: '22px', height: '22px' }}
+              >
+                <Mic style={{ width: '11px', height: '11px' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium truncate">{audioFile.name}</p>
-                <p className={cn('text-[9px]', style.mutedClass)}>Audio Recording</p>
+                <p className="font-medium truncate" style={{ fontSize: '10px' }}>{audioFile.name}</p>
+                <p className={style.mutedClass} style={{ fontSize: '8px' }}>Audio Recording</p>
               </div>
             </div>
           </div>
@@ -207,14 +303,17 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
         {/* Image indicator */}
         {hasImages && (
-          <div className="mb-3 flex-shrink-0">
-            <span className={cn('text-[9px] font-medium uppercase tracking-wider mb-1 block', style.mutedClass)}>
+          <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
+            <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Photos
             </span>
-            <div className={cn(
-              'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]',
-              style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
-            )}>
+            <div
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full',
+                style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
+              )}
+              style={{ padding: '3px 8px', fontSize: '10px' }}
+            >
               📸 {note.image_files!.length} photo{note.image_files!.length > 1 ? 's' : ''}
             </div>
           </div>
@@ -222,12 +321,12 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
       </div>
 
       {/* Bottom Branding */}
-      <div className="mt-auto pt-3 border-t border-current/10 flex-shrink-0">
+      <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-            <Music className="w-3 h-3 text-primary-foreground" />
+          <div className="rounded-full bg-primary flex items-center justify-center" style={{ width: '18px', height: '18px' }}>
+            <Music className="text-primary-foreground" style={{ width: '10px', height: '10px' }} />
           </div>
-          <span className="font-semibold text-xs">Noteshare</span>
+          <span className="font-semibold" style={{ fontSize: '11px' }}>Noteshare</span>
         </div>
       </div>
     </div>

@@ -1,15 +1,18 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { NoteWithAuthor } from '@/types';
+import { NoteWithAuthor, Profile } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ShareableNoteCard, CARD_STYLES, CardStyleId } from '@/components/ShareableNoteCard';
-import { Share, Instagram, MessageCircle, Loader2, Check, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ShareableNoteCard, CARD_STYLES, CardStyleId, JammerInfo } from '@/components/ShareableNoteCard';
+import { Share, Instagram, MessageCircle, Loader2, Check, Download, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useFriends } from '@/hooks/useFriendships';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -61,6 +64,27 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
     () => (note.audio_files?.length || 0) > 0 ? [0] : []
   );
+  
+  // Instruments input
+  const [instrumentsInput, setInstrumentsInput] = useState('');
+  const instruments = useMemo(() => {
+    return instrumentsInput
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+  }, [instrumentsInput]);
+  
+  // Jammers (friends) picker
+  const { data: friends = [] } = useFriends();
+  const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
+  const selectedJammers: JammerInfo[] = useMemo(() => {
+    return selectedJammerIds
+      .map(id => {
+        const friend = friends.find(f => f.id === id);
+        return friend ? { id: friend.id, name: friend.name, avatar: friend.avatar } : null;
+      })
+      .filter((j): j is JammerInfo => j !== null);
+  }, [selectedJammerIds, friends]);
 
   // Detect device type
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
@@ -286,6 +310,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                 note={note}
                 styleId={selectedStyle}
                 audioToInclude={audioToInclude}
+                instruments={instruments}
+                jammers={selectedJammers}
               />
             </div>
           </div>
@@ -317,6 +343,74 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               ))}
             </div>
           </div>
+
+          {/* Instruments Input */}
+          <div>
+            <Label className="text-sm text-muted-foreground mb-2 block">
+              Instruments (comma-separated)
+            </Label>
+            <Input
+              placeholder="e.g. Piano, Bass, Drums"
+              value={instrumentsInput}
+              onChange={(e) => setInstrumentsInput(e.target.value)}
+              className="text-sm"
+            />
+          </div>
+
+          {/* Jammers Picker */}
+          {friends.length > 0 && (
+            <div>
+              <Label className="text-sm text-muted-foreground mb-2 block">
+                Jamming With
+              </Label>
+              {/* Selected jammers */}
+              {selectedJammers.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedJammers.map((jammer) => (
+                    <div
+                      key={jammer.id}
+                      className="flex items-center gap-1.5 bg-muted rounded-full pl-1 pr-2 py-0.5"
+                    >
+                      <Avatar className="w-5 h-5">
+                        <AvatarImage src={jammer.avatar || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {jammer.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{jammer.name}</span>
+                      <button
+                        onClick={() => setSelectedJammerIds(prev => prev.filter(id => id !== jammer.id))}
+                        className="ml-0.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Friend selector */}
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                {friends
+                  .filter(f => !selectedJammerIds.includes(f.id))
+                  .slice(0, 10)
+                  .map((friend) => (
+                    <button
+                      key={friend.id}
+                      onClick={() => setSelectedJammerIds(prev => [...prev, friend.id])}
+                      className="flex items-center gap-1.5 bg-secondary hover:bg-secondary/80 rounded-full pl-1 pr-2 py-0.5 transition-colors"
+                    >
+                      <Avatar className="w-5 h-5">
+                        <AvatarImage src={friend.avatar || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {friend.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{friend.name}</span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
 
           {/* Audio Selection - max 1 */}
           {audioFiles.length > 0 && (
