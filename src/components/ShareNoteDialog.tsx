@@ -43,26 +43,141 @@ const convertToBase64 = async (url: string): Promise<string | null> => {
   }
 };
 
-// Helper to fetch audio file from signed URL and convert to File
-// Uses m4a format for iMessage compatibility
-const fetchAudioAsFile = async (signedUrl: string, fileName: string): Promise<File | null> => {
+// Maximum audio duration for sharing (3 minutes)
+const MAX_AUDIO_DURATION_SECONDS = 180;
+
+// Helper to trim and compress audio for sharing
+// Trims to first 3 minutes and compresses using MediaRecorder
+const trimAndCompressAudio = async (audioBlob: Blob): Promise<Blob | null> => {
+  try {
+    const audioContext = new AudioContext();
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // Calculate trim duration (max 3 minutes)
+    const originalDuration = audioBuffer.duration;
+    const trimDuration = Math.min(originalDuration, MAX_AUDIO_DURATION_SECONDS);
+    const trimSamples = Math.floor(trimDuration * audioBuffer.sampleRate);
+    
+    // Create trimmed buffer
+    const trimmedBuffer = audioContext.createBuffer(
+      audioBuffer.numberOfChannels,
+      trimSamples,
+      audioBuffer.sampleRate
+    );
+    
+    // Copy audio data
+    for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+      const originalData = audioBuffer.getChannelData(channel);
+      const trimmedData = trimmedBuffer.getChannelData(channel);
+      for (let i = 0; i < trimSamples; i++) {
+        trimmedData[i] = originalData[i];
+      }
+    }
+    
+    // Create offline context for rendering
+    const offlineContext = new OfflineAudioContext(
+      trimmedBuffer.numberOfChannels,
+      trimmedBuffer.length,
+      trimmedBuffer.sampleRate
+    );
+    
+    const source = offlineContext.createBufferSource();
+    source.buffer = trimmedBuffer;
+    source.connect(offlineContext.destination);
+    source.start(0);
+    
+    const renderedBuffer = await offlineContext.startRendering();
+    
+    // Convert to WAV (universally compatible, smaller than raw PCM)
+    const wavBlob = audioBufferToWav(renderedBuffer);
+    
+    await audioContext.close();
+    return wavBlob;
+  } catch (err) {
+    console.error('Error trimming/compressing audio:', err);
+    return null;
+  }
+};
+
+// Convert AudioBuffer to WAV blob (widely compatible format)
+const audioBufferToWav = (buffer: AudioBuffer): Blob => {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+  
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+  
+  // Interleave channels
+  const interleaved = new Float32Array(buffer.length * numChannels);
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < buffer.length; i++) {
+      interleaved[i * numChannels + channel] = channelData[i];
+    }
+  }
+  
+  // Convert to 16-bit PCM
+  const dataLength = interleaved.length * bytesPerSample;
+  const wavBuffer = new ArrayBuffer(44 + dataLength);
+  const view = new DataView(wavBuffer);
+  
+  // WAV header
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+  
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataLength, true);
+  
+  // Write audio data
+  let offset = 44;
+  for (let i = 0; i < interleaved.length; i++) {
+    const sample = Math.max(-1, Math.min(1, interleaved[i]));
+    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+    offset += 2;
+  }
+  
+  return new Blob([wavBuffer], { type: 'audio/wav' });
+};
+
+// Helper to fetch, trim, and prepare audio file for sharing
+const fetchAndPrepareAudio = async (signedUrl: string, fileName: string): Promise<File | null> => {
   try {
     const response = await fetch(signedUrl);
     if (!response.ok) throw new Error('Failed to fetch audio');
     
-    const blob = await response.blob();
+    const originalBlob = await response.blob();
     
-    // Clean the base filename (remove extension if any)
+    // Trim and compress the audio
+    const processedBlob = await trimAndCompressAudio(originalBlob);
+    if (!processedBlob) {
+      // Fallback: use original if processing fails
+      const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
+      return new File([originalBlob], `${baseName}.m4a`, { type: 'audio/mp4' });
+    }
+    
+    // Clean the filename
     const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
     
-    // Always use m4a format for iMessage compatibility (like Voice Memos)
-    // Even though the actual content may be different, iMessage handles this better
-    const outputFileName = `${baseName}.m4a`;
-    
-    // Use audio/mp4 MIME type for m4a files
-    return new File([blob], outputFileName, { type: 'audio/mp4' });
+    return new File([processedBlob], `${baseName}.wav`, { type: 'audio/wav' });
   } catch (err) {
-    console.error('Error fetching audio file:', err);
+    console.error('Error fetching/preparing audio file:', err);
     return null;
   }
 };
@@ -240,10 +355,35 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       
       const imageFile = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
       
-      // IMPORTANT: Only share the image for iMessage reliability
-      // Large audio files (>5MB) cause "Not Delivered" errors in iMessage
-      // Users can share audio separately if needed
+      // Start with image file
       const files: File[] = [imageFile];
+      
+      // Add audio file if selected (trimmed to 3 min, compressed)
+      if (audioToInclude.length > 0) {
+        const audioIndex = audioToInclude[0];
+        const audioUrl = note.audio_files?.[audioIndex];
+        const rawName = note.audio_file_names?.[audioIndex] || `Recording ${audioIndex + 1}`;
+        
+        if (audioUrl) {
+          try {
+            const { data, error } = await supabase.functions.invoke('get-signed-url', {
+              body: { url: audioUrl }
+            });
+            
+            if (!error && data?.results?.[audioUrl]) {
+              const signedAudioUrl = data.results[audioUrl];
+              // Fetch, trim to 3 min, and compress the audio
+              const audioFile = await fetchAndPrepareAudio(signedAudioUrl, rawName);
+              if (audioFile) {
+                files.push(audioFile);
+              }
+            }
+          } catch (audioErr) {
+            console.warn('Could not process audio for sharing:', audioErr);
+            // Continue without audio
+          }
+        }
+      }
       
       // Link to main Noteshare website
       const shareText = `Check out my session on Noteshare\n\nhttps://notesharemusic.com`;
@@ -286,7 +426,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     } finally {
       setIsExporting(false);
     }
-  }, [generateImage, handleDownload, toast, note.id, isExporting]);
+  }, [generateImage, handleDownload, toast, note.id, audioToInclude, note.audio_files, note.audio_file_names, isExporting]);
 
   const handleInstagramShare = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
