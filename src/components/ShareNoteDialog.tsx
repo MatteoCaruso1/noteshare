@@ -195,6 +195,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const cardRef = useRef<HTMLDivElement>(null);
   const [selectedStyle, setSelectedStyle] = useState<CardStyleId>('dark');
   const [isExporting, setIsExporting] = useState(false);
+  const [activeButton, setActiveButton] = useState<'imessage' | 'save' | null>(null);
   // Default to first audio file if any exist
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
     () => (note.audio_files?.length || 0) > 0 ? [0] : []
@@ -358,6 +359,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const handleDownload = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
     setIsExporting(true);
+    setActiveButton('save');
     try {
       const blob = await generateImage();
       if (!blob) throw new Error('Failed to generate image');
@@ -381,12 +383,14 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       });
     } finally {
       setIsExporting(false);
+      setActiveButton(null);
     }
   }, [generateImage, note.id, toast, isExporting]);
 
   const handleShare = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
     setIsExporting(true);
+    setActiveButton('imessage');
     try {
       const blob = await generateImage();
       if (!blob) throw new Error('Failed to generate image');
@@ -442,11 +446,11 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         });
         toast({ title: 'Shared successfully!', duration: 2000 });
       } else {
-        // Fallback: download and show message
-        await handleDownload();
+        // No share API available - show error, don't fallback to download
         toast({ 
-          title: 'Image saved!', 
-          description: 'Share it manually to your favorite app',
+          title: 'Sharing not supported', 
+          description: 'Use the Save button instead',
+          variant: 'destructive',
           duration: 3000,
         });
       }
@@ -454,18 +458,19 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       // User cancelled share or error occurred
       if ((err as Error).name !== 'AbortError') {
         console.error('Share error:', err);
+        // Show error toast - don't fallback to download
         toast({ 
-          title: 'Could not share', 
-          description: 'Image has been saved instead',
+          title: 'Share failed', 
+          description: 'Please try again or use Save',
           variant: 'destructive',
           duration: 3000,
         });
-        await handleDownload();
       }
     } finally {
       setIsExporting(false);
+      setActiveButton(null);
     }
-  }, [generateImage, handleDownload, toast, note.id, audioToInclude, note.audio_files, note.audio_file_names, isExporting]);
+  }, [generateImage, toast, note.id, audioToInclude, note.audio_files, note.audio_file_names, isExporting]);
 
   const handleInstagramShare = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
@@ -673,17 +678,20 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               onClick={handleShare}
               disabled={isExporting || !canShareIMessage}
               className={cn(
-                "flex items-center justify-center gap-1.5 text-xs",
-                !canShareIMessage && "opacity-50 cursor-not-allowed"
+                "flex items-center justify-center gap-1.5 text-xs transition-all",
+                !canShareIMessage && "opacity-50 cursor-not-allowed",
+                activeButton === 'imessage' && "bg-primary text-primary-foreground"
               )}
               title={!canShareIMessage ? "iMessage sharing is only available on iOS" : undefined}
             >
-              {isExporting ? (
+              {activeButton === 'imessage' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <MessageCircle className="w-3.5 h-3.5" />
               )}
-              <span className="hidden xs:inline">iMessage</span>
+              <span className="hidden xs:inline">
+                {activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
+              </span>
             </Button>
 
             {/* Save Image - Available everywhere, shows both Download and Instagram icons */}
@@ -692,9 +700,12 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               size="sm"
               onClick={handleDownload}
               disabled={isExporting}
-              className="flex items-center justify-center gap-1.5 text-xs"
+              className={cn(
+                "flex items-center justify-center gap-1.5 text-xs transition-all",
+                activeButton === 'save' && "bg-primary text-primary-foreground"
+              )}
             >
-              {isExporting ? (
+              {activeButton === 'save' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <div className="flex items-center gap-1">
@@ -702,7 +713,9 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                   <Instagram className="w-3.5 h-3.5" />
                 </div>
               )}
-              <span className="hidden xs:inline">Save</span>
+              <span className="hidden xs:inline">
+                {activeButton === 'save' ? 'Saving...' : 'Save'}
+              </span>
             </Button>
           </div>
         </div>
