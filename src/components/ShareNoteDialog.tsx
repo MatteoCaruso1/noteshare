@@ -233,44 +233,20 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       
       const imageFile = new File([blob], 'noteshare-practice.png', { type: 'image/png' });
       
-      // Order: 1. Practice card (image), 2. Audio file, 3. Text + link
+      // IMPORTANT: Only share the image for iMessage reliability
+      // Large audio files (>5MB) cause "Not Delivered" errors in iMessage
+      // Users can share audio separately if needed
       const files: File[] = [imageFile];
       
-      // Fetch and add audio file if selected (comes after image)
-      if (audioToInclude.length > 0) {
-        const audioIndex = audioToInclude[0];
-        const audioUrl = note.audio_files?.[audioIndex];
-        const rawName = note.audio_file_names?.[audioIndex] || `Recording ${audioIndex + 1}`;
-        
-        if (audioUrl) {
-          try {
-            const { data, error } = await supabase.functions.invoke('get-signed-url', {
-              body: { url: audioUrl }
-            });
-            
-            if (!error && data?.results?.[audioUrl]) {
-              const signedAudioUrl = data.results[audioUrl];
-              const audioFile = await fetchAudioAsFile(signedAudioUrl, rawName);
-              if (audioFile) {
-                files.push(audioFile);
-              }
-            }
-          } catch (audioErr) {
-            console.warn('Could not fetch audio for sharing:', audioErr);
-          }
-        }
-      }
-      
-      // Use short link format: notesharemusic.com/n/{first 8 chars of note ID}
+      // Use short link format for the production website
       const shortId = note.id.slice(0, 8);
-      const shareText = `Check out my session on Noteshare\n\nnotesharemusic.com/n/${shortId}`;
+      const shareText = `Check out my session on Noteshare\n\nhttps://notesharemusic.com/n/${shortId}`;
       
       // Check if Web Share API is available and supports our files
       if (navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({
           files,
           text: shareText,
-          // Don't include url property - prevents rich link preview in iMessage
         });
         toast({ title: 'Shared successfully!', duration: 2000 });
       } else if (navigator.share) {
@@ -304,7 +280,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     } finally {
       setIsExporting(false);
     }
-  }, [generateImage, handleDownload, toast, audioToInclude, note.audio_files, note.audio_file_names, isExporting]);
+  }, [generateImage, handleDownload, toast, note.id, isExporting]);
 
   const handleInstagramShare = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
