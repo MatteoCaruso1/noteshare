@@ -4,6 +4,7 @@ import { Home, Target, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
+import { useAuth } from '@/hooks/useAuth';
 import { markScrollToTop } from '@/components/ScrollToTop';
 import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 
@@ -22,6 +23,7 @@ const hiddenRoutes = ['/welcome', '/auth'];
 
 export function BottomNav() {
   const location = useLocation();
+  const { user } = useAuth();
   const { data: unreadCount } = useUnreadNotificationCount();
   const { overrideActiveRoute } = useBottomNavOverride();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -29,8 +31,9 @@ export function BottomNav() {
   // Simple visibility - always visible, no complex fade-in logic that could cause issues
   const [isVisible, setIsVisible] = useState(true);
 
-  // Hide on auth/welcome routes
-  const shouldHide = hiddenRoutes.includes(location.pathname);
+  // Hide on auth/welcome routes, or on root when not authenticated (landing page)
+  const shouldHide = hiddenRoutes.includes(location.pathname) || 
+    (location.pathname === '/' && !user);
 
   // Detect keyboard open/close on mobile - only hide for large keyboards (not search bars)
   useEffect(() => {
