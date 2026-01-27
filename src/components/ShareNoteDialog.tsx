@@ -97,7 +97,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
   const [jammerAvatars, setJammerAvatars] = useState<Record<string, string>>({});
   
-  // Fetch and sign jammer avatars using the existing useSignedUrl logic
+  // Fetch, sign, and convert jammer avatars to base64 for html-to-image compatibility
   useEffect(() => {
     const fetchAvatars = async () => {
       const friendsWithAvatars = selectedJammerIds
@@ -109,21 +109,28 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         return;
       }
       
-      // Use the existing getSignedUrls batch function - handles external URLs,
-      // public storage URLs, and relative paths with caching
+      // Use the existing getSignedUrls batch function
       const urlsToSign = friendsWithAvatars.map(f => f.avatar!);
       
       try {
         const signedUrlMap = await getSignedUrls(urlsToSign);
         
-        // Map friend IDs to their signed URLs
+        // Map friend IDs to their base64 URLs for html-to-image compatibility
         const avatarMap: Record<string, string> = {};
-        friendsWithAvatars.forEach(friend => {
+        
+        await Promise.all(friendsWithAvatars.map(async (friend) => {
           const signedUrl = signedUrlMap.get(friend.avatar!);
           if (signedUrl) {
-            avatarMap[friend.id] = signedUrl;
+            // Convert to base64 to avoid CORS issues in html-to-image
+            const base64 = await convertToBase64(signedUrl);
+            if (base64) {
+              avatarMap[friend.id] = base64;
+            } else {
+              // Fallback to signed URL if base64 conversion fails
+              avatarMap[friend.id] = signedUrl;
+            }
           }
-        });
+        }));
         
         setJammerAvatars(avatarMap);
       } catch (err) {
