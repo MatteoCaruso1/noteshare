@@ -212,7 +212,11 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
   const [jammerAvatars, setJammerAvatars] = useState<Record<string, string>>({});
   
+  // Track loading state for jammer avatars
+  const [isLoadingAvatars, setIsLoadingAvatars] = useState(false);
+  
   // Fetch, sign, and convert jammer avatars to base64 for html-to-image compatibility
+  // CRITICAL: Only base64 avatars work with html-to-image export - signed URLs cause CORS failures
   useEffect(() => {
     const fetchAvatars = async () => {
       const friendsWithAvatars = selectedJammerIds
@@ -221,8 +225,11 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       
       if (friendsWithAvatars.length === 0) {
         setJammerAvatars({});
+        setIsLoadingAvatars(false);
         return;
       }
+      
+      setIsLoadingAvatars(true);
       
       // Use the existing getSignedUrls batch function
       const urlsToSign = friendsWithAvatars.map(f => f.avatar!);
@@ -231,6 +238,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         const signedUrlMap = await getSignedUrls(urlsToSign);
         
         // Map friend IDs to their base64 URLs for html-to-image compatibility
+        // IMPORTANT: Only include successfully converted base64 avatars
         const avatarMap: Record<string, string> = {};
         
         await Promise.all(friendsWithAvatars.map(async (friend) => {
@@ -241,8 +249,9 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             if (base64) {
               avatarMap[friend.id] = base64;
             } else {
-              // Fallback to signed URL if base64 conversion fails
-              avatarMap[friend.id] = signedUrl;
+              // DO NOT fallback to signed URL - it will cause html-to-image to fail
+              // Instead, this jammer will show initials fallback in the card
+              console.warn(`[ShareNoteDialog] Could not convert avatar to base64 for ${friend.name}, will use initials`);
             }
           }
         }));
@@ -251,6 +260,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       } catch (err) {
         console.error('[ShareNoteDialog] Failed to get signed URLs:', err);
         setJammerAvatars({});
+      } finally {
+        setIsLoadingAvatars(false);
       }
     };
     
@@ -258,6 +269,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       fetchAvatars();
     } else {
       setJammerAvatars({});
+      setIsLoadingAvatars(false);
     }
   }, [selectedJammerIds, friends]);
   
@@ -266,8 +278,9 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       .map(id => {
         const friend = friends.find(f => f.id === id);
         if (!friend) return null;
-        // Use signed URL if available, otherwise use original
-        const avatar = jammerAvatars[id] || friend.avatar;
+        // ONLY use base64 avatar - if not available, pass undefined so card shows initials
+        // This prevents CORS errors in html-to-image export
+        const avatar = jammerAvatars[id]; // Intentionally NOT falling back to friend.avatar
         return { id: friend.id, name: friend.name, avatar };
       })
       .filter((j): j is JammerInfo => j !== null);
@@ -298,24 +311,47 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     if (!cardRef.current) return null;
 
     try {
+      // Wait for avatars to finish loading if any jammers selected
+      if (isLoadingAvatars) {
+        console.log('[ShareNoteDialog] Waiting for avatars to finish loading...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       // Ensure element is fully visible and rendered
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Use html-to-image for pixel-perfect capture of the rendered DOM
+      // filter out any external images that aren't base64 to prevent CORS errors
       const dataUrl = await toPng(cardRef.current, {
         quality: 1.0,
         pixelRatio: 3, // Higher resolution
         cacheBust: true,
+        // Skip images that might cause CORS issues (non-base64)
+        filter: (node) => {
+          if (node instanceof HTMLImageElement) {
+            const src = node.src || '';
+            // Allow base64 data URLs and empty/placeholder images
+            if (src.startsWith('data:') || !src || src.includes('dicebear')) {
+              return true;
+            }
+            // Block external URLs that could cause CORS issues
+            if (src.startsWith('http') && !src.startsWith('data:')) {
+              console.warn('[ShareNoteDialog] Filtering out external image to prevent CORS:', src.substring(0, 100));
+              return false;
+            }
+          }
+          return true;
+        },
       });
       
       // Convert data URL to blob
       const response = await fetch(dataUrl);
       return await response.blob();
     } catch (err) {
-      console.error('Error generating image:', err);
+      console.error('[ShareNoteDialog] Error generating image:', err);
       return null;
     }
-  }, []);
+  }, [isLoadingAvatars]);
 
   const handleDownload = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
