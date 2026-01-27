@@ -625,8 +625,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
             </div>
           )}
 
-          {/* Share Actions - Three buttons */}
-          <div className="grid grid-cols-3 gap-2 pt-2">
+          {/* Share Actions - Two buttons */}
+          <div className="grid grid-cols-2 gap-2 pt-2">
             {/* iMessage - iOS only */}
             <Button
               variant="secondary"
@@ -646,28 +646,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               )}
               <span className="hidden xs:inline">iMessage</span>
             </Button>
-            
-            {/* Instagram - Mobile only */}
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleInstagramShare}
-              disabled={isExporting || !canShareInstagram}
-              className={cn(
-                "flex items-center justify-center gap-1.5 text-xs",
-                !canShareInstagram && "opacity-50 cursor-not-allowed"
-              )}
-              title={!canShareInstagram ? "Instagram sharing is only available on mobile" : undefined}
-            >
-              {isExporting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Instagram className="w-3.5 h-3.5" />
-              )}
-              <span className="hidden xs:inline">Instagram</span>
-            </Button>
 
-            {/* Save Image - Available everywhere */}
+            {/* Save Image - Available everywhere, shows both Download and Instagram icons */}
             <Button
               variant="secondary"
               size="sm"
@@ -678,9 +658,12 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               {isExporting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Download className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1">
+                  <Download className="w-3.5 h-3.5" />
+                  <Instagram className="w-3.5 h-3.5" />
+                </div>
               )}
-              <span className="hidden xs:inline">Save Image</span>
+              <span className="hidden xs:inline">Save</span>
             </Button>
           </div>
         </div>
