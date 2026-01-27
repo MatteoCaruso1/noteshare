@@ -241,42 +241,47 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
             <div className="flex items-center gap-1.5">
               {/* Stacked avatars */}
               <div className="flex" style={{ marginLeft: '4px' }}>
-                {jammers.slice(0, 4).map((jammer, idx) => (
-                  <div
-                    key={jammer.id}
-                    className="rounded-full border-2 overflow-hidden flex items-center justify-center"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      marginLeft: idx === 0 ? 0 : '-8px',
-                      borderColor: style.id === 'cream' || style.id === 'minimal' ? '#fff' : 'rgba(0,0,0,0.3)',
-                      zIndex: 10 - idx,
-                      position: 'relative',
-                      backgroundColor: style.id === 'cream' || style.id === 'minimal' ? '#e5e5e5' : 'rgba(255,255,255,0.2)',
-                    }}
-                  >
-                    {jammer.avatar ? (
-                      <img
-                        src={jammer.avatar}
-                        alt={jammer.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : null}
-                    <span 
-                      style={{ 
-                        fontSize: '10px', 
-                        fontWeight: 600,
-                        position: 'absolute',
-                        display: jammer.avatar ? 'none' : 'block',
+                {jammers.slice(0, 4).map((jammer, idx) => {
+                  // ONLY render img if avatar is confirmed base64 data URL
+                  // This ensures preview and export are always identical
+                  const isBase64Avatar = jammer.avatar?.startsWith('data:');
+                  
+                  return (
+                    <div
+                      key={jammer.id}
+                      className="rounded-full border-2 overflow-hidden flex items-center justify-center"
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        marginLeft: idx === 0 ? 0 : '-8px',
+                        borderColor: style.id === 'cream' || style.id === 'minimal' ? '#fff' : 'rgba(0,0,0,0.3)',
+                        zIndex: 10 - idx,
+                        position: 'relative',
+                        backgroundColor: style.id === 'cream' || style.id === 'minimal' ? '#e5e5e5' : 'rgba(255,255,255,0.2)',
                       }}
                     >
-                      {jammer.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                ))}
+                      {/* Only render img for confirmed base64 avatars - no onError needed */}
+                      {isBase64Avatar && (
+                        <img
+                          src={jammer.avatar!}
+                          alt={jammer.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      )}
+                      {/* Always show initials, but visually hidden when base64 avatar present */}
+                      <span 
+                        style={{ 
+                          fontSize: '10px', 
+                          fontWeight: 600,
+                          position: 'absolute',
+                          display: isBase64Avatar ? 'none' : 'block',
+                        }}
+                      >
+                        {jammer.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
               {/* All names */}
               <span style={{ fontSize: '10px', marginLeft: '4px' }}>
