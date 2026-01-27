@@ -213,10 +213,33 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   // Jammers (friends) picker with signed URL support
   const { data: friends = [] } = useFriends();
   const [selectedJammerIds, setSelectedJammerIds] = useState<string[]>([]);
-  const [jammerAvatars, setJammerAvatars] = useState<Record<string, string>>({});
   
-  // Track loading state for jammer avatars
-  const [isLoadingAvatars, setIsLoadingAvatars] = useState(false);
+  // Track avatar status explicitly: 'loading' | 'ready' | 'failed'
+  // ONLY 'ready' status means we have a confirmed base64 data URL
+  const [avatarStatus, setAvatarStatus] = useState<Record<string, { status: 'loading' | 'ready' | 'failed'; base64?: string }>>({});
+  
+  // Compute if all selected jammers have their avatars resolved (not loading)
+  const areAvatarsReady = useMemo(() => {
+    if (selectedJammerIds.length === 0) return true;
+    return selectedJammerIds.every(id => {
+      const status = avatarStatus[id];
+      // Ready if: no avatar needed, OR status is 'ready' or 'failed' (resolved)
+      const friend = friends.find(f => f.id === id);
+      if (!friend?.avatar) return true; // No avatar to load
+      return status?.status === 'ready' || status?.status === 'failed';
+    });
+  }, [selectedJammerIds, avatarStatus, friends]);
+  
+  // Get resolved base64 avatars map (only confirmed base64 strings)
+  const jammerAvatars = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [id, data] of Object.entries(avatarStatus)) {
+      if (data.status === 'ready' && data.base64) {
+        map[id] = data.base64;
+      }
+    }
+    return map;
+  }, [avatarStatus]);
   
   // Fetch, sign, and convert jammer avatars to base64 for html-to-image compatibility
   // CRITICAL: Only base64 avatars work with html-to-image export - signed URLs cause CORS failures
@@ -227,12 +250,16 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
         .filter((f): f is NonNullable<typeof f> => f !== null && !!f.avatar);
       
       if (friendsWithAvatars.length === 0) {
-        setJammerAvatars({});
-        setIsLoadingAvatars(false);
+        setAvatarStatus({});
         return;
       }
       
-      setIsLoadingAvatars(true);
+      // Mark all as loading initially
+      const initialStatus: Record<string, { status: 'loading' | 'ready' | 'failed'; base64?: string }> = {};
+      for (const friend of friendsWithAvatars) {
+        initialStatus[friend.id] = { status: 'loading' };
+      }
+      setAvatarStatus(initialStatus);
       
       // Use the existing getSignedUrls batch function
       const urlsToSign = friendsWithAvatars.map(f => f.avatar!);
@@ -240,39 +267,46 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       try {
         const signedUrlMap = await getSignedUrls(urlsToSign);
         
-        // Map friend IDs to their base64 URLs for html-to-image compatibility
-        // IMPORTANT: Only include successfully converted base64 avatars
-        const avatarMap: Record<string, string> = {};
-        
-        await Promise.all(friendsWithAvatars.map(async (friend) => {
+        // Process each friend's avatar individually and update status
+        const results = await Promise.all(friendsWithAvatars.map(async (friend) => {
           const signedUrl = signedUrlMap.get(friend.avatar!);
           if (signedUrl) {
             // Convert to base64 to avoid CORS issues in html-to-image
             const base64 = await convertToBase64(signedUrl);
             if (base64) {
-              avatarMap[friend.id] = base64;
+              console.log(`[ShareNoteDialog] Successfully converted avatar for ${friend.name}`);
+              return { id: friend.id, status: 'ready' as const, base64 };
             } else {
-              // DO NOT fallback to signed URL - it will cause html-to-image to fail
-              // Instead, this jammer will show initials fallback in the card
               console.warn(`[ShareNoteDialog] Could not convert avatar to base64 for ${friend.name}, will use initials`);
+              return { id: friend.id, status: 'failed' as const };
             }
+          } else {
+            console.warn(`[ShareNoteDialog] No signed URL for ${friend.name}'s avatar`);
+            return { id: friend.id, status: 'failed' as const };
           }
         }));
         
-        setJammerAvatars(avatarMap);
+        // Update status with results
+        const newStatus: Record<string, { status: 'loading' | 'ready' | 'failed'; base64?: string }> = {};
+        for (const result of results) {
+          newStatus[result.id] = { status: result.status, base64: result.status === 'ready' ? result.base64 : undefined };
+        }
+        setAvatarStatus(newStatus);
       } catch (err) {
         console.error('[ShareNoteDialog] Failed to get signed URLs:', err);
-        setJammerAvatars({});
-      } finally {
-        setIsLoadingAvatars(false);
+        // Mark all as failed
+        const failedStatus: Record<string, { status: 'loading' | 'ready' | 'failed' }> = {};
+        for (const friend of friendsWithAvatars) {
+          failedStatus[friend.id] = { status: 'failed' };
+        }
+        setAvatarStatus(failedStatus);
       }
     };
     
     if (selectedJammerIds.length > 0) {
       fetchAvatars();
     } else {
-      setJammerAvatars({});
-      setIsLoadingAvatars(false);
+      setAvatarStatus({});
     }
   }, [selectedJammerIds, friends]);
   
@@ -310,18 +344,41 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     );
   }, []);
 
+  // Helper to preload base64 images before canvas capture
+  const preloadImages = useCallback(async (avatars: Record<string, string>): Promise<void> => {
+    const base64Urls = Object.values(avatars).filter(url => url.startsWith('data:'));
+    if (base64Urls.length === 0) return;
+    
+    await Promise.all(base64Urls.map(url => {
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // Continue even if preload fails
+        img.src = url;
+      });
+    }));
+  }, []);
+
   const generateImage = useCallback(async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
 
     try {
-      // Wait for avatars to finish loading if any jammers selected
-      if (isLoadingAvatars) {
+      // Wait for avatars to finish loading if any are still pending
+      if (!areAvatarsReady) {
         console.log('[ShareNoteDialog] Waiting for avatars to finish loading...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait up to 3 seconds for avatars
+        let waited = 0;
+        while (!areAvatarsReady && waited < 3000) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          waited += 100;
+        }
       }
       
+      // Preload all base64 images to ensure they're decoded and ready for canvas
+      await preloadImages(jammerAvatars);
+      
       // Ensure element is fully visible and rendered
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 150));
       
       // Use html-to-image for pixel-perfect capture of the rendered DOM
       // filter out any external images that aren't base64 to prevent CORS errors
@@ -354,7 +411,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       console.error('[ShareNoteDialog] Error generating image:', err);
       return null;
     }
-  }, [isLoadingAvatars]);
+  }, [areAvatarsReady, jammerAvatars, preloadImages]);
 
   const handleDownload = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
@@ -671,18 +728,26 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
 
           {/* Share Actions - Two buttons */}
           <div className="grid grid-cols-2 gap-2 pt-2">
+            {/* Loading indicator for avatars */}
+            {!areAvatarsReady && selectedJammerIds.length > 0 && (
+              <div className="col-span-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span>Loading profile pictures...</span>
+              </div>
+            )}
+            
             {/* iMessage - iOS only */}
             <Button
               variant="secondary"
               size="sm"
               onClick={handleShare}
-              disabled={isExporting || !canShareIMessage}
+              disabled={isExporting || !canShareIMessage || !areAvatarsReady}
               className={cn(
                 "flex items-center justify-center gap-1.5 text-xs transition-all",
                 !canShareIMessage && "opacity-50 cursor-not-allowed",
                 activeButton === 'imessage' && "bg-primary text-primary-foreground"
               )}
-              title={!canShareIMessage ? "iMessage sharing is only available on iOS" : undefined}
+              title={!canShareIMessage ? "iMessage sharing is only available on iOS" : (!areAvatarsReady ? "Waiting for profile pictures to load" : undefined)}
             >
               {activeButton === 'imessage' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -699,11 +764,12 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               variant="secondary"
               size="sm"
               onClick={handleDownload}
-              disabled={isExporting}
+              disabled={isExporting || !areAvatarsReady}
               className={cn(
                 "flex items-center justify-center gap-1.5 text-xs transition-all",
                 activeButton === 'save' && "bg-primary text-primary-foreground"
               )}
+              title={!areAvatarsReady ? "Waiting for profile pictures to load" : undefined}
             >
               {activeButton === 'save' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
