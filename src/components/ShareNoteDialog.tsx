@@ -238,9 +238,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       // Users can share audio separately if needed
       const files: File[] = [imageFile];
       
-      // Use short link format for the production website
-      const shortId = note.id.slice(0, 8);
-      const shareText = `Check out my session on Noteshare\n\nhttps://notesharemusic.com/n/${shortId}`;
+      // Link to main Noteshare website
+      const shareText = `Check out my session on Noteshare\n\nhttps://notesharemusic.com`;
       
       // Check if Web Share API is available and supports our files
       if (navigator.share && navigator.canShare?.({ files })) {
