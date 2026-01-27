@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import { NoteWithAuthor, Profile } from '@/types';
 import { format, getHours } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Clock, AudioWaveform, Music } from 'lucide-react';
 
 // Background style presets - ordered to work well with blue Noteshare logo
 export const CARD_STYLES = [
@@ -182,12 +183,15 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
               }}
             >
               <span style={{ 
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
                 verticalAlign: 'middle',
                 lineHeight: '1',
                 fontSize: '13px',
               }}>
-                ⏱️ {sessionDuration}
+                <Clock style={{ width: '14px', height: '14px' }} />
+                {sessionDuration}
               </span>
             </div>
           </div>
@@ -315,7 +319,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
                 )}
                 style={{ width: '22px', height: '22px' }}
               >
-                <span style={{ fontSize: '11px' }}>🎤</span>
+                <AudioWaveform style={{ width: '12px', height: '12px' }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p 
@@ -358,24 +362,19 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
 
       {/* Bottom Branding */}
       <div className="mt-auto flex-shrink-0" style={{ paddingTop: '10px', borderTop: '1px solid currentColor', borderTopColor: 'rgba(128,128,128,0.2)' }}>
-        <div style={{ display: 'inline-block' }}>
-          <div 
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <Music 
             style={{ 
-              display: 'inline-block',
-              verticalAlign: 'middle',
-              marginRight: '8px',
-              fontSize: '12px',
-            }}
-          >
-            🎵
-          </div>
+              width: '14px', 
+              height: '14px',
+              color: 'hsl(217, 91%, 60%)', // Primary blue color
+            }} 
+          />
           <span 
             className="font-semibold" 
             style={{ 
               fontSize: '11px',
-              display: 'inline-block',
-              verticalAlign: 'middle',
-              lineHeight: '18px',
+              lineHeight: '1',
             }}
           >
             Noteshare
