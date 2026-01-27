@@ -157,7 +157,8 @@ const audioBufferToWav = (buffer: AudioBuffer): Blob => {
 };
 
 // Helper to fetch, trim, and prepare audio file for sharing
-const fetchAndPrepareAudio = async (signedUrl: string, fileName: string): Promise<File | null> => {
+// Uses the exact user-provided name for the audio file
+const fetchAndPrepareAudio = async (signedUrl: string, userProvidedName: string): Promise<File | null> => {
   try {
     const response = await fetch(signedUrl);
     if (!response.ok) throw new Error('Failed to fetch audio');
@@ -168,14 +169,15 @@ const fetchAndPrepareAudio = async (signedUrl: string, fileName: string): Promis
     const processedBlob = await trimAndCompressAudio(originalBlob);
     if (!processedBlob) {
       // Fallback: use original if processing fails
-      const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
-      return new File([originalBlob], `${baseName}.m4a`, { type: 'audio/mp4' });
+      // Keep user's exact name, just sanitize for filesystem and add extension
+      const sanitizedName = userProvidedName.replace(/[<>:"/\\|?*]/g, '_').trim() || 'recording';
+      return new File([originalBlob], `${sanitizedName}.m4a`, { type: 'audio/mp4' });
     }
     
-    // Clean the filename
-    const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
+    // Keep user's exact name, just sanitize for filesystem and add extension
+    const sanitizedName = userProvidedName.replace(/[<>:"/\\|?*]/g, '_').trim() || 'recording';
     
-    return new File([processedBlob], `${baseName}.wav`, { type: 'audio/wav' });
+    return new File([processedBlob], `${sanitizedName}.wav`, { type: 'audio/wav' });
   } catch (err) {
     console.error('Error fetching/preparing audio file:', err);
     return null;
@@ -422,7 +424,8 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
       }
       
       // Link to main Noteshare website
-      const shareText = `Check out my session on Noteshare\n\nhttps://notesharemusic.com`;
+      // Use period trick to prevent Apple rich link preview: .URL.
+      const shareText = `Check out my session on Noteshare\n\n.https://notesharemusic.com.`;
       
       // Check if Web Share API is available and supports our files
       if (navigator.share && navigator.canShare?.({ files })) {
