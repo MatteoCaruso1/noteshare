@@ -3,6 +3,7 @@ import { useNoteApplause, useGiveApplause, useRemoveApplause } from '@/hooks/use
 import { useAuth } from '@/hooks/useAuth';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
+import { Award } from 'lucide-react';
 
 interface ApplauseFooterProps {
   noteId: string;
@@ -45,7 +46,9 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   // Don't render anything if loading
   if (isLoading) return null;
 
-  // Always render the applause row (clickable area), even when count is 0
+  // Don't render for own posts with no applause
+  if (isOwner && count === 0) return null;
+
   return (
     <div 
       className={cn(
@@ -59,24 +62,18 @@ export const ApplauseFooter = memo(function ApplauseFooter({
         onClick={handleToggleApplause}
         disabled={!profile || isOwner}
         className={cn(
-          "flex items-center gap-2 text-xs transition-colors group",
-          profile && !isOwner 
-            ? "hover:text-primary cursor-pointer" 
-            : "cursor-default",
-          hasApplauded ? "text-primary" : "text-muted-foreground"
+          "flex items-center gap-2 text-xs transition-colors group text-muted-foreground",
+          profile && !isOwner && "hover:text-foreground cursor-pointer",
+          hasApplauded && "text-foreground"
         )}
       >
-        {/* Clapping hands emoji as applause icon */}
-        <span 
+        {/* Applause icon */}
+        <Award 
           className={cn(
-            "text-base transition-transform",
+            "w-4 h-4 transition-transform",
             profile && !isOwner && "group-hover:scale-110"
           )}
-          role="img" 
-          aria-label="applause"
-        >
-          👏
-        </span>
+        />
 
         {/* Applause count and profile display */}
         {count > 0 ? (
@@ -111,9 +108,7 @@ export const ApplauseFooter = memo(function ApplauseFooter({
             </span>
           </span>
         ) : (
-          <span className="opacity-70">
-            {profile && !isOwner ? 'Give applause' : 'No applause yet'}
-          </span>
+          <span className="opacity-70">Give applause</span>
         )}
       </button>
     </div>
