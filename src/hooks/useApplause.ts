@@ -48,6 +48,7 @@ export function useGiveApplause() {
     mutationFn: async (noteId: string) => {
       if (!profile?.id) throw new Error('Not authenticated');
 
+      // Insert the applause
       const { data, error } = await supabase
         .from('applause')
         .insert({ note_id: noteId, user_id: profile.id })
@@ -55,6 +56,25 @@ export function useGiveApplause() {
         .single();
 
       if (error) throw error;
+
+      // Fetch the note to get the author_id for notification
+      const { data: note } = await supabase
+        .from('notes')
+        .select('author_id')
+        .eq('id', noteId)
+        .single();
+
+      // Create notification for the note author (but not if it's the same person)
+      if (note && note.author_id !== profile.id) {
+        await supabase.from('notifications').insert({
+          user_id: note.author_id,
+          from_user_id: profile.id,
+          note_id: noteId,
+          type: 'applause',
+          content: 'gave applause to your note',
+        });
+      }
+
       return data;
     },
     onMutate: async (noteId) => {
@@ -88,6 +108,8 @@ export function useGiveApplause() {
     },
     onSettled: (_data, _error, noteId) => {
       queryClient.invalidateQueries({ queryKey: ['applause', noteId] });
+      // Also invalidate notifications so the count updates
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }
