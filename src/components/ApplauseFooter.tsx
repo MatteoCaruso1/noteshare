@@ -138,10 +138,9 @@ export const ApplauseFooter = memo(function ApplauseFooter({
         <button
           type="button"
           onClick={handleCommentClick}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          <MessageCircle className="w-3.5 h-3.5" />
-          <span>{commentCount} {commentCount === 1 ? 'comment' : 'comments'}</span>
+          {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
         </button>
       )}
     </div>
