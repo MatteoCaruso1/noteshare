@@ -16,6 +16,7 @@ import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
+import { ApplauseFooter } from '@/components/ApplauseFooter';
 import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
@@ -788,6 +789,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {format(new Date(note.created_at), 'h:mm a · MMM d, yyyy')}
         </p>
       )}
+
+      {/* Applause Footer - show on all notes */}
+      <ApplauseFooter 
+        noteId={note.id} 
+        noteAuthorId={note.author_id}
+      />
 
       {/* Voice Reply Button - hidden on homepage for cleaner UI */}
       {/* Keeping functionality intact - can be re-enabled by removing the false && check */}
