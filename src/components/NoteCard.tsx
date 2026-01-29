@@ -790,10 +790,12 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </p>
       )}
 
-      {/* Applause Footer - show on all notes */}
+      {/* Applause Footer with comment count */}
       <ApplauseFooter 
         noteId={note.id} 
         noteAuthorId={note.author_id}
+        commentCount={note.comment_count}
+        onCommentClick={handleNavigateToNote}
       />
 
       {/* Voice Reply Button - hidden on homepage for cleaner UI */}

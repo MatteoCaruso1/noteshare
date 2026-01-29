@@ -4,16 +4,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
 import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
+import { MessageCircle } from 'lucide-react';
 
 interface ApplauseFooterProps {
   noteId: string;
   noteAuthorId: string;
+  commentCount?: number;
+  onCommentClick?: () => void;
   className?: string;
 }
 
 export const ApplauseFooter = memo(function ApplauseFooter({ 
   noteId, 
   noteAuthorId,
+  commentCount = 0,
+  onCommentClick,
   className 
 }: ApplauseFooterProps) {
   const { profile } = useAuth();
@@ -27,7 +32,7 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   );
 
   const isOwner = profile?.id === noteAuthorId;
-  const count = applauseList.length;
+  const applauseCount = applauseList.length;
 
   // Get first applauder for display
   const firstApplauder = applauseList[0]?.profile;
@@ -43,74 +48,102 @@ export const ApplauseFooter = memo(function ApplauseFooter({
     }
   }, [profile, hasApplauded, noteId, giveApplause, removeApplause]);
 
+  const handleCommentClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCommentClick?.();
+  }, [onCommentClick]);
+
   // Don't render anything if loading
   if (isLoading) return null;
 
-  // Don't render for own posts with no applause
-  if (isOwner && count === 0) return null;
+  // For owner's posts: hide entire footer if no applause AND no comments
+  if (isOwner && applauseCount === 0 && commentCount === 0) return null;
+
+  // Check if we should show anything
+  const showApplause = applauseCount > 0 || !isOwner;
+  const showComments = commentCount > 0;
+
+  // If nothing to show, hide footer
+  if (!showApplause && !showComments) return null;
 
   return (
     <div 
       className={cn(
-        "flex items-center gap-2 pt-2 mt-2 border-t border-border/50",
+        "flex items-center justify-between pt-2 mt-2 border-t border-border/50",
         className
       )}
     >
-      {/* Applause button/display area */}
-      <button
-        type="button"
-        onClick={handleToggleApplause}
-        disabled={!profile || isOwner}
-        className={cn(
-          "flex items-center gap-2 text-xs transition-colors group text-muted-foreground",
-          profile && !isOwner && "hover:text-foreground cursor-pointer",
-          hasApplauded && "text-foreground"
-        )}
-      >
-        {/* Applause icon */}
-        <ClappingHandsIcon 
+      {/* Applause button/display area - left side */}
+      {showApplause ? (
+        <button
+          type="button"
+          onClick={handleToggleApplause}
+          disabled={!profile || isOwner}
           className={cn(
-            "transition-transform",
-            profile && !isOwner && "group-hover:scale-110"
+            "flex items-center gap-2 text-xs transition-colors group text-muted-foreground",
+            profile && !isOwner && "hover:text-foreground cursor-pointer",
+            hasApplauded && "text-foreground"
           )}
-        />
+        >
+          {/* Applause icon */}
+          <ClappingHandsIcon 
+            className={cn(
+              "transition-transform",
+              profile && !isOwner && "group-hover:scale-110"
+            )}
+          />
 
-        {/* Applause count and profile display */}
-        {count > 0 ? (
-          <span className="flex items-center gap-1.5">
-            {/* First applauder's small avatar */}
-            {firstApplauder && (
-              <span className="flex -space-x-1" onClick={(e) => e.stopPropagation()}>
-                <ClickableAvatar
-                  profileId={firstApplauder.id}
-                  avatar={firstApplauder.avatar}
-                  name={firstApplauder.name}
-                  size="xs"
-                  className="border border-background"
-                />
-                {/* Show second avatar if more than 1 */}
-                {count > 1 && applauseList[1]?.profile && (
+          {/* Applause count and profile display */}
+          {applauseCount > 0 ? (
+            <span className="flex items-center gap-1.5">
+              {/* First applauder's small avatar */}
+              {firstApplauder && (
+                <span className="flex -space-x-1" onClick={(e) => e.stopPropagation()}>
                   <ClickableAvatar
-                    profileId={applauseList[1].profile.id}
-                    avatar={applauseList[1].profile.avatar}
-                    name={applauseList[1].profile.name}
+                    profileId={firstApplauder.id}
+                    avatar={firstApplauder.avatar}
+                    name={firstApplauder.name}
                     size="xs"
                     className="border border-background"
                   />
-                )}
+                  {/* Show second avatar if more than 1 */}
+                  {applauseCount > 1 && applauseList[1]?.profile && (
+                    <ClickableAvatar
+                      profileId={applauseList[1].profile.id}
+                      avatar={applauseList[1].profile.avatar}
+                      name={applauseList[1].profile.name}
+                      size="xs"
+                      className="border border-background"
+                    />
+                  )}
+                </span>
+              )}
+              <span>
+                {applauseCount === 1 
+                  ? `${firstApplauder?.name || '1'} gave applause`
+                  : `${applauseCount} gave applause`
+                }
               </span>
-            )}
-            <span>
-              {count === 1 
-                ? `${firstApplauder?.name || '1'} gave applause`
-                : `${count} gave applause`
-              }
             </span>
-          </span>
-        ) : (
-          <span className="opacity-70">Give applause</span>
-        )}
-      </button>
+          ) : (
+            <span className="opacity-70">Give applause</span>
+          )}
+        </button>
+      ) : (
+        <div /> /* Empty spacer to maintain layout */
+      )}
+
+      {/* Comment count - right side */}
+      {showComments && (
+        <button
+          type="button"
+          onClick={handleCommentClick}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>{commentCount} {commentCount === 1 ? 'comment' : 'comments'}</span>
+        </button>
+      )}
     </div>
   );
 });
