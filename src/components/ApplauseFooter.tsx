@@ -3,7 +3,7 @@ import { useNoteApplause, useGiveApplause, useRemoveApplause } from '@/hooks/use
 import { useAuth } from '@/hooks/useAuth';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
-import { Award } from 'lucide-react';
+import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
 
 interface ApplauseFooterProps {
   noteId: string;
@@ -68,9 +68,9 @@ export const ApplauseFooter = memo(function ApplauseFooter({
         )}
       >
         {/* Applause icon */}
-        <Award 
+        <ClappingHandsIcon 
           className={cn(
-            "w-4 h-4 transition-transform",
+            "transition-transform",
             profile && !isOwner && "group-hover:scale-110"
           )}
         />
