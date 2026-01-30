@@ -40,7 +40,8 @@ const Discover = lazy(() => import("./pages/Discover"));
 const Gigs = lazy(() => import("./pages/Gigs"));
 const GigDetail = lazy(() => import("./pages/GigDetail"));
 const FriendsJournals = lazy(() => import("./pages/FriendsJournals"));
-const WorkingToward = lazy(() => import("./pages/WorkingToward"));
+const Groups = lazy(() => import("./pages/Groups"));
+const Pursuits = lazy(() => import("./pages/WorkingToward"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
@@ -138,7 +139,8 @@ function AppInner() {
                       <Route path="/gigs" element={<Suspense fallback={null}><Gigs /></Suspense>} />
                       <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
                       <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
-                      <Route path="/working-toward" element={<Suspense fallback={null}><WorkingToward /></Suspense>} />
+                      <Route path="/groups" element={<Suspense fallback={null}><Groups /></Suspense>} />
+                      <Route path="/pursuits" element={<Suspense fallback={null}><Pursuits /></Suspense>} />
                       <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
                       <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
                       <Route path="/admin/analytics" element={
