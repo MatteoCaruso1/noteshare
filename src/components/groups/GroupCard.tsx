@@ -1,11 +1,15 @@
+import { memo, useCallback, useState } from 'react';
 import { Group, useGroupMembership, useJoinGroup } from '@/hooks/useGroups';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Music, Users, MapPin, Lock, Globe, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface GroupCardProps {
-  group: Group;
+  group: Group & { myRole?: string };
   onClick?: () => void;
+  /** Pre-computed membership status from parent (avoids extra API call) */
+  knownMemberStatus?: 'active' | 'pending' | null;
 }
 
 const focusTypeIcons: Record<string, React.ReactNode> = {
@@ -16,17 +20,28 @@ const focusTypeIcons: Record<string, React.ReactNode> = {
   practice: <Music className="w-4 h-4" />,
 };
 
-export function GroupCard({ group, onClick }: GroupCardProps) {
-  const { data: membership, isLoading: membershipLoading } = useGroupMembership(group.id);
+export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberStatus }: GroupCardProps) {
+  // Only fetch membership if not provided by parent (optimization for N+1 queries)
+  const shouldFetchMembership = knownMemberStatus === undefined && !group.myRole;
+  const { data: membership, isLoading: membershipLoading, isError } = useGroupMembership(
+    shouldFetchMembership ? group.id : undefined
+  );
   const joinGroup = useJoinGroup();
   
-  const isMember = !!membership && membership.status === 'active';
-  const isPending = !!membership && membership.status === 'pending';
+  // Derive membership status from either parent prop, myRole, or fetched data
+  const derivedStatus = knownMemberStatus ?? (group.myRole ? 'active' : (membership?.status as 'active' | 'pending' | null));
+  const isMember = derivedStatus === 'active';
+  const isPending = derivedStatus === 'pending';
   
-  const handleJoin = (e: React.MouseEvent) => {
+  const handleJoin = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    joinGroup.mutate({ groupId: group.id, isPrivate: group.privacy === 'private' });
-  };
+    try {
+      joinGroup.mutate({ groupId: group.id, isPrivate: group.privacy === 'private' });
+    } catch (error) {
+      console.error('[GroupCard] Join error:', error);
+      toast.error('Failed to join group');
+    }
+  }, [joinGroup, group.id, group.privacy]);
   
   return (
     <div 
@@ -105,7 +120,7 @@ export function GroupCard({ group, onClick }: GroupCardProps) {
               size="sm"
               variant="default"
               onClick={handleJoin}
-              disabled={joinGroup.isPending || membershipLoading}
+              disabled={joinGroup.isPending || (shouldFetchMembership && membershipLoading)}
               className="h-7 text-xs"
             >
               {group.privacy === 'private' ? 'Request' : 'Join'}
@@ -122,4 +137,4 @@ export function GroupCard({ group, onClick }: GroupCardProps) {
       )}
     </div>
   );
-}
+});
