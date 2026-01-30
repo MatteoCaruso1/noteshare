@@ -27,6 +27,8 @@ import { toast } from 'sonner';
 import { CreateEventDrawer } from '@/components/groups/CreateEventDrawer';
 import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
+import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
+import { useCreateNote } from '@/hooks/useNotes';
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +46,7 @@ export default function GroupDetail() {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showEditGroup, setShowEditGroup] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showAddNote, setShowAddNote] = useState(false);
   
   const isOwner = group?.owner_id === profile?.id;
   const isAdmin = membership?.role === 'admin';
@@ -103,8 +106,36 @@ export default function GroupDetail() {
     );
   }
   
+  const createNote = useCreateNote();
+
+  // Filter out unwanted tags like "casual"
+  const filteredGroupTypes = group?.group_type?.filter(
+    type => type.toLowerCase() !== 'casual'
+  ) || [];
+
+  const handleAddNote = (data: {
+    textContent?: string;
+    audioFiles: string[];
+    audioFileNames?: string[];
+    videoFiles: string[];
+    imageFiles: string[];
+  }) => {
+    if (!profile?.id) return;
+    createNote.mutate({
+      authorId: profile.id,
+      textContent: data.textContent,
+      audioFiles: data.audioFiles,
+      audioFileNames: data.audioFileNames,
+      videoFiles: data.videoFiles,
+      imageFiles: data.imageFiles,
+      // TODO: Add group_id field to notes table in future
+    });
+    setShowAddNote(false);
+  };
+
   return (
     <PageLayout>
+      <div className="h-full overflow-y-auto">
       {/* Header with back button and settings */}
       <div className="relative -mt-12 -mx-4">
         {/* Cover Image */}
@@ -198,10 +229,10 @@ export default function GroupDetail() {
           )}
           
           {/* Group type tags */}
-          {group.group_type && group.group_type.length > 0 && (
+          {filteredGroupTypes.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
-              {group.group_type.map(type => (
-                <Badge key={type} variant="secondary">
+              {filteredGroupTypes.map(type => (
+                <Badge key={type} variant="secondary" className="capitalize">
                   {type}
                 </Badge>
               ))}
@@ -261,7 +292,7 @@ export default function GroupDetail() {
       )}
       
       {/* Events Section */}
-      <div className="px-4 py-4 border-t border-border">
+      <div className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold">
             {events && events.length > 0 ? 'Upcoming Events' : 'No upcoming events'}
@@ -313,7 +344,7 @@ export default function GroupDetail() {
       </div>
       
       {/* Members Preview */}
-      <div className="px-4 py-4 border-t border-border">
+      <div className="px-4 py-4">
         <h2 className="font-semibold mb-3">Members</h2>
         <div className="flex -space-x-2 overflow-hidden">
           {members?.slice(0, 8).map(member => (
@@ -332,15 +363,18 @@ export default function GroupDetail() {
         </div>
       </div>
       
-      {/* Post Something (placeholder) */}
+      {/* Post Something */}
       {isMember && (
-        <div className="px-4 py-4 border-t border-border">
-          <div className="flex items-center gap-3">
+        <div className="px-4 py-4">
+          <div 
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => setShowAddNote(true)}
+          >
             <Avatar className="w-10 h-10">
               <AvatarImage src={profile?.avatar || undefined} />
               <AvatarFallback>{profile?.name?.charAt(0) || '?'}</AvatarFallback>
             </Avatar>
-            <div className="flex-1 py-2 px-4 rounded-full bg-secondary text-muted-foreground text-sm">
+            <div className="flex-1 py-2 px-4 rounded-full bg-secondary text-muted-foreground text-sm hover:bg-secondary/80 transition-colors">
               Post something...
             </div>
           </div>
@@ -349,8 +383,8 @@ export default function GroupDetail() {
       
       {/* Leave Group Option */}
       {isMember && !isOwner && (
-        <div className="px-4 py-4 border-t border-border">
-          <Button 
+        <div className="px-4 py-4">
+          <Button
             variant="ghost" 
             className="w-full text-destructive hover:text-destructive"
             onClick={handleLeave}
@@ -383,6 +417,20 @@ export default function GroupDetail() {
           />
         </>
       )}
+      
+      {/* Add Note Dialog for posting */}
+      {profile?.id && (
+        <AddNoteDialog
+          open={showAddNote}
+          onOpenChange={setShowAddNote}
+          onSubmit={handleAddNote}
+          isSubmitting={createNote.isPending}
+          title="Post to Group"
+          contextLabel={group?.name || 'this group'}
+          profileId={profile.id}
+        />
+      )}
+      </div>
     </PageLayout>
   );
 }
