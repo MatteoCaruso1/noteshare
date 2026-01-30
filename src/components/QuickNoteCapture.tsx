@@ -6,6 +6,7 @@ import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
+import { useActiveSession } from '@/hooks/useSessions';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -46,6 +47,7 @@ export function QuickNoteCapture() {
   const { data: goals } = useGoals(profile?.id);
   const { data: gigs } = useMyPromoPosts(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
+  const { data: activeSession } = useActiveSession(profile?.id);
   const createNote = useCreateNote();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   
@@ -55,11 +57,39 @@ export function QuickNoteCapture() {
   const [isOpen, setIsOpen] = useState(false);
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  
+  // Track whether we should show/hide based on active session
+  const hasActiveSession = !!activeSession;
+  
+  // Delayed unmount for smooth fade-out animation
+  const [shouldRender, setShouldRender] = useState(!hasActiveSession);
+  const [isVisible, setIsVisible] = useState(!hasActiveSession);
 
   // Sync isOpen state with glint context
   useEffect(() => {
     setQuickNoteExpanded(isOpen);
   }, [isOpen, setQuickNoteExpanded]);
+  
+  // Handle visibility animation when session state changes
+  useEffect(() => {
+    if (hasActiveSession) {
+      // Close collapsible first, then fade out
+      setIsOpen(false);
+      setIsVisible(false);
+      // Wait for animation to complete before unmounting
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 250); // Match animation duration
+      return () => clearTimeout(timer);
+    } else {
+      // Session ended - show the component with fade in
+      setShouldRender(true);
+      // Small delay to ensure DOM is ready for animation
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    }
+  }, [hasActiveSession]);
 
   // Use persistent state for note content that survives navigation
   const {
@@ -79,6 +109,11 @@ export function QuickNoteCapture() {
   } = usePersistentNoteState('quick_note', profile?.id);
 
   if (!profile) return null;
+  
+  // Don't render at all once fade-out is complete
+  if (!shouldRender) {
+    return null;
+  }
 
   const handleAudioRecorded = async (blob: Blob, duration: number) => {
     const url = await uploadAudio(blob, profile.id);
@@ -147,7 +182,15 @@ export function QuickNoteCapture() {
   const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
 
   return (
-    <Card className="bg-card border-border">
+    <Card 
+      className="bg-card border-border transition-all duration-250 ease-out"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(-8px) scale(0.98)',
+        maxHeight: isVisible ? '1000px' : '0',
+        overflow: 'hidden',
+      }}
+    >
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <button 
