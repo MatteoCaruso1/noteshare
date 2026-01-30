@@ -47,6 +47,7 @@ export default function GroupDetail() {
   const [showEditGroup, setShowEditGroup] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showAddNote, setShowAddNote] = useState(false);
+  const [showMembersSheet, setShowMembersSheet] = useState(false);
   
   const isOwner = group?.owner_id === profile?.id;
   const isAdmin = membership?.role === 'admin';
@@ -133,6 +134,7 @@ export default function GroupDetail() {
     setShowAddNote(false);
   };
 
+
   return (
     <PageLayout>
       <div className="h-full overflow-y-auto">
@@ -149,12 +151,12 @@ export default function GroupDetail() {
           )}
           
           {/* Navigation overlay */}
-          <div className="absolute top-12 left-0 right-0 p-4 flex justify-between items-start">
+          <div className="absolute top-12 left-0 right-0 px-4 py-4 flex justify-between items-start">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate('/groups')}
-              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full"
+              className="bg-card/80 backdrop-blur-sm hover:bg-card/90 rounded-full border border-border/50"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -164,7 +166,7 @@ export default function GroupDetail() {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setShowEditGroup(true)}
-                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full"
+                className="bg-card/80 backdrop-blur-sm hover:bg-card/90 rounded-full border border-border/50"
               >
                 <Settings className="w-5 h-5" />
               </Button>
@@ -174,7 +176,7 @@ export default function GroupDetail() {
           </div>
           
           {/* Group avatar overlapping banner */}
-          <div className="absolute -bottom-8 left-4">
+          <div className="absolute -bottom-8 left-6">
             <div className="w-20 h-20 rounded-xl bg-card border-4 border-background flex items-center justify-center overflow-hidden shadow-lg">
               {group.cover_image ? (
                 <img 
@@ -190,7 +192,7 @@ export default function GroupDetail() {
         </div>
         
         {/* Group Info */}
-        <div className="pt-12 px-4 pb-4">
+        <div className="pt-12 px-6 pb-4">
           <h1 className="text-2xl font-bold">{group.name}</h1>
           
           {/* Meta info row */}
@@ -199,10 +201,15 @@ export default function GroupDetail() {
               <Music className="w-4 h-4" />
               <span className="capitalize">{group.focus_type}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <button 
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
+              onClick={() => setShowMembersSheet(true)}
+            >
               <Users className="w-4 h-4" />
-              <span>{group.member_count} Member{group.member_count !== 1 ? 's' : ''}</span>
-            </div>
+              <span className="underline-offset-2 hover:underline">
+                {group.member_count} Member{group.member_count !== 1 ? 's' : ''}
+              </span>
+            </button>
             <div className="flex items-center gap-1">
               {group.privacy === 'private' ? (
                 <>
@@ -245,8 +252,8 @@ export default function GroupDetail() {
       
       {/* Action Buttons Row */}
       {isMember ? (
-        <div className="px-4 pb-4">
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+        <div className="px-6 pb-4">
+          <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
             {canManage && (
               <ActionButton 
                 icon={<UserPlus className="w-5 h-5" />} 
@@ -276,7 +283,7 @@ export default function GroupDetail() {
           </div>
         </div>
       ) : (
-        <div className="px-4 pb-4">
+        <div className="px-6 pb-4">
           {isPending ? (
             <Badge variant="outline" className="w-full justify-center py-2">
               Request Pending
@@ -294,7 +301,7 @@ export default function GroupDetail() {
       )}
       
       {/* Events Section */}
-      <div className="px-4 py-4">
+      <div className="px-6 py-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold">
             {events && events.length > 0 ? 'Upcoming Events' : 'No upcoming events'}
@@ -315,7 +322,7 @@ export default function GroupDetail() {
             {events.map(event => (
               <div 
                 key={event.id} 
-                className="p-3 rounded-lg bg-secondary/50 border border-border"
+                className="p-4 rounded-xl bg-card border border-border hover:border-border/80 transition-colors"
               >
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center text-primary shrink-0">
@@ -345,29 +352,9 @@ export default function GroupDetail() {
         )}
       </div>
       
-      {/* Members Preview */}
-      <div className="px-4 py-4">
-        <h2 className="font-semibold mb-3">Members</h2>
-        <div className="flex -space-x-2 overflow-hidden">
-          {members?.slice(0, 8).map(member => (
-            <Avatar key={member.id} className="w-10 h-10 border-2 border-background">
-              <AvatarImage src={member.profile?.avatar || undefined} />
-              <AvatarFallback>
-                {member.profile?.name?.charAt(0) || '?'}
-              </AvatarFallback>
-            </Avatar>
-          ))}
-          {members && members.length > 8 && (
-            <div className="w-10 h-10 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-sm font-medium">
-              +{members.length - 8}
-            </div>
-          )}
-        </div>
-      </div>
-      
       {/* Post Something */}
       {isMember && (
-        <div className="px-4 py-4">
+        <div className="px-6 py-4">
           <div 
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => setShowAddNote(true)}
@@ -385,7 +372,7 @@ export default function GroupDetail() {
       
       {/* Leave Group Option */}
       {isMember && !isOwner && (
-        <div className="px-4 py-4">
+        <div className="px-6 py-4">
           <Button
             variant="ghost" 
             className="w-full text-destructive hover:text-destructive"
@@ -432,6 +419,14 @@ export default function GroupDetail() {
           profileId={profile.id}
         />
       )}
+      
+      {/* Members Sheet */}
+      <MembersSheet
+        open={showMembersSheet}
+        onOpenChange={setShowMembersSheet}
+        members={members || []}
+        groupName={group.name}
+      />
       </div>
     </PageLayout>
   );
@@ -450,12 +445,63 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-1 min-w-[72px]"
+      className="flex flex-col items-center gap-1.5 min-w-[72px]"
     >
-      <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
+      <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center hover:bg-accent transition-colors">
         {icon}
       </div>
-      <span className="text-xs text-center whitespace-nowrap">{label}</span>
+      <span className="text-xs text-muted-foreground text-center whitespace-nowrap">{label}</span>
     </button>
+  );
+}
+
+// Members Sheet component
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { GroupMemberWithProfile } from '@/hooks/useGroupDetails';
+
+function MembersSheet({
+  open,
+  onOpenChange,
+  members,
+  groupName
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  members: GroupMemberWithProfile[];
+  groupName: string;
+}) {
+  const navigate = useNavigate();
+  
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="max-h-[70vh]">
+        <SheetHeader>
+          <SheetTitle>{groupName} Members</SheetTitle>
+        </SheetHeader>
+        <div className="mt-4 space-y-2 overflow-y-auto">
+          {members.map(member => (
+            <button
+              key={member.id}
+              className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-accent transition-colors text-left"
+              onClick={() => {
+                onOpenChange(false);
+                navigate(`/profile/${member.profile?.id}`);
+              }}
+            >
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={member.profile?.avatar || undefined} />
+                <AvatarFallback>
+                  {member.profile?.name?.charAt(0) || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{member.profile?.name}</p>
+                <p className="text-sm text-muted-foreground capitalize">{member.role}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
