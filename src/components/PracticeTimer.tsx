@@ -14,8 +14,12 @@ interface PracticeTimerProps {
 export function PracticeTimer({ className }: PracticeTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [selectedMinutes, setSelectedMinutes] = useState(15);
+  const [inputValue, setInputValue] = useState('15');
   const [remainingSeconds, setRemainingSeconds] = useState(0);
+  
+  // Parse input to get valid minutes (0 if invalid/empty)
+  const selectedMinutes = parseInt(inputValue, 10) || 0;
+  const isValidInput = inputValue.trim() !== '' && selectedMinutes > 0 && selectedMinutes <= 180;
   const [showComplete, setShowComplete] = useState(false);
   
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -137,16 +141,11 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
   
   const handleMinutesInput = (value: string) => {
     const numericValue = value.replace(/[^0-9]/g, '');
-    const mins = parseInt(numericValue, 10);
-    if (!isNaN(mins) && mins > 0 && mins <= 180) {
-      setSelectedMinutes(mins);
-    } else if (numericValue === '') {
-      setSelectedMinutes(1); // Default to 1 if cleared
-    }
+    setInputValue(numericValue);
   };
   
   const handlePresetClick = (mins: number) => {
-    setSelectedMinutes(mins);
+    setInputValue(mins.toString());
   };
   
   // Calculate progress percentage for visual indicator
@@ -236,6 +235,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     size="sm"
                     onClick={startTimer}
                     className="h-7 px-3"
+                    disabled={!isValidInput}
                   >
                     Start
                   </Button>
@@ -257,7 +257,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={selectedMinutes}
+                    value={inputValue}
                     onChange={(e) => handleMinutesInput(e.target.value)}
                     className="w-16 text-3xl font-bold tabular-nums bg-transparent text-center border-b border-transparent hover:border-border focus:border-primary focus:outline-none"
                   />
