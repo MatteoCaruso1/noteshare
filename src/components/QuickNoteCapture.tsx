@@ -170,16 +170,10 @@ export function QuickNoteCapture() {
             <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
           )}
           
-          {/* Compact toolbar row: Metronome, Timer, Settings, Upload, Project, Focus toggle */}
+          {/* Compact toolbar row: Settings (with upload), Link to Goals, Metronome, Timer */}
           <TooltipProvider delayDuration={1000}>
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Metronome */}
-              <Metronome />
-              
-              {/* Practice Timer */}
-              <PracticeTimer />
-              
-              {/* Settings */}
+              {/* Settings (includes visibility + media upload) */}
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -189,39 +183,43 @@ export function QuickNoteCapture() {
                       </Button>
                     </PopoverTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>Visibility settings</TooltipContent>
+                  <TooltipContent>Settings</TooltipContent>
                 </Tooltip>
                 <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground px-2">Visibility</p>
-                    <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                      <SelectTrigger className="w-full h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="private">
-                          <div className="flex items-center gap-2">
-                            <Lock className="w-3 h-3" /> Private
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="friends">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-3 h-3" /> Friends
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground px-2">Visibility</p>
+                      <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
+                        <SelectTrigger className="w-full h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="private">
+                            <div className="flex items-center gap-2">
+                              <Lock className="w-3 h-3" /> Private
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="friends">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-3 h-3" /> Friends
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Upload Media inside settings */}
+                    <div className="border-t border-border pt-2">
+                      <p className="text-xs text-muted-foreground px-2 mb-2">Upload Media</p>
+                      <MediaUploadButton
+                        onAudioUpload={handleAudioFileUpload}
+                        onImageUpload={handleImageUpload}
+                        uploading={uploading}
+                      />
+                    </div>
                   </div>
                 </PopoverContent>
               </Popover>
-
-              {/* Upload Media (icon only) */}
-              <MediaUploadButton
-                onAudioUpload={handleAudioFileUpload}
-                onImageUpload={handleImageUpload}
-                uploading={uploading}
-                iconOnly
-              />
 
               {/* Link to Goal/Project/Gig */}
               <LinkToPicker
@@ -231,6 +229,12 @@ export function QuickNoteCapture() {
                 selectedLink={selectedLink}
                 onLinkChange={setSelectedLink}
               />
+              
+              {/* Metronome */}
+              <Metronome />
+              
+              {/* Practice Timer */}
+              <PracticeTimer />
 
               {/* Focus toggle - inline, show if focus exists with text */}
               {currentFocus?.focus_text && (
