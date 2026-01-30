@@ -17,6 +17,7 @@ import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
 import { RichTextarea } from '@/components/RichTextarea';
 import { LinkToPicker } from '@/components/LinkToPicker';
+import { EndSessionDialog } from '@/components/EndSessionDialog';
 
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
@@ -132,6 +133,7 @@ export function PracticeControls() {
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const [manuallyCollapsed, setManuallyCollapsed] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   
   // Wrapper to persist attachFocus changes
@@ -405,7 +407,7 @@ export function PracticeControls() {
     setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
-  const handleSaveNoteAndEndSession = () => {
+  const handleSaveNoteAndEndSession = (sessionTitle?: string, customDurationMinutes?: number) => {
     if (activeSession) {
       // Calculate session duration in minutes (accounting for paused time)
       const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
@@ -415,7 +417,7 @@ export function PracticeControls() {
         ? Date.now() - new Date(activeSession.paused_at).getTime() 
         : 0;
       const activeDurationMs = totalElapsedMs - pausedMs - currentPauseMs;
-      const sessionDurationMinutes = Math.floor(activeDurationMs / 60000);
+      const sessionDurationMinutes = customDurationMinutes ?? Math.floor(activeDurationMs / 60000);
 
       // Check daily limit before creating note (session can still be ended)
       if (hasReachedLimit) {
@@ -425,6 +427,7 @@ export function PracticeControls() {
             onSuccess: () => {
               clearState();
               clearSessionSettings();
+              setShowEndSessionDialog(false);
               toast.error('Session ended but note not saved - daily limit reached. Try Premium for Free for unlimited notes.');
             },
           }
@@ -432,8 +435,11 @@ export function PracticeControls() {
         return;
       }
 
+      // Build notes summary with optional session title
+      const notesSummary = sessionTitle || undefined;
+
       endSession.mutate(
-        { sessionId: activeSession.id, userId: profile.id },
+        { sessionId: activeSession.id, userId: profile.id, notesSummary },
         {
           onSuccess: () => {
             // Determine projectId, goalId, and gigId based on selectedLink
@@ -463,6 +469,7 @@ export function PracticeControls() {
                   incrementCount(); // Update local count optimistically
                   clearState();
                   clearSessionSettings();
+                  setShowEndSessionDialog(false);
                 },
               }
             );
@@ -795,35 +802,29 @@ export function PracticeControls() {
               )}
             </Button>
             {/* End Session button - disabled during recording */}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  size="icon"
-                  className={`h-9 flex-1 bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
-                    isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
-                  }`}
-                  onTouchEnd={(e) => e.currentTarget.blur()}
-                  disabled={createNote.isPending || uploading || endSession.isPending || isRecordingAudio}
-                  title={isRecordingAudio ? 'Stop recording first' : 'End Session'}
-                >
-                  <Square className="w-4 h-4 fill-current" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="max-w-xs">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>End session?</AlertDialogTitle>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="flex-row gap-2">
-                  <AlertDialogCancel className="flex-1 mt-0">No</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={handleSaveNoteAndEndSession}
-                    className="flex-1 bg-gradient-primary"
-                  >
-                    Yes
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              size="icon"
+              className={`h-9 flex-1 bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
+                isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+              onTouchEnd={(e) => e.currentTarget.blur()}
+              onClick={() => setShowEndSessionDialog(true)}
+              disabled={createNote.isPending || uploading || endSession.isPending || isRecordingAudio}
+              title={isRecordingAudio ? 'Stop recording first' : 'End Session'}
+            >
+              <Square className="w-4 h-4 fill-current" />
+            </Button>
+            
+            {/* End Session Dialog */}
+            <EndSessionDialog
+              open={showEndSessionDialog}
+              onOpenChange={setShowEndSessionDialog}
+              session={activeSession}
+              noteText={noteText}
+              onNoteTextChange={setNoteText}
+              onSave={handleSaveNoteAndEndSession}
+              isSaving={createNote.isPending || endSession.isPending}
+            />
           </div>
           </div>
           )}
