@@ -19,6 +19,7 @@ import { RichTextarea } from '@/components/RichTextarea';
 import { LinkToPicker } from '@/components/LinkToPicker';
 import { EndSessionDialog } from '@/components/EndSessionDialog';
 import { Metronome } from '@/components/Metronome';
+import { PracticeTimer } from '@/components/PracticeTimer';
 
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
@@ -586,11 +587,14 @@ export function PracticeControls() {
           {activeSession && (
           <div className="px-4 pb-4 space-y-4">
 
-          {/* Compact toolbar row: Metronome, Settings, Upload, Project, Goal, Focus toggle */}
+          {/* Compact toolbar row: Metronome, Timer, Settings, Upload, Project, Goal, Focus toggle */}
           <TooltipProvider delayDuration={1000}>
             <div className="flex items-center gap-2 flex-wrap mb-4">
               {/* Metronome */}
               <Metronome />
+              
+              {/* Practice Timer */}
+              <PracticeTimer />
               
               {/* Settings */}
               <Popover>

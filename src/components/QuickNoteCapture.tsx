@@ -16,6 +16,7 @@ import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextarea } from '@/components/RichTextarea';
 import { LinkToPicker } from '@/components/LinkToPicker';
 import { Metronome } from '@/components/Metronome';
+import { PracticeTimer } from '@/components/PracticeTimer';
 
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
@@ -169,11 +170,14 @@ export function QuickNoteCapture() {
             <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
           )}
           
-          {/* Compact toolbar row: Metronome, Settings, Upload, Project, Focus toggle */}
+          {/* Compact toolbar row: Metronome, Timer, Settings, Upload, Project, Focus toggle */}
           <TooltipProvider delayDuration={1000}>
             <div className="flex items-center gap-2 flex-wrap">
               {/* Metronome */}
               <Metronome />
+              
+              {/* Practice Timer */}
+              <PracticeTimer />
               
               {/* Settings */}
               <Popover>
