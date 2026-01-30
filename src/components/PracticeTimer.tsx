@@ -13,6 +13,7 @@ interface PracticeTimerProps {
 
 export function PracticeTimer({ className }: PracticeTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [selectedMinutes, setSelectedMinutes] = useState(15);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
@@ -59,11 +60,12 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
   
   // Timer countdown
   useEffect(() => {
-    if (isRunning && remainingSeconds > 0) {
+    if (isRunning && !isPaused && remainingSeconds > 0) {
       intervalRef.current = setInterval(() => {
         setRemainingSeconds(prev => {
           if (prev <= 1) {
             setIsRunning(false);
+            setIsPaused(false);
             setShowComplete(true);
             playCompleteSound();
             return 0;
@@ -79,7 +81,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
         intervalRef.current = null;
       }
     };
-  }, [isRunning, remainingSeconds, playCompleteSound]);
+  }, [isRunning, isPaused, remainingSeconds, playCompleteSound]);
   
   // Cleanup audio context
   useEffect(() => {
@@ -93,11 +95,21 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
   const startTimer = () => {
     setRemainingSeconds(selectedMinutes * 60);
     setIsRunning(true);
+    setIsPaused(false);
   };
   
-  const stopTimer = () => {
+  const endTimer = () => {
     setIsRunning(false);
+    setIsPaused(false);
     setRemainingSeconds(0);
+  };
+  
+  const pauseTimer = () => {
+    setIsPaused(true);
+  };
+  
+  const resumeTimer = () => {
+    setIsPaused(false);
   };
   
   const formatTime = (seconds: number) => {
@@ -172,27 +184,49 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
         </Tooltip>
         <PopoverContent className="w-56 p-3 bg-popover" align="start">
           <div className="space-y-4">
-            {/* Header */}
+            {/* Header with controls */}
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Practice Timer</span>
-              {isRunning ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={stopTimer}
-                  className="h-7 px-3"
-                >
-                  Stop
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={startTimer}
-                  className="h-7 px-3"
-                >
-                  Start
-                </Button>
-              )}
+              <div className="flex gap-1">
+                {isRunning ? (
+                  <>
+                    {isPaused ? (
+                      <Button
+                        size="sm"
+                        onClick={resumeTimer}
+                        className="h-7 px-3"
+                      >
+                        Resume
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={pauseTimer}
+                        className="h-7 px-3"
+                      >
+                        Pause
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={endTimer}
+                      className="h-7 px-3"
+                    >
+                      End
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={startTimer}
+                    className="h-7 px-3"
+                  >
+                    Start
+                  </Button>
+                )}
+              </div>
             </div>
             
             {/* Time Display */}
