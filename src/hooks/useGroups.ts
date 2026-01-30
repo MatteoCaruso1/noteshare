@@ -214,8 +214,16 @@ export function useJoinGroup() {
   const { profile } = useAuth();
   
   return useMutation({
-    mutationFn: async ({ groupId, isPrivate }: { groupId: string; isPrivate: boolean }) => {
+    mutationFn: async ({ groupId, isPrivate, hasInvite }: { 
+      groupId: string; 
+      isPrivate: boolean;
+      hasInvite?: boolean;
+    }) => {
       if (!profile?.id) throw new Error('Not authenticated');
+      
+      // For private groups: if invited, join as active; otherwise, request (pending)
+      // For public groups: always join as active
+      const status = isPrivate && !hasInvite ? 'pending' : 'active';
       
       const { data, error } = await supabase
         .from('group_members')
@@ -223,18 +231,19 @@ export function useJoinGroup() {
           group_id: groupId,
           user_id: profile.id,
           role: 'member',
-          status: isPrivate ? 'pending' : 'active',
+          status,
         })
         .select()
         .single();
       
       if (error) throw error;
-      return data;
+      return { ...data, statusResult: status };
     },
-    onSuccess: (_, { isPrivate }) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['my-groups'] });
       queryClient.invalidateQueries({ queryKey: ['group-membership'] });
-      toast.success(isPrivate ? 'Request to join sent!' : 'Joined group successfully!');
+      queryClient.invalidateQueries({ queryKey: ['group-invites'] });
+      toast.success(data.statusResult === 'pending' ? 'Request to join sent!' : 'Joined group successfully!');
     },
     onError: (error) => {
       console.error('Failed to join group:', error);

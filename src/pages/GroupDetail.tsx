@@ -16,10 +16,12 @@ import {
   Lock,
   Globe,
   MapPin,
-  Calendar
+  Calendar,
+  Clock
 } from 'lucide-react';
 import { useGroupDetail, useGroupMembers, useGroupEvents, GroupEvent } from '@/hooks/useGroupDetails';
 import { useGroupMembership, useJoinGroup, useLeaveGroup } from '@/hooks/useGroups';
+import { usePendingJoinRequests, useMyGroupInvites } from '@/hooks/useGroupInvites';
 import { InlineErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
@@ -29,6 +31,7 @@ import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
 import { ShareGroupSheet } from '@/components/groups/ShareGroupSheet';
+import { PendingRequestsSheet } from '@/components/groups/PendingRequestsSheet';
 import { GroupHeader as GroupHeaderDisplay } from '@/components/groups/GroupHeaderPicker';
 import { useCreateNote } from '@/hooks/useNotes';
 
@@ -41,6 +44,8 @@ export default function GroupDetail() {
   const { data: members } = useGroupMembers(id);
   const { data: events } = useGroupEvents(id);
   const { data: membership } = useGroupMembership(id);
+  const { data: pendingRequests = [] } = usePendingJoinRequests(id);
+  const { data: myInvites = [] } = useMyGroupInvites();
   
   const joinGroup = useJoinGroup();
   const leaveGroup = useLeaveGroup();
@@ -57,6 +62,8 @@ export default function GroupDetail() {
   const isMember = membership?.status === 'active';
   const isPending = membership?.status === 'pending';
   const canManage = isOwner || isAdmin;
+  const hasInvite = myInvites.some(inv => inv.group_id === id);
+  const hasPendingRequests = pendingRequests.length > 0;
   
   const handleShare = () => {
     setShowShareGroup(true);
@@ -64,7 +71,11 @@ export default function GroupDetail() {
   
   const handleJoin = () => {
     if (id) {
-      joinGroup.mutate({ groupId: id, isPrivate: group?.privacy === 'private' });
+      joinGroup.mutate({ 
+        groupId: id, 
+        isPrivate: group?.privacy === 'private',
+        hasInvite 
+      });
     }
   };
   
@@ -235,6 +246,20 @@ export default function GroupDetail() {
                 label="Invite" 
                 onClick={() => setShowInvite(true)}
               />
+            )}
+            {canManage && hasPendingRequests && (
+              <PendingRequestsSheet groupId={id!}>
+                <div className="relative">
+                  <ActionButton 
+                    icon={<Clock className="w-5 h-5" />} 
+                    label="Requests" 
+                    onClick={() => {}}
+                  />
+                  <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
+                    {pendingRequests.length}
+                  </Badge>
+                </div>
+              </PendingRequestsSheet>
             )}
             {canManage && (
               <ActionButton 

@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 import { Group, useGroupMembership, useJoinGroup } from '@/hooks/useGroups';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,8 @@ interface GroupCardProps {
   onClick?: () => void;
   /** Pre-computed membership status from parent (avoids extra API call) */
   knownMemberStatus?: 'active' | 'pending' | null;
+  /** Whether user has been invited to this group */
+  hasInvite?: boolean;
 }
 
 const focusTypeIcons: Record<string, React.ReactNode> = {
@@ -20,10 +22,10 @@ const focusTypeIcons: Record<string, React.ReactNode> = {
   practice: <Music className="w-4 h-4" />,
 };
 
-export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberStatus }: GroupCardProps) {
+export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberStatus, hasInvite }: GroupCardProps) {
   // Only fetch membership if not provided by parent (optimization for N+1 queries)
   const shouldFetchMembership = knownMemberStatus === undefined && !group.myRole;
-  const { data: membership, isLoading: membershipLoading, isError } = useGroupMembership(
+  const { data: membership, isLoading: membershipLoading } = useGroupMembership(
     shouldFetchMembership ? group.id : undefined
   );
   const joinGroup = useJoinGroup();
@@ -32,16 +34,24 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
   const derivedStatus = knownMemberStatus ?? (group.myRole ? 'active' : (membership?.status as 'active' | 'pending' | null));
   const isMember = derivedStatus === 'active';
   const isPending = derivedStatus === 'pending';
+  const isPrivate = group.privacy === 'private';
   
   const handleJoin = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      joinGroup.mutate({ groupId: group.id, isPrivate: group.privacy === 'private' });
+      joinGroup.mutate({ 
+        groupId: group.id, 
+        isPrivate, 
+        hasInvite 
+      });
     } catch (error) {
       console.error('[GroupCard] Join error:', error);
       toast.error('Failed to join group');
     }
-  }, [joinGroup, group.id, group.privacy]);
+  }, [joinGroup, group.id, isPrivate, hasInvite]);
+  
+  // For private groups, only show limited info if not a member
+  const showFullDetails = !isPrivate || isMember || isPending;
   
   return (
     <div 
@@ -51,7 +61,7 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
       <div className="flex gap-3">
         {/* Group Image/Icon */}
         <div className="w-14 h-14 rounded-lg bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
-          {group.cover_image ? (
+          {group.cover_image && showFullDetails ? (
             <img 
               src={group.cover_image} 
               alt={group.name} 
@@ -64,26 +74,31 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
         
         {/* Group Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold truncate">{group.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold truncate">{group.name}</h3>
+            {isPrivate && (
+              <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            )}
+          </div>
           
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground mt-1">
-            {focusTypeIcons[group.focus_type]}
-            <span className="capitalize">{group.focus_type}</span>
-            <span className="text-border">•</span>
-            <Users className="w-3 h-3" />
-            <span>{group.member_count} member{group.member_count !== 1 ? 's' : ''}</span>
-            <span className="text-border">•</span>
-            {group.privacy === 'private' ? (
-              <Lock className="w-3 h-3" />
-            ) : (
-              <Globe className="w-3 h-3" />
-            )}
-            {group.city && (
+            {showFullDetails ? (
               <>
+                {focusTypeIcons[group.focus_type]}
+                <span className="capitalize">{group.focus_type}</span>
                 <span className="text-border">•</span>
-                <MapPin className="w-3 h-3" />
-                <span>{group.city}</span>
+                <Users className="w-3 h-3" />
+                <span>{group.member_count} member{group.member_count !== 1 ? 's' : ''}</span>
+                {group.city && (
+                  <>
+                    <span className="text-border">•</span>
+                    <MapPin className="w-3 h-3" />
+                    <span>{group.city}</span>
+                  </>
+                )}
               </>
+            ) : (
+              <span className="text-muted-foreground">Private group</span>
             )}
           </div>
         </div>
@@ -99,22 +114,32 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
             <Badge variant="outline" className="text-muted-foreground">
               Pending
             </Badge>
-          ) : (
+          ) : hasInvite ? (
             <Button
               size="sm"
               variant="default"
               onClick={handleJoin}
+              disabled={joinGroup.isPending}
+              className="h-7 text-xs"
+            >
+              Accept
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant={isPrivate ? "outline" : "default"}
+              onClick={handleJoin}
               disabled={joinGroup.isPending || (shouldFetchMembership && membershipLoading)}
               className="h-7 text-xs"
             >
-              {group.privacy === 'private' ? 'Request' : 'Join'}
+              {isPrivate ? 'Request' : 'Join'}
             </Button>
           )}
         </div>
       </div>
       
-      {/* Description */}
-      {group.description && (
+      {/* Description - only for public groups or members */}
+      {group.description && showFullDetails && (
         <p className="text-sm text-foreground/70 mt-3 pt-3 border-t border-border/50 line-clamp-2">
           {group.description}
         </p>
