@@ -234,7 +234,7 @@ const Groups = () => {
                     <GroupCard 
                       key={group.id} 
                       group={group}
-                      onClick={() => {/* TODO: Navigate to group detail */}}
+                      onClick={() => navigate(`/groups/${group.id}`)}
                     />
                   ))}
                 </div>
@@ -318,7 +318,7 @@ const Groups = () => {
                       <GroupCard 
                         key={group.id} 
                         group={group}
-                        onClick={() => {/* TODO: Navigate to group detail */}}
+                        onClick={() => navigate(`/groups/${group.id}`)}
                       />
                     ))}
                   </div>
