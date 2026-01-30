@@ -40,7 +40,6 @@ interface MetronomeProps {
 export function Metronome({ className }: MetronomeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [bpm, setBpm] = useState(120);
-  const [showBeat, setShowBeat] = useState(false);
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const nextTickTimeRef = useRef<number>(0);
@@ -75,10 +74,6 @@ export function Metronome({ className }: MetronomeProps) {
     
     oscillator.start(now);
     oscillator.stop(now + 0.05);
-    
-    // Visual beat indicator
-    setShowBeat(true);
-    setTimeout(() => setShowBeat(false), 50);
   }, []);
   
   // Scheduler for accurate timing
@@ -140,40 +135,6 @@ export function Metronome({ className }: MetronomeProps) {
     setIsPlaying(!isPlaying);
   };
   
-  // Tap tempo functionality
-  const tapTimesRef = useRef<number[]>([]);
-  const handleTapTempo = () => {
-    const now = Date.now();
-    tapTimesRef.current.push(now);
-    
-    // Keep only last 4 taps
-    if (tapTimesRef.current.length > 4) {
-      tapTimesRef.current.shift();
-    }
-    
-    // Calculate average interval
-    if (tapTimesRef.current.length >= 2) {
-      const intervals: number[] = [];
-      for (let i = 1; i < tapTimesRef.current.length; i++) {
-        intervals.push(tapTimesRef.current[i] - tapTimesRef.current[i - 1]);
-      }
-      const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
-      const newBpm = Math.round(60000 / avgInterval);
-      
-      // Clamp to valid range
-      if (newBpm >= 40 && newBpm <= 240) {
-        setBpm(newBpm);
-      }
-    }
-    
-    // Reset if more than 2 seconds since last tap
-    setTimeout(() => {
-      if (tapTimesRef.current.length > 0 && Date.now() - tapTimesRef.current[tapTimesRef.current.length - 1] > 2000) {
-        tapTimesRef.current = [];
-      }
-    }, 2100);
-  };
-  
   return (
     <Popover>
       <Tooltip>
@@ -189,14 +150,6 @@ export function Metronome({ className }: MetronomeProps) {
               )}
             >
               <MetronomeIcon className="w-4 h-4" isPlaying={isPlaying} />
-              {isPlaying && (
-                <span 
-                  className={cn(
-                    "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary transition-opacity",
-                    showBeat ? "opacity-100" : "opacity-50"
-                  )}
-                />
-              )}
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
@@ -233,9 +186,9 @@ export function Metronome({ className }: MetronomeProps) {
             className="w-full"
           />
           
-          {/* Quick tempo buttons */}
-          <div className="flex gap-1.5 justify-center flex-wrap">
-            {[60, 80, 100, 120, 140, 160].map((tempo) => (
+          {/* Quick tempo buttons - 5 options to fit on one line */}
+          <div className="flex gap-1.5 justify-center">
+            {[60, 80, 100, 120, 140].map((tempo) => (
               <Button
                 key={tempo}
                 variant={bpm === tempo ? "secondary" : "ghost"}
@@ -247,15 +200,6 @@ export function Metronome({ className }: MetronomeProps) {
               </Button>
             ))}
           </div>
-          
-          {/* Tap Tempo */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleTapTempo}
-          >
-            Tap Tempo
-          </Button>
         </div>
       </PopoverContent>
     </Popover>
