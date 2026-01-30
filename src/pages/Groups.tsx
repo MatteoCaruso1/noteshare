@@ -272,7 +272,7 @@ const Groups = () => {
                   </p>
                   <Button onClick={() => setCreateGroupOpen(true)}>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Get Started
+                    Create Group
                   </Button>
                 </div>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
