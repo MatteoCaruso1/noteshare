@@ -66,7 +66,7 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold truncate">{group.name}</h3>
           
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground mt-1">
             {focusTypeIcons[group.focus_type]}
             <span className="capitalize">{group.focus_type}</span>
             <span className="text-border">•</span>
@@ -78,30 +78,14 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
             ) : (
               <Globe className="w-3 h-3" />
             )}
+            {group.city && (
+              <>
+                <span className="text-border">•</span>
+                <MapPin className="w-3 h-3" />
+                <span>{group.city}</span>
+              </>
+            )}
           </div>
-          
-          {group.city && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-              <MapPin className="w-3 h-3" />
-              <span>{group.city}</span>
-            </div>
-          )}
-          
-          {/* Group Type Tags */}
-          {group.group_type && group.group_type.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {group.group_type.slice(0, 2).map(type => (
-                <Badge key={type} variant="secondary" className="text-xs py-0 px-1.5">
-                  {type}
-                </Badge>
-              ))}
-              {group.group_type.length > 2 && (
-                <Badge variant="secondary" className="text-xs py-0 px-1.5">
-                  +{group.group_type.length - 2}
-                </Badge>
-              )}
-            </div>
-          )}
         </div>
         
         {/* Join Button */}
@@ -131,7 +115,7 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
       
       {/* Description */}
       {group.description && (
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+        <p className="text-sm text-foreground/70 mt-3 pt-3 border-t border-border/50 line-clamp-2">
           {group.description}
         </p>
       )}
