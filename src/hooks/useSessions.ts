@@ -221,10 +221,12 @@ export function useEndSession() {
       sessionId,
       userId,
       notesSummary,
+      collaboratorIds,
     }: {
       sessionId: string;
       userId: string;
       notesSummary?: string;
+      collaboratorIds?: string[];
     }) => {
       // First, fetch the current session to finalize pause time
       const { data: currentSession, error: fetchError } = await supabase
@@ -251,6 +253,7 @@ export function useEndSession() {
           notes_summary: notesSummary,
           paused_at: null, // Clear pause state when ending
           paused_duration_ms: finalPausedDurationMs, // Save finalized pause duration
+          collaborator_ids: collaboratorIds || [],
         })
         .eq('id', sessionId)
         .select()
