@@ -128,7 +128,7 @@ const Index = () => {
 
       {/* Main Content */}
       <PageBody>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4 sm:space-y-6">
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
           {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
           <GlintProvider>
             {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
