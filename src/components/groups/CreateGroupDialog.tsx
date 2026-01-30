@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   ChevronLeft, X, Music, Guitar, Mic2, Radio, Users, 
   Building2, GraduationCap, Sparkles, Globe, MapPin, 
-  Lock, Unlock, Image as ImageIcon, Check
+  Lock, Unlock, Image as ImageIcon, Check, Camera
 } from 'lucide-react';
 import { CreateGroupData, useCreateGroup } from '@/hooks/useGroups';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 interface CreateGroupDialogProps {
@@ -47,8 +49,12 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     privacy: 'public',
     location_type: 'global',
   });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const createGroup = useCreateGroup();
+  const { uploadImage, uploading } = useMediaUpload();
+  const { profile } = useAuth();
   
   const stepIndex = STEPS.indexOf(step);
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
@@ -90,6 +96,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     await createGroup.mutateAsync({
       name: formData.name,
       description: formData.description,
+      cover_image: formData.cover_image,
       focus_type: formData.focus_type,
       focus_details: formData.focus_details,
       group_type: formData.group_type,
@@ -107,6 +114,29 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
       privacy: 'public',
       location_type: 'global',
     });
+    setPreviewUrl(null);
+  };
+  
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile?.id) return;
+    
+    // Create preview
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    
+    // Upload to storage
+    try {
+      const uploadedPath = await uploadImage(file, profile.id);
+      if (uploadedPath) {
+        setFormData({ ...formData, cover_image: uploadedPath });
+      } else {
+        setPreviewUrl(null);
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      setPreviewUrl(null);
+    }
   };
   
   const handleClose = () => {
@@ -118,6 +148,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
       privacy: 'public',
       location_type: 'global',
     });
+    setPreviewUrl(null);
   };
   
   const toggleGroupType = (type: string) => {
@@ -259,12 +290,39 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                   </p>
                 </div>
                 
-                {/* Photo placeholder */}
+                {/* Photo upload */}
                 <div className="flex justify-center">
-                  <div className="w-32 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-secondary/80 transition-colors">
-                    <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Upload Photo</span>
-                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-32 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden relative"
+                    disabled={uploading}
+                  >
+                    {previewUrl || formData.cover_image ? (
+                      <img 
+                        src={previewUrl || formData.cover_image} 
+                        alt="Group cover" 
+                        className="w-full h-full object-cover absolute inset-0"
+                      />
+                    ) : uploading ? (
+                      <>
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-muted-foreground">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Upload Photo</span>
+                      </>
+                    )}
+                  </button>
                 </div>
                 
                 {/* Name input */}
