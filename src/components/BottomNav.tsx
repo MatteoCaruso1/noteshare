@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Music, Target, User, Users, Users2 } from 'lucide-react';
+import { Music, Target, User, Users, Waypoints } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
@@ -66,7 +66,7 @@ export function BottomNav() {
   const links = [
     { to: '/', icon: Music, label: 'Practice', mobileLabel: 'Practice' },
     { to: '/friends', icon: Users, label: 'Friends', mobileLabel: 'Friends', showBadge: true },
-    { to: '/groups', icon: Users2, label: 'Groups', mobileLabel: 'Groups' },
+    { to: '/groups', icon: Waypoints, label: 'Groups', mobileLabel: 'Groups' },
     { to: '/pursuits', icon: Target, label: 'Pursuits', mobileLabel: 'Pursuits' },
     { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
   ];
