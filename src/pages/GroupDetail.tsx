@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   ChevronLeft, 
-  Settings, 
   UserPlus, 
   Pencil, 
   Share2, 
@@ -152,18 +151,8 @@ export default function GroupDetail() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             
-            {canManage ? (
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setShowEditGroup(true)}
-                className="bg-card/80 backdrop-blur-sm hover:bg-card/90 rounded-full border border-border/50"
-              >
-                <Settings className="w-5 h-5" />
-              </Button>
-            ) : (
-              <div className="w-10" /> 
-            )}
+            {/* Empty div for layout balance */}
+            <div className="w-10" />
           </div>
           
           {/* Group avatar overlapping banner */}
@@ -214,14 +203,13 @@ export default function GroupDetail() {
                 </>
               )}
             </div>
+            {group.city && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <span>{group.city}</span>
+              </div>
+            )}
           </div>
-          
-          {group.city && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-              <MapPin className="w-4 h-4" />
-              <span>{group.city}</span>
-            </div>
-          )}
           
           {/* Description */}
           {group.description && (
