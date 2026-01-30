@@ -90,17 +90,9 @@ export function Metronome({ className }: MetronomeProps) {
   // Start/stop metronome
   useEffect(() => {
     if (isPlaying) {
-      // Create or resume audio context
-      if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContext();
-      }
-      
+      // AudioContext is already created and resumed in toggleMetronome (user gesture)
       const ctx = audioContextRef.current;
-      
-      // Resume if suspended (required for mobile browsers)
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
+      if (!ctx) return;
       
       // Start scheduling from now
       nextTickTimeRef.current = ctx.currentTime;
@@ -136,7 +128,28 @@ export function Metronome({ className }: MetronomeProps) {
     };
   }, []);
   
-  const toggleMetronome = () => {
+  const toggleMetronome = async () => {
+    if (!isPlaying) {
+      // Create AudioContext on user gesture (required for mobile)
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext();
+      }
+      
+      const ctx = audioContextRef.current;
+      
+      // Resume if suspended - MUST happen in click handler for mobile
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+      
+      // Play a silent buffer to fully unlock audio on iOS
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+    }
+    
     setIsPlaying(!isPlaying);
   };
   
