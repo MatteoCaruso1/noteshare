@@ -128,21 +128,23 @@ const Index = () => {
 
       {/* Main Content */}
       <PageBody>
-        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-3">
+        <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
           {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
           <GlintProvider>
-            {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
-            <div data-tour="practice-capture" className="space-y-4">
-              <PracticeControls />
-              <QuickNoteCapture />
-            </div>
-
-            {/* Ongoing Focus - Practice Board */}
-            {profile && (
-              <div data-tour="practice-board">
-                <TodaysFocus />
+            <div className="space-y-4">
+              {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
+              <div data-tour="practice-capture">
+                <PracticeControls />
               </div>
-            )}
+              <QuickNoteCapture />
+
+              {/* Ongoing Focus - Practice Board */}
+              {profile && (
+                <div data-tour="practice-board">
+                  <TodaysFocus />
+                </div>
+              )}
+            </div>
           </GlintProvider>
 
           {/* Memory Reminder */}
