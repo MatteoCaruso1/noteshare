@@ -72,24 +72,22 @@ export function EndSessionDialog({
 
         <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
           {/* Duration */}
-          <div className="space-y-2">
+          <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Duration
             </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                inputMode="numeric"
-                value={durationMinutes}
-                onChange={(e) => setDurationMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-                min="1"
-                className="w-20 bg-muted/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <span className="text-sm text-muted-foreground">
-                minutes
-              </span>
-            </div>
+            <Input
+              type="number"
+              inputMode="numeric"
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+              min="1"
+              className="w-16 bg-muted/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-sm text-muted-foreground">
+              min
+            </span>
           </div>
 
           {/* Notes */}

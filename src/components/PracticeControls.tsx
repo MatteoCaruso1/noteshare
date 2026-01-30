@@ -132,6 +132,7 @@ export function PracticeControls() {
   );
   const [showSessionChoice, setShowSessionChoice] = useState(false);
   const [manuallyCollapsed, setManuallyCollapsed] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -173,9 +174,10 @@ export function PracticeControls() {
 
   // Determine if we should show the collapsible content
   // Active session can now be collapsed manually
+  // Keep expanded during session start transition to avoid jarring close/open
   const isExpanded = activeSession 
     ? !manuallyCollapsed 
-    : showSessionChoice;
+    : (showSessionChoice || isStartingSession);
 
   // Sync expanded state with glint context (glint paused when expanded)
   useEffect(() => {
@@ -515,7 +517,12 @@ export function PracticeControls() {
 
   const handleStartLiveSession = () => {
     if (!startSession.isPending) {
-      startSession.mutate({ userId: profile.id });
+      setIsStartingSession(true); // Keep expanded during transition
+      startSession.mutate({ userId: profile.id }, {
+        onSettled: () => {
+          setIsStartingSession(false);
+        }
+      });
       setShowSessionChoice(false);
       setManuallyCollapsed(false); // Ensure expanded when starting
     }
