@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
@@ -58,12 +58,16 @@ export function QuickNoteCapture() {
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   
-  // Track whether we should show/hide based on active session
+  // Track session state for animation
   const hasActiveSession = !!activeSession;
   
-  // Delayed unmount for smooth fade-out animation
-  const [shouldRender, setShouldRender] = useState(!hasActiveSession);
-  const [isVisible, setIsVisible] = useState(!hasActiveSession);
+  // Use ref to track previous session state and prevent flash on mount
+  const prevHasActiveSessionRef = useRef(hasActiveSession);
+  const hasInitializedRef = useRef(false);
+  
+  // Animation state - start hidden if there's an active session
+  const [isVisible, setIsVisible] = useState(() => !hasActiveSession);
+  const [shouldRender, setShouldRender] = useState(() => !hasActiveSession);
 
   // Sync isOpen state with glint context
   useEffect(() => {
@@ -72,21 +76,43 @@ export function QuickNoteCapture() {
   
   // Handle visibility animation when session state changes
   useEffect(() => {
+    // On first effect run, just sync state without animation
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      prevHasActiveSessionRef.current = hasActiveSession;
+      // Ensure correct initial state
+      if (hasActiveSession) {
+        setShouldRender(false);
+        setIsVisible(false);
+      } else {
+        setShouldRender(true);
+        setIsVisible(true);
+      }
+      return;
+    }
+    
+    // Only animate on actual state changes
+    if (hasActiveSession === prevHasActiveSessionRef.current) {
+      return;
+    }
+    
+    prevHasActiveSessionRef.current = hasActiveSession;
+    
     if (hasActiveSession) {
-      // Close collapsible first, then fade out
+      // Session started - fade out
       setIsOpen(false);
       setIsVisible(false);
-      // Wait for animation to complete before unmounting
       const timer = setTimeout(() => {
         setShouldRender(false);
-      }, 250); // Match animation duration
+      }, 200);
       return () => clearTimeout(timer);
     } else {
-      // Session ended - show the component with fade in
+      // Session ended - fade in
       setShouldRender(true);
-      // Small delay to ensure DOM is ready for animation
       requestAnimationFrame(() => {
-        setIsVisible(true);
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+        });
       });
     }
   }, [hasActiveSession]);
