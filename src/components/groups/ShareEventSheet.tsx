@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
 import {
   Sheet,
@@ -8,9 +8,21 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { GroupEvent } from '@/hooks/useGroupDetails';
-import { Copy, Link, Share2, Music, Mic2, Piano, Guitar, Drum } from 'lucide-react';
+import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { toPng } from 'html-to-image';
+
+// Platform detection helpers
+const getDeviceInfo = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const isAndroid = /android/.test(ua);
+  const isMobile = isIOS || isAndroid;
+  const isDesktop = !isMobile;
+  
+  return { isIOS, isAndroid, isMobile, isDesktop };
+};
 
 interface ShareEventSheetProps {
   open: boolean;
@@ -75,49 +87,104 @@ const MUSIC_ICONS = [
 
 export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCoverImage }: ShareEventSheetProps) {
   const [selectedStyle, setSelectedStyle] = useState<CardStyle>('primary');
+  const [isExporting, setIsExporting] = useState(false);
+  const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   
-  // Guard against null event
-  if (!event) return null;
+  // Detect device type - must be before any early returns
+  const deviceInfo = useMemo(() => getDeviceInfo(), []);
+  const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
   
-  const eventDate = new Date(event.event_date);
+  // Memoize computed values - must be before any early returns
+  const eventDate = useMemo(() => event ? new Date(event.event_date) : null, [event]);
+  const shareUrl = useMemo(() => event ? `${window.location.origin}/groups/${event.group_id}?event=${event.id}` : '', [event]);
   
-  const shareUrl = `${window.location.origin}/groups/${event.group_id}?event=${event.id}`;
-  
-  const shareText = `${event.name}\n${format(eventDate, "MMMM d, yyyy 'at' h:mm a")}\n${event.location || 'Virtual Event'}\n\nJoin us on noteshare!`;
-  
-  const handleCopyLink = async () => {
+  const handleCopyLink = useCallback(async () => {
+    if (!shareUrl) return;
     await navigator.clipboard.writeText(shareUrl);
     toast.success('Link copied to clipboard');
-  };
+  }, [shareUrl]);
   
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
+  const generateImage = useCallback(async (): Promise<Blob | null> => {
+    if (!cardRef.current) return null;
+
+    try {
+      // Ensure element is fully visible and rendered
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 1.0,
+        pixelRatio: 3, // Higher resolution
+        cacheBust: true,
+      });
+      
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      return await response.blob();
+    } catch (err) {
+      console.error('[ShareEventSheet] Error generating image:', err);
+      return null;
+    }
+  }, []);
+  
+  const handleIMessageShare = useCallback(async () => {
+    if (isExporting || !event) return; // Prevent double-click
+    setIsExporting(true);
+    setActiveButton('imessage');
+    
+    try {
+      const blob = await generateImage();
+      if (!blob) throw new Error('Failed to generate image');
+      
+      const imageFile = new File([blob], 'noteshare-event.png', { type: 'image/png' });
+      const files: File[] = [imageFile];
+      
+      // Link to the event with period trick to prevent Apple rich link preview
+      const shareText = `You're invited to my event on Noteshare!\n\n.${shareUrl}.`;
+      
+      // Check if Web Share API is available and supports our files
+      if (navigator.share && navigator.canShare?.({ files })) {
+        await navigator.share({
+          files,
+          text: shareText,
+        });
+        toast.success('Shared successfully!');
+      } else if (navigator.share) {
+        // Share without files (text only)
         await navigator.share({
           title: event.name,
           text: shareText,
-          url: shareUrl,
         });
-      } catch (err) {
-        // User cancelled or share failed
-        if ((err as Error).name !== 'AbortError') {
-          handleCopyLink();
-        }
+        toast.success('Shared successfully!');
+      } else {
+        toast.error('Sharing not supported on this device');
       }
-    } else {
-      handleCopyLink();
+    } catch (err) {
+      // User cancelled share or error occurred
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Share error:', err);
+        toast.error('Share failed. Please try again.');
+      }
+    } finally {
+      setIsExporting(false);
+      setActiveButton(null);
     }
-  };
-  
-  const handleCopyToClipboard = async () => {
-    await navigator.clipboard.writeText(shareText + '\n\n' + shareUrl);
-    toast.success('Copied to clipboard');
-  };
+  }, [generateImage, shareUrl, event, isExporting]);
 
-  const currentStyle = STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0];
-  const availableStyles = eventCoverImage 
-    ? STYLE_OPTIONS 
-    : STYLE_OPTIONS.filter(s => s.id !== 'custom');
+  const currentStyle = useMemo(() => 
+    STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0],
+    [selectedStyle]
+  );
+  
+  const availableStyles = useMemo(() => 
+    eventCoverImage 
+      ? STYLE_OPTIONS 
+      : STYLE_OPTIONS.filter(s => s.id !== 'custom'),
+    [eventCoverImage]
+  );
+  
+  // Guard against null event - AFTER all hooks
+  if (!event || !eventDate) return null;
   
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -155,6 +222,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
         {/* Event Card Preview */}
         <div className="flex justify-center py-4">
           <div 
+            ref={cardRef}
             className={cn(
               "w-64 rounded-xl p-6 text-center space-y-3 relative overflow-hidden",
               currentStyle.bgClass,
@@ -186,17 +254,14 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
               {event.is_virtual && <p className="opacity-80">Virtual Event</p>}
             </div>
             
-            <div className={cn(
-              "border border-dashed rounded-lg py-2 px-4 inline-flex items-center gap-1",
-              currentStyle.id === 'dark' 
-                ? "border-muted-foreground/40" 
-                : "border-current/40"
-            )}>
-              <Link className="w-3 h-3" />
-              <span className="text-xs">Link here</span>
+            {/* Branding - Music icon + Noteshare */}
+            <div className="flex items-center justify-center gap-1.5 pt-2">
+              <Music 
+                className="w-4 h-4" 
+                style={{ color: 'hsl(217, 91%, 60%)' }} // Primary blue
+              />
+              <span className="text-xs font-semibold opacity-80">Noteshare</span>
             </div>
-            
-            <p className="text-xs opacity-60">Join us on noteshare</p>
           </div>
         </div>
         
@@ -205,16 +270,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
           <p className="font-semibold">Share to</p>
           
           <div className="flex gap-6">
-            <button
-              onClick={handleCopyToClipboard}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                <Copy className="w-5 h-5" />
-              </div>
-              <span className="text-xs text-center">Copy to<br/>Clipboard</span>
-            </button>
-            
+            {/* Copy Link */}
             <button
               onClick={handleCopyLink}
               className="flex flex-col items-center gap-2"
@@ -225,15 +281,25 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
               <span className="text-xs text-center">Copy<br/>Link</span>
             </button>
             
-            <button
-              onClick={handleShare}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                <Share2 className="w-5 h-5" />
-              </div>
-              <span className="text-xs text-center">More</span>
-            </button>
+            {/* iMessage - iOS only */}
+            {canShareIMessage && (
+              <button
+                onClick={handleIMessageShare}
+                disabled={isExporting}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center text-white">
+                  {isExporting && activeButton === 'imessage' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <MessageCircle className="w-5 h-5" />
+                  )}
+                </div>
+                <span className="text-xs text-center">
+                  {isExporting && activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </SheetContent>
