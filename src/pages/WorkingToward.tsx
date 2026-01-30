@@ -76,7 +76,7 @@ const WorkingToward = () => {
   
   // Use the standard scroll restoration hook - this integrates with PageLayout
   // to prevent header flash when returning to this page with a scroll position
-  useScrollRestoration('working-toward');
+  useScrollRestoration('pursuits');
   
   // Get stored UI state for initial values (collapsible/tab states only)
   const storedUIState = getStoredUIState();
@@ -345,7 +345,7 @@ const WorkingToward = () => {
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
-            <h1 className="text-lg sm:text-xl font-semibold">Working Toward</h1>
+            <h1 className="text-lg sm:text-xl font-semibold">Pursuits</h1>
           </div>
         </div>
       </PageHeader>

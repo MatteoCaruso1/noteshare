@@ -26,7 +26,7 @@ const tourSteps: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="friends-nav"]',
-    message: "See what your friends are working on!",
+    message: "See what your friends are practicing!",
     position: 'top',
   },
 ];

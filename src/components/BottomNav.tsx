@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Target, User, Users } from 'lucide-react';
+import { Music, Target, User, Users, Users2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
@@ -12,7 +12,7 @@ import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 const routeScrollKeys: Record<string, string> = {
   '/': 'index-timeline',
   '/friends': 'friends-feed',
-  '/working-toward': 'working-toward-top',
+  '/pursuits': 'pursuits-top',
   '/projects': 'projects-top',
   '/gigs': 'gigs-top',
   '/profile': 'profile-top',
@@ -64,9 +64,10 @@ export function BottomNav() {
   }, []);
 
   const links = [
-    { to: '/', icon: Home, label: 'Practice', mobileLabel: 'Practice' },
-    { to: '/working-toward', icon: Target, label: 'Working Toward', mobileLabel: 'Working\nToward' },
-    { to: '/friends', icon: Users, label: "Friends' Practice", mobileLabel: "Friends'\nPractice", showBadge: true },
+    { to: '/', icon: Music, label: 'Practice', mobileLabel: 'Practice' },
+    { to: '/friends', icon: Users, label: 'Friends', mobileLabel: 'Friends', showBadge: true },
+    { to: '/groups', icon: Users2, label: 'Groups', mobileLabel: 'Groups' },
+    { to: '/pursuits', icon: Target, label: 'Pursuits', mobileLabel: 'Pursuits' },
     { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
   ];
 
@@ -142,7 +143,7 @@ export function BottomNav() {
                     </span>
                   )}
                 </div>
-                <span className="text-[8px] sm:text-[10px] text-center whitespace-pre-line leading-[1.1] h-[18px] sm:h-auto sm:whitespace-nowrap flex items-start justify-center">
+                <span className="text-[8px] sm:text-[10px] font-semibold text-center whitespace-pre-line leading-[1.1] h-[18px] sm:h-auto sm:whitespace-nowrap flex items-start justify-center">
                   <span className="sm:hidden">{mobileLabel}</span>
                   <span className="hidden sm:inline">{label}</span>
                 </span>
