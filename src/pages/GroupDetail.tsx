@@ -264,13 +264,6 @@ export default function GroupDetail() {
               label="Share" 
               onClick={handleShare}
             />
-            {canManage && (
-              <ActionButton 
-                icon={<CalendarPlus className="w-5 h-5" />} 
-                label="Create Event" 
-                onClick={() => setShowCreateEvent(true)}
-              />
-            )}
           </div>
         </div>
       ) : (
