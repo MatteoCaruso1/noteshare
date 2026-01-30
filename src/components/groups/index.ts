@@ -7,3 +7,4 @@ export * from './ShareGroupSheet';
 export * from './EditGroupDialog';
 export * from './InviteMembersDialog';
 export * from './GroupPostCapture';
+export * from './GroupHeaderPicker';
