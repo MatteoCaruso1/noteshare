@@ -663,9 +663,18 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             achievementCount={streakAchievementCount}
             className="text-sm font-medium truncate"
           />
-          {/* Short date in timeline only */}
-          {!expanded && (
-          <p className="text-xs text-muted-foreground">
+          {/* Playing with collaborators */}
+          {note.sessionCollaborators && note.sessionCollaborators.length > 0 && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              <span className="truncate">
+                Playing with {note.sessionCollaborators.map(c => c.name).join(', ')}
+              </span>
+            </p>
+          )}
+          {/* Short date in timeline only - only show if no collaborators or when expanded */}
+          {!expanded && !note.sessionCollaborators?.length && (
+            <p className="text-xs text-muted-foreground">
               {isToday(new Date(note.created_at)) 
                 ? 'Today' 
                 : isYesterday(new Date(note.created_at)) 

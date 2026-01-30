@@ -183,6 +183,7 @@ export function useStartSession() {
         created_at: new Date().toISOString(),
         paused_at: null,
         paused_duration_ms: 0,
+        collaborator_ids: null,
       };
 
       queryClient.setQueryData(key, optimisticSession);
