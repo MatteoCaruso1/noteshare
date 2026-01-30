@@ -343,6 +343,161 @@ export type Database = {
           },
         ]
       }
+      group_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          event_date: string
+          event_type: string
+          group_id: string
+          id: string
+          is_virtual: boolean
+          location: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_date: string
+          event_type?: string
+          group_id: string
+          id?: string
+          is_virtual?: boolean
+          location?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          group_id?: string
+          id?: string
+          is_virtual?: boolean
+          location?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          city: string | null
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          focus_details: string[] | null
+          focus_type: string
+          group_type: string[]
+          id: string
+          location_type: string
+          member_count: number
+          name: string
+          owner_id: string
+          privacy: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          focus_details?: string[] | null
+          focus_type?: string
+          group_type?: string[]
+          id?: string
+          location_type?: string
+          member_count?: number
+          name: string
+          owner_id: string
+          privacy?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          focus_details?: string[] | null
+          focus_type?: string
+          group_type?: string[]
+          id?: string
+          location_type?: string
+          member_count?: number
+          name?: string
+          owner_id?: string
+          privacy?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       muted_friends: {
         Row: {
           created_at: string
