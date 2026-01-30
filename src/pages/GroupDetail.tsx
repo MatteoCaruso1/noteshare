@@ -18,8 +18,9 @@ import {
   MapPin,
   Calendar
 } from 'lucide-react';
-import { useGroupDetail, useGroupMembers, useGroupEvents } from '@/hooks/useGroupDetails';
+import { useGroupDetail, useGroupMembers, useGroupEvents, GroupEvent } from '@/hooks/useGroupDetails';
 import { useGroupMembership, useJoinGroup, useLeaveGroup } from '@/hooks/useGroups';
+import { InlineErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -48,7 +49,7 @@ export default function GroupDetail() {
   const [showInvite, setShowInvite] = useState(false);
   const [showMembersSheet, setShowMembersSheet] = useState(false);
   const [showShareGroup, setShowShareGroup] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<typeof events extends (infer T)[] | undefined ? T : never | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<GroupEvent | null>(null);
   
   const isOwner = group?.owner_id === profile?.id;
   const isAdmin = membership?.role === 'admin';
@@ -329,14 +330,16 @@ export default function GroupDetail() {
       {isMember && (
         <div className="px-6 py-4">
           <h2 className="font-semibold mb-3">Posts</h2>
-          <GroupPostCapture
-            profileId={profile?.id || ''}
-            profileAvatar={profile?.avatar}
-            profileName={profile?.name}
-            groupName={group.name}
-            onSubmit={handleAddPost}
-            isSubmitting={createNote.isPending}
-          />
+          <InlineErrorBoundary fallback={<div className="text-sm text-muted-foreground p-4 text-center">Unable to load posts</div>}>
+            <GroupPostCapture
+              profileId={profile?.id || ''}
+              profileAvatar={profile?.avatar}
+              profileName={profile?.name}
+              groupName={group.name}
+              onSubmit={handleAddPost}
+              isSubmitting={createNote.isPending}
+            />
+          </InlineErrorBoundary>
         </div>
       )}
       
@@ -386,20 +389,24 @@ export default function GroupDetail() {
       />
       
       {/* Share Group Sheet */}
-      <ShareGroupSheet
-        open={showShareGroup}
-        onOpenChange={setShowShareGroup}
-        group={group}
-      />
+      <InlineErrorBoundary fallback={null}>
+        <ShareGroupSheet
+          open={showShareGroup}
+          onOpenChange={setShowShareGroup}
+          group={group}
+        />
+      </InlineErrorBoundary>
       
       {/* Event Detail Sheet */}
-      <EventDetailSheet
-        open={!!selectedEvent}
-        onOpenChange={(open) => !open && setSelectedEvent(null)}
-        event={selectedEvent}
-        groupName={group.name}
-        canManage={canManage}
-      />
+      <InlineErrorBoundary fallback={null}>
+        <EventDetailSheet
+          open={!!selectedEvent}
+          onOpenChange={(open) => !open && setSelectedEvent(null)}
+          event={selectedEvent}
+          groupName={group.name}
+          canManage={canManage}
+        />
+      </InlineErrorBoundary>
       </div>
     </PageLayout>
   );
@@ -430,7 +437,7 @@ function ActionButton({
 
 // Members Sheet component
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { GroupMemberWithProfile, GroupEvent } from '@/hooks/useGroupDetails';
+import { GroupMemberWithProfile } from '@/hooks/useGroupDetails';
 import { ShareEventSheet } from '@/components/groups/ShareEventSheet';
 
 function MembersSheet({
