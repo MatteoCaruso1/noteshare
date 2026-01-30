@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RichTextarea } from '@/components/RichTextarea';
+import { PlayingWithPicker } from '@/components/PlayingWithPicker';
 import { Clock, ArrowLeft, Save } from 'lucide-react';
 
 interface EndSessionDialogProps {
@@ -12,7 +13,7 @@ interface EndSessionDialogProps {
   session: PracticeSession;
   noteText: string;
   onNoteTextChange: (text: string) => void;
-  onSave: (sessionTitle: string, durationMinutes: number) => void;
+  onSave: (sessionTitle: string, durationMinutes: number, playingWithIds: string[]) => void;
   isSaving: boolean;
 }
 
@@ -37,6 +38,7 @@ export function EndSessionDialog({
   };
 
   const [durationInput, setDurationInput] = useState(() => String(calculateDuration()));
+  const [playingWithIds, setPlayingWithIds] = useState<string[]>([]);
   
   // Derived state for validation
   const durationMinutes = parseInt(durationInput, 10) || 0;
@@ -46,6 +48,7 @@ export function EndSessionDialog({
   useEffect(() => {
     if (open) {
       setDurationInput(String(calculateDuration()));
+      setPlayingWithIds([]);
     }
   }, [open, session]);
 
@@ -59,7 +62,7 @@ export function EndSessionDialog({
 
   const handleSave = () => {
     if (isValidDuration) {
-      onSave('', durationMinutes);
+      onSave('', durationMinutes, playingWithIds);
     }
   };
 
@@ -102,6 +105,12 @@ export function EndSessionDialog({
               min
             </span>
           </div>
+
+          {/* Playing With */}
+          <PlayingWithPicker
+            selectedIds={playingWithIds}
+            onSelect={setPlayingWithIds}
+          />
 
           {/* Notes */}
           <div className="space-y-2">

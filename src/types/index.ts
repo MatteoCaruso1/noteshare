@@ -73,6 +73,7 @@ export interface NoteWithAuthor extends Note {
   project?: { id: string; title: string } | null;
   goal?: { id: string; title: string | null; content: string } | null;
   gig?: { id: string; title: string } | null;
+  _share_id?: string; // Present when note was shared with the user
 }
 
 export interface Project {

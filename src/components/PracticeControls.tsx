@@ -7,6 +7,7 @@ import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
+import { useCreateNoteShares } from '@/hooks/useNoteShares';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -98,6 +99,7 @@ export function PracticeControls() {
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
   const createNote = useCreateNote();
+  const createNoteShares = useCreateNoteShares();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   const { isPaused, glintStyle, setPracticeExpanded } = useGlint();
   const { hasReachedLimit, notesPostedToday, dailyLimit, incrementCount, isPremium } = useDailyNoteLimit();
@@ -411,7 +413,7 @@ export function PracticeControls() {
     setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
-  const handleSaveNoteAndEndSession = (sessionTitle?: string, customDurationMinutes?: number) => {
+  const handleSaveNoteAndEndSession = (sessionTitle?: string, customDurationMinutes?: number, playingWithIds?: string[]) => {
     if (activeSession) {
       // Calculate session duration in minutes (accounting for paused time)
       const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
@@ -469,8 +471,17 @@ export function PracticeControls() {
                 focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
               },
               {
-                onSuccess: () => {
+                onSuccess: (newNote) => {
                   incrementCount(); // Update local count optimistically
+                  
+                  // Share with selected friends if any
+                  if (playingWithIds && playingWithIds.length > 0 && newNote?.id) {
+                    createNoteShares.mutate({
+                      noteId: newNote.id,
+                      sharedWithIds: playingWithIds,
+                    });
+                  }
+                  
                   clearState();
                   clearSessionSettings();
                   setShowEndSessionDialog(false);
