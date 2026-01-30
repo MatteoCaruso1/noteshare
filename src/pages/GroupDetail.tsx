@@ -47,6 +47,7 @@ export default function GroupDetail() {
   const [showEditGroup, setShowEditGroup] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showMembersSheet, setShowMembersSheet] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<typeof events extends (infer T)[] | undefined ? T : never | null>(null);
   
   const isOwner = group?.owner_id === profile?.id;
   const isAdmin = membership?.role === 'admin';
@@ -318,9 +319,10 @@ export default function GroupDetail() {
         {events && events.length > 0 && (
           <div className="space-y-3">
             {events.map(event => (
-              <div 
+              <button 
                 key={event.id} 
-                className="p-4 rounded-xl bg-card border border-border hover:border-border/80 transition-colors"
+                onClick={() => setSelectedEvent(event)}
+                className="w-full text-left p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center text-primary shrink-0">
@@ -344,7 +346,7 @@ export default function GroupDetail() {
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -409,6 +411,15 @@ export default function GroupDetail() {
         members={members || []}
         groupName={group.name}
       />
+      
+      {/* Event Detail Sheet */}
+      <EventDetailSheet
+        open={!!selectedEvent}
+        onOpenChange={(open) => !open && setSelectedEvent(null)}
+        event={selectedEvent}
+        groupName={group.name}
+        canManage={canManage}
+      />
       </div>
     </PageLayout>
   );
@@ -439,7 +450,8 @@ function ActionButton({
 
 // Members Sheet component
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { GroupMemberWithProfile } from '@/hooks/useGroupDetails';
+import { GroupMemberWithProfile, GroupEvent } from '@/hooks/useGroupDetails';
+import { ShareEventSheet } from '@/components/groups/ShareEventSheet';
 
 function MembersSheet({
   open,
@@ -485,5 +497,110 @@ function MembersSheet({
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+// Event Detail Sheet component
+function EventDetailSheet({
+  open,
+  onOpenChange,
+  event,
+  groupName,
+  canManage
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  event: GroupEvent | null;
+  groupName: string;
+  canManage: boolean;
+}) {
+  const [showShare, setShowShare] = useState(false);
+  
+  if (!event) return null;
+  
+  const eventDate = new Date(event.event_date);
+  
+  return (
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="max-h-[85vh] rounded-t-2xl">
+          <SheetHeader className="text-left pb-4">
+            <SheetTitle className="text-xl">{event.name}</SheetTitle>
+          </SheetHeader>
+          
+          <div className="space-y-6">
+            {/* Date & Time */}
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center text-primary">
+                <span className="text-xs font-medium">
+                  {format(eventDate, 'MMM')}
+                </span>
+                <span className="text-xl font-bold leading-none">
+                  {format(eventDate, 'd')}
+                </span>
+              </div>
+              <div>
+                <p className="font-medium">{format(eventDate, 'EEEE')}</p>
+                <p className="text-muted-foreground">{format(eventDate, 'h:mm a')}</p>
+              </div>
+            </div>
+            
+            {/* Location */}
+            {(event.location || event.is_virtual) && (
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="font-medium">
+                    {event.is_virtual ? 'Virtual Event' : event.location}
+                  </p>
+                  {event.is_virtual && event.location && (
+                    <p className="text-sm text-muted-foreground">{event.location}</p>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Description */}
+            {event.description && (
+              <div>
+                <h3 className="font-medium mb-2">About</h3>
+                <p className="text-muted-foreground">{event.description}</p>
+              </div>
+            )}
+            
+            {/* Group name */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                <Users className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Hosted by</p>
+                <p className="font-medium">{groupName}</p>
+              </div>
+            </div>
+            
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <Button 
+                className="flex-1" 
+                onClick={() => setShowShare(true)}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share Event
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+      
+      <ShareEventSheet
+        open={showShare}
+        onOpenChange={setShowShare}
+        event={event}
+        groupName={groupName}
+      />
+    </>
   );
 }
