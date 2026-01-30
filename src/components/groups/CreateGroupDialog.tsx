@@ -31,7 +31,7 @@ const FOCUS_OPTIONS = [
 ];
 
 const GROUP_TYPES = [
-  { value: 'casual', label: 'Casual Hangout', description: 'Just for fun and connection' },
+  { value: 'just-for-fun', label: 'Just for Fun', description: 'Fun and connection' },
   { value: 'band', label: 'Band/Ensemble', description: 'Looking to play together' },
   { value: 'venue', label: 'Venue/Space', description: 'Music venue or practice space' },
   { value: 'educator', label: 'Educator-Led', description: 'Teaching or workshop focused' },
