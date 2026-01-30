@@ -587,16 +587,10 @@ export function PracticeControls() {
           {activeSession && (
           <div className="px-4 pb-4 space-y-4">
 
-          {/* Compact toolbar row: Metronome, Timer, Settings, Upload, Project, Goal, Focus toggle */}
+          {/* Compact toolbar row: Settings (with upload), Link to Goals, Metronome, Timer, Unlock */}
           <TooltipProvider delayDuration={1000}>
             <div className="flex items-center gap-2 flex-wrap mb-4">
-              {/* Metronome */}
-              <Metronome />
-              
-              {/* Practice Timer */}
-              <PracticeTimer />
-              
-              {/* Settings */}
+              {/* Settings (includes visibility, upload, delete) */}
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -629,6 +623,16 @@ export function PracticeControls() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    
+                    {/* Upload Media inside settings */}
+                    <div className="border-t border-border pt-2">
+                      <p className="text-xs text-muted-foreground px-2 mb-2">Upload Media</p>
+                      <MediaUploadButton
+                        onAudioUpload={handleAudioFileUpload}
+                        onImageUpload={handleImageUpload}
+                        uploading={uploading}
+                      />
                     </div>
                     
                     {/* Delete Session */}
@@ -667,14 +671,6 @@ export function PracticeControls() {
                 </PopoverContent>
               </Popover>
 
-              {/* Upload Media (icon only) */}
-              <MediaUploadButton
-                onAudioUpload={handleAudioFileUpload}
-                onImageUpload={handleImageUpload}
-                uploading={uploading}
-                iconOnly
-              />
-
               {/* Link to Goal/Project/Gig */}
               <LinkToPicker
                 projects={projects}
@@ -683,6 +679,12 @@ export function PracticeControls() {
                 selectedLink={selectedLink}
                 onLinkChange={setSelectedLink}
               />
+              
+              {/* Metronome */}
+              <Metronome />
+              
+              {/* Practice Timer */}
+              <PracticeTimer />
 
               {/* Wake Lock toggle - mobile-optimized button with inline styles when enabled to prevent iOS sticky hover override */}
               <button

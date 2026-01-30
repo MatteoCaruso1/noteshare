@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -15,6 +16,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
   const [selectedMinutes, setSelectedMinutes] = useState(15);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
+  const [customInputValue, setCustomInputValue] = useState('');
   
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -104,10 +106,29 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   
+  const handleCustomInput = (value: string) => {
+    // Only allow numbers
+    const numericValue = value.replace(/[^0-9]/g, '');
+    setCustomInputValue(numericValue);
+    
+    const mins = parseInt(numericValue, 10);
+    if (!isNaN(mins) && mins > 0 && mins <= 180) {
+      setSelectedMinutes(mins);
+    }
+  };
+  
+  const handlePresetClick = (mins: number) => {
+    setSelectedMinutes(mins);
+    setCustomInputValue('');
+  };
+  
   // Calculate progress percentage for visual indicator
   const progressPercent = isRunning 
     ? ((selectedMinutes * 60 - remainingSeconds) / (selectedMinutes * 60)) * 100 
     : 0;
+  
+  const presets = [5, 10, 15, 20, 30];
+  const isCustomValue = !presets.includes(selectedMinutes);
   
   return (
     <>
@@ -189,20 +210,33 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
               </div>
             )}
             
-            {/* Duration presets - only show when not running */}
+            {/* Duration presets + custom input - only show when not running */}
             {!isRunning && (
-              <div className="flex gap-1.5 justify-center">
-                {[5, 10, 15, 20, 30].map((mins) => (
-                  <Button
-                    key={mins}
-                    variant={selectedMinutes === mins ? "secondary" : "ghost"}
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={() => setSelectedMinutes(mins)}
-                  >
-                    {mins}
-                  </Button>
-                ))}
+              <div className="space-y-2">
+                <div className="flex gap-1.5 justify-center">
+                  {presets.map((mins) => (
+                    <Button
+                      key={mins}
+                      variant={selectedMinutes === mins && !isCustomValue ? "secondary" : "ghost"}
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => handlePresetClick(mins)}
+                    >
+                      {mins}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Custom"
+                    value={customInputValue || (isCustomValue ? selectedMinutes.toString() : '')}
+                    onChange={(e) => handleCustomInput(e.target.value)}
+                    className="h-7 text-xs text-center"
+                  />
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">min</span>
+                </div>
               </div>
             )}
           </div>
