@@ -21,14 +21,12 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   
-  // Play completion sound
+  // Play completion sound - AudioContext is already unlocked from startTimer
   const playCompleteSound = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-    }
-    
     const ctx = audioContextRef.current;
+    if (!ctx) return;
     
+    // Resume just in case (shouldn't be needed, but safe)
     if (ctx.state === 'suspended') {
       ctx.resume();
     }
@@ -91,7 +89,27 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     };
   }, []);
   
-  const startTimer = () => {
+  const startTimer = async () => {
+    // Create and unlock AudioContext on user gesture (required for mobile)
+    // This ensures the completion chime will play later
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContext();
+    }
+    
+    const ctx = audioContextRef.current;
+    
+    // Resume if suspended - MUST happen in click handler for mobile
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+    
+    // Play a silent buffer to fully unlock audio on iOS
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+    
     setRemainingSeconds(selectedMinutes * 60);
     setIsRunning(true);
     setIsPaused(false);
