@@ -32,7 +32,7 @@ export function WelcomeOnboardingModal({ open, onGetStarted }: WelcomeOnboarding
 
           {/* Subtitle - from landing page */}
           <p className="text-muted-foreground text-base leading-relaxed mb-12">
-            Helping musicians practice smarter. Organize, record, and share your practice—all in one place.
+            Helping musicians practice smarter. Organize, record, and share your practice, all in one place.
           </p>
 
           {/* Get Started Button */}
