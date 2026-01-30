@@ -1,110 +1,74 @@
 
-# Plan: Fix Jammer Avatar Sharing Issues
+Goal
+- Eliminate the “collapsible closes then reopens” visual jolt when tapping “Start Live Session”, especially noticeable since the post-session save card made the transition slightly slower.
 
-## Summary
-Fix two related problems with the Share Note feature when jammers are selected:
-1. "Share failed" errors occurring when jammers are added
-2. Jammer profile pictures appearing in the preview but missing from the actual shared iMessage cards
+What’s most likely happening (root cause)
+- The Collapsible itself is staying “open”, but the *content inside it* briefly becomes empty because of this sequence:
+  1) User taps “Start Live Session”
+  2) `setShowSessionChoice(false)` runs immediately
+  3) `activeSession` is still `null` for a moment (before the optimistic session is placed into the query cache)
+  4) Render result inside `<CollapsibleContent>` becomes:  
+     - `(!activeSession && showSessionChoice)` → false  
+     - `(activeSession)` → false  
+     - So the content height snaps to ~0 (looks like it collapsed)
+  5) `activeSession` becomes available shortly after → active UI appears → height snaps back (looks like it re-opened)
 
-## Root Cause Analysis
+- The “post-session practice save card” likely increased the time between tap and `activeSession` becoming available (more re-renders, more refetches), making the empty-content gap more visible, but the underlying issue is the “no content rendered” window.
 
-### Problem 1: Share Failures
-The `html-to-image` library fails due to race conditions and incomplete error handling in the avatar conversion pipeline:
-- Avatar base64 conversion can silently fail
-- The loading state (`isLoadingAvatars`) is cleared before the user clicks share, so there's no waiting for conversion to complete
-- If conversion fails, the jammer still appears but with a problematic URL that causes CORS errors
+Fix strategy
+A) Remove the “empty-content window”
+1. Stop closing the session-choice UI immediately on tap.
+   - In `handleStartLiveSession`, remove (or delay) `setShowSessionChoice(false)`.
+   - Because that section already only renders when `!activeSession`, it will disappear automatically once `activeSession` becomes truthy.
+   - This ensures there’s never a render where both session-choice and active-session blocks are absent.
 
-### Problem 2: Preview vs Export Mismatch  
-The preview shows avatars correctly because the browser can render images from signed URLs, but the canvas-based export cannot access cross-origin image data:
-- The preview renders in the DOM where images load normally
-- The `html-to-image` export uses canvas which enforces strict CORS
-- Images may appear loaded visually but fail to render in the canvas capture
+2. Keep the button disabled + show a small loading treatment while starting.
+   - While `isStartingSession === true` and `!activeSession`, keep the session choice area visible but:
+     - Disable “Start Live Session”
+     - Optionally show inline “Starting…” text or a spinner so it feels intentional.
+   - This prevents the user from double-tapping and also makes the latency feel “designed”, not buggy.
 
-## Solution
+B) Guarantee stable height during transition (optional but recommended)
+- Add a small min-height to the session-choice container while starting (or always) so the content doesn’t visually “snap” even if something changes quickly.
+  - Example: wrap the session-choice content in a div with something like `min-h-[120px]` (tune to match your UI).
+- This mirrors your existing “layout stability” principle you’ve used elsewhere (skeleton/min-heights to prevent jank).
 
-### Step 1: Robust Avatar Pre-loading with Explicit Ready State
-Create a more reliable avatar preparation system that:
-- Tracks each jammer's avatar status explicitly (loading, ready as base64, or fallback to initials)
-- Only marks avatars as "ready" once base64 conversion succeeds
-- Provides clear feedback if avatars are still processing
+C) Make the optimistic session appear sooner (nice-to-have improvement)
+- In `useStartSession().onMutate`, it currently does `await queryClient.cancelQueries(...)` before setting optimistic data.
+- Consider setting the optimistic session into cache *before* awaiting cancelation, or performing cancelation without blocking the optimistic set (implementation details depend on TanStack Query behavior).
+- If we do this carefully, the active session UI will appear even faster after the tap, further reducing perceived jank.
 
-### Step 2: Wait for Avatar Readiness Before Export
-Modify `generateImage` to:
-- Check if any selected jammers have avatars still being processed
-- Wait with a visible loading state until all avatars are either converted to base64 or marked for initials fallback
-- Proceed only when the avatar state is definitively resolved
+Code areas to change
+1) `src/components/PracticeControls.tsx`
+- Update `handleStartLiveSession`:
+  - Remove `setShowSessionChoice(false)` (primary fix)
+  - Keep `setIsStartingSession(true)` and disable the start button while pending
+  - Optionally add a “Starting…” micro-state in the session-choice block.
 
-### Step 3: Safer Image Rendering in ShareableNoteCard
-Update the card to:
-- Only render `<img>` tags for avatars that are confirmed base64 data URLs
-- Show initials fallback immediately for any non-base64 avatar
-- Remove the fragile `onError` handling that causes preview/export mismatch
+- Update the session-choice rendering block to cover the “starting” state:
+  - Render it when `!activeSession && (showSessionChoice || isStartingSession)`
+    - This ensures the content is present during the transition even if the user had the panel open.
 
-### Step 4: Add Pre-export Image Preloading
-Before calling `toPng`, explicitly preload all base64 images to ensure they're fully decoded and ready for canvas capture.
+2) (Optional) `src/hooks/useSessions.ts`
+- Refine `useStartSession().onMutate` to apply optimistic cache update as early as possible.
 
-## Technical Changes
+How we’ll verify the fix (end-to-end)
+- On `/` (My Practice):
+  1) Open “Start Practice Session” collapsible
+  2) Tap “Start Live Session”
+  3) Confirm:
+     - The collapsible content does not disappear/shrink to zero at any point
+     - The UI transitions smoothly into the active session state
+     - No double “jump” in layout height
+- Regression checks:
+  - Start session with slow network / throttling (if possible) and confirm it still feels stable.
+  - Confirm start-session failure still leaves the user in a sensible state (session choice remains visible, can retry).
+  - Confirm the “Delete session?” dialog interaction doesn’t cause collapsible flicker.
 
-### File: src/components/ShareNoteDialog.tsx
+Notes / edge cases
+- If `activeSession` briefly becomes `null` due to a refetch overwriting optimistic cache, we’ll still be protected because we’ll render a consistent “starting” UI until the mutation settles.
+- If there are other components that read `activeSession` and trigger significant rerenders, this approach still prevents the content from going empty.
 
-1. **Add avatar readiness tracking**
-   - Replace `jammerAvatars` with a more explicit state that tracks whether each avatar is definitively ready
-   - Add a computed `areAvatarsReady` flag that checks all selected jammers
-
-2. **Improve avatar conversion logic**
-   - Convert to base64 with explicit success/failure tracking
-   - Log failures clearly for debugging
-   - Ensure the state only contains confirmed base64 strings
-
-3. **Update generateImage function**
-   - Add explicit check and wait for `areAvatarsReady`
-   - Show loading/waiting state if avatars are still processing
-   - Add image preloading step before toPng call
-
-4. **Disable share buttons while avatars loading**
-   - Prevent premature share attempts when jammers are selected but avatars not yet ready
-
-### File: src/components/ShareableNoteCard.tsx
-
-1. **Stricter avatar rendering**
-   - Only render `<img>` if avatar string starts with `data:` (confirmed base64)
-   - Always show initials as the default, hidden only when base64 image loads
-   - Remove onError handler since we now only pass safe base64 URLs
-
-2. **Add Image preloading utility**
-   - Create helper to ensure image is fully loaded before render
-
-## Expected Outcome
-
-After implementation:
-- Share will reliably work with jammers selected
-- Profile pictures will appear correctly in both preview AND exported images
-- If avatar conversion fails, users see initials (consistent in both preview and export)
-- Clear feedback during avatar processing prevents premature share attempts
-
-## Technical Details
-
-### Key Code Changes
-
-**ShareNoteDialog.tsx - Avatar State Management:**
-```text
-- Track avatars with explicit status: { [id]: { status: 'loading' | 'ready' | 'failed', base64?: string } }
-- Compute areAvatarsReady = all selected jammers have status !== 'loading'
-- Disable buttons while !areAvatarsReady && selectedJammerIds.length > 0
-```
-
-**ShareNoteDialog.tsx - generateImage Enhancement:**
-```text
-- Add image preloading: create Image objects for all base64 avatars and wait for onload
-- Only proceed with toPng after all images confirmed loaded
-- Increase safety timeout
-```
-
-**ShareableNoteCard.tsx - Safer Rendering:**
-```text
-- Check if avatar?.startsWith('data:') before rendering img
-- Show initials by default, hide when base64 image present
-- Remove onError handler (no longer needed)
-```
-
-This approach ensures the preview and export always show identical content, and sharing only proceeds when all assets are definitively ready.
+Scope
+- This plan focuses only on eliminating the jarring close/reopen behavior during “Start Live Session”.
+- It does not change the end-session dialog or the post-session save card behavior, except insofar as they interact with session-start rendering stability.
