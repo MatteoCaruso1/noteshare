@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { useOnboarding, checkOnboardingCompleted } from '@/contexts/OnboardingContext';
 
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -19,6 +20,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
+  const { startOnboarding } = useOnboarding();
   
   // Track page views for analytics
   usePageViewTracking('practice');
@@ -35,6 +37,23 @@ const Index = () => {
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
+
+  // Check for pending onboarding after signup
+  useEffect(() => {
+    if (profile?.id) {
+      const pendingOnboarding = sessionStorage.getItem('noteshare_pending_onboarding');
+      if (pendingOnboarding === 'true') {
+        sessionStorage.removeItem('noteshare_pending_onboarding');
+        // Only start if user hasn't completed onboarding before
+        if (!checkOnboardingCompleted(profile.id)) {
+          // Small delay to ensure page is rendered
+          setTimeout(() => {
+            startOnboarding();
+          }, 500);
+        }
+      }
+    }
+  }, [profile?.id, startOnboarding]);
 
 
   // Filter notes based on search query, date, and tag
@@ -94,21 +113,25 @@ const Index = () => {
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4 sm:space-y-6">
           {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
           <GlintProvider>
-            {/* Practice Controls (Collapsible) */}
-            <PracticeControls />
+            {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
+            <div data-tour="practice-capture" className="space-y-4">
+              <PracticeControls />
+              <QuickNoteCapture />
+            </div>
 
-            {/* Quick Note Capture */}
-            <QuickNoteCapture />
-
-            {/* Ongoing Focus */}
-            {profile && <TodaysFocus />}
+            {/* Ongoing Focus - Practice Board */}
+            {profile && (
+              <div data-tour="practice-board">
+                <TodaysFocus />
+              </div>
+            )}
           </GlintProvider>
 
           {/* Memory Reminder */}
           <MemoryReminder />
 
           {/* Timeline */}
-          <section>
+          <section data-tour="timeline">
             {/* Notes container with connected borders - includes header */}
             <div className="relative px-3 sm:px-4 border border-border rounded-lg bg-card z-10">
               
