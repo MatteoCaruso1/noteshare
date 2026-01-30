@@ -36,17 +36,31 @@ export function EndSessionDialog({
     return Math.max(1, Math.floor(activeDurationMs / 60000));
   };
 
-  const [durationMinutes, setDurationMinutes] = useState(calculateDuration);
+  const [durationInput, setDurationInput] = useState(() => String(calculateDuration()));
+  
+  // Derived state for validation
+  const durationMinutes = parseInt(durationInput, 10) || 0;
+  const isValidDuration = durationInput.trim() !== '' && durationMinutes >= 1;
 
   // Update duration when dialog opens
   useEffect(() => {
     if (open) {
-      setDurationMinutes(calculateDuration());
+      setDurationInput(String(calculateDuration()));
     }
   }, [open, session]);
 
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string or numeric input
+    if (value === '' || /^\d+$/.test(value)) {
+      setDurationInput(value);
+    }
+  };
+
   const handleSave = () => {
-    onSave('', durationMinutes);
+    if (isValidDuration) {
+      onSave('', durationMinutes);
+    }
   };
 
   return (
@@ -78,11 +92,10 @@ export function EndSessionDialog({
               Duration
             </label>
             <Input
-              type="number"
+              type="text"
               inputMode="numeric"
-              value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-              min="1"
+              value={durationInput}
+              onChange={handleDurationChange}
               className="w-16 bg-muted/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <span className="text-sm text-muted-foreground">
@@ -108,7 +121,7 @@ export function EndSessionDialog({
           <Button
             className="w-full bg-gradient-primary text-primary-foreground"
             onClick={handleSave}
-            disabled={isSaving}
+            disabled={isSaving || !isValidDuration}
           >
             <Save className="w-4 h-4 mr-2" />
             Save Session

@@ -183,12 +183,10 @@ export function QuickNoteCapture() {
 
   return (
     <Card 
-      className="bg-card border-border transition-all duration-250 ease-out"
+      className="bg-card border-border"
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(-8px) scale(0.98)',
-        maxHeight: isVisible ? '1000px' : '0',
-        overflow: 'hidden',
+        transition: 'opacity 200ms ease-out',
       }}
     >
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
