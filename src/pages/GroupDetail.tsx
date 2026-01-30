@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { CreateEventDrawer } from '@/components/groups/CreateEventDrawer';
 import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
-import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
+import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
 import { useCreateNote } from '@/hooks/useNotes';
 
 export default function GroupDetail() {
@@ -46,7 +46,6 @@ export default function GroupDetail() {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showEditGroup, setShowEditGroup] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
-  const [showAddNote, setShowAddNote] = useState(false);
   const [showMembersSheet, setShowMembersSheet] = useState(false);
   
   const isOwner = group?.owner_id === profile?.id;
@@ -114,7 +113,7 @@ export default function GroupDetail() {
     type => type.toLowerCase() !== 'casual'
   ) || [];
 
-  const handleAddNote = (data: {
+  const handleAddPost = (data: {
     textContent?: string;
     audioFiles: string[];
     audioFileNames?: string[];
@@ -131,15 +130,14 @@ export default function GroupDetail() {
       imageFiles: data.imageFiles,
       // TODO: Add group_id field to notes table in future
     });
-    setShowAddNote(false);
   };
 
 
   return (
     <PageLayout>
-      <div className="h-full overflow-y-auto">
+      <div className="h-full overflow-y-auto overflow-x-hidden">
       {/* Header with back button and settings */}
-      <div className="relative -mt-12 -mx-4">
+      <div className="relative -mt-12 -mx-4 overflow-hidden">
         {/* Cover Image */}
         <div className="h-48 bg-gradient-to-br from-primary/20 to-secondary relative">
           {group.cover_image && (
@@ -352,27 +350,24 @@ export default function GroupDetail() {
         )}
       </div>
       
-      {/* Post Something */}
+      {/* Posts Section */}
       {isMember && (
         <div className="px-6 py-4">
-          <div 
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => setShowAddNote(true)}
-          >
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={profile?.avatar || undefined} />
-              <AvatarFallback>{profile?.name?.charAt(0) || '?'}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 py-2 px-4 rounded-full bg-secondary text-muted-foreground text-sm hover:bg-secondary/80 transition-colors">
-              Post something...
-            </div>
-          </div>
+          <h2 className="font-semibold mb-3">Posts</h2>
+          <GroupPostCapture
+            profileId={profile?.id || ''}
+            profileAvatar={profile?.avatar}
+            profileName={profile?.name}
+            groupName={group.name}
+            onSubmit={handleAddPost}
+            isSubmitting={createNote.isPending}
+          />
         </div>
       )}
       
       {/* Leave Group Option */}
       {isMember && !isOwner && (
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 pt-0">
           <Button
             variant="ghost" 
             className="w-full text-destructive hover:text-destructive"
@@ -405,19 +400,6 @@ export default function GroupDetail() {
             groupName={group.name}
           />
         </>
-      )}
-      
-      {/* Add Note Dialog for posting */}
-      {profile?.id && (
-        <AddNoteDialog
-          open={showAddNote}
-          onOpenChange={setShowAddNote}
-          onSubmit={handleAddNote}
-          isSubmitting={createNote.isPending}
-          title="Post to Group"
-          contextLabel={group?.name || 'this group'}
-          profileId={profile.id}
-        />
       )}
       
       {/* Members Sheet */}
