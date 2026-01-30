@@ -1,4 +1,4 @@
-import { memo, useMemo, useEffect } from 'react';
+import { memo, useMemo, useEffect, useState } from 'react';
 import { useFriendsNotes, useFriends } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
 import { FriendsFeedSkeleton } from './FriendsFeedSkeleton';
@@ -8,6 +8,8 @@ import { Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { getCachedUrl, setCachedUrls } from '@/lib/signedUrlPersistentCache';
 
 interface FriendsFeedProps {
   searchQuery?: string;
@@ -16,45 +18,128 @@ interface FriendsFeedProps {
 
 const LOAD_MORE_COUNT = 10;
 
+/**
+ * Extract storage path from avatar URL for caching
+ */
+function extractStoragePath(url: string): string | null {
+  if (!url) return null;
+  if (url.startsWith('blob:')) return null;
+  if (!url.startsWith('http')) return url;
+  
+  try {
+    const urlObj = new URL(url);
+    if (!urlObj.pathname.includes('/storage/v1/object/')) {
+      return null; // External URL like dicebear
+    }
+    const match = urlObj.pathname.match(/\/storage\/v1\/object\/(?:public\/|authenticated\/|sign\/)?([^/]+)\/(.+)/);
+    if (match) {
+      return decodeURIComponent(match[2]).split('?')[0];
+    }
+  } catch {
+    // Not a valid URL
+  }
+  return null;
+}
+
 export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
   const { data: notes, isLoading } = useFriendsNotes();
   const { data: friends } = useFriends();
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
   const queryClient = useQueryClient();
+  const [avatarsReady, setAvatarsReady] = useState(false);
+
+  // Prefetch avatars from notes authors BEFORE rendering cards
+  useEffect(() => {
+    if (!notes || notes.length === 0) {
+      setAvatarsReady(true);
+      return;
+    }
+
+    const prefetchAvatars = async () => {
+      const avatarsToFetch: string[] = [];
+      const seenPaths = new Set<string>();
+      
+      // Collect unique avatar paths from note authors
+      for (const note of notes.slice(0, displayCount)) {
+        if (!note.author?.avatar) continue;
+        
+        const avatarPath = extractStoragePath(note.author.avatar);
+        if (!avatarPath || seenPaths.has(avatarPath)) continue;
+        seenPaths.add(avatarPath);
+        
+        // Check if already cached
+        const cached = await getCachedUrl(avatarPath);
+        if (!cached) {
+          avatarsToFetch.push(avatarPath);
+        }
+      }
+
+      if (avatarsToFetch.length === 0) {
+        setAvatarsReady(true);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('get-signed-url', {
+          body: { urls: avatarsToFetch, expiresInSeconds: 60 * 60 * 24 },
+        });
+
+        if (!error && data?.results) {
+          const entries = avatarsToFetch
+            .filter(path => data.results[path])
+            .map(path => ({
+              path,
+              signedUrl: data.results[path],
+              expiresAt: Date.now() + 23 * 60 * 60 * 1000,
+              priority: 'avatar' as const,
+            }));
+
+          if (entries.length > 0) {
+            await setCachedUrls(entries);
+          }
+        }
+      } catch (err) {
+        console.warn('[FriendsFeed] Failed to prefetch avatars:', err);
+      }
+
+      setAvatarsReady(true);
+    };
+
+    prefetchAvatars();
+  }, [notes, displayCount]);
 
   // Prefetch applause data for visible notes to prevent footer loading jank
   useEffect(() => {
-    if (notes && notes.length > 0) {
-      // Prefetch applause for the first batch of notes
-      const notesToPrefetch = notes.slice(0, displayCount);
-      notesToPrefetch.forEach(note => {
-        // Only prefetch if not already in cache
-        const existing = queryClient.getQueryData(['applause', note.id]);
-        if (!existing) {
-          queryClient.prefetchQuery({
-            queryKey: ['applause', note.id],
-            queryFn: async () => {
-              const { supabase } = await import('@/integrations/supabase/client');
-              const { data, error } = await supabase
-                .from('applause')
-                .select(`
-                  id,
-                  note_id,
-                  user_id,
-                  created_at,
-                  profile:profiles!applause_user_id_fkey(id, name, avatar)
-                `)
-                .eq('note_id', note.id)
-                .order('created_at', { ascending: true });
+    if (!notes || notes.length === 0) return;
 
-              if (error) throw error;
-              return data || [];
-            },
-            staleTime: 30000,
-          });
-        }
-      });
-    }
+    // Prefetch applause for the first batch of notes
+    const notesToPrefetch = notes.slice(0, displayCount);
+    notesToPrefetch.forEach(note => {
+      // Only prefetch if not already in cache
+      const existing = queryClient.getQueryData(['applause', note.id]);
+      if (!existing) {
+        queryClient.prefetchQuery({
+          queryKey: ['applause', note.id],
+          queryFn: async () => {
+            const { data, error } = await supabase
+              .from('applause')
+              .select(`
+                id,
+                note_id,
+                user_id,
+                created_at,
+                profile:profiles!applause_user_id_fkey(id, name, avatar)
+              `)
+              .eq('note_id', note.id)
+              .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return data || [];
+          },
+          staleTime: 30000,
+        });
+      }
+    });
   }, [notes, displayCount, queryClient]);
 
   // Calculate skeleton count based on friend count
@@ -108,7 +193,8 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
 
-  if (isLoading) {
+  // Show skeleton while loading OR while avatars are being prefetched
+  if (isLoading || (notes && notes.length > 0 && !avatarsReady)) {
     return <FriendsFeedSkeleton count={skeletonCount} />;
   }
 
