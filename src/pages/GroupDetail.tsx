@@ -157,7 +157,7 @@ export default function GroupDetail() {
           </div>
           
           {/* Group avatar overlapping banner */}
-          <div className="absolute -bottom-8 left-6">
+          <div className="absolute -bottom-8 left-10">
             <div className="w-20 h-20 rounded-xl bg-card border-4 border-background flex items-center justify-center overflow-hidden shadow-lg">
               {group.cover_image ? (
                 <img 
@@ -173,7 +173,7 @@ export default function GroupDetail() {
         </div>
         
         {/* Group Info */}
-        <div className="pt-12 px-6 pb-4">
+        <div className="pt-12 px-10 pb-4">
           <h1 className="text-2xl font-bold">{group.name}</h1>
           
           {/* Meta info row */}
@@ -232,8 +232,8 @@ export default function GroupDetail() {
       
       {/* Action Buttons Row */}
       {isMember ? (
-        <div className="px-6 pb-4">
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
+        <div className="px-10 pb-4">
+          <div className="flex gap-4 overflow-x-auto pb-2 -mx-10 px-10 scrollbar-hide">
             {canManage && (
               <ActionButton 
                 icon={<UserPlus className="w-5 h-5" />} 
@@ -256,7 +256,7 @@ export default function GroupDetail() {
           </div>
         </div>
       ) : (
-        <div className="px-6 pb-4">
+        <div className="px-10 pb-4">
           {isPending ? (
             <Badge variant="outline" className="w-full justify-center py-2">
               Request Pending
@@ -274,7 +274,7 @@ export default function GroupDetail() {
       )}
       
       {/* Events Section */}
-      <div className="px-6 py-4">
+      <div className="px-10 py-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold">
             {events && events.length > 0 ? 'Upcoming Events' : 'No upcoming events'}
@@ -328,7 +328,7 @@ export default function GroupDetail() {
       
       {/* Posts Section */}
       {isMember && (
-        <div className="px-6 py-4">
+        <div className="px-10 py-4">
           <h2 className="font-semibold mb-3">Posts</h2>
           <InlineErrorBoundary fallback={<div className="text-sm text-muted-foreground p-4 text-center">Unable to load posts</div>}>
             <GroupPostCapture
@@ -345,7 +345,7 @@ export default function GroupDetail() {
       
       {/* Leave Group Option */}
       {isMember && !isOwner && (
-        <div className="px-6 py-4 pt-0">
+        <div className="px-10 py-4 pt-0">
           <Button
             variant="ghost" 
             className="w-full text-destructive hover:text-destructive"
