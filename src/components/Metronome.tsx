@@ -43,20 +43,12 @@ export function Metronome({ className }: MetronomeProps) {
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const nextTickTimeRef = useRef<number>(0);
-  const schedulerTimerRef = useRef<number | null>(null);
+  const schedulerTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
-  // Create a click sound using Web Audio API
-  const playClick = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-    }
-    
+  // Schedule a click at an exact time using Web Audio API's precise timing
+  const scheduleClick = useCallback((time: number) => {
     const ctx = audioContextRef.current;
-    
-    // Resume context if suspended (needed for mobile)
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
+    if (!ctx) return;
     
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -64,63 +56,76 @@ export function Metronome({ className }: MetronomeProps) {
     oscillator.connect(gainNode);
     gainNode.connect(ctx.destination);
     
-    // Short, punchy click sound
+    // Short, punchy click sound at 1000Hz
     oscillator.frequency.value = 1000;
     oscillator.type = 'sine';
     
-    const now = ctx.currentTime;
-    gainNode.gain.setValueAtTime(0.3, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    // Schedule gain envelope at the EXACT scheduled time (not "now")
+    gainNode.gain.setValueAtTime(0.3, time);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
     
-    oscillator.start(now);
-    oscillator.stop(now + 0.05);
+    // Start and stop at precise times
+    oscillator.start(time);
+    oscillator.stop(time + 0.05);
   }, []);
   
-  // Scheduler for accurate timing
-  const scheduler = useCallback(() => {
-    if (!audioContextRef.current) return;
-    
+  // Lookahead scheduler - schedules clicks ahead of time for sample-accurate timing
+  const runScheduler = useCallback(() => {
     const ctx = audioContextRef.current;
-    const secondsPerBeat = 60.0 / bpm;
+    if (!ctx) return;
     
-    // Schedule clicks ahead of time for accuracy
-    while (nextTickTimeRef.current < ctx.currentTime + 0.1) {
-      playClick();
+    const secondsPerBeat = 60.0 / bpm;
+    const lookahead = 0.1; // Schedule 100ms ahead
+    
+    // Schedule all clicks that fall within our lookahead window
+    while (nextTickTimeRef.current < ctx.currentTime + lookahead) {
+      // Only schedule if the time is in the future (or very close to now)
+      if (nextTickTimeRef.current >= ctx.currentTime - 0.01) {
+        scheduleClick(nextTickTimeRef.current);
+      }
       nextTickTimeRef.current += secondsPerBeat;
     }
-    
-    schedulerTimerRef.current = window.setTimeout(scheduler, 25);
-  }, [bpm, playClick]);
+  }, [bpm, scheduleClick]);
   
   // Start/stop metronome
   useEffect(() => {
     if (isPlaying) {
+      // Create or resume audio context
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioContext();
       }
-      nextTickTimeRef.current = audioContextRef.current.currentTime;
-      scheduler();
+      
+      const ctx = audioContextRef.current;
+      
+      // Resume if suspended (required for mobile browsers)
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      
+      // Start scheduling from now
+      nextTickTimeRef.current = ctx.currentTime;
+      
+      // Run scheduler immediately, then every 25ms
+      runScheduler();
+      schedulerTimerRef.current = setInterval(runScheduler, 25);
     } else {
+      // Stop the scheduler
       if (schedulerTimerRef.current) {
-        clearTimeout(schedulerTimerRef.current);
+        clearInterval(schedulerTimerRef.current);
         schedulerTimerRef.current = null;
       }
     }
     
     return () => {
       if (schedulerTimerRef.current) {
-        clearTimeout(schedulerTimerRef.current);
+        clearInterval(schedulerTimerRef.current);
+        schedulerTimerRef.current = null;
       }
     };
-  }, [isPlaying, scheduler]);
+  }, [isPlaying, runScheduler]);
   
-  // Update scheduler when BPM changes while playing
-  useEffect(() => {
-    if (isPlaying && schedulerTimerRef.current) {
-      clearTimeout(schedulerTimerRef.current);
-      scheduler();
-    }
-  }, [bpm, isPlaying, scheduler]);
+  // BPM changes are handled automatically since runScheduler uses current bpm value
+  // and is called every 25ms via setInterval
   
   // Cleanup audio context on unmount
   useEffect(() => {
