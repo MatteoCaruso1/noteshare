@@ -4,10 +4,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const logStep = (step: string, details?: any) => {
+// Lifetime access price ID and product ID
+const LIFETIME_PRICE_ID = "price_1Sv63tGiNcIsULtk4t3RRrAK";
+const LIFETIME_PRODUCT_ID = "prod_TsrnqaaViDJAas";
+
+const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
@@ -32,7 +36,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
-        subscription_end: null
+        subscription_end: null,
+        is_lifetime: false
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -50,7 +55,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
-        subscription_end: null
+        subscription_end: null,
+        is_lifetime: false
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -65,7 +71,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
-        subscription_end: null
+        subscription_end: null,
+        is_lifetime: false
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -87,7 +94,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: true,
         product_id: 'prod_ToONzcZjkyqsAJ',
-        subscription_end: null
+        subscription_end: null,
+        is_lifetime: false
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -106,7 +114,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
-        subscription_end: null
+        subscription_end: null,
+        is_lifetime: false
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -116,7 +125,50 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // First check for active subscriptions
+    // Check for lifetime purchase first
+    const paymentIntents = await stripe.paymentIntents.list({
+      customer: customerId,
+      limit: 100,
+    });
+    
+    for (const pi of paymentIntents.data) {
+      if (pi.status === 'succeeded') {
+        // Check if this payment was for the lifetime price
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: pi.id,
+          limit: 1,
+        });
+        
+        if (sessions.data.length > 0) {
+          const session = sessions.data[0];
+          if (session.mode === 'payment') {
+            // Expand line items to check for lifetime price
+            const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+              expand: ['line_items'],
+            });
+            
+            const hasLifetimePrice = fullSession.line_items?.data?.some(
+              (item: Stripe.LineItem) => item.price?.id === LIFETIME_PRICE_ID
+            );
+            
+            if (hasLifetimePrice) {
+              logStep("User has lifetime access");
+              return new Response(JSON.stringify({
+                subscribed: true,
+                product_id: LIFETIME_PRODUCT_ID,
+                subscription_end: null,
+                is_lifetime: true
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Then check for active subscriptions
     let subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -162,7 +214,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      is_lifetime: false
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

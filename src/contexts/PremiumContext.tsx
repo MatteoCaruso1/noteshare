@@ -5,8 +5,10 @@ import { detectUserCurrency, SupportedCurrency } from '@/lib/currencyUtils';
 interface PremiumContextType {
   isPremium: boolean;
   isLoading: boolean;
+  isLifetime: boolean;
   openCustomerPortal: () => Promise<void>;
   checkSubscription: () => Promise<void>;
+  startLifetimeCheckout: () => Promise<void>;
   // Premium dialog state
   isPremiumDialogOpen: boolean;
   openPremiumDialog: () => void;
@@ -24,9 +26,11 @@ const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
 export function PremiumProvider({ children }: { children: ReactNode }) {
   const { 
     isPremium, 
-    isLoading, 
+    isLoading,
+    isLifetime,
     openCustomerPortal,
-    checkSubscription 
+    checkSubscription,
+    startLifetimeCheckout,
   } = useSubscription();
 
   // Premium dialog state
@@ -61,9 +65,11 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   return (
     <PremiumContext.Provider value={{ 
       isPremium, 
-      isLoading, 
+      isLoading,
+      isLifetime,
       openCustomerPortal,
       checkSubscription,
+      startLifetimeCheckout,
       isPremiumDialogOpen,
       openPremiumDialog,
       closePremiumDialog,
