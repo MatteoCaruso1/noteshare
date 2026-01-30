@@ -5,3 +5,4 @@ export * from './EventSuccessDialog';
 export * from './ShareEventSheet';
 export * from './EditGroupDialog';
 export * from './InviteMembersDialog';
+export * from './GroupPostCapture';
