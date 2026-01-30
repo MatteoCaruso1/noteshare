@@ -1080,6 +1080,10 @@ export type Database = {
         Args: { p_milestone: number; p_profile_id: string }
         Returns: Json
       }
+      is_active_group_member: { Args: { p_group_id: string }; Returns: boolean }
+      is_group_admin: { Args: { p_group_id: string }; Returns: boolean }
+      is_group_public: { Args: { p_group_id: string }; Returns: boolean }
+      my_profile_id: { Args: never; Returns: string }
     }
     Enums: {
       promo_type: "gig" | "release" | "event"
