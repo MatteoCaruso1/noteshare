@@ -1,8 +1,10 @@
-import { Infinity, History, TrendingUp, FolderKanban, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { Infinity, History, TrendingUp, FolderKanban, Sparkles, Crown } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { usePremium } from '@/contexts/PremiumContext';
 import { formatPrice } from '@/lib/currencyUtils';
+import { toast } from 'sonner';
 
 const BENEFITS = [
   {
@@ -32,12 +34,28 @@ export function PremiumDialog() {
     isPremiumDialogOpen, 
     closePremiumDialog, 
     openCheckoutDialog,
+    startLifetimeCheckout,
     detectedCurrency 
   } = usePremium();
+  
+  const [isLifetimeLoading, setIsLifetimeLoading] = useState(false);
 
   const handleStartTrial = () => {
     closePremiumDialog();
     openCheckoutDialog();
+  };
+
+  const handleLifetimePurchase = async () => {
+    setIsLifetimeLoading(true);
+    try {
+      await startLifetimeCheckout();
+      closePremiumDialog();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to start checkout';
+      toast.error(message);
+    } finally {
+      setIsLifetimeLoading(false);
+    }
   };
 
   const priceDisplay = formatPrice(detectedCurrency);
@@ -65,6 +83,19 @@ export function PremiumDialog() {
               <span><span className="font-semibold">30-day free trial,</span> then {priceDisplay}</span>
             </button>
             <p className="text-xs text-muted-foreground italic text-center">Cancel anytime</p>
+          </div>
+
+          {/* Lifetime purchase option */}
+          <div className="space-y-1">
+            <button 
+              onClick={handleLifetimePurchase}
+              disabled={isLifetimeLoading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground transition-all rounded-full px-4 py-2.5 cursor-pointer shadow-lg [@media(hover:hover)]:hover:shadow-xl [@media(hover:hover)]:hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Crown className="h-4 w-4" />
+              <span><span className="font-semibold">Lifetime access</span> for $19.99</span>
+            </button>
+            <p className="text-xs text-muted-foreground italic text-center">One-time payment, forever yours</p>
           </div>
 
           {/* Benefits */}

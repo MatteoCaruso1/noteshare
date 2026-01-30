@@ -9,6 +9,12 @@ export const SUBSCRIPTION_TIERS = {
     product_id: "prod_ToONzcZjkyqsAJ",
     prices: PREMIUM_PRICES,
     name: "Premium",
+  },
+  lifetime: {
+    product_id: "prod_TsrnqaaViDJAas",
+    price_id: "price_1Sv63tGiNcIsULtk4t3RRrAK",
+    name: "Lifetime Premium",
+    price_cad: 1999, // $19.99 CAD in cents
   }
 } as const;
 
@@ -16,6 +22,7 @@ interface SubscriptionState {
   subscribed: boolean;
   productId: string | null;
   subscriptionEnd: string | null;
+  isLifetime: boolean;
   isLoading: boolean;
   hasCheckedOnce: boolean;
   hasValidatedWithUser: boolean;
@@ -28,6 +35,7 @@ export function useSubscription() {
     subscribed: false,
     productId: null,
     subscriptionEnd: null,
+    isLifetime: false,
     isLoading: true, // Start with loading true for initial check
     hasCheckedOnce: false,
     hasValidatedWithUser: false,
@@ -40,6 +48,7 @@ export function useSubscription() {
         subscribed: false,
         productId: null,
         subscriptionEnd: null,
+        isLifetime: false,
         isLoading: false,
         hasCheckedOnce: true,
         hasValidatedWithUser: false, // No user to validate
@@ -67,6 +76,7 @@ export function useSubscription() {
         subscribed: data.subscribed || false,
         productId: data.product_id || null,
         subscriptionEnd: data.subscription_end || null,
+        isLifetime: data.is_lifetime || false,
         isLoading: false,
         hasCheckedOnce: true,
         hasValidatedWithUser: true, // Successfully validated with user
@@ -86,6 +96,7 @@ export function useSubscription() {
               subscribed: data?.subscribed || false,
               productId: data?.product_id || null,
               subscriptionEnd: data?.subscription_end || null,
+              isLifetime: data?.is_lifetime || false,
               isLoading: false,
               hasCheckedOnce: true,
               hasValidatedWithUser: true,
@@ -101,6 +112,7 @@ export function useSubscription() {
           subscribed: false,
           productId: null,
           subscriptionEnd: null,
+          isLifetime: false,
           isLoading: false,
           hasCheckedOnce: true,
           hasValidatedWithUser: false, // Session failed, no valid user
@@ -153,6 +165,25 @@ export function useSubscription() {
     }
   };
 
+  const startLifetimeCheckout = async () => {
+    if (!user) {
+      throw new Error('Must be logged in to purchase');
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-lifetime-checkout');
+      
+      if (error) throw error;
+      if (!data?.url) throw new Error('No checkout URL returned');
+
+      // Open Stripe checkout in new tab
+      window.open(data.url, '_blank');
+    } catch (err) {
+      console.error('Error starting lifetime checkout:', err);
+      throw err;
+    }
+  };
+
   const openCustomerPortal = async () => {
     if (!user) {
       throw new Error('Must be logged in to manage subscription');
@@ -172,9 +203,10 @@ export function useSubscription() {
     }
   };
 
-  // Check against the premium product ID (supports both old and new products)
+  // Check against the premium product ID (supports both old and new products + lifetime)
   const isPremium = state.subscribed && (
     state.productId === SUBSCRIPTION_TIERS.premium.product_id ||
+    state.productId === SUBSCRIPTION_TIERS.lifetime.product_id ||
     state.productId === 'prod_TofQhqCDH1KicB' || // USD product
     state.productId === 'prod_TofQx0QRLi6tEe'    // CAD product
   );
@@ -188,6 +220,7 @@ export function useSubscription() {
     isPremium,
     checkSubscription,
     startCheckout,
+    startLifetimeCheckout,
     openCustomerPortal,
   };
 }
