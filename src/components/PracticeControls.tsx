@@ -523,7 +523,7 @@ export function PracticeControls() {
           setIsStartingSession(false);
         }
       });
-      setShowSessionChoice(false);
+      // Don't setShowSessionChoice(false) - let activeSession becoming truthy hide this naturally
       setManuallyCollapsed(false); // Ensure expanded when starting
     }
   };
@@ -566,18 +566,18 @@ export function PracticeControls() {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          {/* Session Choice Step - shown when no active session */}
-          {!activeSession && showSessionChoice && (
-            <div className="px-4 pb-4 space-y-3">
+          {/* Session Choice Step - shown when no active session OR while starting */}
+          {!activeSession && (showSessionChoice || isStartingSession) && (
+            <div className="px-4 pb-4 space-y-3 min-h-[100px]">
               <Button
                 className="w-full bg-gradient-primary text-primary-foreground"
                 onClick={handleStartLiveSession}
-                disabled={startSession.isPending}
+                disabled={startSession.isPending || isStartingSession}
               >
                 <Play className="w-4 h-4 mr-2" />
-                Start Live Session
+                {isStartingSession ? 'Starting…' : 'Start Live Session'}
               </Button>
-              <OfflineSessionInput />
+              {!isStartingSession && <OfflineSessionInput />}
             </div>
           )}
 
