@@ -36,22 +36,25 @@ function extractStoragePath(url: string): string | null {
 /**
  * Hook that eagerly prefetches and caches avatar URLs on app startup
  * Caches: current user's avatar + all friends' avatars
+ * 
+ * This runs at App level to ensure avatars are cached BEFORE components render
  */
 export function useAvatarPrefetch() {
   const { profile, session } = useAuth();
   const { data: friends } = useFriends();
   const hasPrefetchedRef = useRef(false);
   const prefetchedAvatarsRef = useRef(new Set<string>());
+  const userAvatarPrefetchedRef = useRef(false);
 
-  // Prefetch current user's avatar
+  // Prefetch current user's avatar IMMEDIATELY when auth is ready
   useEffect(() => {
-    if (!profile?.avatar || !session?.access_token) return;
+    if (!profile?.avatar || !session?.access_token || userAvatarPrefetchedRef.current) return;
     
     const avatarPath = extractStoragePath(profile.avatar);
     if (!avatarPath) return; // External URL like dicebear
     
-    // Check if already prefetched this session
-    if (prefetchedAvatarsRef.current.has(avatarPath)) return;
+    // Mark as attempted to avoid duplicate calls
+    userAvatarPrefetchedRef.current = true;
     
     const prefetchUserAvatar = async () => {
       // Check if already cached
@@ -83,6 +86,7 @@ export function useAvatarPrefetch() {
       }
     };
 
+    // Run immediately, don't wait
     prefetchUserAvatar();
   }, [profile?.avatar, session?.access_token]);
 
