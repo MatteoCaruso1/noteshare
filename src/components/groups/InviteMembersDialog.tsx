@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Search, X, Check, Loader2, UserPlus } from 'lucide-react';
-import { toast } from 'sonner';
 import { useFriends, useSearchUsers } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { useCreateGroupInvite } from '@/hooks/useGroupInvites';
 import { Profile } from '@/types';
 
 interface InviteMembersDialogProps {
@@ -27,6 +26,8 @@ export function InviteMembersDialog({ open, onOpenChange, groupId, groupName }: 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
+  
+  const createInvite = useCreateGroupInvite();
   
   // Get user's friends
   const { data: friends = [] } = useFriends();
@@ -52,32 +53,27 @@ export function InviteMembersDialog({ open, onOpenChange, groupId, groupName }: 
     
     setIsSending(true);
     try {
-      // Create a notification for each selected friend
-      const notifications = selectedFriendIds.map((friendId) => ({
-        user_id: friendId,
-        type: 'group_invite',
-        content: `invited you to join their group "${groupName}"`,
-        from_user_id: profile.id,
-        note_id: null,
-      }));
+      // Create invites for each selected friend
+      await Promise.all(
+        selectedFriendIds.map((friendId) =>
+          createInvite.mutateAsync({
+            groupId,
+            invitedUserId: friendId,
+            groupName,
+          })
+        )
+      );
       
-      const { error } = await supabase
-        .from('notifications')
-        .insert(notifications);
-      
-      if (error) throw error;
-      
-      toast.success(`Invited ${selectedFriendIds.length} friend${selectedFriendIds.length > 1 ? 's' : ''}!`);
       setSelectedFriendIds([]);
       setSearchQuery('');
       onOpenChange(false);
     } catch (err) {
       console.error('Error sending invites:', err);
-      toast.error('Failed to send invites');
+      // Toast handled by hook
     } finally {
       setIsSending(false);
     }
-  }, [selectedFriendIds, profile?.id, groupName, onOpenChange]);
+  }, [selectedFriendIds, profile?.id, groupId, groupName, createInvite, onOpenChange]);
   
   const getSelectedUser = (id: string): Profile | undefined => {
     return friends.find(f => f.id === id) || searchResults.find(u => u.id === id);
