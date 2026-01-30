@@ -3,6 +3,7 @@ export * from './CreateGroupDialog';
 export * from './CreateEventDrawer';
 export * from './EventSuccessDialog';
 export * from './ShareEventSheet';
+export * from './ShareGroupSheet';
 export * from './EditGroupDialog';
 export * from './InviteMembersDialog';
 export * from './GroupPostCapture';

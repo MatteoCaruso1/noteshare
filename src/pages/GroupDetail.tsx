@@ -28,6 +28,7 @@ import { CreateEventDrawer } from '@/components/groups/CreateEventDrawer';
 import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
+import { ShareGroupSheet } from '@/components/groups/ShareGroupSheet';
 import { useCreateNote } from '@/hooks/useNotes';
 
 export default function GroupDetail() {
@@ -47,6 +48,7 @@ export default function GroupDetail() {
   const [showEditGroup, setShowEditGroup] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showMembersSheet, setShowMembersSheet] = useState(false);
+  const [showShareGroup, setShowShareGroup] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<typeof events extends (infer T)[] | undefined ? T : never | null>(null);
   
   const isOwner = group?.owner_id === profile?.id;
@@ -55,18 +57,8 @@ export default function GroupDetail() {
   const isPending = membership?.status === 'pending';
   const canManage = isOwner || isAdmin;
   
-  const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: group?.name, url });
-      } catch {
-        // User cancelled
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard');
-    }
+  const handleShare = () => {
+    setShowShareGroup(true);
   };
   
   const handleJoin = () => {
@@ -410,6 +402,13 @@ export default function GroupDetail() {
         onOpenChange={setShowMembersSheet}
         members={members || []}
         groupName={group.name}
+      />
+      
+      {/* Share Group Sheet */}
+      <ShareGroupSheet
+        open={showShareGroup}
+        onOpenChange={setShowShareGroup}
+        group={group}
       />
       
       {/* Event Detail Sheet */}

@@ -7,11 +7,15 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { GroupEvent } from '@/hooks/useGroupDetails';
-import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2 } from 'lucide-react';
+import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
+import { useFriends } from '@/hooks/useFriendships';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -86,14 +90,20 @@ const MUSIC_ICONS = [
 ];
 
 export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCoverImage }: ShareEventSheetProps) {
+  const { profile } = useAuth();
   const [selectedStyle, setSelectedStyle] = useState<CardStyle>('primary');
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
+  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
+  const [isSendingToFriends, setIsSendingToFriends] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Detect device type - must be before any early returns
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
   const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
+  
+  // Friends list for in-app sharing
+  const { data: friends = [] } = useFriends();
   
   // Memoize computed values - must be before any early returns
   const eventDate = useMemo(() => event ? new Date(event.event_date) : null, [event]);
@@ -170,6 +180,35 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
       setActiveButton(null);
     }
   }, [generateImage, shareUrl, event, isExporting]);
+
+  const handleSendToFriends = useCallback(async () => {
+    if (selectedFriendIds.length === 0 || !profile?.id || !event) return;
+    
+    setIsSendingToFriends(true);
+    try {
+      // Create a notification for each selected friend
+      const notifications = selectedFriendIds.map((friendId) => ({
+        user_id: friendId,
+        type: 'event_invite',
+        content: `invited you to the event "${event.name}"`,
+        from_user_id: profile.id,
+      }));
+      
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+      
+      if (error) throw error;
+      
+      toast.success(`Shared with ${selectedFriendIds.length} friend${selectedFriendIds.length > 1 ? 's' : ''}!`);
+      setSelectedFriendIds([]);
+    } catch (err) {
+      console.error('Error sharing with friends:', err);
+      toast.error('Failed to share with friends');
+    } finally {
+      setIsSendingToFriends(false);
+    }
+  }, [selectedFriendIds, profile?.id, event]);
 
   const currentStyle = useMemo(() => 
     STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0],
@@ -266,41 +305,124 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
         </div>
         
         {/* Share Options */}
-        <div className="space-y-4 pb-8">
-          <p className="font-semibold">Share to</p>
-          
-          <div className="flex gap-6">
-            {/* Copy Link */}
-            <button
-              onClick={handleCopyLink}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                <Link className="w-5 h-5" />
-              </div>
-              <span className="text-xs text-center">Copy<br/>Link</span>
-            </button>
+        <div className="space-y-6 pb-8">
+          {/* External Share Options */}
+          <div>
+            <p className="font-semibold mb-3">Share outside Noteshare</p>
             
-            {/* iMessage - iOS only */}
-            {canShareIMessage && (
+            <div className="flex gap-6">
+              {/* Copy Link */}
               <button
-                onClick={handleIMessageShare}
-                disabled={isExporting}
+                onClick={handleCopyLink}
                 className="flex flex-col items-center gap-2"
               >
-                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center text-white">
-                  {isExporting && activeButton === 'imessage' ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <MessageCircle className="w-5 h-5" />
-                  )}
+                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+                  <Link className="w-5 h-5" />
                 </div>
-                <span className="text-xs text-center">
-                  {isExporting && activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
-                </span>
+                <span className="text-xs text-center">Copy<br/>Link</span>
               </button>
-            )}
+              
+              {/* iMessage - iOS only */}
+              {canShareIMessage && (
+                <button
+                  onClick={handleIMessageShare}
+                  disabled={isExporting}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center text-white">
+                    {isExporting && activeButton === 'imessage' ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <MessageCircle className="w-5 h-5" />
+                    )}
+                  </div>
+                  <span className="text-xs text-center">
+                    {isExporting && activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
+          
+          {/* In-App Friend Sharing */}
+          {friends.length > 0 && (
+            <div>
+              <p className="font-semibold mb-3">Share with Noteshare friends</p>
+              
+              {/* Selected friends */}
+              {selectedFriendIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {selectedFriendIds.map((friendId) => {
+                    const friend = friends.find(f => f.id === friendId);
+                    if (!friend) return null;
+                    return (
+                      <div
+                        key={friend.id}
+                        className="flex items-center gap-1.5 bg-primary/20 rounded-full pl-1 pr-2 py-0.5"
+                      >
+                        <Avatar className="w-5 h-5">
+                          <AvatarImage src={friend.avatar || undefined} />
+                          <AvatarFallback className="text-[10px]">
+                            {friend.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs">{friend.name}</span>
+                        <button
+                          onClick={() => setSelectedFriendIds(prev => prev.filter(id => id !== friend.id))}
+                          className="ml-0.5 text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {/* Friend selector */}
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto mb-3">
+                {friends
+                  .filter(f => !selectedFriendIds.includes(f.id))
+                  .slice(0, 10)
+                  .map((friend) => (
+                    <button
+                      key={friend.id}
+                      onClick={() => setSelectedFriendIds(prev => [...prev, friend.id])}
+                      className="flex items-center gap-1.5 bg-muted hover:bg-muted/80 rounded-full pl-1 pr-2 py-0.5 transition-colors"
+                    >
+                      <Avatar className="w-5 h-5">
+                        <AvatarImage src={friend.avatar || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {friend.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs">{friend.name}</span>
+                    </button>
+                  ))}
+              </div>
+              
+              {/* Send button */}
+              {selectedFriendIds.length > 0 && (
+                <Button 
+                  className="w-full" 
+                  onClick={handleSendToFriends}
+                  disabled={isSendingToFriends}
+                >
+                  {isSendingToFriends ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Send to {selectedFriendIds.length} Friend{selectedFriendIds.length > 1 ? 's' : ''}
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>
