@@ -1,10 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,9 +24,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Music, Guitar, Mic2, Radio, Building2, 
   Globe, MapPin, Lock, Unlock, Image as ImageIcon, 
-  Check, Camera, X
+  Check, Camera, X, Trash2
 } from 'lucide-react';
-import { useUpdateGroup, GroupDetail } from '@/hooks/useGroupDetails';
+import { useUpdateGroup, useDeleteGroup, GroupDetail } from '@/hooks/useGroupDetails';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -45,12 +56,15 @@ const GROUP_TYPES = [
 ];
 
 export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogProps) {
+  const navigate = useNavigate();
   const updateGroup = useUpdateGroup();
+  const deleteGroup = useDeleteGroup();
   const { uploadImage, uploading } = useMediaUpload();
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [name, setName] = useState(group.name);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [description, setDescription] = useState(group.description || '');
   const [focusType, setFocusType] = useState(group.focus_type);
   const [groupType, setGroupType] = useState<string[]>(group.group_type || []);
@@ -131,9 +145,36 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
     onOpenChange(false);
   };
   
+  const handleDelete = async () => {
+    await deleteGroup.mutateAsync(group.id);
+    setShowDeleteConfirm(false);
+    onOpenChange(false);
+    navigate('/groups');
+  };
+  
   const displayImage = previewUrl || coverImage;
   
   return (
+    <>
+    <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Group</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{group.name}"? This action cannot be undone. All group events and member data will be permanently removed.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleteGroup.isPending ? 'Deleting...' : 'Delete Group'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 gap-0 max-h-[85vh] flex flex-col">
         <DialogHeader className="p-6 pb-0">
@@ -392,7 +433,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
         </ScrollArea>
         
         {/* Submit Button - Fixed at bottom */}
-        <div className="p-6 pt-4 border-t border-border">
+        <div className="p-6 pt-4 border-t border-border space-y-3">
           <Button
             className="w-full"
             onClick={handleSave}
@@ -400,8 +441,19 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
           >
             {updateGroup.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
+          
+          {/* Delete Group Button */}
+          <Button
+            variant="ghost"
+            className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete Group
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

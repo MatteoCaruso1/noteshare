@@ -224,3 +224,29 @@ export function useUpdateGroup() {
     },
   });
 }
+
+// Delete a group
+export function useDeleteGroup() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .eq('id', groupId);
+      
+      if (error) throw error;
+      return groupId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['discover-groups'] });
+      toast.success('Group deleted');
+    },
+    onError: (error) => {
+      console.error('Failed to delete group:', error);
+      toast.error('Failed to delete group');
+    },
+  });
+}
