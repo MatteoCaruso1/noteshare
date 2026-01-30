@@ -53,8 +53,27 @@ export const ApplauseFooter = memo(function ApplauseFooter({
     onCommentClick?.();
   }, [onCommentClick]);
 
-  // Don't render anything if loading
-  if (isLoading) return null;
+  // Show placeholder while loading to prevent layout shift
+  if (isLoading) {
+    return (
+      <div 
+        className={cn(
+          "flex items-center justify-between pt-2 mt-2 border-t border-border/50 min-h-[28px]",
+          className
+        )}
+      >
+        <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
+          <ClappingHandsIcon className="opacity-50" />
+          <span className="opacity-50">Loading...</span>
+        </div>
+        {commentCount > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+          </span>
+        )}
+      </div>
+    );
+  }
 
   // For owner's posts: hide entire footer if no applause AND no comments
   if (isOwner && applauseCount === 0 && commentCount === 0) return null;
