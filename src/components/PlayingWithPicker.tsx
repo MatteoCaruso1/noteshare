@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { User, Users, X, Search } from 'lucide-react';
+import { User, Users, X, Search, Plus } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Profile } from '@/types';
 
 interface PlayingWithPickerProps {
@@ -44,19 +45,18 @@ export function PlayingWithPicker({ selectedIds, onSelect }: PlayingWithPickerPr
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <Users className="w-4 h-4" />
           Playing with
         </span>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1 h-8">
-              <User className="w-3.5 h-3.5" />
-              Add friend
+            <Button variant="ghost" size="icon" className="h-6 w-6">
+              <Plus className="w-4 h-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-2" align="end">
+          <PopoverContent className="w-72 p-2" align="start">
             {/* Search input */}
             <div className="relative mb-2">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -69,7 +69,7 @@ export function PlayingWithPicker({ selectedIds, onSelect }: PlayingWithPickerPr
             </div>
             
             {friends && friends.length > 0 ? (
-              <div className="space-y-1 max-h-48 overflow-y-auto">
+              <ScrollArea className="h-48">
                 {filteredFriends.length > 0 ? (
                   filteredFriends.map((friend) => {
                     const isSelected = selectedIds.includes(friend.id);
@@ -100,7 +100,7 @@ export function PlayingWithPicker({ selectedIds, onSelect }: PlayingWithPickerPr
                     No friends match "{searchQuery}"
                   </div>
                 )}
-              </div>
+              </ScrollArea>
             ) : (
               <div className="text-center py-4 text-muted-foreground text-sm">
                 Add friends first to practice together
