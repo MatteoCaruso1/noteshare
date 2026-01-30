@@ -61,16 +61,19 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     }
 
     setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 300);
-
-    updateTargetRect();
+    // Use requestAnimationFrame for smoother animation sync
+    requestAnimationFrame(() => {
+      updateTargetRect();
+      // Slightly longer delay for smoother visual transition
+      const timer = setTimeout(() => setIsAnimating(false), 350);
+      return () => clearTimeout(timer);
+    });
 
     // Update on scroll/resize
     window.addEventListener('scroll', updateTargetRect, true);
     window.addEventListener('resize', updateTargetRect);
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('scroll', updateTargetRect, true);
       window.removeEventListener('resize', updateTargetRect);
     };
@@ -131,10 +134,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
                 height={targetRect.height + 16}
                 rx="12"
                 fill="black"
-                className={cn(
-                  'transition-all duration-300 ease-out',
-                  isAnimating && 'opacity-0'
-                )}
+                style={{
+                  transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  opacity: isAnimating ? 0 : 1,
+                }}
               />
             </mask>
           </defs>
@@ -145,6 +148,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             height="100%"
             fill="rgba(0, 0, 0, 0.8)"
             mask="url(#spotlight-mask)"
+            style={{ transition: 'opacity 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
           />
         </svg>
       ) : (
@@ -154,15 +158,15 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       {/* Highlighted element border */}
       {targetRect && !isFinalStep && (
         <div
-          className={cn(
-            'fixed rounded-xl border-2 border-primary pointer-events-none transition-all duration-300 ease-out',
-            isAnimating && 'opacity-0 scale-95'
-          )}
+          className="fixed rounded-xl border-2 border-primary pointer-events-none"
           style={{
             left: targetRect.left - 8,
             top: targetRect.top - 8,
             width: targetRect.width + 16,
             height: targetRect.height + 16,
+            transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+            opacity: isAnimating ? 0 : 1,
+            transform: isAnimating ? 'scale(0.95)' : 'scale(1)',
           }}
         />
       )}
@@ -185,11 +189,13 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         </div>
       ) : targetRect && currentTourStep && (
         <div
-          className={cn(
-            'fixed max-w-xs px-4 py-3 bg-card border border-border rounded-xl shadow-lg transition-all duration-300 ease-out',
-            isAnimating && 'opacity-0 translate-y-2'
-          )}
-          style={getTooltipStyle()}
+          className="fixed max-w-xs px-4 py-3 bg-card border border-border rounded-xl shadow-lg"
+          style={{
+            ...getTooltipStyle(),
+            transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+            opacity: isAnimating ? 0 : 1,
+            transform: `translateX(-50%) ${isAnimating ? 'translateY(8px)' : 'translateY(0)'}`,
+          }}
         >
           <p className="text-sm text-foreground text-center font-medium">
             {currentTourStep.message}
@@ -200,14 +206,14 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         </div>
       )}
 
-      {/* Step indicator */}
-      {!isFinalStep && (
+      {/* Step indicator - hide on step 4 (friends nav) since it overlaps with bottom nav */}
+      {!isFinalStep && step !== 4 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
           {[1, 2, 3, 4].map((s) => (
             <div
               key={s}
               className={cn(
-                'w-2 h-2 rounded-full transition-colors',
+                'w-2 h-2 rounded-full transition-colors duration-300',
                 s === step ? 'bg-primary' : 'bg-muted-foreground/40'
               )}
             />
