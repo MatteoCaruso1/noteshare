@@ -140,7 +140,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
           <DialogTitle>Edit Group Details</DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 px-6">
+        <ScrollArea className="flex-1 overflow-auto px-6">
           <div className="space-y-6 py-4">
             {/* Header Image */}
             <div className="space-y-2">
