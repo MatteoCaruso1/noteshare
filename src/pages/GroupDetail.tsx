@@ -24,7 +24,7 @@ import { useGroupMembership, useJoinGroup, useLeaveGroup } from '@/hooks/useGrou
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { CreateEventDialog } from '@/components/groups/CreateEventDialog';
+import { CreateEventDrawer } from '@/components/groups/CreateEventDrawer';
 import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 
@@ -364,10 +364,11 @@ export default function GroupDetail() {
       {/* Dialogs */}
       {canManage && (
         <>
-          <CreateEventDialog 
+          <CreateEventDrawer 
             open={showCreateEvent} 
             onOpenChange={setShowCreateEvent}
             groupId={id!}
+            groupName={group.name}
           />
           <EditGroupDialog 
             open={showEditGroup} 
