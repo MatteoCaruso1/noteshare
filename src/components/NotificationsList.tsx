@@ -1,9 +1,11 @@
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '@/hooks/useNotifications';
+import { usePendingNoteShares } from '@/hooks/useNoteShares';
+import { PendingNoteShareCard } from '@/components/PendingNoteShareCard';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Bell, AtSign, Check, CheckCheck } from 'lucide-react';
+import { Bell, AtSign, Check, CheckCheck, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +15,7 @@ interface NotificationsListProps {
 
 export function NotificationsList({ embedded }: NotificationsListProps = {}) {
   const { data: notifications, isLoading } = useNotifications();
+  const { data: pendingShares } = usePendingNoteShares();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const navigate = useNavigate();
@@ -21,18 +24,43 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
     if (!notification.read) {
       markRead.mutate(notification.id);
     }
+    // For session_share notifications, don't navigate - the share card handles it
+    if (notification.type === 'session_share') {
+      return;
+    }
     if (notification.note_id) {
       navigate(`/notes/${notification.note_id}`, { state: { fromFriends: true } });
     }
   };
 
-  const unreadCount = notifications?.filter(n => !n.read).length || 0;
+  // Filter out session_share notifications that have pending shares (they're shown separately)
+  const filteredNotifications = notifications?.filter(n => {
+    if (n.type === 'session_share') {
+      // Check if there's a pending share for this note
+      const hasPendingShare = pendingShares?.some(s => s.note_id === n.note_id);
+      return !hasPendingShare; // Only show if no pending share (means it was already handled)
+    }
+    return true;
+  });
+
+  const unreadCount = filteredNotifications?.filter(n => !n.read).length || 0;
+  const pendingShareCount = pendingShares?.length || 0;
+  const totalUnread = unreadCount + pendingShareCount;
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'session_share':
+        return <Users className="w-4 h-4 text-primary" />;
+      default:
+        return <AtSign className="w-4 h-4 text-primary" />;
+    }
+  };
 
   // When embedded in dropdown, skip the outer wrapper
   if (embedded) {
     return (
       <div className="bg-card border border-border rounded-lg p-4">
-        {unreadCount > 0 && (
+        {totalUnread > 0 && unreadCount > 0 && (
           <div className="flex justify-end mb-3">
             <Button
               variant="ghost"
@@ -45,13 +73,27 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
             </Button>
           </div>
         )}
+        
+        {/* Pending note shares */}
+        {pendingShares && pendingShares.length > 0 && (
+          <div className="space-y-2 mb-3">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <Users className="w-3 h-3" />
+              Practice Sessions Shared With You
+            </p>
+            {pendingShares.slice(0, 3).map((share) => (
+              <PendingNoteShareCard key={share.id} share={share} />
+            ))}
+          </div>
+        )}
+        
         {isLoading ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
             Loading...
           </div>
         ) : unreadCount > 0 ? (
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {notifications?.filter(n => !n.read).slice(0, 10).map((notification) => (
+            {filteredNotifications?.filter(n => !n.read).slice(0, 10).map((notification) => (
               <div
                 key={notification.id}
                 className={`flex items-start gap-3 p-2 rounded-lg cursor-pointer transition-colors bg-primary/5 hover:bg-primary/10`}
@@ -66,7 +108,7 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <AtSign className="w-4 h-4 text-primary" />
+                    {getNotificationIcon(notification.type)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -84,12 +126,12 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
               </div>
             ))}
           </div>
-        ) : (
+        ) : pendingShareCount === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
             <Bell className="w-6 h-6 mx-auto mb-1 opacity-50" />
             <p className="text-xs">No new notifications</p>
           </div>
-        )}
+        ) : null}
       </div>
     );
   }
@@ -98,11 +140,11 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
     <div className="pt-2">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-primary' : ''}`} />
+          <Bell className={`w-5 h-5 ${totalUnread > 0 ? 'text-primary' : ''}`} />
           <span>Notifications</span>
-          {unreadCount > 0 && (
+          {totalUnread > 0 && (
             <Badge className="h-5 px-1.5 text-xs bg-destructive text-destructive-foreground">
-              {unreadCount}
+              {totalUnread}
             </Badge>
           )}
         </h2>
@@ -119,14 +161,27 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
         )}
       </div>
 
+      {/* Pending note shares section */}
+      {pendingShares && pendingShares.length > 0 && (
+        <div className="space-y-3 mb-4">
+          <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Practice Sessions Shared With You
+          </h3>
+          {pendingShares.map((share) => (
+            <PendingNoteShareCard key={share.id} share={share} />
+          ))}
+        </div>
+      )}
+
       <Card className="p-4 bg-card border-border">
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground text-sm">
             Loading...
           </div>
-        ) : notifications && notifications.length > 0 ? (
+        ) : filteredNotifications && filteredNotifications.length > 0 ? (
           <div className="space-y-2">
-            {notifications.map((notification) => (
+            {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
                 className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
@@ -143,7 +198,7 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <AtSign className="w-5 h-5 text-primary" />
+                    {getNotificationIcon(notification.type)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">

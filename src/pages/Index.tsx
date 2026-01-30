@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
+import { useAcceptedNoteShares } from '@/hooks/useNoteShares';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useOnboarding, checkOnboardingCompleted } from '@/contexts/OnboardingContext';
@@ -26,6 +27,7 @@ const Index = () => {
   usePageViewTracking('practice');
   
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
+  const { data: acceptedSharedNotes } = useAcceptedNoteShares();
   
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
   const isBootstrapping = authLoading || (!!user && !profile);
@@ -55,12 +57,28 @@ const Index = () => {
     }
   }, [profile?.id, startOnboarding]);
 
+  // Merge own notes with accepted shared notes, sorted by creation date
+  const allNotes = useMemo(() => {
+    const ownNotes = notes || [];
+    const sharedNotes = acceptedSharedNotes || [];
+    
+    // Create a Set of own note IDs to avoid duplicates
+    const ownNoteIds = new Set(ownNotes.map(n => n.id));
+    
+    // Filter shared notes to only include those not already in own notes
+    const uniqueSharedNotes = sharedNotes.filter(n => !ownNoteIds.has(n.id));
+    
+    // Merge and sort by created_at descending
+    return [...ownNotes, ...uniqueSharedNotes].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [notes, acceptedSharedNotes]);
 
   // Filter notes based on search query, date, and tag
   const filteredNotes = useMemo(() => {
-    if (!notes) return [];
+    if (!allNotes.length) return [];
     
-    let filtered = notes;
+    let filtered = allNotes;
     
     // Filter by creation date
     if (focusDateFilter) {
@@ -86,7 +104,7 @@ const Index = () => {
     }
     
     return filtered;
-  }, [notes, searchQuery, focusDateFilter]);
+  }, [allNotes, searchQuery, focusDateFilter]);
 
   if (authLoading) {
     return <div className="min-h-screen bg-background" />;

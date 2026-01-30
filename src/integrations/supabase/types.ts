@@ -406,6 +406,58 @@ export type Database = {
           },
         ]
       }
+      note_shares: {
+        Row: {
+          created_at: string
+          id: string
+          note_id: string
+          responded_at: string | null
+          shared_by_id: string
+          shared_with_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_id: string
+          responded_at?: string | null
+          shared_by_id: string
+          shared_with_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_id?: string
+          responded_at?: string | null
+          shared_by_id?: string
+          shared_with_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_shares_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_shared_by_id_fkey"
+            columns: ["shared_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_shared_with_id_fkey"
+            columns: ["shared_with_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           audio_file_names: string[] | null
