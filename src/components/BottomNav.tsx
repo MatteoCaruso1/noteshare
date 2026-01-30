@@ -128,6 +128,7 @@ export function BottomNav() {
                 key={to}
                 to={to}
                 onPointerDown={(e) => handleNavClick(to, e)}
+                data-tour={to === '/friends' ? 'friends-nav' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative touch-manipulation',
                   isActive ? 'text-primary' : 'text-muted-foreground [@media(hover:hover)]:hover:text-foreground'

@@ -7,12 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PremiumProvider, usePremium } from "@/contexts/PremiumContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 
 // Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
@@ -108,46 +110,49 @@ function AppInner() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <PremiumProvider>
-            <BottomNavProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <ScrollToTop />
-                  <FloatingInstruments />
-                  <AppHeader />
-                  <GlobalSessionBanner />
-                  <AddToHomescreenPrompt />
-                  <PremiumDialog />
-                  <CheckoutDialogWrapper />
-                  <AvatarPrefetcher />
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/welcome" element={<Welcome />} />
-                    <Route path="/projects" element={<Suspense fallback={null}><Projects /></Suspense>} />
-                    <Route path="/projects/:id" element={<Suspense fallback={null}><ProjectDetail /></Suspense>} />
-                    <Route path="/notes/:id" element={<Suspense fallback={null}><NoteDetail /></Suspense>} />
-                    <Route path="/profile" element={<Suspense fallback={null}><Profile /></Suspense>} />
-                    <Route path="/user/:id" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
-                    <Route path="/profile/:username" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
-                    <Route path="/discover" element={<Suspense fallback={null}><Discover /></Suspense>} />
-                    <Route path="/gigs" element={<Suspense fallback={null}><Gigs /></Suspense>} />
-                    <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
-                    <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
-                    <Route path="/working-toward" element={<Suspense fallback={null}><WorkingToward /></Suspense>} />
-                    <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
-                    <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
-                    <Route path="/admin/analytics" element={
-                      <AdminGuard>
-                        <Suspense fallback={null}><AdminAnalytics /></Suspense>
-                      </AdminGuard>
-                    } />
-                    <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
-                  </Routes>
-                  <BottomNav />
-                </BrowserRouter>
-              </TooltipProvider>
-            </BottomNavProvider>
+            <OnboardingProvider>
+              <BottomNavProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <ScrollToTop />
+                    <FloatingInstruments />
+                    <AppHeader />
+                    <GlobalSessionBanner />
+                    <AddToHomescreenPrompt />
+                    <PremiumDialog />
+                    <CheckoutDialogWrapper />
+                    <OnboardingFlow />
+                    <AvatarPrefetcher />
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/welcome" element={<Welcome />} />
+                      <Route path="/projects" element={<Suspense fallback={null}><Projects /></Suspense>} />
+                      <Route path="/projects/:id" element={<Suspense fallback={null}><ProjectDetail /></Suspense>} />
+                      <Route path="/notes/:id" element={<Suspense fallback={null}><NoteDetail /></Suspense>} />
+                      <Route path="/profile" element={<Suspense fallback={null}><Profile /></Suspense>} />
+                      <Route path="/user/:id" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
+                      <Route path="/profile/:username" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
+                      <Route path="/discover" element={<Suspense fallback={null}><Discover /></Suspense>} />
+                      <Route path="/gigs" element={<Suspense fallback={null}><Gigs /></Suspense>} />
+                      <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
+                      <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
+                      <Route path="/working-toward" element={<Suspense fallback={null}><WorkingToward /></Suspense>} />
+                      <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
+                      <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
+                      <Route path="/admin/analytics" element={
+                        <AdminGuard>
+                          <Suspense fallback={null}><AdminAnalytics /></Suspense>
+                        </AdminGuard>
+                      } />
+                      <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
+                    </Routes>
+                    <BottomNav />
+                  </BrowserRouter>
+                </TooltipProvider>
+              </BottomNavProvider>
+            </OnboardingProvider>
           </PremiumProvider>
         </AuthProvider>
       </QueryClientProvider>

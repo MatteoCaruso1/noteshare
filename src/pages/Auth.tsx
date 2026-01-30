@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useOnboarding, checkOnboardingCompleted } from '@/contexts/OnboardingContext';
 
 const Auth = () => {
-  const { signIn, signUp, resetPassword, user } = useAuth();
+  const { signIn, signUp, resetPassword, user, profile } = useAuth();
+  const { startOnboarding } = useOnboarding();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'update-password'>('signin');
@@ -137,6 +139,8 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
+        // Mark that we should start onboarding after redirect
+        sessionStorage.setItem('noteshare_pending_onboarding', 'true');
         navigate('/');
       } else {
         await signIn(email, password, rememberMe);
