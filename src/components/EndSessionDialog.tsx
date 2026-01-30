@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RichTextarea } from '@/components/RichTextarea';
-import { Clock, FileText, ArrowLeft, Save } from 'lucide-react';
+import { Clock, ArrowLeft, Save } from 'lucide-react';
 
 interface EndSessionDialogProps {
   open: boolean;
@@ -36,7 +36,6 @@ export function EndSessionDialog({
     return Math.max(1, Math.floor(activeDurationMs / 60000));
   };
 
-  const [sessionTitle, setSessionTitle] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(calculateDuration);
 
   // Update duration when dialog opens
@@ -47,24 +46,17 @@ export function EndSessionDialog({
   }, [open, session]);
 
   const handleSave = () => {
-    onSave(sessionTitle, durationMinutes);
-  };
-
-  const formatDurationDisplay = (minutes: number) => {
-    if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    onSave('', durationMinutes);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-md w-full p-0 gap-0 max-h-[90vh] overflow-hidden"
+        className="max-w-md w-full p-0 gap-0 max-h-[90vh] flex flex-col"
         hideCloseButton
       >
         {/* Header with back button */}
-        <DialogHeader className="p-4 pb-2 border-b border-border">
+        <DialogHeader className="p-4 pb-2 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -78,21 +70,7 @@ export function EndSessionDialog({
           </div>
         </DialogHeader>
 
-        <div className="p-4 space-y-4 overflow-y-auto">
-          {/* Session Title */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Session Title
-            </label>
-            <Input
-              placeholder="Add a title (optional)"
-              value={sessionTitle}
-              onChange={(e) => setSessionTitle(e.target.value)}
-              className="bg-muted/50"
-            />
-          </div>
-
+        <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
           {/* Duration */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -106,10 +84,10 @@ export function EndSessionDialog({
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Math.max(1, parseInt(e.target.value) || 1))}
                 min="1"
-                className="w-24 bg-muted/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-20 bg-muted/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span className="text-sm text-muted-foreground">
-                minutes ({formatDurationDisplay(durationMinutes)})
+                minutes
               </span>
             </div>
           </div>
@@ -128,7 +106,7 @@ export function EndSessionDialog({
         </div>
 
         {/* Save Button - Fixed at bottom */}
-        <div className="p-4 pt-2 border-t border-border">
+        <div className="p-4 pt-2 border-t border-border shrink-0">
           <Button
             className="w-full bg-gradient-primary text-primary-foreground"
             onClick={handleSave}
