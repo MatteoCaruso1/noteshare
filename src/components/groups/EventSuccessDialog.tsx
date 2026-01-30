@@ -4,7 +4,7 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, X } from 'lucide-react';
+import { CalendarCheck } from 'lucide-react';
 import { GroupEvent } from '@/hooks/useGroupDetails';
 import { ShareEventSheet } from './ShareEventSheet';
 
@@ -26,18 +26,9 @@ export function EventSuccessDialog({ open, onOpenChange, event, groupName }: Eve
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden" closeButtonClassName="bg-background/80 rounded-full">
           {/* Header with gradient */}
           <div className="relative bg-gradient-to-br from-primary/20 to-secondary/20 pt-12 pb-8 px-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/80"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-            
             <div className="flex justify-center">
               <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
                 <CalendarCheck className="w-8 h-8 text-primary-foreground" />
