@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
@@ -58,64 +58,20 @@ export function QuickNoteCapture() {
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   
-  // Track session state for animation
+  // Simply hide when there's an active session - no complex animation state
   const hasActiveSession = !!activeSession;
-  
-  // Use ref to track previous session state and prevent flash on mount
-  const prevHasActiveSessionRef = useRef(hasActiveSession);
-  const hasInitializedRef = useRef(false);
-  
-  // Animation state - start hidden if there's an active session
-  const [isVisible, setIsVisible] = useState(() => !hasActiveSession);
-  const [shouldRender, setShouldRender] = useState(() => !hasActiveSession);
 
   // Sync isOpen state with glint context
   useEffect(() => {
     setQuickNoteExpanded(isOpen);
   }, [isOpen, setQuickNoteExpanded]);
   
-  // Handle visibility animation when session state changes
+  // Close collapsible when session starts
   useEffect(() => {
-    // On first effect run, just sync state without animation
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true;
-      prevHasActiveSessionRef.current = hasActiveSession;
-      // Ensure correct initial state
-      if (hasActiveSession) {
-        setShouldRender(false);
-        setIsVisible(false);
-      } else {
-        setShouldRender(true);
-        setIsVisible(true);
-      }
-      return;
-    }
-    
-    // Only animate on actual state changes
-    if (hasActiveSession === prevHasActiveSessionRef.current) {
-      return;
-    }
-    
-    prevHasActiveSessionRef.current = hasActiveSession;
-    
-    if (hasActiveSession) {
-      // Session started - fade out
+    if (hasActiveSession && isOpen) {
       setIsOpen(false);
-      setIsVisible(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    } else {
-      // Session ended - fade in
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true);
-        });
-      });
     }
-  }, [hasActiveSession]);
+  }, [hasActiveSession, isOpen]);
 
   // Use persistent state for note content that survives navigation
   const {
@@ -136,8 +92,8 @@ export function QuickNoteCapture() {
 
   if (!profile) return null;
   
-  // Don't render at all once fade-out is complete
-  if (!shouldRender) {
+  // Simply don't render when there's an active session
+  if (hasActiveSession) {
     return null;
   }
 
@@ -208,13 +164,7 @@ export function QuickNoteCapture() {
   const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
 
   return (
-    <Card 
-      className="bg-card border-border"
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 200ms ease-out',
-      }}
-    >
+    <Card className="bg-card border-border">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <button 
