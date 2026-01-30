@@ -149,25 +149,27 @@ export default function GroupDetail() {
           )}
           
           {/* Navigation overlay */}
-          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start">
+          <div className="absolute top-12 left-0 right-0 p-4 flex justify-between items-start">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate('/groups')}
-              className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+              className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             
-            {canManage && (
+            {canManage ? (
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => setShowEditGroup(true)}
-                className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full"
               >
                 <Settings className="w-5 h-5" />
               </Button>
+            ) : (
+              <div className="w-10" /> 
             )}
           </div>
           
