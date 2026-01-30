@@ -19,6 +19,7 @@ import { useUpdateGroup, GroupDetail } from '@/hooks/useGroupDetails';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { GroupHeaderPicker } from './GroupHeaderPicker';
 
 interface EditGroupDialogProps {
   open: boolean;
@@ -141,52 +142,16 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
         
         <ScrollArea className="flex-1 px-6">
           <div className="space-y-6 py-4">
-            {/* Cover Image */}
+            {/* Header Image */}
             <div className="space-y-2">
-              <Label>Group Photo</Label>
-              <div className="flex justify-center">
-                <div className="relative">
-                  {displayImage ? (
-                    <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-                      <img 
-                        src={displayImage} 
-                        alt="Group cover" 
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={handleRemoveImage}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
-                      >
-                        <Camera className="w-4 h-4 text-primary-foreground" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="w-32 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-secondary/80 transition-colors disabled:opacity-50"
-                    >
-                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {uploading ? 'Uploading...' : 'Upload Photo'}
-                      </span>
-                    </button>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                </div>
-              </div>
+              <Label>Header Image</Label>
+              <GroupHeaderPicker
+                value={coverImage}
+                onChange={setCoverImage}
+                profileId={profile?.id || ''}
+                previewUrl={previewUrl}
+                onPreviewUrlChange={setPreviewUrl}
+              />
             </div>
             
             {/* Name */}

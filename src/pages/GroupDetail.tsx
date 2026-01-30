@@ -29,6 +29,7 @@ import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
 import { ShareGroupSheet } from '@/components/groups/ShareGroupSheet';
+import { GroupHeader as GroupHeaderDisplay } from '@/components/groups/GroupHeaderPicker';
 import { useCreateNote } from '@/hooks/useNotes';
 
 export default function GroupDetail() {
@@ -131,15 +132,9 @@ export default function GroupDetail() {
       <div className="h-full overflow-y-auto overflow-x-hidden">
       {/* Header with back button and settings */}
       <div className="relative -mt-12 -mx-4 overflow-hidden">
-        {/* Cover Image */}
-        <div className="h-48 bg-gradient-to-br from-primary/20 to-secondary relative">
-          {group.cover_image && (
-            <img 
-              src={group.cover_image} 
-              alt={group.name}
-              className="w-full h-full object-cover"
-            />
-          )}
+        {/* Cover Image / Header */}
+        <div className="h-48 relative">
+          <GroupHeaderDisplay value={group.cover_image} className="h-48" />
           
           {/* Navigation overlay */}
           <div className="absolute top-12 left-0 right-0 px-4 py-4 flex justify-between items-start">
