@@ -75,6 +75,10 @@ const MUSIC_ICONS = [
 
 export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCoverImage }: ShareEventSheetProps) {
   const [selectedStyle, setSelectedStyle] = useState<CardStyle>('primary');
+  
+  // Guard against null event
+  if (!event) return null;
+  
   const eventDate = new Date(event.event_date);
   
   const shareUrl = `${window.location.origin}/groups/${event.group_id}?event=${event.id}`;
