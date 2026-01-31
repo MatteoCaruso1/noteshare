@@ -250,3 +250,38 @@ export function useDeleteGroup() {
     },
   });
 }
+
+// Update a member's role (owner only)
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      memberId, 
+      groupId, 
+      newRole 
+    }: { 
+      memberId: string; 
+      groupId: string; 
+      newRole: 'admin' | 'member';
+    }) => {
+      const { data, error } = await supabase
+        .from('group_members')
+        .update({ role: newRole })
+        .eq('id', memberId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, { groupId }) => {
+      queryClient.invalidateQueries({ queryKey: ['group-members', groupId] });
+      toast.success('Member role updated!');
+    },
+    onError: (error) => {
+      console.error('Failed to update member role:', error);
+      toast.error('Failed to update role');
+    },
+  });
+}
