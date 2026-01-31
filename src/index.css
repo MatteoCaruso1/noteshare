@@ -216,13 +216,21 @@
 
   html {
     scroll-behavior: smooth;
-    scrollbar-gutter: stable;
+    /* Hide scrollbar while maintaining scroll functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+
+  /* Hide scrollbar for Chrome/Safari/Opera */
+  html::-webkit-scrollbar {
+    display: none;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    overflow-y: scroll;
+    /* Let browser handle overflow naturally - no forced scrollbar */
+    overflow-y: auto;
   }
 
   /* GPU-accelerated page transitions - prevents choppy blur/opacity animations */
@@ -235,9 +243,8 @@
   }
 
   /* Safety net: ensure body is scrollable unless explicitly locked by a modal */
-  /* Note: Using :not([data-scroll-locked]) without value to catch any Radix lock state */
   body:not([data-scroll-locked]):not(.overflow-hidden) {
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
   }
   
   html:not(.overflow-hidden):not([data-scroll-locked]) {
