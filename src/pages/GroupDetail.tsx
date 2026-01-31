@@ -4,6 +4,8 @@ import { PageLayout } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SignedImage } from '@/components/SignedImage';
+import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   ChevronLeft, 
@@ -32,7 +34,7 @@ import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
 import { ShareGroupSheet } from '@/components/groups/ShareGroupSheet';
 import { PendingRequestsSheet } from '@/components/groups/PendingRequestsSheet';
-import { GroupHeader as GroupHeaderDisplay } from '@/components/groups/GroupHeaderPicker';
+import { GroupHeader as GroupHeaderDisplay, isPresetHeader, getPresetHeader } from '@/components/groups/GroupHeaderPicker';
 import { useCreateNote } from '@/hooks/useNotes';
 
 export default function GroupDetail() {
@@ -175,12 +177,15 @@ export default function GroupDetail() {
           {/* Group avatar overlapping banner */}
           <div className="absolute -bottom-8 left-10">
             <div className="w-20 h-20 rounded-xl bg-card border-4 border-background flex items-center justify-center overflow-hidden shadow-lg">
-              {group.cover_image ? (
-                <img 
+              {group.cover_image && !isPresetHeader(group.cover_image) ? (
+                <SignedImage 
                   src={group.cover_image} 
                   alt={group.name}
                   className="w-full h-full object-cover"
                 />
+              ) : isPresetHeader(group.cover_image) ? (
+                // For preset headers, show a mini version of the gradient
+                <div className={cn("w-full h-full", getPresetHeader(group.cover_image)?.gradient || "bg-gradient-to-br from-primary/20 to-secondary")} />
               ) : (
                 <Music className="w-8 h-8 text-muted-foreground" />
               )}
