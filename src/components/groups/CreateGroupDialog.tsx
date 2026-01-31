@@ -93,28 +93,33 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
   const handleCreate = async () => {
     if (!formData.name || !formData.focus_type || !formData.group_type) return;
     
-    await createGroup.mutateAsync({
-      name: formData.name,
-      description: formData.description,
-      cover_image: formData.cover_image,
-      focus_type: formData.focus_type,
-      focus_details: formData.focus_details,
-      group_type: formData.group_type,
-      privacy: formData.privacy || 'public',
-      location_type: formData.location_type || 'global',
-      city: formData.city,
-    });
-    
-    onOpenChange(false);
-    // Reset form
-    setStep('focus');
-    setFormData({
-      focus_type: '',
-      group_type: [],
-      privacy: 'public',
-      location_type: 'global',
-    });
-    setPreviewUrl(null);
+    try {
+      await createGroup.mutateAsync({
+        name: formData.name.trim(),
+        description: formData.description?.trim() || undefined,
+        cover_image: formData.cover_image || undefined,
+        focus_type: formData.focus_type,
+        focus_details: formData.focus_details || [],
+        group_type: formData.group_type,
+        privacy: formData.privacy || 'public',
+        location_type: formData.location_type || 'global',
+        city: formData.city?.trim() || undefined,
+      });
+      
+      onOpenChange(false);
+      // Reset form
+      setStep('focus');
+      setFormData({
+        focus_type: '',
+        group_type: [],
+        privacy: 'public',
+        location_type: 'global',
+      });
+      setPreviewUrl(null);
+    } catch (error) {
+      // Error is already handled by the mutation's onError callback
+      console.error('Create group failed:', error);
+    }
   };
   
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

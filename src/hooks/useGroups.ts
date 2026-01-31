@@ -162,25 +162,42 @@ export function useCreateGroup() {
     mutationFn: async (data: CreateGroupData) => {
       if (!profile?.id) throw new Error('Not authenticated');
       
+      // Validate required fields
+      if (!data.name?.trim()) throw new Error('Group name is required');
+      if (!data.focus_type) throw new Error('Focus type is required');
+      if (!data.group_type?.length) throw new Error('Group type is required');
+      
+      console.log('[useCreateGroup] Creating group with data:', { 
+        name: data.name, 
+        focus_type: data.focus_type,
+        group_type: data.group_type,
+        privacy: data.privacy,
+      });
+      
       // Create the group
       const { data: group, error: groupError } = await supabase
         .from('groups')
         .insert({
           owner_id: profile.id,
-          name: data.name,
-          description: data.description || null,
+          name: data.name.trim(),
+          description: data.description?.trim() || null,
           cover_image: data.cover_image || null,
           focus_type: data.focus_type,
           focus_details: data.focus_details || [],
           group_type: data.group_type,
-          privacy: data.privacy,
-          location_type: data.location_type,
-          city: data.city || null,
+          privacy: data.privacy || 'public',
+          location_type: data.location_type || 'global',
+          city: data.city?.trim() || null,
         })
         .select()
         .single();
       
-      if (groupError) throw groupError;
+      if (groupError) {
+        console.error('[useCreateGroup] Failed to insert group:', groupError);
+        throw groupError;
+      }
+      
+      console.log('[useCreateGroup] Group created, adding owner as admin:', group.id);
       
       // Add owner as admin member
       const { error: memberError } = await supabase
@@ -192,8 +209,12 @@ export function useCreateGroup() {
           status: 'active',
         });
       
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('[useCreateGroup] Failed to add owner as member:', memberError);
+        throw memberError;
+      }
       
+      console.log('[useCreateGroup] Group creation complete:', group.id);
       return group as Group;
     },
     onSuccess: () => {
@@ -201,9 +222,10 @@ export function useCreateGroup() {
       queryClient.invalidateQueries({ queryKey: ['discover-groups'] });
       toast.success('Group created successfully!');
     },
-    onError: (error) => {
-      console.error('Failed to create group:', error);
-      toast.error('Failed to create group');
+    onError: (error: Error) => {
+      console.error('[useCreateGroup] Error:', error);
+      const message = error.message || 'Failed to create group';
+      toast.error(message.includes('duplicate') ? 'A group with this name already exists' : message);
     },
   });
 }
