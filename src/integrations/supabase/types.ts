@@ -491,6 +491,54 @@ export type Database = {
           },
         ]
       }
+      group_posts: {
+        Row: {
+          audio_file_names: string[] | null
+          audio_files: string[] | null
+          author_id: string
+          created_at: string
+          group_id: string
+          id: string
+          text_content: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_file_names?: string[] | null
+          audio_files?: string[] | null
+          author_id: string
+          created_at?: string
+          group_id: string
+          id?: string
+          text_content?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_file_names?: string[] | null
+          audio_files?: string[] | null
+          author_id?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          text_content?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           city: string | null
