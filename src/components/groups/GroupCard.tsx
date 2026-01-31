@@ -67,17 +67,11 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
             if (!showFullDetails) {
               return <Music className="w-6 h-6 text-muted-foreground" />;
             }
-            // Priority: profile_image > custom cover_image > preset header > default icon
-            const imageToShow = group.profile_image || group.cover_image;
-            const preset = getPresetHeader(imageToShow);
-            
-            if (preset) {
-              return <div className={`w-full h-full ${preset.gradient}`} />;
-            }
-            if (imageToShow && !imageToShow.startsWith('header:')) {
+            // Only show profile_image if set, otherwise show default icon
+            if (group.profile_image && !group.profile_image.startsWith('header:')) {
               return (
                 <SignedImage 
-                  src={imageToShow} 
+                  src={group.profile_image} 
                   alt={group.name} 
                   className="w-full h-full object-cover"
                   fallback={<Music className="w-6 h-6 text-muted-foreground" />}

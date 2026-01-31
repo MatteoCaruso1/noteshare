@@ -182,15 +182,6 @@ export default function GroupDetail() {
                   alt={group.name}
                   className="w-full h-full object-cover"
                 />
-              ) : group.cover_image && !isPresetHeader(group.cover_image) ? (
-                <SignedImage 
-                  src={group.cover_image} 
-                  alt={group.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : isPresetHeader(group.cover_image) ? (
-                // For preset headers, show a mini version of the gradient
-                <div className={cn("w-full h-full", getPresetHeader(group.cover_image)?.gradient || "bg-gradient-to-br from-primary/20 to-secondary")} />
               ) : (
                 <Music className="w-8 h-8 text-muted-foreground" />
               )}
