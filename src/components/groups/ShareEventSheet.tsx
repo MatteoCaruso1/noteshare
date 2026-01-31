@@ -275,9 +275,9 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
           >
             {currentStyle.icon}
             
-            {/* Music icons decoration for music style */}
+            {/* Music icons decoration for music style - positioned higher to not overlap branding */}
             {currentStyle.id === 'music' && (
-              <div className="absolute bottom-4 left-4 flex gap-2">
+              <div className="absolute bottom-12 left-4 flex gap-2">
                 {MUSIC_ICONS}
               </div>
             )}
