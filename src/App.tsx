@@ -12,6 +12,7 @@ import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
@@ -119,6 +120,7 @@ function AppInner() {
                   <Sonner />
                   <BrowserRouter>
                     <ScrollToTop />
+                    <ScrollLockDebugger />
                     <FloatingInstruments />
                     <AppHeader />
                     <GlobalSessionBanner />
