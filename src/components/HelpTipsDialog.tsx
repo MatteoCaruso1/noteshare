@@ -28,7 +28,7 @@ interface HelpSection {
 
 // Combined icon for Practice Board + Toggle
 const PracticeBoardToggleIcon = () => (
-  <span className="inline-flex items-center gap-0.5">
+  <span className="inline-flex items-center gap-0.5 -ml-5">
     <ClipboardList className="w-4 h-4" />
     <ToggleRight className="w-4 h-4" />
   </span>
