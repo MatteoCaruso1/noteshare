@@ -79,7 +79,7 @@ function GroupPostCard({
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{post.author?.name || 'Unknown'}</span>
               <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                {formatDistanceToNow(new Date(Math.min(new Date(post.created_at).getTime(), Date.now())), { addSuffix: true })}
               </span>
             </div>
             
