@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { GroupDetail } from '@/hooks/useGroupDetails';
-import { Link, MessageCircle, Music, Users, Globe, Lock, Loader2 } from 'lucide-react';
+import { Link, MessageCircle, Music, Users, Globe, Lock, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
@@ -121,7 +121,9 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   // Detect device type - must be before any early returns
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
   // Show iMessage button on iOS, and show generic "Share" on other mobile devices
+  // On desktop, show "Save Image" button for testing/sharing via other means
   const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
+  const showShareButton = canShareNative || deviceInfo.isDesktop; // Always show on desktop as "Save Image"
   
   // Use production URL for sharing - notesharemusic.com is the canonical domain
   // Fallback to window.location.origin for development/preview
@@ -159,7 +161,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
     }
   }, []);
   
-  const handleIMessageShare = useCallback(async () => {
+  const handleShareOrSave = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
     setIsExporting(true);
     setActiveButton('imessage');
@@ -175,13 +177,13 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       const shareText = `Join my Noteshare group "${group.name}"!\n\n.${shareUrl}.`;
       
       // Check if Web Share API is available and supports our files
-      if (navigator.share && navigator.canShare?.({ files })) {
+      if (canShareNative && navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({
           files,
           text: shareText,
         });
         toast.success('Shared successfully!');
-      } else if (navigator.share) {
+      } else if (canShareNative && navigator.share) {
         // Share without files (text only)
         await navigator.share({
           title: group.name,
@@ -189,7 +191,16 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
         });
         toast.success('Shared successfully!');
       } else {
-        toast.error('Sharing not supported on this device');
+        // Desktop fallback: download the image
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'noteshare-group.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('Image saved! You can now share it manually.');
       }
     } catch (err) {
       // User cancelled share or error occurred
@@ -201,7 +212,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       setIsExporting(false);
       setActiveButton(null);
     }
-  }, [generateImage, shareUrl, group.name, isExporting]);
+  }, [generateImage, shareUrl, group.name, isExporting, canShareNative]);
 
   const currentStyle = useMemo(() => 
     STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0],
@@ -349,22 +360,30 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               <span className="text-xs text-center">Copy<br/>Link</span>
             </button>
             
-            {/* Share - shows on mobile devices */}
-            {canShareNative && (
+            {/* Share/Save Image - shows on all devices */}
+            {showShareButton && (
               <button
-                onClick={handleIMessageShare}
+                onClick={handleShareOrSave}
                 disabled={isExporting}
                 className="flex flex-col items-center gap-2"
               >
                 <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
                   {isExporting && activeButton === 'imessage' ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : deviceInfo.isDesktop ? (
+                    <Download className="w-5 h-5" />
                   ) : (
                     <MessageCircle className="w-5 h-5" />
                   )}
                 </div>
                 <span className="text-xs text-center">
-                  {isExporting && activeButton === 'imessage' ? 'Preparing...' : deviceInfo.isIOS ? 'iMessage' : 'Share'}
+                  {isExporting && activeButton === 'imessage' 
+                    ? 'Preparing...' 
+                    : deviceInfo.isDesktop 
+                      ? 'Save Image' 
+                      : deviceInfo.isIOS 
+                        ? 'iMessage' 
+                        : 'Share'}
                 </span>
               </button>
             )}
