@@ -50,10 +50,12 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     location_type: 'global',
   });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const createGroup = useCreateGroup();
-  const { uploadImage, uploading } = useMediaUpload();
+  const { uploadImage } = useMediaUpload();
   const { profile } = useAuth();
   
   const stepIndex = STEPS.indexOf(step);
@@ -91,13 +93,16 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
   };
   
   const handleCreate = async () => {
-    if (!formData.name || !formData.focus_type || !formData.group_type) return;
+    if (!formData.name || !formData.focus_type || !formData.group_type || !profile?.id) return;
+    
+    setIsCreating(true);
     
     try {
-      await createGroup.mutateAsync({
+      // Step 1: Create the group WITHOUT the image first
+      const group = await createGroup.mutateAsync({
         name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
-        cover_image: formData.cover_image || undefined,
+        // Don't include cover_image here - we'll update it after
         focus_type: formData.focus_type,
         focus_details: formData.focus_details || [],
         group_type: formData.group_type,
@@ -105,6 +110,26 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
         location_type: formData.location_type || 'global',
         city: formData.city?.trim() || undefined,
       });
+      
+      // Step 2: If there's a pending image, upload it AFTER group creation
+      // This avoids mobile RLS timing issues with storage policies
+      if (pendingImageFile && group?.id) {
+        try {
+          const uploadedPath = await uploadImage(pendingImageFile, profile.id);
+          if (uploadedPath) {
+            // Step 3: Update the group with the uploaded image path
+            const { supabase } = await import('@/integrations/supabase/client');
+            await supabase
+              .from('groups')
+              .update({ profile_image: uploadedPath })
+              .eq('id', group.id);
+          }
+        } catch (uploadError) {
+          // Image upload failed, but group was created successfully
+          console.error('Failed to upload group image:', uploadError);
+          // Don't fail the whole operation - group is created, user can add image later
+        }
+      }
       
       onOpenChange(false);
       // Reset form
@@ -116,32 +141,25 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
         location_type: 'global',
       });
       setPreviewUrl(null);
+      setPendingImageFile(null);
     } catch (error) {
       // Error is already handled by the mutation's onError callback
       console.error('Create group failed:', error);
+    } finally {
+      setIsCreating(false);
     }
   };
   
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !profile?.id) return;
+    if (!file) return;
     
-    // Create preview
+    // Store the file for later upload (after group creation)
+    setPendingImageFile(file);
+    
+    // Create preview immediately
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
-    
-    // Upload to storage
-    try {
-      const uploadedPath = await uploadImage(file, profile.id);
-      if (uploadedPath) {
-        setFormData({ ...formData, cover_image: uploadedPath });
-      } else {
-        setPreviewUrl(null);
-      }
-    } catch (error) {
-      console.error('Failed to upload image:', error);
-      setPreviewUrl(null);
-    }
   };
   
   const handleClose = () => {
@@ -154,6 +172,7 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
       location_type: 'global',
     });
     setPreviewUrl(null);
+    setPendingImageFile(null);
   };
   
   const toggleGroupType = (type: string) => {
@@ -308,23 +327,18 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="w-32 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden relative"
-                    disabled={uploading}
+                    disabled={isCreating}
                   >
-                    {previewUrl || formData.cover_image ? (
+                    {previewUrl ? (
                       <img 
-                        src={previewUrl || formData.cover_image} 
+                        src={previewUrl} 
                         alt="Group cover" 
                         className="w-full h-full object-cover absolute inset-0"
                       />
-                    ) : uploading ? (
-                      <>
-                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-muted-foreground">Uploading...</span>
-                      </>
                     ) : (
                       <>
                         <Camera className="w-8 h-8 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Upload Photo</span>
+                        <span className="text-sm text-muted-foreground">Add Photo</span>
                       </>
                     )}
                   </button>
@@ -506,9 +520,9 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
             <Button
               className="w-full"
               onClick={handleCreate}
-              disabled={!canProceed() || createGroup.isPending}
+              disabled={!canProceed() || isCreating}
             >
-              {createGroup.isPending ? 'Creating...' : 'Create Group'}
+              {isCreating ? (pendingImageFile ? 'Creating & uploading...' : 'Creating...') : 'Create Group'}
             </Button>
           ) : (
             <Button
