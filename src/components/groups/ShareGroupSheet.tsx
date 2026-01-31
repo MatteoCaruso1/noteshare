@@ -85,8 +85,14 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
   const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
   
-  // Memoize computed values
-  const shareUrl = useMemo(() => `${window.location.origin}/groups/${group.id}`, [group.id]);
+  // Use production URL for sharing - notesharemusic.com is the canonical domain
+  // Fallback to window.location.origin for development/preview
+  const shareUrl = useMemo(() => {
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://notesharemusic.com' 
+      : window.location.origin;
+    return `${baseUrl}/groups/${group.id}`;
+  }, [group.id]);
   
   const handleCopyLink = useCallback(async () => {
     await navigator.clipboard.writeText(shareUrl);

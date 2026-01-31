@@ -100,10 +100,21 @@ export default function GroupDetail() {
   }
   
   if (!group) {
+    // Check if user has an invite - if so, they might need to accept it first
+    const hasInviteForThisGroup = myInvites.some(inv => inv.group_id === id);
+    
     return (
       <PageLayout>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Group not found</p>
+        <div className="text-center py-12 px-4 space-y-4">
+          <Lock className="w-12 h-12 mx-auto text-muted-foreground" />
+          <h2 className="text-xl font-semibold">
+            {hasInviteForThisGroup ? 'Private Group' : 'Group Not Found'}
+          </h2>
+          <p className="text-muted-foreground max-w-sm mx-auto">
+            {hasInviteForThisGroup 
+              ? 'You have been invited to this private group. Accept the invitation to view it.'
+              : 'This group may be private or no longer exists. If you received an invite, check your notifications.'}
+          </p>
           <Button variant="ghost" onClick={() => navigate('/groups')} className="mt-4">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Groups
@@ -267,11 +278,14 @@ export default function GroupDetail() {
                 onClick={() => setShowEditGroup(true)}
               />
             )}
-            <ActionButton 
-              icon={<Share2 className="w-5 h-5" />} 
-              label="Share" 
-              onClick={handleShare}
-            />
+            {/* Share button - only admins can share private groups, anyone can share public groups */}
+            {(group.privacy === 'public' || canManage) && (
+              <ActionButton 
+                icon={<Share2 className="w-5 h-5" />} 
+                label="Share" 
+                onClick={handleShare}
+              />
+            )}
           </div>
         </div>
       ) : (
