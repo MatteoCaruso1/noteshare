@@ -32,10 +32,11 @@ import { CreateEventDrawer } from '@/components/groups/CreateEventDrawer';
 import { EditGroupDialog } from '@/components/groups/EditGroupDialog';
 import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
+import { GroupPostsList } from '@/components/groups/GroupPostsList';
 import { ShareGroupSheet } from '@/components/groups/ShareGroupSheet';
 import { PendingRequestsSheet } from '@/components/groups/PendingRequestsSheet';
 import { GroupHeader as GroupHeaderDisplay, isPresetHeader, getPresetHeader } from '@/components/groups/GroupHeaderPicker';
-import { useCreateNote } from '@/hooks/useNotes';
+import { useGroupPosts, useCreateGroupPost } from '@/hooks/useGroupPosts';
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -49,10 +50,11 @@ export default function GroupDetail() {
   const { data: membership } = useGroupMembership(id);
   const { data: pendingRequests = [] } = usePendingJoinRequests(id);
   const { data: myInvites = [] } = useMyGroupInvites();
+  const { data: groupPosts = [] } = useGroupPosts(id);
   
   const joinGroup = useJoinGroup();
   const leaveGroup = useLeaveGroup();
-  const createNote = useCreateNote();
+  const createGroupPost = useCreateGroupPost();
   
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showEditGroup, setShowEditGroup] = useState(false);
@@ -137,15 +139,12 @@ export default function GroupDetail() {
     videoFiles: string[];
     imageFiles: string[];
   }) => {
-    if (!profile?.id) return;
-    createNote.mutate({
-      authorId: profile.id,
+    if (!profile?.id || !id) return;
+    createGroupPost.mutate({
+      groupId: id,
       textContent: data.textContent,
       audioFiles: data.audioFiles,
       audioFileNames: data.audioFileNames,
-      videoFiles: data.videoFiles,
-      imageFiles: data.imageFiles,
-      // TODO: Add group_id field to notes table in future
     });
   };
 
@@ -381,7 +380,12 @@ export default function GroupDetail() {
               profileName={profile?.name}
               groupName={group.name}
               onSubmit={handleAddPost}
-              isSubmitting={createNote.isPending}
+              isSubmitting={createGroupPost.isPending}
+            />
+            <GroupPostsList 
+              posts={groupPosts} 
+              groupId={id!} 
+              isAdmin={canManage} 
             />
           </InlineErrorBoundary>
         </div>

@@ -7,7 +7,7 @@ import { AudioRecorder } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
-import { Save } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 interface AudioFile {
   url: string;
@@ -104,7 +104,7 @@ export function GroupPostCapture({
             disabled={isSubmitting || uploading || !hasContent || isRecordingAudio}
             title={isRecordingAudio ? 'Stop recording first' : 'Post'}
           >
-            <Save className="w-3.5 h-3.5" />
+            <Send className="w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
