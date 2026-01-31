@@ -1,136 +1,134 @@
 
-## What we should do now (given it’s broken on load)
+# Plan: Fix Mouse Wheel/Touchpad Scrolling Issue
 
-Since scrolling is **completely locked even on a fresh reload** (desktop) and only internal popups can scroll, we’re no longer dealing with a “one-off close animation” bug. We need to switch from guessing to **instrumented diagnosis** so we can see the *exact* state of the document when scroll is broken.
+## Root Cause Analysis
 
-The fastest path is:
+After extensive investigation with the debug overlay, the real issue is now clear:
 
-1) add a small in-app “Scroll Debug / Force Unlock” overlay (gated behind a URL flag so normal users never see it),
-2) update our scroll-lock recovery to detect *style-based locks* (not just `data-scroll-locked` / `overflow-hidden`),
-3) use the debug overlay to identify what’s applying the lock on load, then fix the specific offender.
+**The scroll-lock detection shows everything is "OK" because there ARE no CSS scroll locks.** The actual problem is that **mouse wheel and touchpad gestures don't scroll the page, but dragging the scrollbar DOES work**.
 
----
+This is a fundamentally different issue - it's about **wheel event propagation**, not CSS overflow settings.
 
-## Why the current recovery system can miss this
+### Key Evidence
+1. Debug overlay shows green "OK" - no overflow:hidden, no data-scroll-locked
+2. Scrollbar can be dragged to scroll the page
+3. Dialogs/popups scroll normally with the wheel
+4. Issue persists across page loads and even version reverts
 
-Right now, `ScrollToTop.tsx`’s MutationObserver only treats scroll as “locked” when it sees:
+### Most Likely Cause
+The CSS combination in `src/index.css`:
 
-- `data-scroll-locked` attribute, or
-- `overflow-hidden` class
+```css
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
 
-But real-world stuck states also happen when something leaves behind **inline styles** like:
+body {
+  overflow-y: scroll;
+}
+```
 
-- `body.style.overflow = 'hidden'` (or `overflowY = 'hidden'`)
-- `body.style.position = 'fixed'` + `top = -123px` (common scroll-lock technique)
-- `body.style.pointerEvents = 'none'` (this can make the page feel “dead” even if overflow is fine)
+When `scroll-behavior: smooth` is applied to `<html>` AND the body has forced `overflow-y: scroll`, some browser/OS combinations can experience wheel event issues. The `scrollbar-gutter: stable` is also known to cause quirks.
 
-We already *clear* these fields in `clearScrollLocks()`, but we often **don’t detect** that we need to run it because the observer’s `hasScrollLock` check ignores inline style states.
-
-Also, since you report “broken on load”, something may be applying a lock after the initial mount cleanup runs.
-
----
-
-## Implementation plan
-
-### 1) Add a hidden “Scroll Lock Debugger” overlay
-**Goal:** make the app tell us exactly why scrolling is locked, without requiring DevTools or screen recordings.
-
-- Create a lightweight debug component (e.g. `ScrollLockDebugger.tsx`) rendered only when:
-  - `location.search` contains `debugScroll=1`, or
-  - a `localStorage` flag is set (optional)
-- Display live values (updated every ~250ms):
-  - `document.body.style.overflow`, `overflowY`, `position`, `top`, `paddingRight`, `pointerEvents`
-  - `document.body.getAttribute('data-scroll-locked')`
-  - `document.body.classList.contains('overflow-hidden')`
-  - same for `document.documentElement` (html)
-  - `window.innerHeight`, `document.documentElement.scrollHeight`, `window.scrollY`
-  - `isAnyOverlayOpen()` result (from `src/lib/scrollLock.ts`)
-  - counts of matching overlay nodes:
-    - `[role="dialog"][data-state="open"]`
-    - `[data-radix-dialog-overlay]`
-    - `[data-vaul-drawer]`
-- Include buttons:
-  - **Force unlock scroll** → calls `clearDocumentScrollLocks()`
-  - **Log snapshot** → `console.log()` the snapshot for copy/paste
-
-This gives us immediate clarity whether the lock is:
-- a stuck Radix lock attribute/class,
-- a stuck inline style lock,
-- or something else (like the page simply not having scrollable height).
-
-### 2) Strengthen the global recovery logic (fix detection, not just clearing)
-Update `src/components/ScrollToTop.tsx` to:
-
-- Import and reuse the shared utilities from `src/lib/scrollLock.ts` (so we don’t maintain two separate “unlock” implementations).
-- Expand the “hasScrollLock” detection to include inline style locks, e.g.:
-  - `document.body.style.overflow === 'hidden'`
-  - `document.documentElement.style.overflow === 'hidden'`
-  - `document.body.style.position === 'fixed'`
-  - `document.body.style.pointerEvents === 'none'`
-- Only auto-clear when **no overlay is actually open** (using `isAnyOverlayOpen()`).
-- Add `document.documentElement` style to the observer attributeFilter too (currently we observe html attributes but not `style` changes on html).
-
-This should address the “broken on load” scenario where a library applies a style lock without setting the attribute/class combo we currently check.
-
-### 3) Add a short-lived “startup watchdog” (defensive)
-Because you’re seeing this on load, add a watchdog in `App.tsx` (or in `ScrollToTop.tsx`) that runs for the first ~3 seconds after mount:
-
-- Every 250ms:
-  - If `!isAnyOverlayOpen()` and we detect any scroll-lock style/attr/class → call `clearDocumentScrollLocks()`
-
-Then stop the interval.
-
-This prevents any “late-applied lock” from leaving the app permanently frozen.
-
-### 4) Use the debugger to identify the real cause, then fix the source
-Once the debugger is in, you (or I via session replay + screenshots) can quickly pinpoint:
-
-- Which exact mechanism is locking scroll (overflow hidden vs fixed-position lock vs pointer-events none)
-- Whether the app thinks an overlay is still open on load (stuck overlay node in DOM)
-- Whether a specific global modal is opening/closing immediately on load and leaving the lock behind
-
-Likely culprits (because they can appear on load):
-- onboarding modal/tour
-- premium dialog
-- add-to-home-screen prompt (mobile only, but worth ruling out)
-- any global dialog/sheet in header/nav contexts
-
-Then we apply the smallest possible fix to that component:
-- ensure proper `onOpenChange` wiring
-- ensure parent overlay is closed before opening child overlay
-- ensure no global style mutations are used
-- ensure cleanup runs on unmount
+Additionally, the user mentioned "I don't want a scrollbar" - suggesting the visible scrollbar isn't desired and the forced `overflow-y: scroll` on body was added as part of the scroll-lock fixes.
 
 ---
 
-## Files we’ll likely touch
-- `src/components/ScrollToTop.tsx` (make detection robust + reuse shared utilities)
-- `src/lib/scrollLock.ts` (may add a `hasDocumentScrollLock()` helper so logic is centralized)
-- `src/App.tsx` (optional: add a short startup watchdog)
-- New file: `src/components/ScrollLockDebugger.tsx` (gated debug overlay)
+## Solution
+
+### 1. Remove forced scrollbar and simplify scroll behavior
+
+**File: `src/index.css`**
+
+Change the base scroll styles from:
+```css
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+body:not([data-scroll-locked]):not(.overflow-hidden) {
+  overflow-y: scroll !important;
+}
+
+html:not(.overflow-hidden):not([data-scroll-locked]) {
+  overflow-y: auto !important;
+}
+```
+
+To:
+```css
+html {
+  scroll-behavior: smooth;
+  /* Remove scrollbar-gutter: stable - can cause scroll issues */
+}
+
+body {
+  /* Let browser handle overflow naturally - no forced scrollbar */
+  overflow-y: auto;
+}
+
+/* Safety net: only apply when explicitly unlocked */
+body:not([data-scroll-locked]):not(.overflow-hidden) {
+  overflow-y: auto !important;
+}
+
+html:not(.overflow-hidden):not([data-scroll-locked]) {
+  overflow-y: auto !important;
+}
+```
+
+Key changes:
+- Remove `scrollbar-gutter: stable` from html
+- Change body from `overflow-y: scroll` to `overflow-y: auto`
+- Change safety net from `scroll` to `auto`
+
+### 2. Remove the aggressive scroll-lock recovery system (optional cleanup)
+
+Since the issue was never a scroll-lock problem, the MutationObserver watchdog system in `ScrollToTop.tsx` can be simplified. However, keeping it as a safety net is fine - it just wasn't solving the real issue.
+
+### 3. Hide scrollbar via CSS (user preference)
+
+Since the user mentioned they don't want a scrollbar visible:
+
+**File: `src/index.css`**
+
+Add cross-browser scrollbar hiding while maintaining scroll functionality:
+```css
+/* Hide scrollbar but allow scrolling */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+```
 
 ---
 
-## How we’ll test (fast + deterministic)
-1) Load any route with `?debugScroll=1` (especially `/welcome` and `/groups/...`).
-2) Confirm the overlay shows:
-   - scrollHeight > innerHeight (so the page should be scrollable)
-3) If scroll is locked:
-   - hit **Force unlock scroll**
-   - verify scroll immediately works
-4) Reload and watch the live fields:
-   - if overflow/position/pointerEvents flips into a locked state after mount, we’ll see exactly which field changes
-5) Repeat the flow you mentioned:
-   - open group → open event → Share Event → close → confirm scroll remains unlocked
+## Technical Details
 
----
+### Why this should work
+1. `overflow-y: auto` allows natural scroll behavior without forcing a scrollbar
+2. Removing `scrollbar-gutter: stable` eliminates layout shift compensation that can interfere with scroll mechanics
+3. The scrollbar-hiding CSS maintains scroll functionality while hiding the visual scrollbar
 
-## Expected outcome
-- We stop burning time on guess-and-check.
-- Within one cycle, we’ll know whether the lock is:
-  - Radix attribute/class based,
-  - inline-style based,
-  - pointer-events related,
-  - or “overlay still present” related.
-- Then we apply one precise fix to the actual culprit (instead of patching multiple places blindly).
+### Why reverting versions didn't fix it
+If the CSS with `scroll-behavior: smooth` and `scrollbar-gutter: stable` has been present for a while, it would persist across reverts unless specifically changed.
 
+### Files to modify
+1. `src/index.css` - Remove forced scrollbar and scrollbar-gutter
+
+### Testing after fix
+1. Load /welcome - verify wheel scrolling works
+2. Load main app pages - verify wheel scrolling works
+3. Open dialogs/sheets - verify they still scroll
+4. Verify no visible scrollbar (per user preference)
+5. Verify on both desktop Chrome and Safari
