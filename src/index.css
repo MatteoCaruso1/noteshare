@@ -216,6 +216,10 @@
 
   html {
     scroll-behavior: smooth;
+    /* Fix wheel scroll: explicitly set overflow to override any conflicting styles */
+    overflow: auto !important;
+    overflow-x: hidden !important; /* Prevent horizontal scroll */
+    overflow-y: auto !important;
     /* Hide scrollbar while maintaining scroll functionality */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
@@ -229,8 +233,9 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    /* Let browser handle overflow naturally - no forced scrollbar */
-    overflow-y: auto;
+    /* Let html handle the scrolling */
+    overflow: visible;
+    min-height: 100%;
   }
 
   /* GPU-accelerated page transitions - prevents choppy blur/opacity animations */
@@ -242,15 +247,6 @@
     -webkit-transform: translateZ(0);
   }
 
-  /* Safety net: ensure body is scrollable unless explicitly locked by a modal */
-  body:not([data-scroll-locked]):not(.overflow-hidden) {
-    overflow-y: auto !important;
-  }
-  
-  html:not(.overflow-hidden):not([data-scroll-locked]) {
-    overflow-y: auto !important;
-  }
-  
   /* Prevent Radix Dialog from adding padding compensation */
   body[data-scroll-locked="1"] {
     padding-right: 0 !important;
