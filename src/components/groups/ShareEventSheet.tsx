@@ -100,7 +100,8 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
   
   // Detect device type - must be before any early returns
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
-  const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
+  // Show iMessage button on iOS, and show generic "Share" on other mobile devices
+  const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
   
   // Friends list for in-app sharing
   const { data: friends = [] } = useFriends();
@@ -322,14 +323,14 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
                 <span className="text-xs text-center">Copy<br/>Link</span>
               </button>
               
-              {/* iMessage - iOS only */}
-              {canShareIMessage && (
+              {/* Share - shows on mobile devices */}
+              {canShareNative && (
                 <button
                   onClick={handleIMessageShare}
                   disabled={isExporting}
                   className="flex flex-col items-center gap-2"
                 >
-                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center text-white">
+                  <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
                     {isExporting && activeButton === 'imessage' ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
@@ -337,7 +338,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
                     )}
                   </div>
                   <span className="text-xs text-center">
-                    {isExporting && activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
+                    {isExporting && activeButton === 'imessage' ? 'Preparing...' : deviceInfo.isIOS ? 'iMessage' : 'Share'}
                   </span>
                 </button>
               )}
