@@ -84,6 +84,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   const [customDescription, setCustomDescription] = useState(group.description || '');
   const cardRef = useRef<HTMLDivElement>(null);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
+  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
   
   // Get the image to display - prefer profile_image, fall back to cover_image
   const avatarImagePath = group.profile_image || group.cover_image || '';
@@ -93,9 +94,11 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   useEffect(() => {
     if (!avatarSignedUrl) {
       setAvatarBase64(null);
+      setIsAvatarLoading(false);
       return;
     }
     
+    setIsAvatarLoading(true);
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
@@ -110,11 +113,14 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
         }
       } catch (e) {
         console.error('[ShareGroupSheet] Failed to convert avatar to base64:', e);
+      } finally {
+        setIsAvatarLoading(false);
       }
     };
     img.onerror = () => {
       console.error('[ShareGroupSheet] Failed to load avatar image');
       setAvatarBase64(null);
+      setIsAvatarLoading(false);
     };
     img.src = avatarSignedUrl;
   }, [avatarSignedUrl]);
@@ -125,6 +131,9 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   // On desktop, show "Save Image" button for testing/sharing via other means
   const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
   const showShareButton = canShareNative || deviceInfo.isDesktop; // Always show on desktop as "Save Image"
+  
+  // Check if avatar is ready (no avatar needed, or avatar is loaded)
+  const isAvatarReady = !avatarImagePath || (!isAvatarLoading && (avatarBase64 !== null || !avatarSignedUrl));
   
   // Use production URL for sharing - notesharemusic.com is the canonical domain
   // Fallback to window.location.origin for development/preview
@@ -144,6 +153,11 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
     if (!cardRef.current) return null;
 
     try {
+      // Wait for avatar to be ready if still loading
+      if (isAvatarLoading) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       // Ensure element is fully visible and rendered
       await new Promise(resolve => setTimeout(resolve, 150));
       
@@ -160,7 +174,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       console.error('[ShareGroupSheet] Error generating image:', err);
       return null;
     }
-  }, []);
+  }, [isAvatarLoading]);
   
   const handleShareOrSave = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
@@ -286,7 +300,9 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
             {/* Group avatar */}
             <div className="flex justify-center">
               <div className="w-16 h-16 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden">
-                {avatarBase64 ? (
+                {isAvatarLoading ? (
+                  <Loader2 className="w-6 h-6 animate-spin opacity-60" />
+                ) : avatarBase64 ? (
                   <img 
                     src={avatarBase64} 
                     alt={group.name}
@@ -371,11 +387,11 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
             {showShareButton && (
               <button
                 onClick={handleShareOrSave}
-                disabled={isExporting}
-                className="flex flex-col items-center gap-2"
+                disabled={isExporting || !isAvatarReady}
+                className="flex flex-col items-center gap-2 disabled:opacity-50"
               >
                 <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
-                  {isExporting && activeButton === 'imessage' ? (
+                  {(isExporting && activeButton === 'imessage') || !isAvatarReady ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : deviceInfo.isDesktop ? (
                     <Download className="w-5 h-5" />
@@ -384,13 +400,15 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
                   )}
                 </div>
                 <span className="text-xs text-center">
-                  {isExporting && activeButton === 'imessage' 
-                    ? 'Preparing...' 
-                    : deviceInfo.isDesktop 
-                      ? 'Save Image' 
-                      : deviceInfo.isIOS 
-                        ? 'iMessage' 
-                        : 'Share'}
+                  {!isAvatarReady
+                    ? 'Loading...'
+                    : isExporting && activeButton === 'imessage' 
+                      ? 'Preparing...' 
+                      : deviceInfo.isDesktop 
+                        ? 'Save Image' 
+                        : deviceInfo.isIOS 
+                          ? 'iMessage' 
+                          : 'Share'}
                 </span>
               </button>
             )}
