@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Music, Users, MapPin, Lock, Globe, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { SignedImage } from '@/components/SignedImage';
+import { getPresetHeader } from './GroupHeaderPicker';
 
 interface GroupCardProps {
   group: Group & { myRole?: string };
@@ -61,15 +63,29 @@ export const GroupCard = memo(function GroupCard({ group, onClick, knownMemberSt
       <div className="flex gap-3">
         {/* Group Image/Icon */}
         <div className="w-14 h-14 rounded-lg bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
-          {group.cover_image && showFullDetails ? (
-            <img 
-              src={group.cover_image} 
-              alt={group.name} 
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <Music className="w-6 h-6 text-muted-foreground" />
-          )}
+          {(() => {
+            if (!showFullDetails) {
+              return <Music className="w-6 h-6 text-muted-foreground" />;
+            }
+            // Priority: profile_image > custom cover_image > preset header > default icon
+            const imageToShow = group.profile_image || group.cover_image;
+            const preset = getPresetHeader(imageToShow);
+            
+            if (preset) {
+              return <div className={`w-full h-full ${preset.gradient}`} />;
+            }
+            if (imageToShow && !imageToShow.startsWith('header:')) {
+              return (
+                <SignedImage 
+                  src={imageToShow} 
+                  alt={group.name} 
+                  className="w-full h-full object-cover"
+                  fallback={<Music className="w-6 h-6 text-muted-foreground" />}
+                />
+              );
+            }
+            return <Music className="w-6 h-6 text-muted-foreground" />;
+          })()}
         </div>
         
         {/* Group Info */}
