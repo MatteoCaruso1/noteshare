@@ -40,6 +40,7 @@ export default function GroupDetail() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   
+  // All hooks must be called unconditionally at the top level
   const { data: group, isLoading: groupLoading } = useGroupDetail(id);
   const { data: members } = useGroupMembers(id);
   const { data: events } = useGroupEvents(id);
@@ -49,6 +50,7 @@ export default function GroupDetail() {
   
   const joinGroup = useJoinGroup();
   const leaveGroup = useLeaveGroup();
+  const createNote = useCreateNote();
   
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showEditGroup, setShowEditGroup] = useState(false);
@@ -110,9 +112,6 @@ export default function GroupDetail() {
       </PageLayout>
     );
   }
-  
-  const createNote = useCreateNote();
-
   // Filter out unwanted tags like "casual"
   const filteredGroupTypes = group?.group_type?.filter(
     type => type.toLowerCase() !== 'casual'
