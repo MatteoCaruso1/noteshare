@@ -1,4 +1,4 @@
-import { HelpCircle, Music, Clock, FileText, Users, Target, FolderOpen, Trophy, Bell, Timer, Settings } from 'lucide-react';
+import { HelpCircle, Mic, Target, Music, Timer, ClipboardList, Save, List, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -8,127 +8,69 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
 
-interface HelpTip {
-  feature: string;
+interface HelpItem {
   icon: React.ReactNode;
-  items: {
-    button: string;
-    description: string;
-  }[];
+  label: string;
+  description: string;
 }
 
-const helpTips: HelpTip[] = [
+interface HelpSection {
+  feature: string;
+  featureIcon: React.ReactNode;
+  definition: string;
+  items: HelpItem[];
+}
+
+const helpSections: HelpSection[] = [
   {
     feature: 'Practice Session',
-    icon: <Clock className="w-4 h-4 text-primary" />,
+    featureIcon: <Timer className="w-4 h-4 text-primary" />,
+    definition: 'A timed workflow that tracks your practice and automatically links all notes you capture during the session',
     items: [
-      { button: 'Start Session', description: 'Begin a timed practice session. All notes you capture are automatically linked to this session.' },
-      { button: 'Timer in Header', description: 'Shows your active session time. Click to view details or end the session from any page.' },
-      { button: 'Pause/Resume', description: 'Pause your session timer during breaks. Time is tracked accurately.' },
-      { button: 'End Session', description: 'Finishes your session and prompts you to add a summary note.' },
+      { icon: <Mic className="w-4 h-4" />, label: 'Record Audio', description: 'Record audio clips directly within your practice session' },
+      { icon: <Target className="w-4 h-4" />, label: 'Link to Goal, Project, or Gig', description: 'Connect your session to a specific pursuit for organized tracking' },
+      { icon: <Music className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM (40-240)' },
+      { icon: <Timer className="w-4 h-4" />, label: 'Practice Timer', description: 'Set a countdown timer with audio chime when complete' },
+      { icon: <ClipboardList className="w-4 h-4" />, label: 'Link to Practice Board', description: 'Connect your session to today\'s practice focus' },
     ],
   },
   {
-    feature: 'Quick Notes',
-    icon: <FileText className="w-4 h-4 text-primary" />,
+    feature: 'Practice Board',
+    featureIcon: <ClipboardList className="w-4 h-4 text-primary" />,
+    definition: 'Your daily intention setter — write what you want to focus on today to stay intentional during practice',
     items: [
-      { button: 'New Note (+)', description: 'Capture an idea instantly with audio, video, images, or text.' },
-      { button: 'Audio Recorder', description: 'Record audio clips directly. Name them for easy reference later.' },
-      { button: 'Link to Project', description: 'Attach a note to a specific project for organized practice logs.' },
-      { button: 'Tags', description: 'Add tags to categorize and find your notes later.' },
+      { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save unfinished focuses to revisit later' },
+      { icon: <List className="w-4 h-4" />, label: 'View Backlog', description: 'See previously saved focuses you haven\'t completed yet' },
     ],
   },
   {
-    feature: 'Today\'s Focus',
-    icon: <Target className="w-4 h-4 text-primary" />,
+    feature: 'Notes',
+    featureIcon: <FileText className="w-4 h-4 text-primary" />,
+    definition: 'Capture ideas instantly with audio, video, images, or text — your personal practice journal entries',
     items: [
-      { button: 'Focus Input', description: 'Set a single goal for today\'s practice. Keeps you intentional.' },
-      { button: 'Focus History', description: 'View past daily focuses to track what you worked on.' },
-      { button: 'Link to Notes', description: 'Notes created during a focus day are automatically tagged.' },
-    ],
-  },
-  {
-    feature: 'Projects',
-    icon: <FolderOpen className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Create Project', description: 'Start a new project to organize notes for a song, piece, or long-term goal.' },
-      { button: 'Project Timeline', description: 'View all notes linked to a project in chronological order.' },
-      { button: 'Cover Image', description: 'Add a visual cover to personalize your project.' },
-      { button: 'Collaborators', description: 'Add friends as collaborators to share project progress.' },
-    ],
-  },
-  {
-    feature: 'Friends & Sharing',
-    icon: <Users className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Add Friend', description: 'Search for musicians by username and send a friend request.' },
-      { button: 'Friends Feed', description: 'See notes shared by your friends in a private feed.' },
-      { button: 'Share Note', description: 'Share a specific note with selected friends.' },
-      { button: 'Mute Friend', description: 'Hide a friend\'s posts from your feed without unfriending.' },
+      { icon: <Share2 className="w-4 h-4" />, label: 'Share Your Practice', description: 'Send a note to selected friends for feedback or inspiration' },
+      { icon: <ClappingHandsIcon className="w-4 h-4" />, label: 'Applause (on friend\'s notes)', description: 'Show appreciation for a friend\'s practice — like a virtual high-five' },
     ],
   },
   {
     feature: 'Groups',
-    icon: <Users className="w-4 h-4 text-primary" />,
+    featureIcon: <Users className="w-4 h-4 text-primary" />,
+    definition: 'Private spaces for bands, classes, or practice circles to share posts and coordinate together',
     items: [
-      { button: 'Create Group', description: 'Start a private group for your band, class, or practice circle.' },
-      { button: 'Group Posts', description: 'Share notes and updates with all group members.' },
-      { button: 'Events', description: 'Create and share events like rehearsals or performances.' },
-      { button: 'Mute Notifications', description: 'Mute post or event notifications per group in settings.' },
+      { icon: <Calendar className="w-4 h-4" />, label: 'Events', description: 'Create and share group events like rehearsals, jam sessions, or shows' },
+      { icon: <UserPlus className="w-4 h-4" />, label: 'Invite / Share', description: 'Invite friends to join your group or share the group externally' },
     ],
   },
   {
-    feature: 'Streaks & Rewards',
-    icon: <Trophy className="w-4 h-4 text-jazz-gold" />,
+    feature: 'Pursuits',
+    featureIcon: <Compass className="w-4 h-4 text-primary" />,
+    definition: 'Long-term musical efforts you\'re working toward — organize your practice around meaningful goals',
     items: [
-      { button: 'Streak Counter', description: 'Shows consecutive days you\'ve practiced. Updates daily.' },
-      { button: 'Streak Badges', description: 'Earn badges at 10, 30, 90, and 360 day milestones.' },
-      { button: 'Badge Count', description: 'Number on badge shows how many times you\'ve earned that milestone.' },
-    ],
-  },
-  {
-    feature: 'Practice Timer',
-    icon: <Timer className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Set Duration', description: 'Choose a preset time or type a custom duration (1-180 min).' },
-      { button: 'Timer Ring', description: 'Visual progress circle shows time remaining.' },
-      { button: 'Chime', description: 'Audio alert when timer completes.' },
-    ],
-  },
-  {
-    feature: 'Goals',
-    icon: <Target className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Create Goal', description: 'Set measurable goals with target dates or step counts.' },
-      { button: 'Progress Tracking', description: 'Update progress as you work toward your goal.' },
-      { button: 'Complete Goal', description: 'Mark goals complete and add a reflection.' },
-    ],
-  },
-  {
-    feature: 'Notifications',
-    icon: <Bell className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Bell Icon', description: 'View friend requests, shared notes, and activity alerts.' },
-      { button: 'Unread Badge', description: 'Number shows how many new notifications you have.' },
-    ],
-  },
-  {
-    feature: 'Profile',
-    icon: <Settings className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Edit Profile', description: 'Update your name, bio, instruments, and genres.' },
-      { button: 'Profile Picture', description: 'Tap the camera icon while editing to upload a photo.' },
-      { button: 'Practice Stats', description: 'View your total practice time and session history (Premium).' },
-      { button: 'Manage Plans', description: 'Upgrade to Premium or manage your subscription.' },
-    ],
-  },
-  {
-    feature: 'Memory Reminders',
-    icon: <Music className="w-4 h-4 text-primary" />,
-    items: [
-      { button: 'Memory Card', description: 'Resurfaces a random note from 7+ days ago to help you reflect.' },
-      { button: 'Refresh', description: 'Get a different memory if the current one doesn\'t resonate.' },
+      { icon: <Target className="w-4 h-4" />, label: 'Musical Goals', description: 'Set measurable goals with target dates or step-based progress' },
+      { icon: <FolderOpen className="w-4 h-4" />, label: 'Projects', description: 'Group notes together for albums, recitals, or long-term practice challenges' },
+      { icon: <CalendarDays className="w-4 h-4" />, label: 'Gigs', description: 'Track upcoming performances, releases, and musical events' },
     ],
   },
 ];
@@ -150,17 +92,28 @@ export function HelpTipsDialog() {
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] p-4">
           <div className="space-y-6">
-            {helpTips.map((section) => (
-              <div key={section.feature} className="space-y-2">
-                <div className="flex items-center gap-2 font-medium text-sm">
-                  {section.icon}
+            {helpSections.map((section) => (
+              <div key={section.feature} className="space-y-3">
+                {/* Feature header */}
+                <div className="flex items-center gap-2 font-semibold text-sm">
+                  {section.featureIcon}
                   <span>{section.feature}</span>
                 </div>
-                <div className="space-y-1.5 pl-6">
+                
+                {/* Feature definition */}
+                <p className="text-sm text-muted-foreground pl-6">
+                  {section.definition}
+                </p>
+                
+                {/* Items */}
+                <div className="space-y-2 pl-6">
                   {section.items.map((item, idx) => (
-                    <div key={idx} className="text-sm">
-                      <span className="text-foreground font-medium">{item.button}:</span>{' '}
-                      <span className="text-muted-foreground">{item.description}</span>
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <span className="text-muted-foreground mt-0.5 shrink-0">{item.icon}</span>
+                      <div>
+                        <span className="text-foreground font-medium">{item.label}:</span>{' '}
+                        <span className="text-muted-foreground">{item.description}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
