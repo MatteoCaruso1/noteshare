@@ -96,6 +96,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
   const [isSendingToFriends, setIsSendingToFriends] = useState(false);
+  const [customDescription, setCustomDescription] = useState(event?.description || '');
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Detect device type - must be before any early returns
@@ -292,6 +293,9 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
               <p>{format(eventDate, "h:mm a")}</p>
               {event.location && <p className="opacity-80">{event.location}</p>}
               {event.is_virtual && <p className="opacity-80">Virtual Event</p>}
+              {customDescription && (
+                <p className="opacity-80 line-clamp-2 pt-1">{customDescription}</p>
+              )}
             </div>
             
             {/* Branding - Music icon + Noteshare */}
@@ -303,6 +307,19 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
               <span className="text-xs font-semibold opacity-80">Noteshare</span>
             </div>
           </div>
+        </div>
+        
+        {/* Editable Description */}
+        <div className="pb-4">
+          <label className="text-sm text-muted-foreground block mb-2">Card description</label>
+          <textarea
+            value={customDescription}
+            onChange={(e) => setCustomDescription(e.target.value.slice(0, 100))}
+            placeholder="Add a short description..."
+            maxLength={100}
+            className="w-full bg-muted rounded-lg p-3 text-sm resize-none h-16 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+          <p className="text-xs text-muted-foreground text-right mt-1">{customDescription.length}/100</p>
         </div>
         
         {/* Share Options */}

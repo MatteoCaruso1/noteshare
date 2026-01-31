@@ -80,6 +80,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   const [selectedStyle, setSelectedStyle] = useState<CardStyle>('primary');
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
+  const [customDescription, setCustomDescription] = useState(group.description || '');
   const cardRef = useRef<HTMLDivElement>(null);
   const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
   
@@ -302,8 +303,8 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               </div>
             </div>
             
-            {group.description && (
-              <p className="text-sm opacity-80 line-clamp-2">{group.description}</p>
+            {customDescription && (
+              <p className="text-sm opacity-80 line-clamp-2">{customDescription}</p>
             )}
             
             {/* Branding - Music icon + Noteshare */}
@@ -315,6 +316,19 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               <span className="text-xs font-semibold opacity-80">Noteshare</span>
             </div>
           </div>
+        </div>
+        
+        {/* Editable Description */}
+        <div className="pb-4">
+          <label className="text-sm text-muted-foreground block mb-2">Card description</label>
+          <textarea
+            value={customDescription}
+            onChange={(e) => setCustomDescription(e.target.value.slice(0, 100))}
+            placeholder="Add a short description..."
+            maxLength={100}
+            className="w-full bg-muted rounded-lg p-3 text-sm resize-none h-16 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+          <p className="text-xs text-muted-foreground text-right mt-1">{customDescription.length}/100</p>
         </div>
         
         {/* Share Options */}
