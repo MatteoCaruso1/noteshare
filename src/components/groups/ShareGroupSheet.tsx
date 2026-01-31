@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -11,6 +11,7 @@ import { Link, MessageCircle, Music, Users, Globe, Lock, Loader2 } from 'lucide-
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -80,6 +81,41 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
+  
+  // Get the image to display - prefer profile_image, fall back to cover_image
+  const avatarImagePath = group.profile_image || group.cover_image || '';
+  const { signedUrl: avatarSignedUrl } = useSignedUrl(avatarImagePath);
+  
+  // Pre-convert avatar to base64 for html-to-image export (bypasses CORS)
+  useEffect(() => {
+    if (!avatarSignedUrl) {
+      setAvatarBase64(null);
+      return;
+    }
+    
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          setAvatarBase64(canvas.toDataURL('image/png'));
+        }
+      } catch (e) {
+        console.error('[ShareGroupSheet] Failed to convert avatar to base64:', e);
+      }
+    };
+    img.onerror = () => {
+      console.error('[ShareGroupSheet] Failed to load avatar image');
+      setAvatarBase64(null);
+    };
+    img.src = avatarSignedUrl;
+  }, [avatarSignedUrl]);
   
   // Detect device type - must be before any early returns
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
@@ -231,9 +267,15 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
             {/* Group avatar */}
             <div className="flex justify-center">
               <div className="w-16 h-16 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden">
-                {group.cover_image ? (
+                {avatarBase64 ? (
                   <img 
-                    src={group.cover_image} 
+                    src={avatarBase64} 
+                    alt={group.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : avatarSignedUrl ? (
+                  <img 
+                    src={avatarSignedUrl} 
                     alt={group.name}
                     className="w-full h-full object-cover"
                   />
