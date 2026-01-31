@@ -93,7 +93,7 @@ export function HelpTipsDialog() {
   return (
     <Dialog onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" data-tour="help-tips">
           <HelpCircle 
             className={`w-5 h-5 ${hasViewed ? 'text-foreground' : 'text-primary animate-pulse'}`} 
           />
