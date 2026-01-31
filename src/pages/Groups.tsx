@@ -267,7 +267,7 @@ const Groups = () => {
               <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 p-6">
                 <div className="relative z-10">
                   <h2 className="text-2xl font-bold mb-2">Create Your Own Group</h2>
-                  <p className="text-muted-foreground mb-4 max-w-sm">
+                  <p className="text-muted-foreground mb-4 max-w-sm line-clamp-2">
                     Give your community a home on Noteshare. Connect with musicians, plan jams, and share your journey
                   </p>
                   <Button onClick={() => setCreateGroupOpen(true)}>
