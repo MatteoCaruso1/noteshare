@@ -29,7 +29,7 @@ const Groups = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [activeTab, setActiveTab] = useState<'find' | 'active'>('find');
+  const [activeTab, setActiveTab] = useState<'find' | 'my'>('find');
   const [searchQuery, setSearchQuery] = useState('');
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   
@@ -206,60 +206,11 @@ const Groups = () => {
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'find' | 'active')} className="w-full">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'find' | 'my')} className="w-full">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="find">Find</TabsTrigger>
+              <TabsTrigger value="find">Find Groups</TabsTrigger>
+              <TabsTrigger value="my">My Groups</TabsTrigger>
             </TabsList>
-
-            {/* Active Tab - User's Groups */}
-            <TabsContent value="active" className="mt-4 space-y-4">
-              {myGroupsLoading ? (
-                <div className="space-y-3">
-                  {[1, 2].map(i => (
-                    <div key={i} className="p-4 border border-border rounded-lg">
-                      <div className="flex gap-3">
-                        <Skeleton className="w-14 h-14 rounded-lg" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-5 w-32" />
-                          <Skeleton className="h-4 w-48" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : myGroups && myGroups.length > 0 ? (
-                <div className="space-y-3">
-                  {myGroups.map(group => (
-                    <GroupCard 
-                      key={group.id} 
-                      group={group}
-                      onClick={() => navigate(`/groups/${group.id}`)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center py-12 px-4">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                    <Waypoints className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                  <h2 className="text-xl font-semibold mb-2">No groups yet</h2>
-                  <p className="text-muted-foreground max-w-sm mb-6">
-                    Join or create a group to connect with fellow musicians in your community.
-                  </p>
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setActiveTab('find')}>
-                      <Search className="w-4 h-4 mr-2" />
-                      Find Groups
-                    </Button>
-                    <Button onClick={() => setCreateGroupOpen(true)}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Group
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </TabsContent>
 
             {/* Find Tab - Discover Groups */}
             <TabsContent value="find" className="mt-4 space-y-4">
@@ -333,6 +284,55 @@ const Groups = () => {
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            {/* My Groups Tab - User's Groups */}
+            <TabsContent value="my" className="mt-4 space-y-4">
+              {myGroupsLoading ? (
+                <div className="space-y-3">
+                  {[1, 2].map(i => (
+                    <div key={i} className="p-4 border border-border rounded-lg">
+                      <div className="flex gap-3">
+                        <Skeleton className="w-14 h-14 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-48" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : myGroups && myGroups.length > 0 ? (
+                <div className="space-y-3">
+                  {myGroups.map(group => (
+                    <GroupCard 
+                      key={group.id} 
+                      group={group}
+                      onClick={() => navigate(`/groups/${group.id}`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center py-12 px-4">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <Waypoints className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">No groups yet</h2>
+                  <p className="text-muted-foreground max-w-sm mb-6">
+                    Join or create a group to connect with fellow musicians in your community.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button variant="outline" onClick={() => setActiveTab('find')}>
+                      <Search className="w-4 h-4 mr-2" />
+                      Find Groups
+                    </Button>
+                    <Button onClick={() => setCreateGroupOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Group
+                    </Button>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </main>

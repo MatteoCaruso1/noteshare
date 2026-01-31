@@ -254,11 +254,12 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               key={style.id}
               onClick={() => setSelectedStyle(style.id)}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all select-none",
                 selectedStyle === style.id
                   ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 active:bg-muted/70"
               )}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               {style.label}
             </button>
