@@ -134,7 +134,7 @@ export function HelpTipsDialog() {
                 <div className="space-y-2 pl-6">
                   {section.items.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-sm">
-                      <span className="text-foreground mt-0.5 shrink-0">{item.icon}</span>
+                      <span className="text-foreground mt-0.5 shrink-0 w-5 flex justify-start">{item.icon}</span>
                       <div>
                         <span className="text-foreground font-bold">{item.label}:</span>{' '}
                         <span className="text-muted-foreground">{item.description}</span>
