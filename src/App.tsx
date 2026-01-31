@@ -12,6 +12,7 @@ import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
@@ -41,6 +42,7 @@ const Gigs = lazy(() => import("./pages/Gigs"));
 const GigDetail = lazy(() => import("./pages/GigDetail"));
 const FriendsJournals = lazy(() => import("./pages/FriendsJournals"));
 const Groups = lazy(() => import("./pages/Groups"));
+const GroupDetail = lazy(() => import("./pages/GroupDetail"));
 const Pursuits = lazy(() => import("./pages/WorkingToward"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -118,6 +120,7 @@ function AppInner() {
                   <Sonner />
                   <BrowserRouter>
                     <ScrollToTop />
+                    <ScrollLockDebugger />
                     <FloatingInstruments />
                     <AppHeader />
                     <GlobalSessionBanner />
@@ -140,6 +143,7 @@ function AppInner() {
                       <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
                       <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
                       <Route path="/groups" element={<Suspense fallback={null}><Groups /></Suspense>} />
+                      <Route path="/groups/:id" element={<Suspense fallback={null}><GroupDetail /></Suspense>} />
                       <Route path="/pursuits" element={<Suspense fallback={null}><Pursuits /></Suspense>} />
                       <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
                       <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />

@@ -42,6 +42,7 @@ export interface PracticeSession {
   is_active: boolean;
   paused_at: string | null;
   paused_duration_ms: number;
+  collaborator_ids: string[] | null;
   created_at: string;
 }
 
@@ -70,6 +71,7 @@ export interface Note {
 export interface NoteWithAuthor extends Note {
   author: Profile;
   session?: PracticeSession | null;
+  sessionCollaborators?: Profile[] | null; // Collaborators from session
   project?: { id: string; title: string } | null;
   goal?: { id: string; title: string | null; content: string } | null;
   gig?: { id: string; title: string } | null;

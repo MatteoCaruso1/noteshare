@@ -1,5 +1,10 @@
-import { useLayoutEffect, useRef, useCallback } from 'react';
+import { useLayoutEffect, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import {
+  isAnyOverlayOpen,
+  hasDocumentScrollLock,
+  clearDocumentScrollLocks,
+} from '@/lib/scrollLock';
 
 // Track which navigations should scroll to top (explicit nav bar clicks)
 const pendingScrollToTop = { current: false };
@@ -11,27 +16,113 @@ export function markScrollToTop(_path: string) {
 export function ScrollToTop() {
   const { pathname } = useLocation();
   const prevPathname = useRef(pathname);
-  const clearScrollLocks = useCallback(() => {
-    // Clear any stuck scroll locks from Radix dialogs or animations
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-    document.body.removeAttribute('data-scroll-locked');
-  }, []);
+  const clearTimeoutRef = useRef<number | null>(null);
+  const watchdogRef = useRef<number | null>(null);
 
-  const scrollToTop = useCallback(() => {
-    // Sync scroll reset (iOS-safe)
+  const scrollToTop = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Startup watchdog: for ~3 seconds after mount, periodically clear stuck
+  // scroll locks if no overlay is actually open.
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    let elapsed = 0;
+    const WATCHDOG_INTERVAL = 250;
+    const WATCHDOG_DURATION = 3000;
+
+    watchdogRef.current = window.setInterval(() => {
+      elapsed += WATCHDOG_INTERVAL;
+      if (elapsed >= WATCHDOG_DURATION) {
+        if (watchdogRef.current) {
+          window.clearInterval(watchdogRef.current);
+          watchdogRef.current = null;
+        }
+        return;
+      }
+      // Clear locks only when no overlay is open
+      if (!isAnyOverlayOpen() && hasDocumentScrollLock()) {
+        clearDocumentScrollLocks();
+      }
+    }, WATCHDOG_INTERVAL);
+
+    return () => {
+      if (watchdogRef.current) {
+        window.clearInterval(watchdogRef.current);
+        watchdogRef.current = null;
+      }
+    };
   }, []);
 
-  // When route changes, clear scroll locks and optionally scroll to top
+  // ─────────────────────────────────────────────────────────────────────────
+  // MutationObserver: watch for stuck scroll locks (attributes, classes, styles)
+  // and clear them if no dialog is actually open.
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (hasDocumentScrollLock()) {
+        // Clear any pending timeout
+        if (clearTimeoutRef.current) {
+          window.clearTimeout(clearTimeoutRef.current);
+        }
+        // Wait 500ms, then check if dialog is still open
+        clearTimeoutRef.current = window.setTimeout(() => {
+          if (!isAnyOverlayOpen()) {
+            clearDocumentScrollLocks();
+          }
+        }, 500);
+      }
+    });
+
+    // Observe body attributes + styles
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-scroll-locked', 'class', 'style'],
+    });
+
+    // Observe html attributes + styles
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-scroll-locked', 'class', 'style'],
+    });
+
+    return () => {
+      observer.disconnect();
+      if (clearTimeoutRef.current) {
+        window.clearTimeout(clearTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Clear scroll locks on mount
+  // ─────────────────────────────────────────────────────────────────────────
+  useLayoutEffect(() => {
+    if (!isAnyOverlayOpen()) {
+      clearDocumentScrollLocks();
+    }
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // When route changes, clear scroll locks immediately + delayed
+  // ─────────────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
     if (pathname === prevPathname.current) return;
 
-    // Always clear scroll locks on route change
-    clearScrollLocks();
+    // Immediate clear
+    if (!isAnyOverlayOpen()) {
+      clearDocumentScrollLocks();
+    }
+
+    // Delayed clear to catch late-applied locks
+    const delayedClear = window.setTimeout(() => {
+      if (!isAnyOverlayOpen()) {
+        clearDocumentScrollLocks();
+      }
+    }, 100);
 
     if (pendingScrollToTop.current) {
       pendingScrollToTop.current = false;
@@ -39,7 +130,11 @@ export function ScrollToTop() {
     }
 
     prevPathname.current = pathname;
-  }, [pathname, scrollToTop, clearScrollLocks]);
+
+    return () => {
+      window.clearTimeout(delayedClear);
+    };
+  }, [pathname]);
 
   return null;
 }
