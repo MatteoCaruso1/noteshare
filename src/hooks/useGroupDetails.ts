@@ -9,6 +9,7 @@ export interface GroupDetail {
   name: string;
   description: string | null;
   cover_image: string | null;
+  profile_image: string | null;
   focus_type: string;
   focus_details: string[] | null;
   group_type: string[];
@@ -200,7 +201,7 @@ export function useUpdateGroup() {
       updates 
     }: { 
       groupId: string; 
-      updates: Partial<Pick<GroupDetail, 'name' | 'description' | 'cover_image' | 'focus_type' | 'focus_details' | 'group_type' | 'privacy' | 'location_type' | 'city'>> 
+      updates: Partial<Pick<GroupDetail, 'name' | 'description' | 'cover_image' | 'profile_image' | 'focus_type' | 'focus_details' | 'group_type' | 'privacy' | 'location_type' | 'city'>> 
     }) => {
       const { data, error } = await supabase
         .from('groups')

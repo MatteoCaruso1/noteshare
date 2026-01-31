@@ -177,7 +177,13 @@ export default function GroupDetail() {
           {/* Group avatar overlapping banner */}
           <div className="absolute -bottom-8 left-10">
             <div className="w-20 h-20 rounded-xl bg-card border-4 border-background flex items-center justify-center overflow-hidden shadow-lg">
-              {group.cover_image && !isPresetHeader(group.cover_image) ? (
+              {group.profile_image ? (
+                <SignedImage 
+                  src={group.profile_image} 
+                  alt={group.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : group.cover_image && !isPresetHeader(group.cover_image) ? (
                 <SignedImage 
                   src={group.cover_image} 
                   alt={group.name}

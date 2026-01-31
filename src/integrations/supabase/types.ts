@@ -506,6 +506,7 @@ export type Database = {
           name: string
           owner_id: string
           privacy: string
+          profile_image: string | null
           updated_at: string
         }
         Insert: {
@@ -522,6 +523,7 @@ export type Database = {
           name: string
           owner_id: string
           privacy?: string
+          profile_image?: string | null
           updated_at?: string
         }
         Update: {
@@ -538,6 +540,7 @@ export type Database = {
           name?: string
           owner_id?: string
           privacy?: string
+          profile_image?: string | null
           updated_at?: string
         }
         Relationships: [
