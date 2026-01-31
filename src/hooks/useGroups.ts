@@ -162,42 +162,25 @@ export function useCreateGroup() {
     mutationFn: async (data: CreateGroupData) => {
       if (!profile?.id) throw new Error('Not authenticated');
       
-      // Validate required fields
-      if (!data.name?.trim()) throw new Error('Group name is required');
-      if (!data.focus_type) throw new Error('Focus type is required');
-      if (!data.group_type?.length) throw new Error('Group type is required');
-      
-      console.log('[useCreateGroup] Creating group with data:', { 
-        name: data.name, 
-        focus_type: data.focus_type,
-        group_type: data.group_type,
-        privacy: data.privacy,
-      });
-      
       // Create the group
       const { data: group, error: groupError } = await supabase
         .from('groups')
         .insert({
           owner_id: profile.id,
-          name: data.name.trim(),
-          description: data.description?.trim() || null,
+          name: data.name,
+          description: data.description || null,
           cover_image: data.cover_image || null,
           focus_type: data.focus_type,
           focus_details: data.focus_details || [],
           group_type: data.group_type,
-          privacy: data.privacy || 'public',
-          location_type: data.location_type || 'global',
-          city: data.city?.trim() || null,
+          privacy: data.privacy,
+          location_type: data.location_type,
+          city: data.city || null,
         })
         .select()
         .single();
       
-      if (groupError) {
-        console.error('[useCreateGroup] Failed to insert group:', groupError);
-        throw groupError;
-      }
-      
-      console.log('[useCreateGroup] Group created, adding owner as admin:', group.id);
+      if (groupError) throw groupError;
       
       // Add owner as admin member
       const { error: memberError } = await supabase
@@ -209,12 +192,8 @@ export function useCreateGroup() {
           status: 'active',
         });
       
-      if (memberError) {
-        console.error('[useCreateGroup] Failed to add owner as member:', memberError);
-        throw memberError;
-      }
+      if (memberError) throw memberError;
       
-      console.log('[useCreateGroup] Group creation complete:', group.id);
       return group as Group;
     },
     onSuccess: () => {
@@ -222,10 +201,9 @@ export function useCreateGroup() {
       queryClient.invalidateQueries({ queryKey: ['discover-groups'] });
       toast.success('Group created successfully!');
     },
-    onError: (error: Error) => {
-      console.error('[useCreateGroup] Error:', error);
-      const message = error.message || 'Failed to create group';
-      toast.error(message.includes('duplicate') ? 'A group with this name already exists' : message);
+    onError: (error) => {
+      console.error('Failed to create group:', error);
+      toast.error('Failed to create group');
     },
   });
 }
@@ -236,16 +214,8 @@ export function useJoinGroup() {
   const { profile } = useAuth();
   
   return useMutation({
-    mutationFn: async ({ groupId, isPrivate, hasInvite }: { 
-      groupId: string; 
-      isPrivate: boolean;
-      hasInvite?: boolean;
-    }) => {
+    mutationFn: async ({ groupId, isPrivate }: { groupId: string; isPrivate: boolean }) => {
       if (!profile?.id) throw new Error('Not authenticated');
-      
-      // For private groups: if invited, join as active; otherwise, request (pending)
-      // For public groups: always join as active
-      const status = isPrivate && !hasInvite ? 'pending' : 'active';
       
       const { data, error } = await supabase
         .from('group_members')
@@ -253,19 +223,18 @@ export function useJoinGroup() {
           group_id: groupId,
           user_id: profile.id,
           role: 'member',
-          status,
+          status: isPrivate ? 'pending' : 'active',
         })
         .select()
         .single();
       
       if (error) throw error;
-      return { ...data, statusResult: status };
+      return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (_, { isPrivate }) => {
       queryClient.invalidateQueries({ queryKey: ['my-groups'] });
       queryClient.invalidateQueries({ queryKey: ['group-membership'] });
-      queryClient.invalidateQueries({ queryKey: ['group-invites'] });
-      toast.success(data.statusResult === 'pending' ? 'Request to join sent!' : 'Joined group successfully!');
+      toast.success(isPrivate ? 'Request to join sent!' : 'Joined group successfully!');
     },
     onError: (error) => {
       console.error('Failed to join group:', error);

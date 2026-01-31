@@ -1,34 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { 
   Music, Guitar, Mic2, Radio, Building2, 
   Globe, MapPin, Lock, Unlock, Image as ImageIcon, 
-  Check, Camera, X, Trash2, Shield, ShieldOff, Crown, Loader2
+  Check, Camera, X
 } from 'lucide-react';
-import { useUpdateGroup, useDeleteGroup, useGroupMembers, useUpdateMemberRole, GroupDetail } from '@/hooks/useGroupDetails';
+import { useUpdateGroup, GroupDetail } from '@/hooks/useGroupDetails';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -58,19 +45,12 @@ const GROUP_TYPES = [
 ];
 
 export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogProps) {
-  const navigate = useNavigate();
   const updateGroup = useUpdateGroup();
-  const deleteGroup = useDeleteGroup();
-  const updateMemberRole = useUpdateMemberRole();
-  const { data: members = [] } = useGroupMembers(group.id);
   const { uploadImage, uploading } = useMediaUpload();
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const isOwner = group.owner_id === profile?.id;
-  
   const [name, setName] = useState(group.name);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [description, setDescription] = useState(group.description || '');
   const [focusType, setFocusType] = useState(group.focus_type);
   const [groupType, setGroupType] = useState<string[]>(group.group_type || []);
@@ -151,36 +131,9 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
     onOpenChange(false);
   };
   
-  const handleDelete = async () => {
-    await deleteGroup.mutateAsync(group.id);
-    setShowDeleteConfirm(false);
-    onOpenChange(false);
-    navigate('/groups');
-  };
-  
   const displayImage = previewUrl || coverImage;
   
   return (
-    <>
-    <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Group</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete "{group.name}"? This action cannot be undone. All group events and member data will be permanently removed.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {deleteGroup.isPending ? 'Deleting...' : 'Delete Group'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 gap-0 max-h-[85vh] flex flex-col">
         <DialogHeader className="p-6 pb-0">
@@ -435,87 +388,11 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                 )}
               </div>
             </div>
-            
-            {/* Admin Management - Owner only */}
-            {isOwner && members.length > 0 && (
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  Manage Admins
-                </Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Admins can edit group details, approve join requests, and create events.
-                </p>
-                <div className="space-y-2">
-                  {members
-                    .filter(m => m.user_id !== profile?.id) // Don't show owner
-                    .map(member => {
-                      const isAdmin = member.role === 'admin';
-                      const isUpdating = updateMemberRole.isPending;
-                      
-                      return (
-                        <div
-                          key={member.id}
-                          className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30"
-                        >
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={member.profile?.avatar || undefined} />
-                            <AvatarFallback>
-                              {member.profile?.name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">{member.profile?.name}</p>
-                            {isAdmin && (
-                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 gap-1">
-                                <Shield className="w-2.5 h-2.5" />
-                                Admin
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          <Button
-                            size="sm"
-                            variant={isAdmin ? "outline" : "default"}
-                            className="h-7 text-xs gap-1"
-                            disabled={isUpdating}
-                            onClick={() => updateMemberRole.mutate({
-                              memberId: member.id,
-                              groupId: group.id,
-                              newRole: isAdmin ? 'member' : 'admin',
-                            })}
-                          >
-                            {isUpdating ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : isAdmin ? (
-                              <>
-                                <ShieldOff className="w-3 h-3" />
-                                Remove
-                              </>
-                            ) : (
-                              <>
-                                <Shield className="w-3 h-3" />
-                                Make Admin
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  {members.filter(m => m.user_id !== profile?.id).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No other members yet. Invite people to your group!
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </ScrollArea>
         
         {/* Submit Button - Fixed at bottom */}
-        <div className="p-6 pt-4 border-t border-border space-y-3">
+        <div className="p-6 pt-4 border-t border-border">
           <Button
             className="w-full"
             onClick={handleSave}
@@ -523,19 +400,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
           >
             {updateGroup.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
-          
-          {/* Delete Group Button */}
-          <Button
-            variant="ghost"
-            className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete Group
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
-    </>
   );
 }

@@ -71,40 +71,40 @@ export function GroupPostCapture({
   const hasContent = noteText || audioFiles.length > 0;
 
   return (
-    <Card className="bg-card border-border p-2.5">
+    <Card className="bg-card border-border p-3">
       {/* Main input row: Avatar + Text + Buttons */}
-      <div className="flex items-center gap-2">
-        <Avatar className="w-7 h-7 shrink-0">
+      <div className="flex items-center gap-3">
+        <Avatar className="w-10 h-10 shrink-0">
           <AvatarImage src={avatarUrl || undefined} />
-          <AvatarFallback className="text-xs">{profileName?.charAt(0) || '?'}</AvatarFallback>
+          <AvatarFallback>{profileName?.charAt(0) || '?'}</AvatarFallback>
         </Avatar>
         
         <div className="flex-1 min-w-0">
           <RichTextarea
-            placeholder="Post something"
+            placeholder={`Share something with ${groupName}...`}
             value={noteText}
             onChange={setNoteText}
-            className="min-h-[40px]"
+            className="min-h-[44px]"
           />
         </div>
 
         {/* Record and Save buttons on far right */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <AudioRecorder 
             onRecorded={handleAudioRecorded} 
             onRecordingChange={setIsRecordingAudio}
-            className="[&>button]:w-7 [&>button]:h-7 [&>button]:flex-none"
+            className="[&>button]:w-9 [&>button]:flex-none"
           />
           <Button
             size="icon"
-            className={`h-7 w-7 bg-primary text-primary-foreground transition-opacity ${
+            className={`h-9 w-9 bg-primary text-primary-foreground transition-opacity ${
               isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
             }`}
             onClick={handleSavePost}
             disabled={isSubmitting || uploading || !hasContent || isRecordingAudio}
             title={isRecordingAudio ? 'Stop recording first' : 'Post'}
           >
-            <Save className="w-3.5 h-3.5" />
+            <Save className="w-4 h-4" />
           </Button>
         </div>
       </div>
