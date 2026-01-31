@@ -26,7 +26,7 @@ interface HelpSection {
 const helpSections: HelpSection[] = [
   {
     feature: 'Practice Session',
-    featureIcon: <Timer className="w-4 h-4 text-primary" />,
+    featureIcon: <Timer className="w-4 h-4 text-foreground" />,
     definition: 'A timed workflow that tracks your practice, provides helpful tools, and saves your practice history',
     items: [
       { icon: <Mic className="w-4 h-4" />, label: 'Record Audio', description: 'Record clips directly within your practice session' },
@@ -38,7 +38,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Practice Board',
-    featureIcon: <ClipboardList className="w-4 h-4 text-primary" />,
+    featureIcon: <ClipboardList className="w-4 h-4 text-foreground" />,
     definition: 'Document your cross-session focus areas to maintain intentionality across sessions',
     items: [
       { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Boards to revisit later' },
@@ -47,7 +47,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Notes',
-    featureIcon: <FileText className="w-4 h-4 text-primary" />,
+    featureIcon: <FileText className="w-4 h-4 text-foreground" />,
     definition: 'Your personal practice journal entries, either from Practice Sessions or Quick Notes',
     items: [
       { icon: <Share2 className="w-4 h-4" />, label: 'Share Your Practice', description: 'Send a note to selected friends, either within or outside Noteshare' },
@@ -56,7 +56,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Groups',
-    featureIcon: <Users className="w-4 h-4 text-primary" />,
+    featureIcon: <Users className="w-4 h-4 text-foreground" />,
     definition: 'Spaces to find and bring together your musical community',
     items: [
       { icon: <Calendar className="w-4 h-4" />, label: 'Events', description: 'Create and share group events like jam sessions, rehearsals, or shows' },
@@ -65,7 +65,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Pursuits',
-    featureIcon: <Compass className="w-4 h-4 text-primary" />,
+    featureIcon: <Compass className="w-4 h-4 text-foreground" />,
     definition: 'Long-term musical efforts you\'re working toward',
     items: [
       { icon: <Target className="w-4 h-4" />, label: 'Musical Goals', description: 'Set your musical goals for consistent reference' },
@@ -85,8 +85,8 @@ export function HelpTipsDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] p-0">
         <DialogHeader className="p-4 pb-2 border-b border-border">
-          <DialogTitle className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2 font-bold">
+            <HelpCircle className="w-5 h-5 text-foreground" />
             How Noteshare Works
           </DialogTitle>
         </DialogHeader>
@@ -95,7 +95,7 @@ export function HelpTipsDialog() {
             {helpSections.map((section) => (
               <div key={section.feature} className="space-y-3">
                 {/* Feature header */}
-                <div className="flex items-center gap-2 font-semibold text-sm">
+                <div className="flex items-center gap-2 font-bold text-sm">
                   {section.featureIcon}
                   <span>{section.feature}</span>
                 </div>
@@ -109,9 +109,9 @@ export function HelpTipsDialog() {
                 <div className="space-y-2 pl-6">
                   {section.items.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-sm">
-                      <span className="text-muted-foreground mt-0.5 shrink-0">{item.icon}</span>
+                      <span className="text-foreground mt-0.5 shrink-0">{item.icon}</span>
                       <div>
-                        <span className="text-foreground font-medium">{item.label}:</span>{' '}
+                        <span className="text-foreground font-bold">{item.label}:</span>{' '}
                         <span className="text-muted-foreground">{item.description}</span>
                       </div>
                     </div>
