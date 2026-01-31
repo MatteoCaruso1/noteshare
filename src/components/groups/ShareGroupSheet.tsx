@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
+import { unlockScrollAfterClose } from '@/lib/scrollLock';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -225,9 +226,14 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       : STYLE_OPTIONS.filter(s => s.id !== 'custom'),
     [group.cover_image]
   );
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (!nextOpen) unlockScrollAfterClose();
+  };
   
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl overflow-y-auto">
         <SheetHeader className="flex flex-row items-center justify-between pb-4">
           <Button

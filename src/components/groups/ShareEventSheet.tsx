@@ -16,6 +16,7 @@ import { toPng } from 'html-to-image';
 import { useFriends } from '@/hooks/useFriendships';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { unlockScrollAfterClose } from '@/lib/scrollLock';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -237,9 +238,14 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
   
   // Guard against null event - AFTER all hooks
   if (!event || !eventDate) return null;
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (!nextOpen) unlockScrollAfterClose();
+  };
   
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl overflow-y-auto">
         <SheetHeader className="flex flex-row items-center justify-between pb-4">
           <Button
