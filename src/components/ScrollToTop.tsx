@@ -1,10 +1,5 @@
-import { useLayoutEffect, useRef, useEffect } from 'react';
+import { useLayoutEffect, useRef, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import {
-  isAnyOverlayOpen,
-  hasDocumentScrollLock,
-  clearDocumentScrollLocks,
-} from '@/lib/scrollLock';
 
 // Track which navigations should scroll to top (explicit nav bar clicks)
 const pendingScrollToTop = { current: false };
@@ -17,76 +12,72 @@ export function ScrollToTop() {
   const { pathname } = useLocation();
   const prevPathname = useRef(pathname);
   const clearTimeoutRef = useRef<number | null>(null);
-  const watchdogRef = useRef<number | null>(null);
 
-  const scrollToTop = () => {
+  const clearScrollLocks = useCallback(() => {
+    // Clear any stuck scroll locks from Radix dialogs or animations
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.pointerEvents = '';
+    document.body.removeAttribute('data-scroll-locked');
+    document.documentElement.removeAttribute('data-scroll-locked');
+
+    // Some libraries lock scroll by toggling overflow-hidden class
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden');
+  }, []);
+
+  const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Startup watchdog: for ~3 seconds after mount, periodically clear stuck
-  // scroll locks if no overlay is actually open.
-  // ─────────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    let elapsed = 0;
-    const WATCHDOG_INTERVAL = 250;
-    const WATCHDOG_DURATION = 3000;
-
-    watchdogRef.current = window.setInterval(() => {
-      elapsed += WATCHDOG_INTERVAL;
-      if (elapsed >= WATCHDOG_DURATION) {
-        if (watchdogRef.current) {
-          window.clearInterval(watchdogRef.current);
-          watchdogRef.current = null;
-        }
-        return;
-      }
-      // Clear locks only when no overlay is open
-      if (!isAnyOverlayOpen() && hasDocumentScrollLock()) {
-        clearDocumentScrollLocks();
-      }
-    }, WATCHDOG_INTERVAL);
-
-    return () => {
-      if (watchdogRef.current) {
-        window.clearInterval(watchdogRef.current);
-        watchdogRef.current = null;
-      }
-    };
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // MutationObserver: watch for stuck scroll locks (attributes, classes, styles)
-  // and clear them if no dialog is actually open.
-  // ─────────────────────────────────────────────────────────────────────────
+  // Check if a Radix dialog/sheet is actually open
+  const isDialogOpen = useCallback(() => {
+    return !!(
+      document.querySelector('[role="dialog"][data-state="open"]') ||
+      document.querySelector('[data-radix-dialog-overlay]') ||
+      document.querySelector('[data-vaul-drawer]')
+    );
+  }, []);
+
+  // MutationObserver to watch for stuck scroll locks
   useEffect(() => {
     const observer = new MutationObserver(() => {
-      if (hasDocumentScrollLock()) {
+      const hasScrollLock = 
+        document.body.hasAttribute('data-scroll-locked') ||
+        document.body.classList.contains('overflow-hidden') ||
+        document.documentElement.hasAttribute('data-scroll-locked') ||
+        document.documentElement.classList.contains('overflow-hidden');
+
+      if (hasScrollLock) {
         // Clear any pending timeout
         if (clearTimeoutRef.current) {
           window.clearTimeout(clearTimeoutRef.current);
         }
         // Wait 500ms, then check if dialog is still open
         clearTimeoutRef.current = window.setTimeout(() => {
-          if (!isAnyOverlayOpen()) {
-            clearDocumentScrollLocks();
+          if (!isDialogOpen()) {
+            clearScrollLocks();
           }
         }, 500);
       }
     });
 
-    // Observe body attributes + styles
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ['data-scroll-locked', 'class', 'style'],
     });
 
-    // Observe html attributes + styles
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-scroll-locked', 'class', 'style'],
+      attributeFilter: ['data-scroll-locked', 'class'],
     });
 
     return () => {
@@ -95,32 +86,24 @@ export function ScrollToTop() {
         window.clearTimeout(clearTimeoutRef.current);
       }
     };
-  }, []);
+  }, [clearScrollLocks, isDialogOpen]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // Clear scroll locks on mount
-  // ─────────────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
-    if (!isAnyOverlayOpen()) {
-      clearDocumentScrollLocks();
-    }
-  }, []);
+    clearScrollLocks();
+  }, [clearScrollLocks]);
 
-  // ─────────────────────────────────────────────────────────────────────────
   // When route changes, clear scroll locks immediately + delayed
-  // ─────────────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
     if (pathname === prevPathname.current) return;
 
     // Immediate clear
-    if (!isAnyOverlayOpen()) {
-      clearDocumentScrollLocks();
-    }
+    clearScrollLocks();
 
-    // Delayed clear to catch late-applied locks
+    // Delayed clear to catch late-applied locks (e.g., after React finishes rendering)
     const delayedClear = window.setTimeout(() => {
-      if (!isAnyOverlayOpen()) {
-        clearDocumentScrollLocks();
+      if (!isDialogOpen()) {
+        clearScrollLocks();
       }
     }, 100);
 
@@ -134,7 +117,7 @@ export function ScrollToTop() {
     return () => {
       window.clearTimeout(delayedClear);
     };
-  }, [pathname]);
+  }, [pathname, scrollToTop, clearScrollLocks, isDialogOpen]);
 
   return null;
 }

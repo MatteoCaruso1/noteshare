@@ -616,10 +616,7 @@ function EventDetailSheet({
             <div className="flex gap-3 pt-4">
               <Button 
                 className="flex-1" 
-                onClick={() => {
-                  onOpenChange(false); // Close parent sheet first to prevent nested scroll locks
-                  setTimeout(() => setShowShare(true), 100); // Open share sheet after animation
-                }}
+                onClick={() => setShowShare(true)}
               >
                 <Share2 className="w-4 h-4 mr-2" />
                 Share Event

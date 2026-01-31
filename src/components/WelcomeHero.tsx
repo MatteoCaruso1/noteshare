@@ -11,6 +11,18 @@ export function WelcomeHero() {
   const [isExiting, setIsExiting] = useState(false);
   const [scrollOpacity, setScrollOpacity] = useState(1);
 
+  // Hide scrollbars during exit animation to prevent grey lines
+  useEffect(() => {
+    if (isExiting) {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, [isExiting]);
+
   // Scroll-linked opacity for hero content
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +40,9 @@ export function WelcomeHero() {
   const handleStartPracticing = () => {
     setIsExiting(true);
     setTimeout(() => {
+      // Reset overflow BEFORE navigation to prevent stuck scroll locks
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
       // If already signed in, go to main app; otherwise go to auth
       navigate(user ? '/' : '/auth');
     }, 400);

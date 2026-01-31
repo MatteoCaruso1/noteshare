@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -7,12 +7,10 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { GroupDetail } from '@/hooks/useGroupDetails';
-import { Link, MessageCircle, Music, Users, Globe, Lock, Loader2, Download } from 'lucide-react';
+import { Link, MessageCircle, Music, Users, Globe, Lock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
-import { useSignedUrl } from '@/hooks/useSignedUrl';
-import { unlockScrollAfterClose } from '@/lib/scrollLock';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -81,50 +79,11 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
   const [selectedStyle, setSelectedStyle] = useState<CardStyle>('primary');
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
-  const [customDescription, setCustomDescription] = useState(group.description || '');
   const cardRef = useRef<HTMLDivElement>(null);
-  const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
-  
-  // Get the image to display - prefer profile_image, fall back to cover_image
-  const avatarImagePath = group.profile_image || group.cover_image || '';
-  const { signedUrl: avatarSignedUrl } = useSignedUrl(avatarImagePath);
-  
-  // Pre-convert avatar to base64 for html-to-image export (bypasses CORS)
-  useEffect(() => {
-    if (!avatarSignedUrl) {
-      setAvatarBase64(null);
-      return;
-    }
-    
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          setAvatarBase64(canvas.toDataURL('image/png'));
-        }
-      } catch (e) {
-        console.error('[ShareGroupSheet] Failed to convert avatar to base64:', e);
-      }
-    };
-    img.onerror = () => {
-      console.error('[ShareGroupSheet] Failed to load avatar image');
-      setAvatarBase64(null);
-    };
-    img.src = avatarSignedUrl;
-  }, [avatarSignedUrl]);
   
   // Detect device type - must be before any early returns
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
-  // Show iMessage button on iOS, and show generic "Share" on other mobile devices
-  // On desktop, show "Save Image" button for testing/sharing via other means
-  const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
-  const showShareButton = canShareNative || deviceInfo.isDesktop; // Always show on desktop as "Save Image"
+  const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
   
   // Use production URL for sharing - notesharemusic.com is the canonical domain
   // Fallback to window.location.origin for development/preview
@@ -162,7 +121,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
     }
   }, []);
   
-  const handleShareOrSave = useCallback(async () => {
+  const handleIMessageShare = useCallback(async () => {
     if (isExporting) return; // Prevent double-click
     setIsExporting(true);
     setActiveButton('imessage');
@@ -178,13 +137,13 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       const shareText = `Join my Noteshare group "${group.name}"!\n\n.${shareUrl}.`;
       
       // Check if Web Share API is available and supports our files
-      if (canShareNative && navigator.share && navigator.canShare?.({ files })) {
+      if (navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({
           files,
           text: shareText,
         });
         toast.success('Shared successfully!');
-      } else if (canShareNative && navigator.share) {
+      } else if (navigator.share) {
         // Share without files (text only)
         await navigator.share({
           title: group.name,
@@ -192,16 +151,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
         });
         toast.success('Shared successfully!');
       } else {
-        // Desktop fallback: download the image
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'noteshare-group.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success('Image saved! You can now share it manually.');
+        toast.error('Sharing not supported on this device');
       }
     } catch (err) {
       // User cancelled share or error occurred
@@ -213,7 +163,7 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       setIsExporting(false);
       setActiveButton(null);
     }
-  }, [generateImage, shareUrl, group.name, isExporting, canShareNative]);
+  }, [generateImage, shareUrl, group.name, isExporting]);
 
   const currentStyle = useMemo(() => 
     STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0],
@@ -226,14 +176,9 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
       : STYLE_OPTIONS.filter(s => s.id !== 'custom'),
     [group.cover_image]
   );
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    onOpenChange(nextOpen);
-    if (!nextOpen) unlockScrollAfterClose();
-  };
   
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl overflow-y-auto">
         <SheetHeader className="flex flex-row items-center justify-between pb-4">
           <Button
@@ -285,15 +230,9 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
             {/* Group avatar */}
             <div className="flex justify-center">
               <div className="w-16 h-16 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden">
-                {avatarBase64 ? (
+                {group.cover_image ? (
                   <img 
-                    src={avatarBase64} 
-                    alt={group.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : avatarSignedUrl ? (
-                  <img 
-                    src={avatarSignedUrl} 
+                    src={group.cover_image} 
                     alt={group.name}
                     className="w-full h-full object-cover"
                   />
@@ -320,8 +259,8 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               </div>
             </div>
             
-            {customDescription && (
-              <p className="text-sm opacity-80 line-clamp-2">{customDescription}</p>
+            {group.description && (
+              <p className="text-sm opacity-80 line-clamp-2">{group.description}</p>
             )}
             
             {/* Branding - Music icon + Noteshare */}
@@ -333,19 +272,6 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               <span className="text-xs font-semibold opacity-80">Noteshare</span>
             </div>
           </div>
-        </div>
-        
-        {/* Editable Description */}
-        <div className="pb-4">
-          <label className="text-sm text-muted-foreground block mb-2">Card description</label>
-          <textarea
-            value={customDescription}
-            onChange={(e) => setCustomDescription(e.target.value.slice(0, 100))}
-            placeholder="Add a short description..."
-            maxLength={100}
-            className="w-full bg-muted rounded-lg p-3 text-sm resize-none h-16 focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          <p className="text-xs text-muted-foreground text-right mt-1">{customDescription.length}/100</p>
         </div>
         
         {/* Share Options */}
@@ -366,30 +292,22 @@ export function ShareGroupSheet({ open, onOpenChange, group }: ShareGroupSheetPr
               <span className="text-xs text-center">Copy<br/>Link</span>
             </button>
             
-            {/* Share/Save Image - shows on all devices */}
-            {showShareButton && (
+            {/* iMessage - iOS only */}
+            {canShareIMessage && (
               <button
-                onClick={handleShareOrSave}
+                onClick={handleIMessageShare}
                 disabled={isExporting}
                 className="flex flex-col items-center gap-2"
               >
-                <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
+                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center text-white">
                   {isExporting && activeButton === 'imessage' ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : deviceInfo.isDesktop ? (
-                    <Download className="w-5 h-5" />
                   ) : (
                     <MessageCircle className="w-5 h-5" />
                   )}
                 </div>
                 <span className="text-xs text-center">
-                  {isExporting && activeButton === 'imessage' 
-                    ? 'Preparing...' 
-                    : deviceInfo.isDesktop 
-                      ? 'Save Image' 
-                      : deviceInfo.isIOS 
-                        ? 'iMessage' 
-                        : 'Share'}
+                  {isExporting && activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
                 </span>
               </button>
             )}

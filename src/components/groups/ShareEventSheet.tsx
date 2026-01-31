@@ -9,14 +9,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { GroupEvent } from '@/hooks/useGroupDetails';
-import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2, Check, X, Download } from 'lucide-react';
+import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
 import { useFriends } from '@/hooks/useFriendships';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { unlockScrollAfterClose } from '@/lib/scrollLock';
 
 // Platform detection helpers
 const getDeviceInfo = () => {
@@ -97,15 +96,11 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
   const [isSendingToFriends, setIsSendingToFriends] = useState(false);
-  const [customDescription, setCustomDescription] = useState(event?.description || '');
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Detect device type - must be before any early returns
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
-  // Show iMessage button on iOS, and show generic "Share" on other mobile devices
-  // On desktop, show "Save Image" button for testing/sharing via other means
-  const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
-  const showShareButton = canShareNative || deviceInfo.isDesktop; // Always show on desktop as "Save Image"
+  const canShareIMessage = deviceInfo.isIOS; // Only iOS has iMessage
   
   // Friends list for in-app sharing
   const { data: friends = [] } = useFriends();
@@ -142,7 +137,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
     }
   }, []);
   
-  const handleShareOrSave = useCallback(async () => {
+  const handleIMessageShare = useCallback(async () => {
     if (isExporting || !event) return; // Prevent double-click
     setIsExporting(true);
     setActiveButton('imessage');
@@ -158,13 +153,13 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
       const shareText = `You're invited to my event on Noteshare!\n\n.${shareUrl}.`;
       
       // Check if Web Share API is available and supports our files
-      if (canShareNative && navigator.share && navigator.canShare?.({ files })) {
+      if (navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({
           files,
           text: shareText,
         });
         toast.success('Shared successfully!');
-      } else if (canShareNative && navigator.share) {
+      } else if (navigator.share) {
         // Share without files (text only)
         await navigator.share({
           title: event.name,
@@ -172,16 +167,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
         });
         toast.success('Shared successfully!');
       } else {
-        // Desktop fallback: download the image
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'noteshare-event.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success('Image saved! You can now share it manually.');
+        toast.error('Sharing not supported on this device');
       }
     } catch (err) {
       // User cancelled share or error occurred
@@ -193,7 +179,7 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
       setIsExporting(false);
       setActiveButton(null);
     }
-  }, [generateImage, shareUrl, event, isExporting, canShareNative]);
+  }, [generateImage, shareUrl, event, isExporting]);
 
   const handleSendToFriends = useCallback(async () => {
     if (selectedFriendIds.length === 0 || !profile?.id || !event) return;
@@ -238,14 +224,9 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
   
   // Guard against null event - AFTER all hooks
   if (!event || !eventDate) return null;
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    onOpenChange(nextOpen);
-    if (!nextOpen) unlockScrollAfterClose();
-  };
   
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl overflow-y-auto">
         <SheetHeader className="flex flex-row items-center justify-between pb-4">
           <Button
@@ -310,9 +291,6 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
               <p>{format(eventDate, "h:mm a")}</p>
               {event.location && <p className="opacity-80">{event.location}</p>}
               {event.is_virtual && <p className="opacity-80">Virtual Event</p>}
-              {customDescription && (
-                <p className="opacity-80 line-clamp-2 pt-1">{customDescription}</p>
-              )}
             </div>
             
             {/* Branding - Music icon + Noteshare */}
@@ -324,19 +302,6 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
               <span className="text-xs font-semibold opacity-80">Noteshare</span>
             </div>
           </div>
-        </div>
-        
-        {/* Editable Description */}
-        <div className="pb-4">
-          <label className="text-sm text-muted-foreground block mb-2">Card description</label>
-          <textarea
-            value={customDescription}
-            onChange={(e) => setCustomDescription(e.target.value.slice(0, 100))}
-            placeholder="Add a short description..."
-            maxLength={100}
-            className="w-full bg-muted rounded-lg p-3 text-sm resize-none h-16 focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          <p className="text-xs text-muted-foreground text-right mt-1">{customDescription.length}/100</p>
         </div>
         
         {/* Share Options */}
@@ -357,30 +322,22 @@ export function ShareEventSheet({ open, onOpenChange, event, groupName, eventCov
                 <span className="text-xs text-center">Copy<br/>Link</span>
               </button>
               
-              {/* Share/Save Image - shows on all devices */}
-              {showShareButton && (
+              {/* iMessage - iOS only */}
+              {canShareIMessage && (
                 <button
-                  onClick={handleShareOrSave}
+                  onClick={handleIMessageShare}
                   disabled={isExporting}
                   className="flex flex-col items-center gap-2"
                 >
-                  <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
+                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center text-white">
                     {isExporting && activeButton === 'imessage' ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : deviceInfo.isDesktop ? (
-                      <Download className="w-5 h-5" />
                     ) : (
                       <MessageCircle className="w-5 h-5" />
                     )}
                   </div>
                   <span className="text-xs text-center">
-                    {isExporting && activeButton === 'imessage' 
-                      ? 'Preparing...' 
-                      : deviceInfo.isDesktop 
-                        ? 'Save Image' 
-                        : deviceInfo.isIOS 
-                          ? 'iMessage' 
-                          : 'Share'}
+                    {isExporting && activeButton === 'imessage' ? 'Preparing...' : 'iMessage'}
                   </span>
                 </button>
               )}
