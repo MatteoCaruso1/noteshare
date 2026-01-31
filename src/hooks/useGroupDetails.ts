@@ -59,9 +59,9 @@ export interface GroupMemberWithProfile {
 }
 
 // Fetch a single group by ID
+// Note: Public groups can be fetched without authentication
+// Private groups require the user to be a member or have an invite
 export function useGroupDetail(groupId: string | undefined) {
-  const { profile } = useAuth();
-  
   return useQuery({
     queryKey: ['group-detail', groupId],
     queryFn: async () => {
@@ -83,7 +83,7 @@ export function useGroupDetail(groupId: string | undefined) {
       if (error) throw error;
       return data as GroupDetail | null;
     },
-    enabled: !!groupId && !!profile?.id,
+    enabled: !!groupId,
   });
 }
 
