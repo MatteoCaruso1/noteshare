@@ -150,7 +150,7 @@ export default function GroupDetail() {
 
   return (
     <PageLayout>
-      <div className="h-full overflow-y-auto overflow-x-hidden">
+      <div className="overflow-x-hidden">
       {/* Header with back button and settings */}
       <div className="relative -mt-12 -mx-4 overflow-hidden">
         {/* Cover Image / Header */}
