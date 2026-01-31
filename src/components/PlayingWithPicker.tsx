@@ -70,38 +70,36 @@ export function PlayingWithPicker({ selectedIds, onSelect }: PlayingWithPickerPr
             
             {friends && friends.length > 0 ? (
               <ScrollArea className="h-48">
-                <div className="space-y-1 pr-3">
-                  {filteredFriends.length > 0 ? (
-                    filteredFriends.map((friend) => {
-                      const isSelected = selectedIds.includes(friend.id);
-                      return (
-                        <div
-                          key={friend.id}
-                          className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
-                            isSelected ? 'bg-primary/10' : 'hover:bg-secondary/50'
-                          }`}
-                          onClick={() => toggleFriend(friend.id)}
-                        >
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={friend.avatar || ''} />
-                            <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{friend.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
-                          </div>
-                          {isSelected && (
-                            <Badge variant="default" className="text-[10px] shrink-0">Added</Badge>
-                          )}
+                {filteredFriends.length > 0 ? (
+                  filteredFriends.map((friend) => {
+                    const isSelected = selectedIds.includes(friend.id);
+                    return (
+                      <div
+                        key={friend.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                          isSelected ? 'bg-primary/10' : 'hover:bg-secondary/50'
+                        }`}
+                        onClick={() => toggleFriend(friend.id)}
+                      >
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={friend.avatar || ''} />
+                          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{friend.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
                         </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-3 text-muted-foreground text-sm">
-                      No friends match "{searchQuery}"
-                    </div>
-                  )}
-                </div>
+                        {isSelected && (
+                          <Badge variant="default" className="text-[10px] shrink-0">Added</Badge>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-3 text-muted-foreground text-sm">
+                    No friends match "{searchQuery}"
+                  </div>
+                )}
               </ScrollArea>
             ) : (
               <div className="text-center py-4 text-muted-foreground text-sm">

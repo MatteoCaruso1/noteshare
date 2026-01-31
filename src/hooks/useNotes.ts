@@ -5,53 +5,6 @@ import { toast } from 'sonner';
 import { NoteWithAuthor, Profile } from '@/types';
 import { useAuth } from './useAuth';
 
-// Helper to fetch collaborator profiles for sessions
-async function fetchCollaboratorProfiles(notes: any[]): Promise<Map<string, Profile[]>> {
-  // Collect all unique collaborator IDs from all sessions
-  const allCollaboratorIds = new Set<string>();
-  notes.forEach(note => {
-    const collaboratorIds = note.practice_sessions?.collaborator_ids;
-    if (collaboratorIds && Array.isArray(collaboratorIds)) {
-      collaboratorIds.forEach((id: string) => allCollaboratorIds.add(id));
-    }
-  });
-  
-  if (allCollaboratorIds.size === 0) {
-    return new Map();
-  }
-  
-  // Fetch all collaborator profiles in one query
-  const { data: profiles, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .in('id', Array.from(allCollaboratorIds));
-  
-  if (error || !profiles) {
-    console.error('Error fetching collaborator profiles:', error);
-    return new Map();
-  }
-  
-  // Create a map of profile ID to profile
-  const profileMap = new Map<string, Profile>();
-  profiles.forEach(p => profileMap.set(p.id, p as Profile));
-  
-  // Create a map of note ID to collaborator profiles
-  const noteCollaboratorsMap = new Map<string, Profile[]>();
-  notes.forEach(note => {
-    const collaboratorIds = note.practice_sessions?.collaborator_ids;
-    if (collaboratorIds && Array.isArray(collaboratorIds)) {
-      const collaborators = collaboratorIds
-        .map((id: string) => profileMap.get(id))
-        .filter((p): p is Profile => !!p);
-      if (collaborators.length > 0) {
-        noteCollaboratorsMap.set(note.id, collaborators);
-      }
-    }
-  });
-  
-  return noteCollaboratorsMap;
-}
-
 export function useNotes(projectId?: string) {
   const { profile } = useAuth();
   
@@ -75,14 +28,10 @@ export function useNotes(projectId?: string) {
 
         if (error) throw error;
 
-        // Fetch collaborator profiles
-        const collaboratorsMap = await fetchCollaboratorProfiles(data);
-
         return data.map((note: any) => ({
           ...note,
           author: note.profiles,
           session: note.practice_sessions,
-          sessionCollaborators: collaboratorsMap.get(note.id) || null,
           project: note.projects,
           goal: note.goals,
           gig: note.promo_posts,
@@ -107,14 +56,10 @@ export function useNotes(projectId?: string) {
 
       if (error) throw error;
 
-      // Fetch collaborator profiles
-      const collaboratorsMap = await fetchCollaboratorProfiles(data);
-
       return data.map((note: any) => ({
         ...note,
         author: note.profiles,
         session: note.practice_sessions,
-        sessionCollaborators: collaboratorsMap.get(note.id) || null,
         project: note.projects,
         goal: note.goals,
         gig: note.promo_posts,
@@ -151,25 +96,10 @@ async function fetchNote(noteId: string) {
 
   if (error) throw error;
 
-  // Fetch collaborator profiles if session has any
-  let sessionCollaborators: Profile[] | null = null;
-  const collaboratorIds = data.practice_sessions?.collaborator_ids;
-  if (collaboratorIds && Array.isArray(collaboratorIds) && collaboratorIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('*')
-      .in('id', collaboratorIds);
-    
-    if (profiles) {
-      sessionCollaborators = profiles as Profile[];
-    }
-  }
-
   return {
     ...data,
     author: data.profiles,
     session: data.practice_sessions,
-    sessionCollaborators,
     project: data.projects,
     goal: data.goals,
     gig: data.promo_posts,
