@@ -26,11 +26,14 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Music, Guitar, Mic2, Radio, Building2, 
   Globe, MapPin, Lock, Unlock, Image as ImageIcon, 
-  Check, Camera, X, Trash2, Shield, ShieldOff, Crown, Loader2
+  Check, Camera, X, Trash2, Shield, ShieldOff, Crown, Loader2,
+  BellOff, Bell
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { useUpdateGroup, useDeleteGroup, useGroupMembers, useUpdateMemberRole, GroupDetail } from '@/hooks/useGroupDetails';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useAuth } from '@/hooks/useAuth';
+import { useGroupNotificationPrefs, useUpdateGroupNotificationPrefs } from '@/hooks/useGroupNotificationPrefs';
 import { cn } from '@/lib/utils';
 import { GroupHeaderPicker } from './GroupHeaderPicker';
 import { SignedImage } from '@/components/SignedImage';
@@ -66,6 +69,8 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
   const { data: members = [] } = useGroupMembers(group.id);
   const { uploadImage, uploading } = useMediaUpload();
   const { profile } = useAuth();
+  const { data: notificationPrefs } = useGroupNotificationPrefs(group.id);
+  const updateNotificationPrefs = useUpdateGroupNotificationPrefs();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const isOwner = group.owner_id === profile?.id;
@@ -509,6 +514,59 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
                     className="mt-2"
                   />
                 )}
+              </div>
+            </div>
+            
+            {/* Notification Preferences */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Notification Preferences
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Control which notifications you receive from this group.
+              </p>
+              
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/30">
+                  <div className="flex items-center gap-3">
+                    <BellOff className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium text-sm">Mute Post Notifications</p>
+                      <p className="text-xs text-muted-foreground">Don't notify me when members post</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={notificationPrefs?.mute_posts ?? false}
+                    onCheckedChange={(checked) => {
+                      updateNotificationPrefs.mutate({
+                        groupId: group.id,
+                        prefs: { mute_posts: checked },
+                      });
+                    }}
+                    disabled={updateNotificationPrefs.isPending}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/30">
+                  <div className="flex items-center gap-3">
+                    <BellOff className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium text-sm">Mute Event Notifications</p>
+                      <p className="text-xs text-muted-foreground">Don't notify me about new events</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={notificationPrefs?.mute_events ?? false}
+                    onCheckedChange={(checked) => {
+                      updateNotificationPrefs.mutate({
+                        groupId: group.id,
+                        prefs: { mute_events: checked },
+                      });
+                    }}
+                    disabled={updateNotificationPrefs.isPending}
+                  />
+                </div>
               </div>
             </div>
             
