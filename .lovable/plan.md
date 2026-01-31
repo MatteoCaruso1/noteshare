@@ -1,91 +1,70 @@
 
+# Plan: Fix Global Scroll Lock Issue
 
-# Plan: Fix App-Wide Scroll Lock Issue After Login
+## Problem Identified
 
-## Problem Summary
+The scroll lock issue is caused by **nested Sheet/Dialog components** in the Groups feature that were recently modified. Specifically:
 
-After logging in, pages (Practice, Friends, Groups, Pursuits, Profile) become unscrollable via wheel/trackpad/touch, though clicks still work. The only way to scroll is using the browser's native scrollbar.
+1. **`EventDetailSheet`** (in GroupDetail.tsx, lines 554-627) contains a nested `ShareEventSheet` that opens via `setShowShare(true)` **without closing the parent sheet first**
+2. When the user opens the Share Event sheet from within the Event Detail sheet, **two Radix modals are open simultaneously**
+3. When one sheet closes but the other remains open, Radix's scroll locking mechanism gets confused and may leave the `data-scroll-locked` attribute or `overflow: hidden` on the body/html
 
-## Root Cause Analysis
-
-The current `ScrollToTop.tsx` `clearScrollLocks()` function runs:
-1. On component mount
-2. On route changes
-
-However, there's a race condition:
-- When navigating from `/auth` to `/`, `clearScrollLocks()` runs immediately
-- React then finishes rendering the new page with various components
-- Radix Dialog primitives (used by many components) temporarily add scroll locks during mount/animation
-- These locks persist because `clearScrollLocks()` already ran
-
-The CSS safety net in `src/index.css` should prevent this:
-```css
-body:not([data-scroll-locked="1"]):not(.overflow-hidden) {
-  overflow-y: scroll !important;
-}
-```
-
-But if the `data-scroll-locked="1"` attribute or `overflow-hidden` class is added AFTER the initial clear and never removed, the CSS safety net cannot help.
+This pattern differs from the working `EventSuccessDialog` which properly closes itself (`onOpenChange(false)`) BEFORE opening the share sheet.
 
 ## Solution
 
-Add a more aggressive scroll-lock clearing mechanism using a MutationObserver that watches for scroll-locking attributes/classes and removes them after a brief delay (to allow legitimate temporary locks from dialogs).
+### Fix 1: Update `EventDetailSheet` to close before opening ShareEventSheet
 
-## Technical Changes
-
-### File: `src/components/ScrollToTop.tsx`
-
-**Changes:**
-1. Add a MutationObserver that watches `<body>` and `<html>` for:
-   - `data-scroll-locked` attribute additions
-   - `overflow-hidden` class additions
-2. When these are detected AND no Radix dialog is actually open (check for open dialog overlays), clear them after 500ms
-3. Add an explicit `clearScrollLocks()` call after a 100ms delay on route change to catch late-applied locks
+In `src/pages/GroupDetail.tsx`, modify the `EventDetailSheet` component's share button handler to close the parent sheet before opening the share sheet:
 
 ```text
-Modified logic flow:
-1. useLayoutEffect on mount → clearScrollLocks() immediately
-2. useLayoutEffect on route change → clearScrollLocks() immediately + setTimeout clearScrollLocks() at 100ms
-3. MutationObserver continuously watching:
-   - If scroll lock added and no open dialog found after 500ms → clear it
+Current (line 619):
+  onClick={() => setShowShare(true)}
+
+Fixed:
+  onClick={() => {
+    onOpenChange(false);  // Close parent sheet first
+    setTimeout(() => setShowShare(true), 100);  // Open share sheet after animation
+  }}
 ```
 
-### File: `src/index.css` (minor enhancement)
+### Fix 2: Add `modal={false}` to nested sheets as a safety measure
 
-**Change:**
-Strengthen the CSS safety net to also handle the `data-scroll-locked` attribute (Radix uses `data-scroll-locked="1"` but sometimes the value might differ):
+If the share sheet is meant to be used both standalone and nested, adding `modal={false}` to the Sheet components in `ShareGroupSheet.tsx` and `ShareEventSheet.tsx` will prevent them from managing scroll lock independently when used in a nested context:
 
-```css
-/* Existing rule - make more specific */
-body:not([data-scroll-locked]):not(.overflow-hidden) {
-  overflow-y: scroll !important;
-}
+```tsx
+<Sheet open={open} onOpenChange={onOpenChange} modal={false}>
 ```
 
-(Remove the `="1"` to catch any value of the attribute)
+However, this may have side effects (no overlay, no escape-to-close). The recommended approach is Fix 1.
 
-## Implementation Steps
+### Fix 3: Ensure cleanup on sheet close
 
-1. Update `ScrollToTop.tsx`:
-   - Import `useRef` if not already imported
-   - Add MutationObserver setup in a separate `useEffect`
-   - Add delayed secondary `clearScrollLocks()` call after route changes
-   - Add cleanup to disconnect observer on unmount
+Add cleanup logic to handle the edge case where scroll locks persist. This can be done by adding `onOpenChange` wrappers that clear scroll locks when sheets close.
 
-2. Update `src/index.css`:
-   - Adjust the CSS selector to be more permissive
+---
 
-## Testing Checklist
+## Technical Details
 
-- Sign in on desktop and immediately try wheel-scrolling on Practice page
-- Sign in on mobile and try touch-scrolling on Practice page
-- Navigate to Friends, Groups, Pursuits, Profile after login - all should scroll
-- Open and close a dialog (e.g., Messages, Notifications) - scrolling should still work
-- Open and close a Sheet (e.g., Members on Groups page) - scrolling should still work
-- Complete the onboarding flow after signup - scrolling should work after
+### Files to Modify
 
-## Risk Assessment
+1. **`src/pages/GroupDetail.tsx`** - Fix the `EventDetailSheet` component to close before opening `ShareEventSheet`
 
-- **Low risk**: Changes are defensive and only clear scroll locks when no legitimate dialog is open
-- **Potential edge case**: If a dialog genuinely needs scroll lock and we clear it, the dialog content might become scrollable along with the page. Mitigation: 500ms delay allows dialogs to fully close before clearing.
+### Why This Happened
 
+The recent changes to `ShareGroupSheet.tsx` and `ShareEventSheet.tsx` added:
+- Desktop sharing support ("Save Image" button)
+- Editable description textareas
+- `useEffect` for avatar base64 conversion
+
+While these changes themselves don't directly cause scroll locking, they increased usage of these sheets, and the nested sheet pattern in `EventDetailSheet` (which may have existed before) became problematic when users started using the share functionality more frequently.
+
+### Testing
+
+After the fix:
+1. Open a group detail page
+2. Click on an event to open the Event Detail sheet
+3. Click "Share Event" - the parent sheet should close, then the Share Event sheet should open
+4. Close the Share Event sheet - scrolling should work normally
+5. Navigate to the landing page - scrolling should work normally
+6. Test on iOS device to confirm the fix works on mobile Safari
