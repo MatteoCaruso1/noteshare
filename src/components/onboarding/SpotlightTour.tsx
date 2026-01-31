@@ -29,10 +29,15 @@ const tourSteps: TourStep[] = [
     message: "See what your friends are practicing!",
     position: 'top',
   },
+  {
+    targetSelector: '[data-tour="help-tips"]',
+    message: 'Learn how to best leverage Noteshare using the tips button',
+    position: 'bottom',
+  },
 ];
 
 interface SpotlightTourProps {
-  step: number; // 1-5 (step 5 is the final message)
+  step: number; // 1-6 (step 6 is the final message)
   onNext: () => void;
   onComplete: () => void;
 }
@@ -41,7 +46,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const isFinalStep = step === 5;
+  const isFinalStep = step === 6;
   const currentTourStep = !isFinalStep ? tourSteps[step - 1] : null;
 
   const updateTargetRect = useCallback(() => {
@@ -209,7 +214,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       {/* Step indicator - hide on step 4 (friends nav) since it overlaps with bottom nav */}
       {!isFinalStep && step !== 4 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-          {[1, 2, 3, 4].map((s) => (
+          {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
               className={cn(
