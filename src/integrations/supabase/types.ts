@@ -454,6 +454,8 @@ export type Database = {
           group_id: string
           id: string
           joined_at: string
+          mute_events: boolean
+          mute_posts: boolean
           role: string
           status: string
           user_id: string
@@ -462,6 +464,8 @@ export type Database = {
           group_id: string
           id?: string
           joined_at?: string
+          mute_events?: boolean
+          mute_posts?: boolean
           role?: string
           status?: string
           user_id: string
@@ -470,6 +474,8 @@ export type Database = {
           group_id?: string
           id?: string
           joined_at?: string
+          mute_events?: boolean
+          mute_posts?: boolean
           role?: string
           status?: string
           user_id?: string
