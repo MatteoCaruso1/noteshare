@@ -24,11 +24,39 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
+    // Don't show error UI for transient/recoverable errors
+    const isTransientError = 
+      error.message?.toLowerCase().includes('timeout') ||
+      error.message?.toLowerCase().includes('network') ||
+      error.message?.toLowerCase().includes('fetch') ||
+      error.message?.toLowerCase().includes('aborted') ||
+      error.message?.toLowerCase().includes('cancelled');
+    
+    if (isTransientError) {
+      console.warn('[ErrorBoundary] Transient error detected, will auto-recover:', error.message);
+      return { hasError: false, error: null };
+    }
+    
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const timestamp = new Date().toISOString();
+    
+    // Check if this is a transient/recoverable error
+    const isTransientError = 
+      error.message?.toLowerCase().includes('timeout') ||
+      error.message?.toLowerCase().includes('network') ||
+      error.message?.toLowerCase().includes('fetch') ||
+      error.message?.toLowerCase().includes('aborted') ||
+      error.message?.toLowerCase().includes('cancelled');
+    
+    if (isTransientError) {
+      console.warn(`[ErrorBoundary] ${timestamp} - Transient error, auto-recovering:`, error.message);
+      // Immediately reset for transient errors
+      this.setState({ hasError: false, error: null });
+      return;
+    }
     
     // Enhanced logging with structured data
     console.error(`[ErrorBoundary] ${timestamp} - Error caught:`, {
@@ -47,12 +75,12 @@ export class ErrorBoundary extends Component<Props, State> {
     // Increment error count
     this.setState(prev => ({ errorCount: prev.errorCount + 1 }));
     
-    // Auto-reset after 3 seconds if error count is low
+    // Auto-reset after 2 seconds if error count is low (faster recovery)
     if (this.state.errorCount < 3) {
       this.resetTimeout = setTimeout(() => {
         console.log(`[ErrorBoundary] ${new Date().toISOString()} - Auto-resetting after error`);
         this.handleReset();
-      }, 3000);
+      }, 2000);
     }
   }
 
