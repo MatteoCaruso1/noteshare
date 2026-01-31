@@ -1,4 +1,5 @@
-import { HelpCircle, Mic, Target, Music, Timer, ClipboardList, Save, List, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { HelpCircle, Mic, Target, Music, Timer, ClipboardList, Save, List, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
+
+const HELP_VIEWED_KEY = 'noteshare_help_viewed';
 
 interface HelpItem {
   icon: React.ReactNode;
@@ -76,11 +79,24 @@ const helpSections: HelpSection[] = [
 ];
 
 export function HelpTipsDialog() {
+  const [hasViewed, setHasViewed] = useState(() => {
+    return localStorage.getItem(HELP_VIEWED_KEY) === 'true';
+  });
+
+  const handleOpenChange = (open: boolean) => {
+    if (open && !hasViewed) {
+      localStorage.setItem(HELP_VIEWED_KEY, 'true');
+      setHasViewed(true);
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-primary hover:text-primary/80">
-          <HelpCircle className="w-5 h-5" />
+        <Button variant="ghost" size="icon" className="relative">
+          <HelpCircle 
+            className={`w-5 h-5 ${hasViewed ? 'text-foreground' : 'text-primary animate-pulse'}`} 
+          />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] p-0">
