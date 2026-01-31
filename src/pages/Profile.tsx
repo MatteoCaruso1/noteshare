@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
 import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music } from 'lucide-react';
+import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
@@ -241,6 +242,7 @@ const Profile = () => {
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
             <div className="flex items-center gap-1">
+              <HelpTipsDialog />
               <Button variant="ghost" size="icon" onClick={() => setEditing(true)}>
                 <Settings className="w-5 h-5" />
               </Button>
