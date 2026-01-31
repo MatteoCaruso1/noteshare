@@ -96,9 +96,12 @@ export function AppHeader() {
               <span className="font-semibold leading-tight text-foreground">Noteshare</span>
               {user ? (
                 isPremiumLoading ? (
-                  <span className="text-[9px] leading-tight h-3" />
+                  <span className="text-[9px] leading-tight h-3 opacity-0" />
                 ) : (
-                  <span className="text-[9px] leading-tight text-primary animate-fade-in-slow">
+                  <span 
+                    key={isPremium ? 'premium' : 'lite'}
+                    className="text-[9px] leading-tight text-primary animate-fade-in-slow"
+                  >
                     {isPremium ? 'Premium' : 'Lite Version'}
                   </span>
                 )
