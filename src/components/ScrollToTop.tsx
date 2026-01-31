@@ -16,7 +16,18 @@ export function ScrollToTop() {
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     document.body.style.paddingRight = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
     document.body.removeAttribute('data-scroll-locked');
+
+    // Some libraries (and some Tailwind integrations) lock scroll by toggling
+    // the `overflow-hidden` class on <html>/<body>. If that gets stuck, the
+    // entire app becomes non-scrollable (especially noticeable after auth).
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden');
   }, []);
 
   const scrollToTop = useCallback(() => {
@@ -25,6 +36,12 @@ export function ScrollToTop() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, []);
+
+  // Safety net: clear any scroll locks that might persist after auth/modals,
+  // even if the current route doesn't change.
+  useLayoutEffect(() => {
+    clearScrollLocks();
+  }, [clearScrollLocks]);
 
   // When route changes, clear scroll locks and optionally scroll to top
   useLayoutEffect(() => {
