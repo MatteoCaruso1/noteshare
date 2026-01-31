@@ -33,7 +33,6 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { GroupHeaderPicker } from './GroupHeaderPicker';
-import { SignedImage } from '@/components/SignedImage';
 
 interface EditGroupDialogProps {
   open: boolean;
@@ -79,9 +78,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
   const [locationType, setLocationType] = useState(group.location_type);
   const [city, setCity] = useState(group.city || '');
   const [coverImage, setCoverImage] = useState(group.cover_image || '');
-  const [profileImage, setProfileImage] = useState(group.profile_image || '');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
   
   // Reset form when group changes
   useEffect(() => {
@@ -93,9 +90,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
     setLocationType(group.location_type);
     setCity(group.city || '');
     setCoverImage(group.cover_image || '');
-    setProfileImage(group.profile_image || '');
     setPreviewUrl(null);
-    setProfilePreviewUrl(null);
   }, [group]);
   
   const toggleGroupType = (type: string) => {
@@ -128,38 +123,12 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
     }
   };
   
-  const handleProfileImageUpload = async (file: File) => {
-    if (!profile?.id) return;
-    
-    // Create preview
-    const url = URL.createObjectURL(file);
-    setProfilePreviewUrl(url);
-    
-    // Upload to storage
-    try {
-      const uploadedPath = await uploadImage(file, profile.id);
-      if (uploadedPath) {
-        setProfileImage(uploadedPath);
-      } else {
-        setProfilePreviewUrl(null);
-      }
-    } catch (error) {
-      console.error('Failed to upload profile image:', error);
-      setProfilePreviewUrl(null);
-    }
-  };
-  
   const handleRemoveImage = () => {
     setCoverImage('');
     setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-  
-  const handleRemoveProfileImage = () => {
-    setProfileImage('');
-    setProfilePreviewUrl(null);
   };
   
   const handleSave = async () => {
@@ -176,7 +145,6 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
         location_type: locationType,
         city: locationType === 'local' ? city.trim() || null : null,
         cover_image: coverImage || null,
-        profile_image: profileImage || null,
       },
     });
     
@@ -233,51 +201,7 @@ export function EditGroupDialog({ open, onOpenChange, group }: EditGroupDialogPr
               />
             </div>
             
-            {/* Profile Picture */}
-            <div className="space-y-2">
-              <Label>Profile Picture</Label>
-              <p className="text-xs text-muted-foreground">
-                This appears as the group's avatar. If not set, the header style will be used.
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-xl bg-card border-2 border-border flex items-center justify-center overflow-hidden">
-                    {profilePreviewUrl ? (
-                      <img src={profilePreviewUrl} alt="Profile preview" className="w-full h-full object-cover" />
-                    ) : profileImage ? (
-                      <SignedImage src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <Music className="w-8 h-8 text-muted-foreground" />
-                    )}
-                  </div>
-                  {profileImage && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveProfileImage}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-                <label className="flex-1 cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleProfileImageUpload(file);
-                    }}
-                    className="hidden"
-                  />
-                  <div className="py-2.5 px-3 rounded-lg border border-dashed border-border hover:border-primary/50 hover:bg-secondary/50 transition-colors flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <Camera className="w-4 h-4" />
-                    {uploading ? 'Uploading...' : profileImage ? 'Change picture' : 'Upload picture'}
-                  </div>
-                </label>
-              </div>
-            </div>
-            
+            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="group-name">Group Name</Label>
               <Input

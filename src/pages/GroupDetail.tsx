@@ -4,8 +4,6 @@ import { PageLayout } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SignedImage } from '@/components/SignedImage';
-import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   ChevronLeft, 
@@ -34,7 +32,7 @@ import { InviteMembersDialog } from '@/components/groups/InviteMembersDialog';
 import { GroupPostCapture } from '@/components/groups/GroupPostCapture';
 import { ShareGroupSheet } from '@/components/groups/ShareGroupSheet';
 import { PendingRequestsSheet } from '@/components/groups/PendingRequestsSheet';
-import { GroupHeader as GroupHeaderDisplay, isPresetHeader, getPresetHeader } from '@/components/groups/GroupHeaderPicker';
+import { GroupHeader as GroupHeaderDisplay } from '@/components/groups/GroupHeaderPicker';
 import { useCreateNote } from '@/hooks/useNotes';
 
 export default function GroupDetail() {
@@ -102,21 +100,10 @@ export default function GroupDetail() {
   }
   
   if (!group) {
-    // Check if user has an invite - if so, they might need to accept it first
-    const hasInviteForThisGroup = myInvites.some(inv => inv.group_id === id);
-    
     return (
       <PageLayout>
-        <div className="text-center py-12 px-4 space-y-4">
-          <Lock className="w-12 h-12 mx-auto text-muted-foreground" />
-          <h2 className="text-xl font-semibold">
-            {hasInviteForThisGroup ? 'Private Group' : 'Group Not Found'}
-          </h2>
-          <p className="text-muted-foreground max-w-sm mx-auto">
-            {hasInviteForThisGroup 
-              ? 'You have been invited to this private group. Accept the invitation to view it.'
-              : 'This group may be private or no longer exists. If you received an invite, check your notifications.'}
-          </p>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Group not found</p>
           <Button variant="ghost" onClick={() => navigate('/groups')} className="mt-4">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Groups
@@ -152,7 +139,7 @@ export default function GroupDetail() {
 
   return (
     <PageLayout>
-      <div className="overflow-x-hidden">
+      <div className="h-full overflow-y-auto overflow-x-hidden">
       {/* Header with back button and settings */}
       <div className="relative -mt-12 -mx-4 overflow-hidden">
         {/* Cover Image / Header */}
@@ -177,21 +164,12 @@ export default function GroupDetail() {
           {/* Group avatar overlapping banner */}
           <div className="absolute -bottom-8 left-10">
             <div className="w-20 h-20 rounded-xl bg-card border-4 border-background flex items-center justify-center overflow-hidden shadow-lg">
-              {group.profile_image ? (
-                <SignedImage 
-                  src={group.profile_image} 
-                  alt={group.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : group.cover_image && !isPresetHeader(group.cover_image) ? (
-                <SignedImage 
+              {group.cover_image ? (
+                <img 
                   src={group.cover_image} 
                   alt={group.name}
                   className="w-full h-full object-cover"
                 />
-              ) : isPresetHeader(group.cover_image) ? (
-                // For preset headers, show a mini version of the gradient
-                <div className={cn("w-full h-full", getPresetHeader(group.cover_image)?.gradient || "bg-gradient-to-br from-primary/20 to-secondary")} />
               ) : (
                 <Music className="w-8 h-8 text-muted-foreground" />
               )}
@@ -289,14 +267,11 @@ export default function GroupDetail() {
                 onClick={() => setShowEditGroup(true)}
               />
             )}
-            {/* Share button - only admins can share private groups, anyone can share public groups */}
-            {(group.privacy === 'public' || canManage) && (
-              <ActionButton 
-                icon={<Share2 className="w-5 h-5" />} 
-                label="Share" 
-                onClick={handleShare}
-              />
-            )}
+            <ActionButton 
+              icon={<Share2 className="w-5 h-5" />} 
+              label="Share" 
+              onClick={handleShare}
+            />
           </div>
         </div>
       ) : (

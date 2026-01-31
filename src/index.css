@@ -235,12 +235,11 @@
   }
 
   /* Safety net: ensure body is scrollable unless explicitly locked by a modal */
-  /* Note: Using :not([data-scroll-locked]) without value to catch any Radix lock state */
-  body:not([data-scroll-locked]):not(.overflow-hidden) {
+  body:not([data-scroll-locked="1"]):not(.overflow-hidden) {
     overflow-y: scroll !important;
   }
   
-  html:not(.overflow-hidden):not([data-scroll-locked]) {
+  html:not(.overflow-hidden) {
     overflow-y: auto !important;
   }
   

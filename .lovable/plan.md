@@ -1,91 +1,106 @@
 
-
-# Plan: Fix App-Wide Scroll Lock Issue After Login
+# Plan: Fix "Something Went Wrong" Errors on Groups Page
 
 ## Problem Summary
 
-After logging in, pages (Practice, Friends, Groups, Pursuits, Profile) become unscrollable via wheel/trackpad/touch, though clicks still work. The only way to scroll is using the browser's native scrollbar.
+The Groups page is triggering ErrorBoundary errors. After investigation, I've identified several potential issues:
 
-## Root Cause Analysis
+1. **Problematic TypeScript type** in GroupDetail.tsx causing potential runtime errors
+2. **Missing error handling** in group-related components  
+3. **Excessive API calls** from GroupCard calling `useGroupMembership` for every card in the list
+4. **Null/undefined handling issues** in event detail components
 
-The current `ScrollToTop.tsx` `clearScrollLocks()` function runs:
-1. On component mount
-2. On route changes
+## Solution Overview
 
-However, there's a race condition:
-- When navigating from `/auth` to `/`, `clearScrollLocks()` runs immediately
-- React then finishes rendering the new page with various components
-- Radix Dialog primitives (used by many components) temporarily add scroll locks during mount/animation
-- These locks persist because `clearScrollLocks()` already ran
+### Phase 1: Fix Type Issues in GroupDetail
 
-The CSS safety net in `src/index.css` should prevent this:
-```css
-body:not([data-scroll-locked="1"]):not(.overflow-hidden) {
-  overflow-y: scroll !important;
-}
+**File: `src/pages/GroupDetail.tsx`**
+
+Replace the problematic type declaration:
+```typescript
+// FROM (line 51):
+const [selectedEvent, setSelectedEvent] = useState<typeof events extends (infer T)[] | undefined ? T : never | null>(null);
+
+// TO:
+const [selectedEvent, setSelectedEvent] = useState<GroupEvent | null>(null);
 ```
 
-But if the `data-scroll-locked="1"` attribute or `overflow-hidden` class is added AFTER the initial clear and never removed, the CSS safety net cannot help.
+This requires importing `GroupEvent` from `@/hooks/useGroupDetails`.
 
-## Solution
+### Phase 2: Add Error Handling to GroupCard
 
-Add a more aggressive scroll-lock clearing mechanism using a MutationObserver that watches for scroll-locking attributes/classes and removes them after a brief delay (to allow legitimate temporary locks from dialogs).
+**File: `src/components/groups/GroupCard.tsx`**
 
-## Technical Changes
+Add proper error handling for the `useGroupMembership` hook:
+- Handle loading and error states gracefully
+- Add a try-catch wrapper for the join mutation
+- Consider memoizing the card to prevent re-renders
 
-### File: `src/components/ScrollToTop.tsx`
+### Phase 3: Optimize GroupCard API Calls
 
-**Changes:**
-1. Add a MutationObserver that watches `<body>` and `<html>` for:
-   - `data-scroll-locked` attribute additions
-   - `overflow-hidden` class additions
-2. When these are detected AND no Radix dialog is actually open (check for open dialog overlays), clear them after 500ms
-3. Add an explicit `clearScrollLocks()` call after a 100ms delay on route change to catch late-applied locks
+The current implementation calls `useGroupMembership(group.id)` for every card in the list, which creates N+1 query problems.
 
-```text
-Modified logic flow:
-1. useLayoutEffect on mount → clearScrollLocks() immediately
-2. useLayoutEffect on route change → clearScrollLocks() immediately + setTimeout clearScrollLocks() at 100ms
-3. MutationObserver continuously watching:
-   - If scroll lock added and no open dialog found after 500ms → clear it
+**Solution Options:**
+1. **Batch fetch memberships** - Fetch all memberships in the parent component and pass down as props
+2. **Lazy load membership** - Only check membership when user interacts with Join button
+3. **Use the myGroups data** - Since we already have the user's groups from `useMyGroups`, we can derive membership status from that
+
+**Recommended approach:** Pass membership status from parent component for the "Active" tab (already have myRole from useMyGroups), and lazy-load for "Find" tab.
+
+### Phase 4: Add Defensive Null Checks
+
+**File: `src/pages/GroupDetail.tsx`**
+
+Add additional guards in the EventDetailSheet component:
+- Ensure all memoized values handle null event gracefully
+- Move hooks before conditional returns
+
+**File: `src/components/groups/ShareGroupSheet.tsx` and `ShareEventSheet.tsx`**
+
+Verify all hooks are called unconditionally and memoized values handle edge cases.
+
+### Phase 5: Add Inline Error Boundaries
+
+Wrap critical sections in InlineErrorBoundary to prevent full-page crashes:
+
+```typescript
+import { InlineErrorBoundary } from '@/components/ErrorBoundary';
+
+// Wrap posts section, events section, and share dialogs
+<InlineErrorBoundary>
+  <GroupPostCapture ... />
+</InlineErrorBoundary>
 ```
-
-### File: `src/index.css` (minor enhancement)
-
-**Change:**
-Strengthen the CSS safety net to also handle the `data-scroll-locked` attribute (Radix uses `data-scroll-locked="1"` but sometimes the value might differ):
-
-```css
-/* Existing rule - make more specific */
-body:not([data-scroll-locked]):not(.overflow-hidden) {
-  overflow-y: scroll !important;
-}
-```
-
-(Remove the `="1"` to catch any value of the attribute)
 
 ## Implementation Steps
 
-1. Update `ScrollToTop.tsx`:
-   - Import `useRef` if not already imported
-   - Add MutationObserver setup in a separate `useEffect`
-   - Add delayed secondary `clearScrollLocks()` call after route changes
-   - Add cleanup to disconnect observer on unmount
+1. Fix the TypeScript type in GroupDetail.tsx (add GroupEvent import, fix useState type)
+2. Add error state handling to GroupCard component
+3. Refactor membership checking to avoid N+1 queries
+4. Add null guards to EventDetailSheet and share components
+5. Wrap volatile sections with InlineErrorBoundary
+6. Test the groups page end-to-end
 
-2. Update `src/index.css`:
-   - Adjust the CSS selector to be more permissive
+## Technical Details
 
-## Testing Checklist
+### Files to Modify
 
-- Sign in on desktop and immediately try wheel-scrolling on Practice page
-- Sign in on mobile and try touch-scrolling on Practice page
-- Navigate to Friends, Groups, Pursuits, Profile after login - all should scroll
-- Open and close a dialog (e.g., Messages, Notifications) - scrolling should still work
-- Open and close a Sheet (e.g., Members on Groups page) - scrolling should still work
-- Complete the onboarding flow after signup - scrolling should work after
+| File | Changes |
+|------|---------|
+| `src/pages/GroupDetail.tsx` | Fix type, add import, add error boundaries |
+| `src/components/groups/GroupCard.tsx` | Add error handling, optimize membership check |
+| `src/pages/Groups.tsx` | Pass membership data to GroupCard for "Active" tab |
 
-## Risk Assessment
+### Risk Assessment
 
-- **Low risk**: Changes are defensive and only clear scroll locks when no legitimate dialog is open
-- **Potential edge case**: If a dialog genuinely needs scroll lock and we clear it, the dialog content might become scrollable along with the page. Mitigation: 500ms delay allows dialogs to fully close before clearing.
+- **Low risk**: Type fixes and null guards
+- **Medium risk**: Refactoring membership checking (requires testing both tabs)
+- **Low risk**: Adding error boundaries (defensive, doesn't change behavior)
 
+## Expected Outcome
+
+After these changes:
+- Groups page will load without "Something went wrong" errors
+- Failed individual components will show graceful fallbacks instead of crashing the entire page
+- Reduced API calls will improve performance
+- Better error visibility in console logs for debugging
