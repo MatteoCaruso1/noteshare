@@ -82,11 +82,14 @@ serve(async (req) => {
     logStep("User authenticated", { userId, email });
 
     // Check for developer premium override in dedicated table (no RLS - backend only)
+    logStep("Checking premium override", { userId });
     const { data: override, error: overrideError } = await supabaseClient
       .from('premium_overrides')
       .select('enabled')
       .eq('user_id', userId)
       .maybeSingle();
+
+    logStep("Premium override result", { override, error: overrideError?.message });
 
     if (!overrideError && override?.enabled === true) {
       logStep("Developer premium override active", { userId });
