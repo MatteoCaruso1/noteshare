@@ -94,10 +94,14 @@ export function AppHeader() {
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <span className="font-semibold leading-tight text-foreground">Noteshare</span>
-              {user && !isPremiumLoading ? (
-              <span className="text-[9px] leading-tight text-primary">
-                {isPremium ? 'Premium' : 'Lite Version'}
-              </span>
+              {user ? (
+                isPremiumLoading ? (
+                  <span className="text-[9px] leading-tight h-3" />
+                ) : (
+                  <span className="text-[9px] leading-tight text-primary animate-fade-in-slow">
+                    {isPremium ? 'Premium' : 'Lite Version'}
+                  </span>
+                )
               ) : (
                 <span className="text-[9px] leading-tight text-foreground">
                   Practice Smarter

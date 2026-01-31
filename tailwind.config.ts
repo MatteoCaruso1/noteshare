@@ -247,6 +247,14 @@ export default {
 					opacity: '0.8',
 					filter: 'drop-shadow(0 0 14px hsl(var(--primary) / 1))'
 				}
+			},
+			'fade-in-slow': {
+				'0%': {
+					opacity: '0'
+				},
+				'100%': {
+					opacity: '1'
+				}
 			}
   		},
   		animation: {
@@ -262,7 +270,8 @@ export default {
   			'auth-enter': 'authEnter 0.5s ease-out forwards',
   			'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
   			'pulse-glow-medium': 'pulse-glow-medium 1.8s ease-in-out infinite',
-  			'pulse-glow-intense': 'pulse-glow-intense 1.5s ease-in-out infinite'
+  			'pulse-glow-intense': 'pulse-glow-intense 1.5s ease-in-out infinite',
+  			'fade-in-slow': 'fade-in-slow 0.6s ease-out forwards'
   		},
 		backgroundImage: {
 			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
