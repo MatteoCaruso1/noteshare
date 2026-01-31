@@ -1,134 +1,79 @@
 
-# Plan: Fix Mouse Wheel/Touchpad Scrolling Issue
+# Plan: Fix Group Creation RLS Error on Mobile
 
-## Root Cause Analysis
+## Problem Analysis
 
-After extensive investigation with the debug overlay, the real issue is now clear:
+The user is experiencing a "new row violates row-level security policy for table 'groups'" error when creating a group on mobile (production). After investigation, I've identified the root cause:
 
-**The scroll-lock detection shows everything is "OK" because there ARE no CSS scroll locks.** The actual problem is that **mouse wheel and touchpad gestures don't scroll the page, but dragging the scrollbar DOES work**.
+### Current Flow
+1. Client code inserts a group with `owner_id: profile.id` (the UUID from the profiles table)
+2. RLS policy checks: `WITH CHECK (owner_id = my_profile_id())`
+3. The `my_profile_id()` function queries: `SELECT p.id FROM profiles p WHERE p.user_id = auth.uid()`
 
-This is a fundamentally different issue - it's about **wheel event propagation**, not CSS overflow settings.
+### Root Cause
+The `my_profile_id()` function can return `NULL` in edge cases:
+- **Timing issue**: On mobile, there might be a slight delay/race condition where `auth.uid()` is set but the database query context hasn't fully propagated
+- **Cache/session issue**: Mobile browsers might have stale authentication state
+- **Network latency**: The function executes on the database server, and there could be a mismatch between client-side auth state and server-side auth context
 
-### Key Evidence
-1. Debug overlay shows green "OK" - no overflow:hidden, no data-scroll-locked
-2. Scrollbar can be dragged to scroll the page
-3. Dialogs/popups scroll normally with the wheel
-4. Issue persists across page loads and even version reverts
-
-### Most Likely Cause
-The CSS combination in `src/index.css`:
-
-```css
-html {
-  scroll-behavior: smooth;
-  scrollbar-gutter: stable;
-}
-
-body {
-  overflow-y: scroll;
-}
-```
-
-When `scroll-behavior: smooth` is applied to `<html>` AND the body has forced `overflow-y: scroll`, some browser/OS combinations can experience wheel event issues. The `scrollbar-gutter: stable` is also known to cause quirks.
-
-Additionally, the user mentioned "I don't want a scrollbar" - suggesting the visible scrollbar isn't desired and the forced `overflow-y: scroll` on body was added as part of the scroll-lock fixes.
-
----
+The RLS check `owner_id = my_profile_id()` fails when:
+- `owner_id` = valid profile UUID (e.g., `608221f9-5055-4b71-93d7-02d2e8d20a3a`)
+- `my_profile_id()` returns `NULL` (no matching profile found)
+- Result: `valid_uuid = NULL` → **FALSE** → RLS violation
 
 ## Solution
 
-### 1. Remove forced scrollbar and simplify scroll behavior
+Replace the helper function approach with an inline EXISTS check that's more robust and commonly used throughout the codebase. This pattern is already proven to work in other tables like `projects`, `notes`, `goals`, etc.
 
-**File: `src/index.css`**
+### Technical Implementation
 
-Change the base scroll styles from:
-```css
-html {
-  scroll-behavior: smooth;
-  scrollbar-gutter: stable;
-}
+**Migration SQL:**
+```sql
+-- Drop the current policy that uses my_profile_id()
+DROP POLICY IF EXISTS "Users can create groups" ON public.groups;
 
-body {
-  overflow-y: scroll;
-}
-
-body:not([data-scroll-locked]):not(.overflow-hidden) {
-  overflow-y: scroll !important;
-}
-
-html:not(.overflow-hidden):not([data-scroll-locked]) {
-  overflow-y: auto !important;
-}
+-- Create a new policy using the proven inline EXISTS pattern
+CREATE POLICY "Users can create groups"
+ON public.groups
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 
+    FROM profiles 
+    WHERE profiles.id = groups.owner_id 
+      AND profiles.user_id = auth.uid()
+  )
+);
 ```
 
-To:
-```css
-html {
-  scroll-behavior: smooth;
-  /* Remove scrollbar-gutter: stable - can cause scroll issues */
-}
+### Why This Fix Works
 
-body {
-  /* Let browser handle overflow naturally - no forced scrollbar */
-  overflow-y: auto;
-}
+1. **Inline EXISTS is more reliable**: The subquery executes in the same transaction context as the INSERT, ensuring auth.uid() is properly set
+2. **Proven pattern**: This exact pattern is used successfully in `projects`, `notes`, `promo_posts`, and other tables without issues
+3. **No function dependency**: Eliminates potential NULL return from `my_profile_id()` function
+4. **Better error handling**: The EXISTS clause is more explicit about what it's checking
 
-/* Safety net: only apply when explicitly unlocked */
-body:not([data-scroll-locked]):not(.overflow-hidden) {
-  overflow-y: auto !important;
-}
+### Verification Steps
+1. User creates a test group on mobile production
+2. No RLS error should occur
+3. Group should be created successfully with proper owner_id
 
-html:not(.overflow-hidden):not([data-scroll-locked]) {
-  overflow-y: auto !important;
-}
-```
+## Files to Modify
 
-Key changes:
-- Remove `scrollbar-gutter: stable` from html
-- Change body from `overflow-y: scroll` to `overflow-y: auto`
-- Change safety net from `scroll` to `auto`
+- **New migration file**: `supabase/migrations/[timestamp]_fix-group-creation-rls.sql`
+  - Drop current INSERT policy
+  - Create new policy with inline EXISTS check
 
-### 2. Remove the aggressive scroll-lock recovery system (optional cleanup)
+## Technical Notes
 
-Since the issue was never a scroll-lock problem, the MutationObserver watchdog system in `ScrollToTop.tsx` can be simplified. However, keeping it as a safety net is fine - it just wasn't solving the real issue.
+- The `my_profile_id()` helper function will remain in the database (used by other policies)
+- Only the INSERT policy on `groups` table will change
+- This doesn't affect existing groups or other RLS policies (SELECT, UPDATE, DELETE)
+- The fix is backwards compatible - no data migration needed
 
-### 3. Hide scrollbar via CSS (user preference)
+## Success Criteria
 
-Since the user mentioned they don't want a scrollbar visible:
-
-**File: `src/index.css`**
-
-Add cross-browser scrollbar hiding while maintaining scroll functionality:
-```css
-/* Hide scrollbar but allow scrolling */
-html {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-
-html::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-```
-
----
-
-## Technical Details
-
-### Why this should work
-1. `overflow-y: auto` allows natural scroll behavior without forcing a scrollbar
-2. Removing `scrollbar-gutter: stable` eliminates layout shift compensation that can interfere with scroll mechanics
-3. The scrollbar-hiding CSS maintains scroll functionality while hiding the visual scrollbar
-
-### Why reverting versions didn't fix it
-If the CSS with `scroll-behavior: smooth` and `scrollbar-gutter: stable` has been present for a while, it would persist across reverts unless specifically changed.
-
-### Files to modify
-1. `src/index.css` - Remove forced scrollbar and scrollbar-gutter
-
-### Testing after fix
-1. Load /welcome - verify wheel scrolling works
-2. Load main app pages - verify wheel scrolling works
-3. Open dialogs/sheets - verify they still scroll
-4. Verify no visible scrollbar (per user preference)
-5. Verify on both desktop Chrome and Safari
+✅ User can create groups on mobile production without RLS errors
+✅ The `owner_id` properly matches the authenticated user's profile
+✅ Group membership row is successfully created after group creation
