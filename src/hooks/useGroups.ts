@@ -9,6 +9,7 @@ export interface Group {
   name: string;
   description: string | null;
   cover_image: string | null;
+  profile_image: string | null;
   focus_type: string;
   focus_details: string[] | null;
   group_type: string[];
@@ -71,6 +72,7 @@ export function useMyGroups() {
             name,
             description,
             cover_image,
+            profile_image,
             focus_type,
             focus_details,
             group_type,
