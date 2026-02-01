@@ -11,13 +11,14 @@ import { useActiveSession } from '@/hooks/useSessions';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
-import { AudioRecorder } from '@/components/AudioRecorder';
+import { AudioRecorder, clearRecordingBackup } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { RichTextarea } from '@/components/RichTextarea';
 import { LinkToPicker } from '@/components/LinkToPicker';
 import { Metronome } from '@/components/Metronome';
 import { PracticeTimer } from '@/components/PracticeTimer';
+import { RecordingRecoveryBanner } from '@/components/RecordingRecoveryBanner';
 
 import { SignedImage } from '@/components/SignedImage';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
@@ -97,10 +98,17 @@ export function QuickNoteCapture() {
     return null;
   }
 
-  const handleAudioRecorded = async (blob: Blob, duration: number) => {
+  const handleAudioRecorded = async (blob: Blob, duration: number, backupId?: string) => {
     const url = await uploadAudio(blob, profile.id);
     if (url) {
       setAudioFiles([...audioFiles, { url, name: '', duration }]);
+      // Clear backup on successful upload
+      if (backupId) {
+        await clearRecordingBackup(backupId);
+      }
+      toast.success('Recording saved!');
+    } else {
+      toast.error('Failed to save recording. Check the recovery banner to retry.');
     }
   };
 
@@ -182,6 +190,9 @@ export function QuickNoteCapture() {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="px-4 pb-4 space-y-4">
+          {/* Recovery banner for orphaned recordings */}
+          <RecordingRecoveryBanner />
+          
           {/* Show daily limit banner if limit reached */}
           {hasReachedLimit && (
             <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
@@ -296,6 +307,7 @@ export function QuickNoteCapture() {
                   <AudioRecorder 
                     onRecorded={handleAudioRecorded} 
                     onRecordingChange={setIsRecordingAudio}
+                    userId={profile.id}
                     className="w-full" 
                   />
                 </div>

@@ -12,10 +12,11 @@ import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
-import { AudioRecorder } from '@/components/AudioRecorder';
+import { AudioRecorder, clearRecordingBackup } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
+import { RecordingRecoveryBanner } from '@/components/RecordingRecoveryBanner';
 import { RichTextarea } from '@/components/RichTextarea';
 import { LinkToPicker } from '@/components/LinkToPicker';
 import { EndSessionDialog } from '@/components/EndSessionDialog';
@@ -351,7 +352,7 @@ export function PracticeControls() {
     }
   };
 
-  const handleAudioRecorded = async (blob: Blob, duration: number) => {
+  const handleAudioRecorded = async (blob: Blob, duration: number, backupId?: string) => {
     // Generate unique ID for tracking this upload
     const uploadId = `audio-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
@@ -363,12 +364,19 @@ export function PracticeControls() {
       if (url) {
         // Mark as completed - this will persist even if user navigated away
         completePendingUpload(uploadId, url);
+        // Clear backup on successful upload
+        if (backupId) {
+          await clearRecordingBackup(backupId);
+        }
+        toast.success('Recording saved!');
       } else {
         failPendingUpload(uploadId);
+        toast.error('Failed to save recording. Check the recovery banner to retry.');
       }
     } catch (error) {
       console.error('Audio upload failed:', error);
       failPendingUpload(uploadId);
+      toast.error('Failed to save recording. Check the recovery banner to retry.');
     }
   };
 
@@ -597,6 +605,8 @@ export function PracticeControls() {
           {/* Active Session Content */}
           {activeSession && (
           <div className="px-4 pb-4 space-y-4">
+          {/* Recovery banner for orphaned recordings */}
+          <RecordingRecoveryBanner />
 
           {/* Compact toolbar row: Settings (with upload), Link to Goals, Metronome, Timer, Unlock */}
           <TooltipProvider delayDuration={1000}>
