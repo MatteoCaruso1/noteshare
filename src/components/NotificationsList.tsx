@@ -1,11 +1,13 @@
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '@/hooks/useNotifications';
 import { usePendingNoteShares } from '@/hooks/useNoteShares';
+import { useMyGroupInvites } from '@/hooks/useGroupInvites';
 import { PendingNoteShareCard } from '@/components/PendingNoteShareCard';
+import { PendingGroupInviteCard } from '@/components/PendingGroupInviteCard';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Bell, AtSign, Check, CheckCheck, Users } from 'lucide-react';
+import { Bell, AtSign, Check, CheckCheck, Users, Waypoints } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +18,7 @@ interface NotificationsListProps {
 export function NotificationsList({ embedded }: NotificationsListProps = {}) {
   const { data: notifications, isLoading } = useNotifications();
   const { data: pendingShares } = usePendingNoteShares();
+  const { data: pendingGroupInvites } = useMyGroupInvites();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const navigate = useNavigate();
@@ -24,8 +27,8 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
     if (!notification.read) {
       markRead.mutate(notification.id);
     }
-    // For session_share notifications, don't navigate - the share card handles it
-    if (notification.type === 'session_share') {
+    // For session_share or group_invite notifications, don't navigate - cards handle it
+    if (notification.type === 'session_share' || notification.type === 'group_invite') {
       return;
     }
     if (notification.note_id) {
@@ -34,23 +37,30 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
   };
 
   // Filter out session_share notifications that have pending shares (they're shown separately)
+  // Also filter out group_invite notifications that have pending invites
   const filteredNotifications = notifications?.filter(n => {
     if (n.type === 'session_share') {
-      // Check if there's a pending share for this note
       const hasPendingShare = pendingShares?.some(s => s.note_id === n.note_id);
-      return !hasPendingShare; // Only show if no pending share (means it was already handled)
+      return !hasPendingShare;
+    }
+    if (n.type === 'group_invite') {
+      // Hide group_invite notifications that still have pending invites
+      return false; // Always hide - we show the invite cards instead
     }
     return true;
   });
 
   const unreadCount = filteredNotifications?.filter(n => !n.read).length || 0;
   const pendingShareCount = pendingShares?.length || 0;
-  const totalUnread = unreadCount + pendingShareCount;
+  const pendingGroupInviteCount = pendingGroupInvites?.length || 0;
+  const totalUnread = unreadCount + pendingShareCount + pendingGroupInviteCount;
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'session_share':
         return <Users className="w-4 h-4 text-primary" />;
+      case 'group_invite':
+        return <Waypoints className="w-4 h-4 text-primary" />;
       default:
         return <AtSign className="w-4 h-4 text-primary" />;
     }
@@ -71,6 +81,19 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
               <CheckCheck className="w-3 h-3 mr-1" />
               Mark all read
             </Button>
+          </div>
+        )}
+        
+        {/* Pending group invites */}
+        {pendingGroupInvites && pendingGroupInvites.length > 0 && (
+          <div className="space-y-2 mb-3">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <Waypoints className="w-3 h-3" />
+              Group Invitations
+            </p>
+            {pendingGroupInvites.slice(0, 3).map((invite) => (
+              <PendingGroupInviteCard key={invite.id} invite={invite} />
+            ))}
           </div>
         )}
         
@@ -126,7 +149,7 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
               </div>
             ))}
           </div>
-        ) : pendingShareCount === 0 ? (
+        ) : pendingShareCount === 0 && pendingGroupInviteCount === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
             <Bell className="w-6 h-6 mx-auto mb-1 opacity-50" />
             <p className="text-xs">No new notifications</p>
@@ -160,6 +183,19 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
           </Button>
         )}
       </div>
+
+      {/* Pending group invites section */}
+      {pendingGroupInvites && pendingGroupInvites.length > 0 && (
+        <div className="space-y-3 mb-4">
+          <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <Waypoints className="w-4 h-4" />
+            Group Invitations
+          </h3>
+          {pendingGroupInvites.map((invite) => (
+            <PendingGroupInviteCard key={invite.id} invite={invite} />
+          ))}
+        </div>
+      )}
 
       {/* Pending note shares section */}
       {pendingShares && pendingShares.length > 0 && (
