@@ -63,6 +63,8 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   // ========================================
   
   const [showSlowMessage, setShowSlowMessage] = useState(false);
+  // Delay showing loading skeleton to avoid flash when data arrives quickly
+  const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(false);
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   
   // Separate notes into recent (last 14 days) and older
@@ -140,12 +142,19 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   // Track extended loading time for user feedback
   const isLoading = loading || isRefetching;
   
+  // Delay showing loading skeleton to prevent flash on quick loads
   useEffect(() => {
     if (isLoading && notes.length === 0) {
+      // Only show skeleton after 300ms to avoid flash on quick empty responses
+      const skeletonTimer = setTimeout(() => setShowLoadingSkeleton(true), 300);
       // Show slow message after 5 seconds of loading with no data
-      const timer = setTimeout(() => setShowSlowMessage(true), 5000);
-      return () => clearTimeout(timer);
+      const slowTimer = setTimeout(() => setShowSlowMessage(true), 5000);
+      return () => {
+        clearTimeout(skeletonTimer);
+        clearTimeout(slowTimer);
+      };
     }
+    setShowLoadingSkeleton(false);
     setShowSlowMessage(false);
   }, [isLoading, notes.length]);
 
@@ -153,8 +162,8 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   // EARLY RETURNS - Safe now that all hooks are called above
   // ========================================
 
-  // If we have no notes and are loading, show informative skeleton
-  if (notes.length === 0 && isLoading) {
+  // If we have no notes and are loading, only show skeleton after delay to avoid flash
+  if (notes.length === 0 && isLoading && showLoadingSkeleton) {
     return (
       <LoadingSkeleton 
         message={showSlowMessage 
