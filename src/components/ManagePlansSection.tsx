@@ -1,4 +1,4 @@
-import { CreditCard, Mail, Crown } from 'lucide-react';
+import { CreditCard, Mail, Crown, Infinity } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,18 +8,21 @@ import { format } from 'date-fns';
 
 export function ManagePlansSection() {
   const { isPremium, openCheckoutDialog } = usePremium();
-  const { subscriptionEnd, openCustomerPortal, isLoading } = useSubscription();
+  const { subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = useSubscription();
 
   const handleSwitchPlan = async () => {
     if (isPremium) {
-      // Premium user wants to downgrade - open Stripe portal
+      // Lifetime users shouldn't see this button, but guard anyway
+      if (isLifetime) return;
+      
+      // Premium subscriber wants to manage - open Stripe portal
       try {
         await openCustomerPortal();
       } catch (error) {
         console.error('Failed to open customer portal:', error);
       }
     } else {
-      // Lite user wants to upgrade - open checkout dialog
+      // Free user wants to upgrade - open checkout dialog
       openCheckoutDialog();
     }
   };
@@ -49,7 +52,11 @@ export function ManagePlansSection() {
         }`}>
           {isPremium && (
             <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center mr-3">
-              <Crown className="w-4 h-4 text-amber-500" />
+              {isLifetime ? (
+                <Infinity className="w-4 h-4 text-amber-500" />
+              ) : (
+                <Crown className="w-4 h-4 text-amber-500" />
+              )}
             </div>
           )}
           <div className="flex items-center gap-2">
@@ -60,25 +67,34 @@ export function ManagePlansSection() {
               variant="secondary"
               className={`text-xs ${isPremium ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : ''}`}
             >
-              {isPremium ? 'Active' : 'Current'}
+              {isLifetime ? 'Lifetime' : isPremium ? 'Active' : 'Current'}
             </Badge>
           </div>
-          {isPremium && subscriptionEnd && (
+          {isPremium && !isLifetime && subscriptionEnd && (
             <p className="text-xs text-amber-500/70 ml-2">
               · Access until {formatSubscriptionEnd()}
             </p>
           )}
         </div>
 
-        {/* Switch Plan Button */}
-        <Button 
-          onClick={handleSwitchPlan}
-          variant={isPremium ? 'outline' : 'hero'}
-          className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
-          disabled={isLoading}
-        >
-          {isPremium ? 'Downgrade Plan' : 'Upgrade to Pro'}
-        </Button>
+        {/* Switch Plan Button - Hidden for lifetime users */}
+        {!isLifetime && (
+          <Button 
+            onClick={handleSwitchPlan}
+            variant={isPremium ? 'outline' : 'hero'}
+            className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
+            disabled={isLoading}
+          >
+            {isPremium ? 'Manage Subscription' : 'Upgrade to Pro'}
+          </Button>
+        )}
+
+        {/* Lifetime confirmation message */}
+        {isLifetime && (
+          <p className="text-center text-sm text-amber-500/80">
+            You have lifetime access to Noteshare Pro ✨
+          </p>
+        )}
 
         {/* Help Email */}
         <div className="flex items-center justify-center gap-2 pt-2 border-t border-border/50">
