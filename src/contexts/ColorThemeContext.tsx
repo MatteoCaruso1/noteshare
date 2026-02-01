@@ -51,18 +51,18 @@ export function ColorThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [profile]);
 
-  // Apply theme class to document root
+  // Apply theme class to body (where 'dark' class also lives)
   useEffect(() => {
-    const root = document.documentElement;
+    const body = document.body;
     
     // Remove all theme classes
     AVAILABLE_THEMES.forEach(theme => {
-      root.classList.remove(`theme-${theme.id}`);
+      body.classList.remove(`theme-${theme.id}`);
     });
     
     // Add current theme class (skip for default blue)
     if (colorTheme !== 'blue') {
-      root.classList.add(`theme-${colorTheme}`);
+      body.classList.add(`theme-${colorTheme}`);
     }
   }, [colorTheme]);
 
