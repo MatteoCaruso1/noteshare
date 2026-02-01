@@ -7,6 +7,7 @@ import { Goal } from '@/types';
 import { GoalCard } from './goals/GoalCard';
 import { GoalFormDialog } from './goals/GoalFormDialog';
 import { CompletionDialog } from './goals/CompletionDialog';
+import { WeeklyGoalCard } from './WeeklyGoalCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DndContext,
@@ -273,6 +274,9 @@ export function GoalsSection({ profileId }: GoalsSectionProps) {
 
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-4">
+            {/* Weekly Practice Goal Card - Premium only, live progress */}
+            <WeeklyGoalCard />
+            
             {/* Unified Goals List */}
             <div>
               <div className="flex items-center justify-between mb-3">

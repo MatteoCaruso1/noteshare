@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { useAcceptedNoteShares } from '@/hooks/useNoteShares';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
+import { usePremium } from '@/contexts/PremiumContext';
 
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -15,17 +17,30 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { GlintProvider } from '@/contexts/GlintContext';
+import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 
 const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
+  const { isPremium } = usePremium();
   
   // Track page views for analytics
   usePageViewTracking('practice');
   
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   const { data: acceptedSharedNotes } = useAcceptedNoteShares();
+  
+  // Weekly goal modal state
+  const { shouldShow: shouldShowWeeklyGoal, markAsShown } = useShouldShowWeeklyGoalModal(profile?.id, isPremium);
+  const [weeklyGoalModalOpen, setWeeklyGoalModalOpen] = useState(false);
+  
+  // Show weekly goal modal on Monday for premium users
+  useEffect(() => {
+    if (shouldShowWeeklyGoal && !weeklyGoalModalOpen) {
+      setWeeklyGoalModalOpen(true);
+    }
+  }, [shouldShowWeeklyGoal]);
   
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
   const isBootstrapping = authLoading || (!!user && !profile);
@@ -170,6 +185,13 @@ const Index = () => {
           </section>
         </main>
       </PageBody>
+      
+      {/* Weekly Goal Modal - shows on Monday for premium users */}
+      <WeeklyGoalModal 
+        open={weeklyGoalModalOpen}
+        onOpenChange={setWeeklyGoalModalOpen}
+        onComplete={markAsShown}
+      />
     </PageLayout>
   );
 };

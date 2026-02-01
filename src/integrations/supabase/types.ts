@@ -1180,6 +1180,44 @@ export type Database = {
           },
         ]
       }
+      weekly_goals: {
+        Row: {
+          created_at: string
+          id: string
+          skipped: boolean
+          target_minutes: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skipped?: boolean
+          target_minutes?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skipped?: boolean
+          target_minutes?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
