@@ -66,9 +66,18 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   
   // Separate notes into recent (last 14 days) and older
+  // DISABLED: Free users now have full history access
   const { olderNotesCount, displayedNotes } = useMemo(() => {
-    const now = new Date();
     const allDisplayed = notes.slice(0, displayCount);
+    
+    // All users now have access to full history
+    return {
+      olderNotesCount: 0,
+      displayedNotes: allDisplayed,
+    };
+    
+    /* PRESERVED FOR REVERSION:
+    const now = new Date();
     
     // For premium users or while loading, show all notes
     if (isPremium || isPremiumLoading) {
@@ -107,17 +116,23 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
       olderNotesCount: olderCount,
       displayedNotes: recent,
     };
-  }, [notes, displayCount, isPremium, isPremiumLoading]);
+    */
+  }, [notes, displayCount]);
 
   // Count total notes within free limit for comparison - MUST be before early returns
+  // DISABLED: Free users now have full history access
   const totalRecentNotesCount = useMemo(() => {
+    return notes.length; // All users see all notes
+    
+    /* PRESERVED FOR REVERSION:
     if (isPremium || isPremiumLoading) return notes.length;
     const now = new Date();
     return notes.filter(n => {
       const daysAgo = differenceInDays(now, parseISO(n.created_at));
       return daysAgo <= FREE_USER_DAYS_LIMIT;
     }).length;
-  }, [notes, isPremium, isPremiumLoading]);
+    */
+  }, [notes]);
 
   // Prefetch signed URLs for all displayed notes in a single batch
   useSignedUrlPrefetch(displayedNotes);
