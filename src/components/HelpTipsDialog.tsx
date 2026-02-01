@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, Mic, Target, Music, Timer, ClipboardList, Save, List, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Smartphone, ToggleRight } from 'lucide-react';
+import { HelpCircle, Mic, Target, Music, Timer, ClipboardList, Save, List, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,14 @@ const PracticeBoardToggleIcon = () => (
   </span>
 );
 
+// Combined icon for Settings + Upload
+const SettingsUploadIcon = () => (
+  <span className="inline-flex items-center gap-0.5 -ml-5">
+    <Settings className="w-4 h-4" />
+    <Upload className="w-4 h-4" />
+  </span>
+);
+
 const helpSections: HelpSection[] = [
   {
     feature: 'Practice Session',
@@ -44,8 +52,9 @@ const helpSections: HelpSection[] = [
       { icon: <Target className="w-4 h-4" />, label: 'Link to Pursuit', description: 'Tie your session to a pursuit for organized practicing' },
       { icon: <Music className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM' },
       { icon: <Timer className="w-4 h-4" />, label: 'Practice Timer', description: 'Set a countdown timer with audio chime when complete' },
-      { icon: <Smartphone className="w-4 h-4" />, label: 'Unlock Screen', description: 'Keep your mobile screen unlocked while practicing' },
+      { icon: <Lock className="w-4 h-4" />, label: 'Unlock Screen', description: 'Keep your mobile screen unlocked while practicing' },
       { icon: <PracticeBoardToggleIcon />, label: 'Link to Practice Board', description: 'Connect your session to your cross-session focus' },
+      { icon: <SettingsUploadIcon />, label: 'Upload Media', description: 'Upload audio or image files (found within Settings)' },
     ],
   },
   {
