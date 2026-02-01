@@ -7,9 +7,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Lifetime access price ID and product ID
-const LIFETIME_PRICE_ID = "price_1Sv63tGiNcIsULtk4t3RRrAK";
-const LIFETIME_PRODUCT_ID = "prod_TsrnqaaViDJAas";
+// Lifetime access price IDs (both old and new) and product IDs
+const LIFETIME_PRICE_IDS = [
+  "price_1Sw8hBGiNcIsULtkxrZRuf6O", // New $9.99 CAD lifetime
+  "price_1Sv63tGiNcIsULtk4t3RRrAK", // Old $19.99 CAD lifetime (for existing customers)
+];
+const LIFETIME_PRODUCT_IDS = [
+  "prod_TtwaOYfMnVypk4", // New $9.99 product
+  "prod_TsrnqaaViDJAas", // Old $19.99 product
+];
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -151,14 +157,14 @@ serve(async (req) => {
             });
             
             const hasLifetimePrice = fullSession.line_items?.data?.some(
-              (item: Stripe.LineItem) => item.price?.id === LIFETIME_PRICE_ID
+              (item: Stripe.LineItem) => LIFETIME_PRICE_IDS.includes(item.price?.id ?? '')
             );
             
             if (hasLifetimePrice) {
               logStep("User has lifetime access");
               return new Response(JSON.stringify({
                 subscribed: true,
-                product_id: LIFETIME_PRODUCT_ID,
+                product_id: LIFETIME_PRODUCT_IDS[0], // Use the primary lifetime product ID
                 subscription_end: null,
                 is_lifetime: true
               }), {

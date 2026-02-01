@@ -33,22 +33,35 @@ export function detectUserCurrency(): SupportedCurrency {
   return 'USD';
 }
 
+// New pricing: $2.49 CAD/month subscription, $9.99 CAD lifetime
 export const PREMIUM_PRICES = {
-  USD: { 
-    amount: 2.99, 
-    priceId: 'price_1SqlanGiNcIsULtkonowz5Fd',
+  subscription: {
+    amount: 2.49,
+    priceId: 'price_1Sw8ilGiNcIsULtkGOJKoXdT',
+    currency: 'CAD',
     symbol: '$',
-    label: '$2.99 USD'
+    label: '$2.49/mo'
   },
-  CAD: { 
-    amount: 3.99, 
-    priceId: 'price_1Sr1nPGiNcIsULtkfvqszh5A',
+  lifetime: {
+    amount: 9.99,
+    priceId: 'price_1Sw8hBGiNcIsULtkxrZRuf6O',
+    currency: 'CAD',
     symbol: '$',
-    label: '$3.99 CAD'
+    label: '$9.99'
   }
 } as const;
 
+export const TRIAL_DAYS = 7;
+
+export function formatSubscriptionPrice(): string {
+  return `${PREMIUM_PRICES.subscription.symbol}${PREMIUM_PRICES.subscription.amount.toFixed(2)}/mo`;
+}
+
+export function formatLifetimePrice(): string {
+  return `${PREMIUM_PRICES.lifetime.symbol}${PREMIUM_PRICES.lifetime.amount.toFixed(2)}`;
+}
+
+// Legacy function for backwards compatibility
 export function formatPrice(currency: SupportedCurrency): string {
-  const price = PREMIUM_PRICES[currency];
-  return `${price.symbol}${price.amount.toFixed(2)}/month`;
+  return formatSubscriptionPrice();
 }
