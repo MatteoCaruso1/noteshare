@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// Configuration
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 1000;
 
 // Helper to get a signed URL for private bucket access
 export async function getSignedUrl(path: string): Promise<string | null> {
@@ -26,9 +30,135 @@ export async function getSignedUrl(path: string): Promise<string | null> {
   return data.signedUrl;
 }
 
+/**
+ * Sleep helper for retry delays
+ */
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Upload a file with XMLHttpRequest to get progress updates
+ * Falls back to Supabase SDK if XHR fails
+ */
+async function uploadWithProgress(
+  file: File,
+  filePath: string,
+  onProgress?: (progress: number) => void
+): Promise<{ path: string } | null> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+  
+  if (!accessToken) {
+    console.warn('[MediaUpload] No access token, falling back to SDK upload');
+    return uploadWithSDK(file, filePath);
+  }
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const uploadUrl = `${supabaseUrl}/storage/v1/object/practice-media/${filePath}`;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable && onProgress) {
+        const percent = (event.loaded / event.total) * 100;
+        onProgress(percent);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        console.log('[MediaUpload] XHR upload success:', filePath);
+        resolve({ path: filePath });
+      } else {
+        console.error('[MediaUpload] XHR upload failed:', xhr.status, xhr.statusText);
+        reject(new Error(`Upload failed with status ${xhr.status}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      console.error('[MediaUpload] XHR network error');
+      reject(new Error('Network error during upload'));
+    });
+
+    xhr.addEventListener('abort', () => {
+      console.error('[MediaUpload] XHR upload aborted');
+      reject(new Error('Upload was aborted'));
+    });
+
+    xhr.open('POST', uploadUrl);
+    xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+    xhr.setRequestHeader('x-upsert', 'false');
+    
+    // Let the browser set Content-Type with boundary for the file
+    xhr.send(file);
+  });
+}
+
+/**
+ * Standard SDK upload (fallback)
+ */
+async function uploadWithSDK(
+  file: File,
+  filePath: string
+): Promise<{ path: string } | null> {
+  const { data, error } = await supabase.storage
+    .from('practice-media')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (error) throw error;
+  return data;
+}
+
 export function useMediaUpload() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  /**
+   * Core upload function with retry logic and progress tracking
+   */
+  const uploadFileWithRetry = useCallback(async (
+    file: File,
+    userId: string,
+    type: 'audio' | 'image' | 'video',
+    onProgress?: (progress: number) => void
+  ): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}/${type}/${Date.now()}.${fileExt}`;
+
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`[MediaUpload] Upload attempt ${attempt}/${MAX_RETRIES} for ${fileName}`);
+        
+        const data = await uploadWithProgress(file, fileName, (p) => {
+          setProgress(p);
+          onProgress?.(p);
+        });
+
+        if (data?.path) {
+          console.log(`[MediaUpload] Upload successful on attempt ${attempt}`);
+          return data.path;
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.error(`[MediaUpload] Attempt ${attempt} failed:`, lastError.message);
+        
+        if (attempt < MAX_RETRIES) {
+          const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+          console.log(`[MediaUpload] Retrying in ${delay}ms...`);
+          await sleep(delay);
+        }
+      }
+    }
+
+    // All retries exhausted
+    console.error('[MediaUpload] All upload attempts failed:', lastError);
+    throw lastError || new Error('Upload failed after all retries');
+  }, []);
 
   const uploadFile = async (
     file: File,
@@ -39,25 +169,13 @@ export function useMediaUpload() {
       setUploading(true);
       setProgress(0);
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${type}/${Date.now()}.${fileExt}`;
-
-      const { data, error } = await supabase.storage
-        .from('practice-media')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (error) throw error;
-
-      // Return just the path - useSignedUrl hook will sign it on-demand
-      // This prevents storing URLs that can expire
+      const path = await uploadFileWithRetry(file, userId, type);
+      
       setProgress(100);
-      return data.path;
+      return path;
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload file');
+      toast.error('Failed to upload file. Please try again.');
       return null;
     } finally {
       setUploading(false);
@@ -80,6 +198,44 @@ export function useMediaUpload() {
     const file = new File([blob], `recording-${Date.now()}.${ext}`, { type: mimeType });
     console.log('[MediaUpload] uploading audio file', file.name, 'size:', file.size, 'type:', file.type);
     return uploadFile(file, userId, 'audio');
+  };
+
+  /**
+   * Upload audio with progress callback - used for recovery
+   */
+  const uploadAudioWithProgress = async (
+    blob: Blob, 
+    userId: string,
+    onProgress?: (progress: number) => void
+  ): Promise<string | null> => {
+    const mimeType = blob.type || 'audio/webm';
+    let ext = 'webm';
+
+    if (mimeType.includes('mp4')) {
+      ext = 'mp4';
+    } else if (mimeType.includes('ogg')) {
+      ext = 'ogg';
+    } else if (mimeType.includes('wav')) {
+      ext = 'wav';
+    }
+
+    const file = new File([blob], `recording-${Date.now()}.${ext}`, { type: mimeType });
+    
+    try {
+      setUploading(true);
+      setProgress(0);
+
+      const path = await uploadFileWithRetry(file, userId, 'audio', onProgress);
+      
+      setProgress(100);
+      onProgress?.(100);
+      return path;
+    } catch (error) {
+      console.error('Audio upload with progress error:', error);
+      return null;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const uploadImage = async (file: File, userId: string): Promise<string | null> => {
@@ -123,6 +279,7 @@ export function useMediaUpload() {
     progress,
     uploadFile,
     uploadAudio,
+    uploadAudioWithProgress,
     uploadImage,
     uploadVideo,
     getSignedUrl,

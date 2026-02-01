@@ -1,25 +1,35 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square, Loader2 } from 'lucide-react';
+import { Mic, Square, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { audioManager } from '@/lib/audioManager';
+import { 
+  saveRecordingBackup, 
+  clearBackup, 
+  generateBackupId,
+  formatBytes,
+  isIndexedDBAvailable 
+} from '@/lib/recordingBackup';
 
 interface AudioRecorderProps {
-  onRecorded: (blob: Blob, duration: number) => void;
+  onRecorded: (blob: Blob, duration: number, backupId?: string) => void;
   onRecordingChange?: (isRecording: boolean) => void;
+  userId?: string;
   className?: string;
 }
 
-export function AudioRecorder({ onRecorded, onRecordingChange, className }: AudioRecorderProps) {
+export function AudioRecorder({ onRecorded, onRecordingChange, userId, className }: AudioRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [recordingSize, setRecordingSize] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const dataIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const chunkCountRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -41,7 +51,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
       if (document.hidden && recording && mediaRecorderRef.current) {
         // When screen is locked/hidden, try to keep recording
         // Most browsers will pause, but we can at least handle it gracefully
-        console.log('[AudioRecorder] Screen hidden while recording');
+        console.log('[AudioRecorder] Screen hidden while recording, chunks so far:', chunkCountRef.current);
       }
     };
 
@@ -132,6 +142,8 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
       console.log('[AudioRecorder] Using mimeType:', mediaRecorder.mimeType || 'default');
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      chunkCountRef.current = 0;
+      setRecordingSize(0);
       startTimeRef.current = Date.now();
       setElapsedTime(0);
 
@@ -141,14 +153,23 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
       }, 1000);
 
       mediaRecorder.ondataavailable = (e) => {
-        console.log('[AudioRecorder] dataavailable, size:', e.data?.size);
         if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
+          chunkCountRef.current++;
+          
+          // Calculate total size
+          const totalSize = chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0);
+          setRecordingSize(totalSize);
+          
+          console.log(`[AudioRecorder] Chunk #${chunkCountRef.current}, size: ${e.data.size}, total: ${formatBytes(totalSize)}`);
+        } else {
+          console.warn('[AudioRecorder] Empty chunk received');
         }
       };
 
-      mediaRecorder.onstop = () => {
-        console.log('[AudioRecorder] onstop, chunks:', chunksRef.current.length, 'total size:', chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0));
+      mediaRecorder.onstop = async () => {
+        console.log(`[AudioRecorder] onstop - chunks: ${chunksRef.current.length}, total size: ${formatBytes(chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0))}`);
+        
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
@@ -163,13 +184,43 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
         const actualMimeType = mediaRecorder.mimeType || 'audio/mp4';
         const blob = new Blob(chunksRef.current, { type: actualMimeType });
-        console.log('[AudioRecorder] final blob size:', blob.size, 'type:', blob.type, 'duration(s):', duration);
         
-        if (blob.size > 0 && duration > 0) {
-          onRecorded(blob, duration);
-        } else {
-          toast.error('Recording too short or empty. Please try again.');
+        console.log(`[AudioRecorder] Final blob - size: ${formatBytes(blob.size)}, type: ${blob.type}, duration: ${duration}s`);
+        
+        if (blob.size === 0) {
+          toast.error('Recording is empty. Please try again.');
+          setProcessing(false);
+          setElapsedTime(0);
+          setRecordingSize(0);
+          return;
         }
+        
+        if (duration === 0) {
+          toast.error('Recording too short. Please try again.');
+          setProcessing(false);
+          setElapsedTime(0);
+          setRecordingSize(0);
+          return;
+        }
+
+        // Show processing toast
+        toast.info(`Processing ${formatBytes(blob.size)} recording...`);
+
+        // Save to IndexedDB backup BEFORE calling onRecorded
+        let backupId: string | undefined;
+        if (isIndexedDBAvailable() && userId) {
+          try {
+            backupId = generateBackupId();
+            await saveRecordingBackup(backupId, blob, duration, userId);
+            console.log(`[AudioRecorder] Saved backup ${backupId}`);
+          } catch (error) {
+            console.error('[AudioRecorder] Failed to save backup:', error);
+            // Continue anyway - backup is a safety net, not required
+          }
+        }
+
+        // Pass to parent with backup ID
+        onRecorded(blob, duration, backupId);
         
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
@@ -177,6 +228,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
         }
         setProcessing(false);
         setElapsedTime(0);
+        setRecordingSize(0);
       };
 
       mediaRecorder.onerror = (event) => {
@@ -198,6 +250,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
         setRecording(false);
         setProcessing(false);
         setElapsedTime(0);
+        setRecordingSize(0);
       };
 
       // Safari has issues with timeslice - use requestData() periodically instead
@@ -209,7 +262,6 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
           if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
             try {
               mediaRecorderRef.current.requestData();
-              console.log('[AudioRecorder] Safari: requested data chunk');
             } catch (e) {
               console.warn('[AudioRecorder] requestData failed:', e);
             }
@@ -259,6 +311,18 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
     e.currentTarget.blur();
   };
 
+  // Format recording size for display
+  const getSizeDisplay = (): string | null => {
+    if (!recording || recordingSize === 0) return null;
+    const sizeStr = formatBytes(recordingSize);
+    if (recordingSize > 50 * 1024 * 1024) {
+      return `${sizeStr} - Large`;
+    }
+    return sizeStr;
+  };
+
+  const sizeDisplay = getSizeDisplay();
+
   return (
     <div className={`flex items-center gap-2 ${className || ''}`}>
       {recording ? (
@@ -275,6 +339,9 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
           <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
             <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             <span className="tabular-nums">{formatTime(elapsedTime)}</span>
+            {sizeDisplay && (
+              <span className="text-xs text-muted-foreground">({sizeDisplay})</span>
+            )}
           </div>
         </>
       ) : (
@@ -295,4 +362,17 @@ export function AudioRecorder({ onRecorded, onRecordingChange, className }: Audi
       )}
     </div>
   );
+}
+
+/**
+ * Clear a recording backup after successful upload
+ * This should be called by the parent component after upload succeeds
+ */
+export async function clearRecordingBackup(backupId: string): Promise<void> {
+  try {
+    await clearBackup(backupId);
+    console.log(`[AudioRecorder] Cleared backup ${backupId} after successful upload`);
+  } catch (error) {
+    console.error('[AudioRecorder] Failed to clear backup:', error);
+  }
 }
