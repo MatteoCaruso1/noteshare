@@ -1,11 +1,10 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { useAcceptedNoteShares } from '@/hooks/useNoteShares';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
-import { useOnboarding, checkOnboardingCompleted } from '@/contexts/OnboardingContext';
 
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -21,7 +20,6 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
-  const { startOnboarding } = useOnboarding();
   
   // Track page views for analytics
   usePageViewTracking('practice');
@@ -40,22 +38,8 @@ const Index = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
 
-  // Check for pending onboarding after signup
-  useEffect(() => {
-    if (profile?.id) {
-      const pendingOnboarding = sessionStorage.getItem('noteshare_pending_onboarding');
-      if (pendingOnboarding === 'true') {
-        sessionStorage.removeItem('noteshare_pending_onboarding');
-        // Only start if user hasn't completed onboarding before
-        if (!checkOnboardingCompleted(profile.id)) {
-          // Small delay to ensure page is rendered
-          setTimeout(() => {
-            startOnboarding();
-          }, 500);
-        }
-      }
-    }
-  }, [profile?.id, startOnboarding]);
+  // Note: Onboarding is now triggered immediately in Auth.tsx after signup
+  // This avoids the delay from waiting for profile to load
 
   // Merge own notes with accepted shared notes, sorted by creation date
   const allNotes = useMemo(() => {
