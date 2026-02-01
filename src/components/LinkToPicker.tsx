@@ -7,6 +7,7 @@ import { Target, Disc3, Calendar, Compass } from 'lucide-react';
 import { Project, PromoPostWithAuthor, Goal } from '@/types';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export type LinkType = 'project' | 'gig' | 'goal' | null;
 
@@ -119,7 +120,13 @@ export function LinkToPicker({
             <Button
               variant="ghost"
               size="icon"
-              className={`h-8 w-8 ${isSelected ? 'text-primary' : ''} ${className}`}
+              className={cn(
+                "h-8 w-8",
+                isSelected ? 'text-primary' : '',
+                // Amber color for free users to indicate premium feature
+                !isPremiumLoading && !isPremium && 'text-jazz-amber',
+                className
+              )}
             >
               <Target className="w-4 h-4" />
             </Button>
