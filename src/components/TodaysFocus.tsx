@@ -513,7 +513,7 @@ export function TodaysFocus() {
 
   const handleSaveToBacklog = () => {
     if (!isPremium) {
-      toast.error('Saved to backlog is a Premium feature');
+      toast.error('Save to backlog is a Pro feature');
       return;
     }
     

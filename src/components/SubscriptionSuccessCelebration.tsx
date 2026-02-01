@@ -87,9 +87,9 @@ export function SubscriptionSuccessCelebration() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2 mx-auto">
               <PartyPopper className="w-8 h-8 text-primary" />
             </div>
-            <DialogTitle className="text-xl">Welcome to Premium!</DialogTitle>
+            <DialogTitle className="text-xl">Welcome to Pro!</DialogTitle>
             <DialogDescription className="text-base">
-              Your 30-day free trial has started. Enjoy unlimited notes, practice stats, and all premium features!
+              Your 7-day free trial has started. Enjoy unlimited notes, practice stats, and all Pro features!
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-2">

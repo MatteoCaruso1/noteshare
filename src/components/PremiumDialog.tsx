@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 const BENEFITS = [
   {
     icon: Timer,
-    title: 'Premium Practice Tools',
+    title: 'Pro Practice Tools',
     description: 'Use metronomes, practice timers, linking to goals, and save practice boards, all within your sessions',
   },
   {

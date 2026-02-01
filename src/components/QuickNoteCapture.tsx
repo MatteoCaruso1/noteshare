@@ -133,7 +133,7 @@ export function QuickNoteCapture() {
 
   const handleSaveNote = () => {
     if (hasReachedLimit) {
-      toast.error('Daily note limit reached. Try Premium for Free for unlimited notes.');
+      toast.error('Daily note limit reached. Try Pro for Free for unlimited notes.');
       return;
     }
     

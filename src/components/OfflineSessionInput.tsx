@@ -57,7 +57,7 @@ export function OfflineSessionInput() {
           featureName="Log Past Session" 
           blur={false}
           icon={Play}
-          description="Upgrade to Premium to log past practice sessions"
+          description="Upgrade to Pro to log past practice sessions"
         >
           <div className="space-y-4 pt-4 overflow-x-hidden">
             {/* Date */}

@@ -161,8 +161,8 @@ export function Metronome({ className }: MetronomeProps) {
     // If free user tries to open, show toast and block
     if (newOpen && !isPremiumLoading && !isPremium) {
       toast({
-        title: "Premium Feature",
-        description: "Metronome is available for Premium users.",
+        title: "Pro Feature",
+        description: "Metronome is available for Pro users.",
       });
       return;
     }

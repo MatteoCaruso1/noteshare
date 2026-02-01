@@ -447,7 +447,7 @@ export function PracticeControls() {
               clearState();
               clearSessionSettings();
               setShowEndSessionDialog(false);
-              toast.error('Session ended but note not saved - daily limit reached. Try Premium for Free for unlimited notes.');
+              toast.error('Session ended but note not saved - daily limit reached. Get Pro for unlimited notes.');
             },
           }
         );
