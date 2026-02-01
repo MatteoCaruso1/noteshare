@@ -558,9 +558,9 @@ export function PracticeControls() {
     <Card className="bg-card border-border min-h-[60px]">
       <Collapsible open={isExpanded} onOpenChange={handlePracticeOpen}>
         <CollapsibleTrigger asChild>
+          {/* Glint effect disabled but kept for potential future use: add `glint ${isPaused ? 'glint-paused' : ''}` to className and style={glintStyle} */}
           <button 
-            className={`w-full p-4 flex items-center justify-between transition-colors rounded-lg group glint ${isPaused ? 'glint-paused' : ''}`}
-            style={glintStyle}
+            className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group"
           >
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
