@@ -54,7 +54,7 @@ export function ManagePlansSection() {
           )}
           <div className="flex items-center gap-2">
             <span className={`text-sm font-medium ${isPremium ? 'text-amber-500' : ''}`}>
-              {isPremium ? 'Noteshare Premium' : 'Noteshare Lite'}
+              {isPremium ? 'Noteshare Premium' : 'Noteshare'}
             </span>
             <Badge 
               variant="secondary"
