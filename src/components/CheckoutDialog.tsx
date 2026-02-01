@@ -54,7 +54,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
     }
   }, [open, resetCheckout]);
 
-  const priceInfo = PREMIUM_PRICES[detectedCurrency];
+  const priceInfo = PREMIUM_PRICES.subscription;
   const billingDate = format(addDays(new Date(), 30), 'MMMM d, yyyy');
 
   if (!user) {
