@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -28,8 +28,11 @@ const Groups = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   
-  const [activeTab, setActiveTab] = useState<'find' | 'my'>('find');
+  // Initialize tab from URL param or default to 'find'
+  const initialTab = searchParams.get('tab') === 'my' ? 'my' : 'find';
+  const [activeTab, setActiveTab] = useState<'find' | 'my'>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   

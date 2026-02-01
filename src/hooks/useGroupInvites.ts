@@ -150,7 +150,7 @@ export function useCreateGroupInvite() {
 }
 
 // Accept an invitation
-export function useAcceptGroupInvite() {
+export function useAcceptGroupInvite(options?: { onSuccessNavigate?: (groupId: string) => void }) {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
   
@@ -180,12 +180,15 @@ export function useAcceptGroupInvite() {
         });
       
       if (joinError) throw joinError;
+      
+      return { groupId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['group-invites'] });
       queryClient.invalidateQueries({ queryKey: ['my-groups'] });
       queryClient.invalidateQueries({ queryKey: ['group-membership'] });
       toast.success('Joined group!');
+      options?.onSuccessNavigate?.(data.groupId);
     },
     onError: (error) => {
       console.error('Failed to accept invite:', error);
