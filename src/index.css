@@ -667,10 +667,10 @@ body.session-active h1 {
   opacity: 0.25;
 }
 
-/* Elevate focused cards above dimmed content */
+/* Elevate focused cards above dimmed content - use lower z-index to not block toasts */
 body.session-active .session-focus-card {
   position: relative;
-  z-index: 20;
+  z-index: 5;
 }
 
 /* Subtle glow on focused cards - much softer than before */
