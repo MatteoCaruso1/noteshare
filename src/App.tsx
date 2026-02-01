@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { PremiumProvider, usePremium } from "@/contexts/PremiumContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
+import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { AppHeader } from "@/components/AppHeader";
@@ -113,6 +114,7 @@ function AppInner() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <PremiumProvider>
+            <ColorThemeProvider>
             <OnboardingProvider>
               <BottomNavProvider>
                 <TooltipProvider>
@@ -159,6 +161,7 @@ function AppInner() {
                 </TooltipProvider>
               </BottomNavProvider>
             </OnboardingProvider>
+            </ColorThemeProvider>
           </PremiumProvider>
         </AuthProvider>
       </QueryClientProvider>
