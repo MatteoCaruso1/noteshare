@@ -139,8 +139,8 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
-        // Mark that we should start onboarding after redirect
-        sessionStorage.setItem('noteshare_pending_onboarding', 'true');
+        // Start onboarding immediately - the welcome modal doesn't need profile data
+        startOnboarding();
         navigate('/');
       } else {
         await signIn(email, password, rememberMe);
