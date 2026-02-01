@@ -74,7 +74,7 @@ export function PremiumDialog() {
         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 pb-28 space-y-5">
           {/* Header */}
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-jazz-amber">Noteshare Premium</h2>
+            <h2 className="text-2xl font-bold text-jazz-amber">Noteshare Pro</h2>
             <p className="text-muted-foreground text-sm">
               Get more features and support indie development
             </p>
