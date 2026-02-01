@@ -41,7 +41,9 @@ export function LinkToPicker({
 
   const hasItems = projects.length > 0 || gigs.length > 0 || goals.length > 0;
 
-  if (!hasItems) return null;
+  // For free users, always show the button (amber colored) to indicate it's a Pro feature
+  // For premium users, only show if there are items to link to
+  if (!hasItems && isPremium) return null;
 
   const handleOpenChange = (newOpen: boolean) => {
     // If lite user tries to open, show toast and block
@@ -50,6 +52,10 @@ export function LinkToPicker({
         title: "Pro Feature",
         description: "Linking notes to goals, projects, and gigs is available for Pro users.",
       });
+      return;
+    }
+    // If premium but no items, don't open (nothing to show)
+    if (newOpen && !hasItems) {
       return;
     }
     setOpen(newOpen);
