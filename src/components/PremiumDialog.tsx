@@ -97,7 +97,7 @@ export function PremiumDialog() {
             <CollapsibleContent className="mt-4">
               <div className="text-sm text-muted-foreground leading-relaxed space-y-3 text-center px-2">
                 <p>
-                  My name is <span className="text-foreground">Matteo</span>, a pianist and independent developer of Noteshare. Your contributions make it possible for me to keep improving Noteshare. Thank you for your support!
+                  My name is <span className="text-foreground">Matteo</span>, a pianist and independent developer. Your contributions make it possible for me to keep improving Noteshare. Thank you for your support!
                 </p>
                 <p>
                   All I want is to build a great tool for musicians like me, so I've priced the product as cheaply as possible. Subscription or lifetime purchases both help me manage the development costs associated with my passion project.
