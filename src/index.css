@@ -633,3 +633,9 @@ html {
     opacity: 0;
   }
 }
+
+/* Session focus mode - elevate practice cards above overlay */
+body.session-active .session-focus-card {
+  position: relative;
+  z-index: 20;
+}
