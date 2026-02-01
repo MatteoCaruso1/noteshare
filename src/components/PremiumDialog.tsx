@@ -74,7 +74,7 @@ export function PremiumDialog() {
         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-5">
           {/* Header */}
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-jazz-coral">Noteshare Premium</h2>
+            <h2 className="text-2xl font-bold text-jazz-amber">Noteshare Premium</h2>
             <p className="text-muted-foreground text-sm">
               Get more features and support indie development
             </p>
@@ -83,7 +83,7 @@ export function PremiumDialog() {
           {/* About Pricing Collapsible */}
           <Collapsible open={isPricingOpen} onOpenChange={setIsPricingOpen}>
             <CollapsibleTrigger asChild>
-              <button className="mx-auto flex items-center gap-1.5 px-4 py-2 rounded-full bg-muted/50 text-jazz-coral text-sm font-medium hover:bg-muted transition-colors">
+              <button className="mx-auto flex items-center gap-1.5 px-4 py-2 rounded-full bg-muted/50 text-foreground text-sm font-medium hover:bg-muted transition-colors">
                 About pricing
                 {isPricingOpen ? (
                   <ChevronUp className="h-4 w-4" />
@@ -95,10 +95,10 @@ export function PremiumDialog() {
             <CollapsibleContent className="mt-4">
               <div className="text-sm text-muted-foreground leading-relaxed space-y-3 text-center px-2">
                 <p>
-                  My name is <span className="text-foreground">Matteo</span>, a pianist and independent developer of Noteshare. Your contributions make it possible for me to keep improving Noteshare for everyone who uses it. Thank you so much for your support. 💛
+                  My name is <span className="text-foreground">Matteo</span>, a pianist and independent developer of Noteshare. Your contributions make it possible for me to keep improving Noteshare. Thank you for your support!
                 </p>
                 <p>
-                  As all I want is to maintain a great tool for musicians like me, I've tried to price the product as cheaply as possible. Subscription or lifetime options are both available, and both help me manage the development and server costs associated with my passion project.
+                  All I want is to build a great tool for musicians like me, so I've priced the product as cheaply as possible. Subscription or lifetime purchases both help me manage the development costs associated with my passion project.
                 </p>
               </div>
             </CollapsibleContent>
@@ -112,10 +112,10 @@ export function PremiumDialog() {
                 className={`flex items-start gap-3 pb-4 ${index < BENEFITS.length - 1 ? 'border-b border-border/50' : ''}`}
               >
                 <div className="shrink-0 mt-0.5">
-                  <benefit.icon className="h-5 w-5 text-jazz-coral" />
+                  <benefit.icon className="h-5 w-5 text-jazz-amber" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-jazz-coral">{benefit.title}</p>
+                  <p className="font-medium text-sm text-jazz-amber">{benefit.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{benefit.description}</p>
                 </div>
               </div>
