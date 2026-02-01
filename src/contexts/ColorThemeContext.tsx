@@ -37,7 +37,7 @@ export function ColorThemeProvider({ children }: { children: ReactNode }) {
   // Load theme from profile on mount
   useEffect(() => {
     if (profile) {
-      const savedTheme = (profile as { color_theme?: string }).color_theme as ColorTheme | undefined;
+      const savedTheme = profile.color_theme as ColorTheme | undefined;
       if (savedTheme && AVAILABLE_THEMES.some(t => t.id === savedTheme)) {
         setColorThemeState(savedTheme);
       } else {
@@ -81,7 +81,7 @@ export function ColorThemeProvider({ children }: { children: ReactNode }) {
     if (error) {
       console.error('Failed to save color theme:', error);
       // Revert on error
-      const savedTheme = (profile as { color_theme?: string }).color_theme as ColorTheme | undefined;
+      const savedTheme = profile.color_theme as ColorTheme | undefined;
       setColorThemeState(savedTheme || 'blue');
     }
   }, [profile]);
