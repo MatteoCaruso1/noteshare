@@ -30,7 +30,6 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
-import { ThemePicker } from '@/components/ThemePicker';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
@@ -428,9 +427,6 @@ const Profile = () => {
                 <h3 className="font-medium">Pro Features</h3>
               </div>
               <div className="space-y-4">
-                {/* Color Theme Picker */}
-                <ThemePicker />
-                
                 {/* Weekly Goal Toggle */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">

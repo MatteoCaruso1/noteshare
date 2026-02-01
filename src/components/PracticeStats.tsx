@@ -4,6 +4,9 @@ import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemePicker } from '@/components/ThemePicker';
+import { usePremium } from '@/contexts/PremiumContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PracticeStatsProps {
   profileId: string;
@@ -11,6 +14,8 @@ interface PracticeStatsProps {
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
+  const { isPremium } = usePremium();
+  const { profile } = useAuth();
 
   // Show error state with retry option
   if (error) {
@@ -256,6 +261,13 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               )}
             </div>
           </div>
+
+          {/* Theme picker lives directly under the Themes section */}
+          {isPremium && profile?.id === profileId && (
+            <div className="pt-2">
+              <ThemePicker />
+            </div>
+          )}
           
         </div>
       </Card>
