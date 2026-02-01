@@ -6,6 +6,8 @@ interface GlintContextType {
   setPracticeExpanded: (expanded: boolean) => void;
   setQuickNoteExpanded: (expanded: boolean) => void;
   setFocusFocused: (focused: boolean) => void;
+  hasActiveSession: boolean;
+  setHasActiveSession: (active: boolean) => void;
 }
 
 const GlintContext = createContext<GlintContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export function GlintProvider({ children }: { children: ReactNode }) {
   const [practiceExpanded, setPracticeExpanded] = useState(false);
   const [quickNoteExpanded, setQuickNoteExpanded] = useState(false);
   const [focusFocused, setFocusFocused] = useState(false);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
 
   // Calculate animation delay to sync all glints to the same phase
   const [glintStyle, setGlintStyle] = useState<React.CSSProperties>({});
@@ -44,6 +47,8 @@ export function GlintProvider({ children }: { children: ReactNode }) {
         setPracticeExpanded: useCallback((v: boolean) => setPracticeExpanded(v), []),
         setQuickNoteExpanded: useCallback((v: boolean) => setQuickNoteExpanded(v), []),
         setFocusFocused: useCallback((v: boolean) => setFocusFocused(v), []),
+        hasActiveSession,
+        setHasActiveSession: useCallback((v: boolean) => setHasActiveSession(v), []),
       }}
     >
       {children}
