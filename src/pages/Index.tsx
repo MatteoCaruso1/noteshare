@@ -16,6 +16,7 @@ import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
+import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
 import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 
@@ -130,7 +131,10 @@ const Index = () => {
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
           {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
           <GlintProvider>
-            <div className="space-y-4">
+            {/* Session Focus Overlay - darkens page during active sessions */}
+            <SessionFocusOverlay />
+            
+            <div className="space-y-4 relative z-10">
               {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
               <div data-tour="practice-capture">
                 <PracticeControls />

@@ -102,7 +102,7 @@ export function PracticeControls() {
   const createNote = useCreateNote();
   const createNoteShares = useCreateNoteShares();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
-  const { isPaused, glintStyle, setPracticeExpanded } = useGlint();
+  const { isPaused, glintStyle, setPracticeExpanded, setHasActiveSession } = useGlint();
   const { hasReachedLimit, notesPostedToday, dailyLimit, incrementCount, isPremium } = useDailyNoteLimit();
 
   // Use persistent state for note content that survives navigation
@@ -188,6 +188,11 @@ export function PracticeControls() {
   useEffect(() => {
     setPracticeExpanded(isExpanded);
   }, [isExpanded, setPracticeExpanded]);
+
+  // Sync active session state with context for vignette overlay
+  useEffect(() => {
+    setHasActiveSession(!!activeSession);
+  }, [activeSession, setHasActiveSession]);
 
   // Helper to acquire wake lock
   const acquireWakeLock = useCallback(async (silent = false) => {
@@ -771,11 +776,13 @@ export function PracticeControls() {
           )}
 
           {/* Text Content - with list formatting support */}
+          {/* Larger textarea during active sessions for focus */}
           <div className="mb-4">
             <RichTextarea
               placeholder="What are you practicing this session?"
               value={noteText}
               onChange={setNoteText}
+              rows={activeSession ? 5 : 1}
               showTips
             />
           </div>
