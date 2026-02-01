@@ -92,15 +92,18 @@ export function usePracticeStats(profileId: string | undefined) {
       const backlogEntries = backlogResult.data || [];
 
       // Calculate session durations (accounting for paused time)
-      const sessionsWithDuration = sessions.map(session => {
-        const start = parseISO(session.started_at);
-        const end = session.ended_at ? parseISO(session.ended_at) : now;
-        const rawDurationMs = end.getTime() - start.getTime();
-        const pausedMs = session.paused_duration_ms || 0;
-        const activeDurationMs = rawDurationMs - pausedMs;
-        const durationMinutes = Math.max(0, Math.floor(activeDurationMs / 60000));
-        return { durationMinutes, startDate: start };
-      });
+      // Only include completed sessions (with ended_at) to avoid counting abandoned/orphaned sessions
+      const sessionsWithDuration = sessions
+        .filter(session => session.ended_at !== null)
+        .map(session => {
+          const start = parseISO(session.started_at);
+          const end = parseISO(session.ended_at!);
+          const rawDurationMs = end.getTime() - start.getTime();
+          const pausedMs = session.paused_duration_ms || 0;
+          const activeDurationMs = rawDurationMs - pausedMs;
+          const durationMinutes = Math.max(0, Math.floor(activeDurationMs / 60000));
+          return { durationMinutes, startDate: start };
+        });
 
       // Time boundaries
       const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
