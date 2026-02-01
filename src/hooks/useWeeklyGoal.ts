@@ -104,6 +104,9 @@ export function useWeeklyGoal(profileId: string | undefined) {
   };
 }
 
+// LocalStorage key for disabling weekly goal feature
+export const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
+
 // Hook to determine if we should show the modal
 export function useShouldShowWeeklyGoalModal(profileId: string | undefined, isPremium: boolean) {
   const { currentWeekGoal, isLoading } = useWeeklyGoal(profileId);
@@ -117,16 +120,21 @@ export function useShouldShowWeeklyGoalModal(profileId: string | undefined, isPr
   const storedKey = localStorage.getItem(WEEKLY_GOAL_MODAL_KEY);
   const hasShownThisWeek = storedKey === currentWeekStart;
   
+  // Check if user has disabled the feature
+  const isDisabled = localStorage.getItem(WEEKLY_GOAL_DISABLED_KEY) === 'true';
+  
   // Should show modal if:
   // 1. User is premium
   // 2. It's Monday
   // 3. No goal set for this week yet
   // 4. Haven't shown the modal already this week
+  // 5. Feature is not disabled
   const shouldShow = isPremium && 
     isToday && 
     !isLoading && 
     !currentWeekGoal && 
-    !hasShownThisWeek;
+    !hasShownThisWeek &&
+    !isDisabled;
   
   const markAsShown = () => {
     localStorage.setItem(WEEKLY_GOAL_MODAL_KEY, currentWeekStart);
