@@ -134,16 +134,19 @@ const Index = () => {
             {/* Session Focus Overlay - darkens page during active sessions */}
             <SessionFocusOverlay />
             
-            <div className="space-y-4 relative z-10">
+            <div className="space-y-4">
               {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
-              <div data-tour="practice-capture">
+              {/* These cards get elevated z-index during active session via SessionFocusOverlay context */}
+              <div data-tour="practice-capture" className="relative session-focus-card">
                 <PracticeControls />
               </div>
-              <QuickNoteCapture />
+              <div className="session-focus-card">
+                <QuickNoteCapture />
+              </div>
 
               {/* Ongoing Focus - Practice Board */}
               {profile && (
-                <div data-tour="practice-board">
+                <div data-tour="practice-board" className="session-focus-card">
                   <TodaysFocus />
                 </div>
               )}
