@@ -203,13 +203,16 @@ export function useSubscription() {
     }
   };
 
-  // Check against the premium product ID (supports both old and new products + lifetime)
-  const isPremium = state.subscribed && (
-    state.productId === SUBSCRIPTION_TIERS.premium.product_id ||
-    state.productId === SUBSCRIPTION_TIERS.lifetime.product_id ||
-    state.productId === 'prod_TofQhqCDH1KicB' || // USD product
-    state.productId === 'prod_TofQx0QRLi6tEe'    // CAD product
-  );
+  // Check against premium product IDs (supports all subscription and lifetime variants)
+  const VALID_PREMIUM_PRODUCT_IDS = [
+    SUBSCRIPTION_TIERS.premium.product_id,  // prod_ToONzcZjkyqsAJ - main premium
+    SUBSCRIPTION_TIERS.lifetime.product_id, // prod_TsrnqaaViDJAas - old $19.99 lifetime
+    'prod_TtwaOYfMnVypk4',                  // new $9.99 lifetime product
+    'prod_TofQhqCDH1KicB',                  // legacy USD product
+    'prod_TofQx0QRLi6tEe',                  // legacy CAD product
+  ];
+  
+  const isPremium = state.subscribed && VALID_PREMIUM_PRODUCT_IDS.includes(state.productId ?? '');
 
   // Derive "truly loading" state: stay loading if user exists but we haven't validated yet
   const isTrulyLoading = state.isLoading || (!!user && !state.hasValidatedWithUser);
