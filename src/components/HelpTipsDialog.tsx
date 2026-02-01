@@ -11,8 +11,9 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
 import { MetronomeIcon } from '@/components/Metronome';
+import { useAuth } from '@/hooks/useAuth';
 
-const HELP_VIEWED_KEY = 'noteshare_help_viewed';
+const HELP_VIEWED_KEY_PREFIX = 'noteshare_help_viewed_';
 
 interface HelpItem {
   icon: React.ReactNode;
@@ -98,13 +99,25 @@ const helpSections: HelpSection[] = [
 ];
 
 export function HelpTipsDialog() {
+  const { profile } = useAuth();
+  const userId = profile?.id;
+  
   const [hasViewed, setHasViewed] = useState(() => {
-    return localStorage.getItem(HELP_VIEWED_KEY) === 'true';
+    if (!userId) return false;
+    return localStorage.getItem(`${HELP_VIEWED_KEY_PREFIX}${userId}`) === 'true';
   });
 
+  // Update hasViewed state when user changes
+  useEffect(() => {
+    if (userId) {
+      const viewed = localStorage.getItem(`${HELP_VIEWED_KEY_PREFIX}${userId}`) === 'true';
+      setHasViewed(viewed);
+    }
+  }, [userId]);
+
   const handleOpenChange = (open: boolean) => {
-    if (open && !hasViewed) {
-      localStorage.setItem(HELP_VIEWED_KEY, 'true');
+    if (open && !hasViewed && userId) {
+      localStorage.setItem(`${HELP_VIEWED_KEY_PREFIX}${userId}`, 'true');
       setHasViewed(true);
     }
   };
