@@ -223,8 +223,8 @@ export function RichTextarea({
     }
     const lineBeforeCursor = newValue.substring(lineStart, cursorPos);
     
-    // Auto-convert "[]" or "[ ]" at line start to checkbox
-    if (lineBeforeCursor === '[] ' || lineBeforeCursor === '[ ] ' || lineBeforeCursor.match(/^\s+\[\s?\]\s$/)) {
+    // Auto-convert "[]" or "[ ]" at line start to checkbox (no trailing space required)
+    if (lineBeforeCursor === '[]' || lineBeforeCursor === '[ ]' || lineBeforeCursor.match(/^\s+\[\s?\]$/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const transformed = newValue.substring(0, lineStart) + indent + '☐ ' + newValue.substring(cursorPos);
       const newCursor = lineStart + indent.length + 2;
