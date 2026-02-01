@@ -53,7 +53,7 @@ async function fetchCollaboratorProfiles(notes: any[]): Promise<Map<string, Prof
 }
 
 export function useNotes(projectId?: string) {
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   
   return useQuery({
     queryKey: ['notes', projectId, profile?.id],
@@ -120,7 +120,8 @@ export function useNotes(projectId?: string) {
         gig: note.promo_posts,
       })) as NoteWithAuthor[];
     },
-    enabled: projectId ? true : !!profile?.id,
+    // Require both profile AND a valid session to ensure auth token is propagated
+    enabled: projectId ? !!session : (!!profile?.id && !!session),
     // Keep data visible during refetch - prevents "no notes" flash
     staleTime: 2 * 60 * 1000, // Consider fresh for 2 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
