@@ -93,21 +93,17 @@ export function AppHeader() {
           <Link to="/welcome" className="flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
-              <span className="font-semibold leading-tight text-foreground">Noteshare</span>
-              {isPremiumLoading ? (
-                <span className="text-[9px] leading-tight h-3 opacity-0" />
-              ) : isPremium ? (
-                <span 
-                  key="premium"
-                  className="text-[9px] leading-tight text-primary animate-fade-in-slow"
-                >
-                  Premium
-                </span>
-              ) : (
-                <span className="text-[9px] leading-tight text-foreground">
-                  Practice Smarter
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold leading-tight text-foreground">Noteshare</span>
+                {!isPremiumLoading && isPremium && (
+                  <span className="text-[10px] font-semibold leading-tight text-blue-400 animate-fade-in-slow">
+                    Pro
+                  </span>
+                )}
+              </div>
+              <span className="text-[9px] leading-tight text-foreground">
+                Practice Smarter
+              </span>
             </div>
           </Link>
           

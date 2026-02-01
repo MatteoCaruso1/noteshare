@@ -122,7 +122,7 @@ interface GateOverlayProps {
 
 function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, description }: GateOverlayProps) {
   const Icon = icon || Target;
-  const descriptionText = description || "Upgrade to Premium to organize\nnotes around goals, projects, and gigs";
+  const descriptionText = description || "Upgrade to Pro to organize\nnotes around goals, projects, and gigs";
   
   if (compact) {
     return (
@@ -131,7 +131,7 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, descri
         !standalone && "absolute inset-0 justify-center"
       )}>
         <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-xs text-muted-foreground">Premium</span>
+        <span className="text-xs text-muted-foreground">Pro</span>
         <Button 
           size="sm" 
           variant="outline" 
@@ -162,7 +162,7 @@ function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, descri
         className="gap-1.5"
       >
         <Sparkles className="h-3.5 w-3.5" />
-        Try Premium for Free
+        Get Noteshare Pro
       </Button>
     </div>
   );
@@ -191,10 +191,10 @@ export function PremiumBadge({
         className
       )}
       onClick={openPremiumDialog}
-      title={`${featureName} is a Premium feature`}
+      title={`${featureName} is a Pro feature`}
     >
       <Lock className="h-3 w-3" />
-      Premium
+      Pro
     </Button>
   );
 }
