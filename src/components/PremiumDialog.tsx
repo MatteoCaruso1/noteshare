@@ -15,7 +15,7 @@ const BENEFITS = [
   {
     icon: BarChart3,
     title: 'Pro Statistics',
-    description: 'Unlock detailed stats that track your journey',
+    description: 'Unlock detailed stats and dynamic goals that measure your progress',
   },
   {
     icon: FolderKanban,
@@ -29,7 +29,7 @@ const BENEFITS = [
   },
   {
     icon: Sparkles,
-    title: 'More to come',
+    title: 'Consistent Premium Feature Drops',
     description: 'I am constantly working on new Premium features to make Noteshare the ultimate tool for musicians',
   },
 ];
