@@ -17,6 +17,13 @@ export interface Notification {
     username: string;
     avatar: string | null;
   };
+  // For grouped applause notifications
+  grouped_count?: number;
+  other_users?: Array<{
+    id: string;
+    name: string;
+    avatar: string | null;
+  }>;
 }
 
 export function useNotifications() {
@@ -30,15 +37,69 @@ export function useNotifications() {
           profiles!notifications_from_user_id_fkey (id, name, username, avatar)
         `)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100); // Fetch more to group applause
 
       if (error) throw error;
-      return data.map((n: any) => ({
+      
+      const rawNotifications = data.map((n: any) => ({
         ...n,
         from_user: n.profiles,
       })) as Notification[];
+      
+      // Group applause notifications by note_id
+      const groupedNotifications: Notification[] = [];
+      const applauseByNote = new Map<string, Notification[]>();
+      
+      for (const notification of rawNotifications) {
+        if (notification.type === 'applause' && notification.note_id) {
+          const existing = applauseByNote.get(notification.note_id);
+          if (existing) {
+            existing.push(notification);
+          } else {
+            applauseByNote.set(notification.note_id, [notification]);
+          }
+        } else {
+          groupedNotifications.push(notification);
+        }
+      }
+      
+      // Convert grouped applause to single notifications
+      for (const [noteId, applauseNotifs] of applauseByNote) {
+        // Sort by created_at descending to get the most recent first
+        applauseNotifs.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        
+        const mostRecent = applauseNotifs[0];
+        const otherCount = applauseNotifs.length - 1;
+        
+        // Create grouped notification
+        const groupedNotif: Notification = {
+          ...mostRecent,
+          grouped_count: applauseNotifs.length,
+          // Check if ANY of the applause notifications are unread
+          read: applauseNotifs.every(n => n.read),
+          content: otherCount > 0 
+            ? `and ${otherCount} ${otherCount === 1 ? 'other' : 'others'} gave you applause on your note`
+            : 'gave you applause on your note',
+          other_users: applauseNotifs.slice(1, 4).map(n => n.from_user).filter(Boolean) as Array<{
+            id: string;
+            name: string;
+            avatar: string | null;
+          }>,
+        };
+        
+        groupedNotifications.push(groupedNotif);
+      }
+      
+      // Sort all notifications by created_at
+      groupedNotifications.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      return groupedNotifications.slice(0, 50);
     },
-    staleTime: 60 * 1000, // Consider data fresh for 1 minute
+    staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
 }

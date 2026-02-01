@@ -71,7 +71,7 @@ export function useGiveApplause() {
           from_user_id: profile.id,
           note_id: noteId,
           type: 'applause',
-          content: 'gave applause to your note',
+          content: 'gave you applause on your note',
         });
       }
 
