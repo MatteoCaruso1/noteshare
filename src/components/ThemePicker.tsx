@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Check } from 'lucide-react';
 import { useColorTheme, AVAILABLE_THEMES, ColorTheme } from '@/contexts/ColorThemeContext';
 import { cn } from '@/lib/utils';
@@ -36,7 +37,7 @@ export function ThemePicker() {
               style={{
                 backgroundColor: `hsl(${theme.previewColor})`,
                 // Use the theme's own color for the ring when selected
-                ...(isSelected && { '--tw-ring-color': `hsl(${theme.previewColor})` } as React.CSSProperties),
+                ...(isSelected && { '--tw-ring-color': `hsl(${theme.previewColor})` } as CSSProperties),
               }}
               title={theme.name}
               aria-label={`Select ${theme.name} theme`}
