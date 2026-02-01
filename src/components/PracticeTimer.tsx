@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Timer, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,6 +10,7 @@ interface PracticeTimerProps {
 }
 
 export function PracticeTimer({ className }: PracticeTimerProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [inputValue, setInputValue] = useState('15');
@@ -93,9 +92,11 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     };
   }, []);
   
-  const startTimer = async () => {
+  const startTimer = async (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     // Create and unlock AudioContext on user gesture (required for mobile)
-    // This ensures the completion chime will play later
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext();
     }
@@ -119,17 +120,23 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     setIsPaused(false);
   };
   
-  const endTimer = () => {
+  const endTimer = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsRunning(false);
     setIsPaused(false);
     setRemainingSeconds(0);
   };
   
-  const pauseTimer = () => {
+  const pauseTimer = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsPaused(true);
   };
   
-  const resumeTimer = () => {
+  const resumeTimer = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsPaused(false);
   };
   
@@ -144,7 +151,9 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     setInputValue(numericValue);
   };
   
-  const handlePresetClick = (mins: number) => {
+  const handlePresetClick = (mins: number, e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setInputValue(mins.toString());
   };
   
@@ -157,46 +166,53 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
   
   return (
     <>
-      <Popover>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-8 w-8 relative",
-                  isRunning && "text-primary",
-                  className
-                )}
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
+              "hover:bg-accent hover:text-accent-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "touch-manipulation select-none",
+              "active:bg-accent/80",
+              isRunning && "text-primary",
+              className
+            )}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <Timer className="w-4 h-4" />
+            {isRunning && (
+              <svg 
+                className="absolute inset-0 w-8 h-8 -rotate-90 pointer-events-none"
+                viewBox="0 0 32 32"
               >
-                <Timer className="w-4 h-4" />
-                {isRunning && (
-                  <svg 
-                    className="absolute inset-0 w-8 h-8 -rotate-90"
-                    viewBox="0 0 32 32"
-                  >
-                    <circle
-                      cx="16"
-                      cy="16"
-                      r="14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeDasharray={`${progressPercent * 0.88} 88`}
-                      className="text-primary opacity-30"
-                    />
-                  </svg>
-                )}
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isRunning ? `Timer: ${formatTime(remainingSeconds)}` : 'Practice Timer'}
-          </TooltipContent>
-        </Tooltip>
-        <PopoverContent className="w-56 p-3 bg-popover" align="start">
-          <div className="space-y-4">
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeDasharray={`${progressPercent * 0.88} 88`}
+                  className="text-primary opacity-30"
+                />
+              </svg>
+            )}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-56 p-3 bg-popover" 
+          align="start"
+          onPointerDownOutside={(e) => {
+            // Prevent closing when interacting with content
+            const target = e.target as HTMLElement;
+            if (target.closest('[data-timer-content]')) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <div className="space-y-4" data-timer-content>
             {/* Header with controls */}
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Practice Timer</span>
@@ -204,41 +220,64 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                 {isRunning ? (
                   <>
                     {isPaused ? (
-                      <Button
-                        size="sm"
-                        onClick={resumeTimer}
-                        className="h-7 px-3"
+                      <button
+                        type="button"
+                        onPointerDown={resumeTimer}
+                        className={cn(
+                          "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
+                          "bg-primary text-primary-foreground",
+                          "touch-manipulation select-none",
+                          "active:opacity-80"
+                        )}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                       >
                         Resume
-                      </Button>
+                      </button>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={pauseTimer}
-                        className="h-7 px-3"
+                      <button
+                        type="button"
+                        onPointerDown={pauseTimer}
+                        className={cn(
+                          "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
+                          "bg-secondary text-secondary-foreground",
+                          "touch-manipulation select-none",
+                          "active:opacity-80"
+                        )}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                       >
                         Pause
-                      </Button>
+                      </button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={endTimer}
-                      className="h-7 px-3"
+                    <button
+                      type="button"
+                      onPointerDown={endTimer}
+                      className={cn(
+                        "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
+                        "border border-input bg-background",
+                        "touch-manipulation select-none",
+                        "active:opacity-80"
+                      )}
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       End
-                    </Button>
+                    </button>
                   </>
                 ) : (
-                  <Button
-                    size="sm"
-                    onClick={startTimer}
-                    className="h-7 px-3"
+                  <button
+                    type="button"
+                    onPointerDown={isValidInput ? startTimer : undefined}
                     disabled={!isValidInput}
+                    className={cn(
+                      "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
+                      "bg-primary text-primary-foreground",
+                      "touch-manipulation select-none",
+                      "active:opacity-80",
+                      "disabled:opacity-50 disabled:pointer-events-none"
+                    )}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
                     Start
-                  </Button>
+                  </button>
                 )}
               </div>
             </div>
@@ -266,20 +305,27 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
               </div>
             )}
             
-            {/* Duration presets + custom input - only show when not running */}
+            {/* Duration presets - only show when not running */}
             {!isRunning && (
               <div className="space-y-2">
                 <div className="flex gap-1.5 justify-center">
                   {presets.map((mins) => (
-                    <Button
+                    <button
                       key={mins}
-                      variant={selectedMinutes === mins ? "secondary" : "ghost"}
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => handlePresetClick(mins)}
+                      type="button"
+                      onPointerDown={(e) => handlePresetClick(mins, e)}
+                      className={cn(
+                        "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium",
+                        "touch-manipulation select-none",
+                        "active:opacity-80",
+                        selectedMinutes === mins 
+                          ? "bg-secondary text-secondary-foreground" 
+                          : "hover:bg-accent hover:text-accent-foreground"
+                      )}
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       {mins}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>

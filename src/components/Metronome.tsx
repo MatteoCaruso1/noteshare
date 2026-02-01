@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 // Metronome icon - simple circle with tick marks
@@ -38,6 +36,7 @@ interface MetronomeProps {
 }
 
 export function Metronome({ className }: MetronomeProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [bpm, setBpm] = useState(120);
   
@@ -116,9 +115,6 @@ export function Metronome({ className }: MetronomeProps) {
     };
   }, [isPlaying, runScheduler]);
   
-  // BPM changes are handled automatically since runScheduler uses current bpm value
-  // and is called every 25ms via setInterval
-  
   // Cleanup audio context on unmount
   useEffect(() => {
     return () => {
@@ -128,7 +124,10 @@ export function Metronome({ className }: MetronomeProps) {
     };
   }, []);
   
-  const toggleMetronome = async () => {
+  const toggleMetronome = async (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!isPlaying) {
       // Create AudioContext on user gesture (required for mobile)
       if (!audioContextRef.current) {
@@ -153,39 +152,61 @@ export function Metronome({ className }: MetronomeProps) {
     setIsPlaying(!isPlaying);
   };
   
+  const handleTempoClick = (tempo: number, e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBpm(tempo);
+  };
+  
   return (
-    <Popover>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-8 w-8 relative",
-                isPlaying && "text-primary",
-                className
-              )}
-            >
-              <MetronomeIcon className="w-4 h-4" isPlaying={isPlaying} />
-            </Button>
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent>Metronome {isPlaying ? `(${bpm} BPM)` : ''}</TooltipContent>
-      </Tooltip>
-      <PopoverContent className="w-56 p-3 bg-popover" align="start">
-        <div className="space-y-4">
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
+            "hover:bg-accent hover:text-accent-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "touch-manipulation select-none",
+            "active:bg-accent/80",
+            isPlaying && "text-primary",
+            className
+          )}
+          style={{ WebkitTapHighlightColor: 'transparent' }}
+        >
+          <MetronomeIcon className="w-4 h-4" isPlaying={isPlaying} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="w-56 p-3 bg-popover" 
+        align="start"
+        onPointerDownOutside={(e) => {
+          // Prevent closing when interacting with content
+          const target = e.target as HTMLElement;
+          if (target.closest('[data-metronome-content]')) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <div className="space-y-4" data-metronome-content>
           {/* Header with toggle */}
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Metronome</span>
-            <Button
-              size="sm"
-              variant={isPlaying ? "default" : "outline"}
-              onClick={toggleMetronome}
-              className="h-7 px-3"
+            <button
+              type="button"
+              onPointerDown={toggleMetronome}
+              className={cn(
+                "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
+                "touch-manipulation select-none",
+                "active:opacity-80",
+                isPlaying 
+                  ? "bg-primary text-primary-foreground" 
+                  : "border border-input bg-background hover:bg-accent"
+              )}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               {isPlaying ? 'Stop' : 'Start'}
-            </Button>
+            </button>
           </div>
           
           {/* BPM Display */}
@@ -207,15 +228,22 @@ export function Metronome({ className }: MetronomeProps) {
           {/* Quick tempo buttons - 5 options to fit on one line */}
           <div className="flex gap-1.5 justify-center">
             {[60, 80, 100, 120, 140].map((tempo) => (
-              <Button
+              <button
                 key={tempo}
-                variant={bpm === tempo ? "secondary" : "ghost"}
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={() => setBpm(tempo)}
+                type="button"
+                onPointerDown={(e) => handleTempoClick(tempo, e)}
+                className={cn(
+                  "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium",
+                  "touch-manipulation select-none",
+                  "active:opacity-80",
+                  bpm === tempo 
+                    ? "bg-secondary text-secondary-foreground" 
+                    : "hover:bg-accent hover:text-accent-foreground"
+                )}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {tempo}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
