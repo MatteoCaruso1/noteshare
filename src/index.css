@@ -206,7 +206,8 @@
     --jazz-warm-black: 225 15% 8%;
   }
 
-  /* Pro Color Theme Variants */
+  /* Pro Color Theme Variants - Extended theming for backgrounds, cards, nav */
+  
   /* Red/Coral Theme */
   .theme-red {
     --primary: 0 72% 50%;
@@ -215,9 +216,22 @@
   }
   .dark.theme-red,
   .theme-red.dark {
+    --background: 0 20% 10%;
+    --foreground: 0 10% 95%;
+    --card: 0 18% 14%;
+    --card-foreground: 0 10% 95%;
+    --popover: 0 16% 18%;
+    --popover-foreground: 0 10% 95%;
+    --muted: 0 12% 25%;
+    --muted-foreground: 0 10% 70%;
+    --border: 0 15% 22%;
+    --input: 0 15% 22%;
     --primary: 0 72% 60%;
     --primary-foreground: 0 0% 10%;
     --ring: 0 72% 60%;
+    --note: 0 15% 16%;
+    --note-foreground: 0 10% 95%;
+    --note-border: 0 20% 25%;
   }
 
   /* Purple Theme */
@@ -228,9 +242,22 @@
   }
   .dark.theme-purple,
   .theme-purple.dark {
+    --background: 265 25% 10%;
+    --foreground: 265 10% 95%;
+    --card: 265 22% 14%;
+    --card-foreground: 265 10% 95%;
+    --popover: 265 20% 18%;
+    --popover-foreground: 265 10% 95%;
+    --muted: 265 15% 25%;
+    --muted-foreground: 265 10% 70%;
+    --border: 265 18% 22%;
+    --input: 265 18% 22%;
     --primary: 265 60% 65%;
     --primary-foreground: 265 80% 10%;
     --ring: 265 60% 65%;
+    --note: 265 18% 16%;
+    --note-foreground: 265 10% 95%;
+    --note-border: 265 22% 25%;
   }
 
   /* Green Theme */
@@ -241,9 +268,22 @@
   }
   .dark.theme-green,
   .theme-green.dark {
+    --background: 145 20% 9%;
+    --foreground: 145 10% 95%;
+    --card: 145 18% 13%;
+    --card-foreground: 145 10% 95%;
+    --popover: 145 16% 17%;
+    --popover-foreground: 145 10% 95%;
+    --muted: 145 12% 24%;
+    --muted-foreground: 145 10% 70%;
+    --border: 145 15% 21%;
+    --input: 145 15% 21%;
     --primary: 145 55% 50%;
     --primary-foreground: 145 80% 10%;
     --ring: 145 55% 50%;
+    --note: 145 15% 15%;
+    --note-foreground: 145 10% 95%;
+    --note-border: 145 20% 24%;
   }
 
   /* Amber Theme */
@@ -254,9 +294,22 @@
   }
   .dark.theme-amber,
   .theme-amber.dark {
+    --background: 35 25% 9%;
+    --foreground: 35 10% 95%;
+    --card: 35 22% 13%;
+    --card-foreground: 35 10% 95%;
+    --popover: 35 20% 17%;
+    --popover-foreground: 35 10% 95%;
+    --muted: 35 15% 24%;
+    --muted-foreground: 35 10% 70%;
+    --border: 35 18% 21%;
+    --input: 35 18% 21%;
     --primary: 38 92% 55%;
     --primary-foreground: 38 80% 10%;
     --ring: 38 92% 55%;
+    --note: 35 18% 15%;
+    --note-foreground: 35 10% 95%;
+    --note-border: 35 22% 24%;
   }
 
   /* Teal Theme */
@@ -267,9 +320,22 @@
   }
   .dark.theme-teal,
   .theme-teal.dark {
+    --background: 175 22% 9%;
+    --foreground: 175 10% 95%;
+    --card: 175 20% 13%;
+    --card-foreground: 175 10% 95%;
+    --popover: 175 18% 17%;
+    --popover-foreground: 175 10% 95%;
+    --muted: 175 14% 24%;
+    --muted-foreground: 175 10% 70%;
+    --border: 175 16% 21%;
+    --input: 175 16% 21%;
     --primary: 175 55% 48%;
     --primary-foreground: 175 80% 10%;
     --ring: 175 55% 48%;
+    --note: 175 16% 15%;
+    --note-foreground: 175 10% 95%;
+    --note-border: 175 20% 24%;
   }
 }
 
