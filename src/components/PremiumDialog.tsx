@@ -71,7 +71,7 @@ export function PremiumDialog() {
         closeButtonClassName="h-6 w-6 top-3 right-3 z-10"
       >
         {/* Body - scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 pb-28 space-y-5">
           {/* Header */}
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-jazz-amber">Noteshare Premium</h2>
@@ -82,16 +82,18 @@ export function PremiumDialog() {
 
           {/* About Pricing Collapsible */}
           <Collapsible open={isPricingOpen} onOpenChange={setIsPricingOpen}>
-            <CollapsibleTrigger asChild>
-              <button className="mx-auto flex items-center gap-1.5 px-4 py-2 rounded-full bg-muted/50 text-foreground text-sm font-medium hover:bg-muted transition-colors">
-                About pricing
-                {isPricingOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </button>
-            </CollapsibleTrigger>
+            <div className="flex justify-center">
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-muted/50 text-foreground text-sm font-medium hover:bg-muted transition-colors">
+                  About pricing
+                  {isPricingOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+              </CollapsibleTrigger>
+            </div>
             <CollapsibleContent className="mt-4">
               <div className="text-sm text-muted-foreground leading-relaxed space-y-3 text-center px-2">
                 <p>
@@ -121,12 +123,17 @@ export function PremiumDialog() {
               </div>
             ))}
           </div>
+        </div>
 
-          {/* CTA Buttons - Side by Side */}
-          <div className="flex gap-3 pt-2">
+        {/* Fixed CTA Buttons with fade */}
+        <div className="absolute bottom-0 left-0 right-0">
+          {/* Fade gradient */}
+          <div className="h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          {/* Buttons */}
+          <div className="flex gap-3 px-6 pb-6 pt-2 bg-background">
             <Button 
               onClick={handleStartTrial}
-              className="flex-1 bg-jazz-coral hover:bg-jazz-coral/90 text-white text-xs px-2 py-5 h-auto whitespace-normal text-center"
+              className="flex-1 bg-jazz-amber hover:bg-jazz-amber/90 text-jazz-midnight text-xs px-2 py-5 h-auto whitespace-normal text-center font-medium"
             >
               <span><span className="font-semibold">7 days free,</span> then $2.49/mo</span>
             </Button>
@@ -134,7 +141,7 @@ export function PremiumDialog() {
               onClick={handleLifetimePurchase}
               disabled={isLifetimeLoading}
               variant="outline"
-              className="flex-1 border-jazz-coral text-jazz-coral hover:bg-jazz-coral/10 text-xs px-2 py-5 h-auto whitespace-normal text-center"
+              className="flex-1 border-jazz-amber text-jazz-amber hover:bg-jazz-amber/10 text-xs px-2 py-5 h-auto whitespace-normal text-center"
             >
               <span><span className="font-semibold">Lifetime access</span> for $9.99</span>
             </Button>
