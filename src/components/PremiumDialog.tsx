@@ -133,17 +133,17 @@ export function PremiumDialog() {
           <div className="flex gap-3 px-6 pb-6 pt-2 bg-background">
             <Button 
               onClick={handleStartTrial}
-              className="flex-1 bg-jazz-amber hover:bg-jazz-amber/90 text-jazz-midnight text-xs px-2 py-5 h-auto whitespace-normal text-center font-medium"
+              className="flex-1 bg-jazz-amber hover:bg-jazz-amber/90 text-jazz-midnight text-sm px-2 py-5 h-auto whitespace-normal text-center font-bold focus:ring-jazz-amber focus-visible:ring-jazz-amber"
             >
-              <span><span className="font-semibold">7 days free,</span> then $2.49/mo</span>
+              <span><span className="font-bold">7 days free,</span> then $2.49/mo</span>
             </Button>
             <Button 
               onClick={handleLifetimePurchase}
               disabled={isLifetimeLoading}
               variant="outline"
-              className="flex-1 border-jazz-amber text-jazz-amber hover:bg-jazz-amber/10 text-xs px-2 py-5 h-auto whitespace-normal text-center"
+              className="flex-1 border-jazz-amber text-jazz-amber hover:bg-jazz-amber/10 text-sm px-2 py-5 h-auto whitespace-normal text-center font-bold focus:ring-jazz-amber focus-visible:ring-jazz-amber"
             >
-              <span><span className="font-semibold">Lifetime access</span> for $9.99</span>
+              <span><span className="font-bold">Lifetime access</span> for $9.99</span>
             </Button>
           </div>
         </div>
