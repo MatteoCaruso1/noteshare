@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Timer, BarChart3, FolderKanban, Heart, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { usePremium } from '@/contexts/PremiumContext';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -131,22 +130,25 @@ export function PremiumDialog() {
           <div className="h-16 bg-gradient-to-t from-background via-background/80 to-transparent" />
           {/* Buttons container */}
           <div className="flex gap-3 px-6 pb-6 pt-2 bg-background pointer-events-auto">
-            <Button 
+            <button
+              type="button"
               onClick={handleStartTrial}
-              className="flex-1 bg-jazz-amber hover:bg-jazz-amber/90 text-jazz-midnight text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{ '--tw-ring-color': 'hsl(38, 92%, 50%)' } as React.CSSProperties}
+              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] bg-jazz-amber text-jazz-midnight [@media(hover:hover)]:hover:bg-jazz-amber/90 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
             >
-              <span><span className="font-bold">7 days free,</span> then $2.49/mo</span>
-            </Button>
-            <Button 
+              <span>
+                <span className="font-bold">7 days free,</span> then $2.49/mo
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={handleLifetimePurchase}
               disabled={isLifetimeLoading}
-              variant="outline"
-              className="flex-1 border-jazz-amber text-jazz-amber hover:bg-jazz-amber/10 text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{ '--tw-ring-color': 'hsl(38, 92%, 50%)' } as React.CSSProperties}
+              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] border-2 border-jazz-amber text-jazz-amber bg-transparent [@media(hover:hover)]:hover:bg-jazz-amber/10 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
             >
-              <span><span className="font-bold">Lifetime access</span> for $9.99</span>
-            </Button>
+              <span>
+                <span className="font-bold">Lifetime access</span> for $9.99
+              </span>
+            </button>
           </div>
         </div>
       </DialogContent>
