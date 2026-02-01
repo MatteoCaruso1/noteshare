@@ -71,7 +71,7 @@ export function PremiumDialog() {
         closeButtonClassName="h-6 w-6 top-3 right-3 z-10"
       >
         {/* Body - scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 pb-28 space-y-5">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 pb-32 space-y-5">
           {/* Header */}
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-jazz-amber">Noteshare Pro</h2>
@@ -126,11 +126,11 @@ export function PremiumDialog() {
         </div>
 
         {/* Fixed CTA Buttons with fade */}
-        <div className="absolute bottom-0 left-0 right-0">
-          {/* Fade gradient */}
-          <div className="h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-          {/* Buttons */}
-          <div className="flex gap-3 px-6 pb-6 pt-2 bg-background">
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+          {/* Fade gradient - smoother transition */}
+          <div className="h-16 bg-gradient-to-t from-background via-background/80 to-transparent" />
+          {/* Buttons container */}
+          <div className="flex gap-3 px-6 pb-6 pt-2 bg-background pointer-events-auto">
             <Button 
               onClick={handleStartTrial}
               className="flex-1 bg-jazz-amber hover:bg-jazz-amber/90 text-jazz-midnight text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jazz-amber focus-visible:ring-offset-2"
