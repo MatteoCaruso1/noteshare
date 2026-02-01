@@ -8,11 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target } from 'lucide-react';
 import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -28,6 +30,8 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
+
+const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
 // Noteshare Team profile ID (Matteo)
 const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
@@ -56,6 +60,7 @@ const Profile = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { uploadImage } = useMediaUpload();
+  const { isPremium } = usePremium();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile?.name || '');
   const [username, setUsername] = useState(profile?.username || '');
@@ -64,6 +69,11 @@ const Profile = () => {
   const [instruments, setInstruments] = useState<string[]>(profile?.instruments || []);
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
   const [saving, setSaving] = useState(false);
+  
+  // Weekly goal preference
+  const [weeklyGoalDisabled, setWeeklyGoalDisabled] = useState(() => {
+    return localStorage.getItem(WEEKLY_GOAL_DISABLED_KEY) === 'true';
+  });
 
   // Get signed URL for avatar
   const { signedUrl: signedAvatar } = useSignedUrl(avatar);
@@ -408,6 +418,35 @@ const Profile = () => {
 
           {/* Manage Plans Section - only in edit mode */}
           {editing && <ManagePlansSection />}
+
+          {/* Premium Feature Preferences - only in edit mode for premium users */}
+          {editing && isPremium && (
+            <Card className="p-4 bg-card border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="w-5 h-5 text-primary" />
+                <h3 className="font-medium">Premium Features</h3>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="weekly-goal-toggle" className="text-sm font-medium">
+                    Weekly Practice Goal Prompt
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Show goal-setting modal on Mondays
+                  </p>
+                </div>
+                <Switch
+                  id="weekly-goal-toggle"
+                  checked={!weeklyGoalDisabled}
+                  onCheckedChange={(checked) => {
+                    setWeeklyGoalDisabled(!checked);
+                    localStorage.setItem(WEEKLY_GOAL_DISABLED_KEY, (!checked).toString());
+                    toast.success(checked ? 'Weekly goal prompts enabled' : 'Weekly goal prompts disabled');
+                  }}
+                />
+              </div>
+            </Card>
+          )}
 
           {/* Save/Cancel Buttons */}
           {editing && (
