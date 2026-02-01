@@ -124,10 +124,7 @@ export function Metronome({ className }: MetronomeProps) {
     };
   }, []);
   
-  const toggleMetronome = async (e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const toggleMetronome = async () => {
     if (!isPlaying) {
       // Create AudioContext on user gesture (required for mobile)
       if (!audioContextRef.current) {
@@ -152,9 +149,7 @@ export function Metronome({ className }: MetronomeProps) {
     setIsPlaying(!isPlaying);
   };
   
-  const handleTempoClick = (tempo: number, e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleTempoClick = (tempo: number) => {
     setBpm(tempo);
   };
   
@@ -194,7 +189,7 @@ export function Metronome({ className }: MetronomeProps) {
             <span className="text-sm font-medium">Metronome</span>
             <button
               type="button"
-              onPointerDown={toggleMetronome}
+              onClick={toggleMetronome}
               className={cn(
                 "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
                 "touch-manipulation select-none",
@@ -231,7 +226,7 @@ export function Metronome({ className }: MetronomeProps) {
               <button
                 key={tempo}
                 type="button"
-                onPointerDown={(e) => handleTempoClick(tempo, e)}
+                onClick={() => handleTempoClick(tempo)}
                 className={cn(
                   "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium",
                   "touch-manipulation select-none",
