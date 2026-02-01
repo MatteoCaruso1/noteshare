@@ -173,21 +173,23 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     <>
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-          <button
-            type="button"
-            className={cn(
-              "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
-              "hover:bg-accent hover:text-accent-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              "touch-manipulation select-none",
-              "active:bg-accent/80",
-              isRunning && "text-primary",
-              className
-            )}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <Timer className="w-4 h-4" />
-            {isRunning && (
+        <button
+          type="button"
+          className={cn(
+            "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
+            "hover:bg-accent hover:text-accent-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "touch-manipulation select-none",
+            "active:bg-accent/80",
+            isRunning && "text-primary",
+            // Amber color for free users to indicate premium feature
+            !isPremiumLoading && !isPremium && "text-jazz-amber",
+            className
+          )}
+          style={{ WebkitTapHighlightColor: 'transparent' }}
+        >
+          <Timer className="w-4 h-4" />
+          {isRunning && (
               <svg 
                 className="absolute inset-0 w-8 h-8 -rotate-90 pointer-events-none"
                 viewBox="0 0 32 32"

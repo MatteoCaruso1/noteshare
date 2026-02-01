@@ -181,6 +181,8 @@ export function Metronome({ className }: MetronomeProps) {
             "touch-manipulation select-none",
             "active:bg-accent/80",
             isPlaying && "text-primary",
+            // Amber color for free users to indicate premium feature
+            !isPremiumLoading && !isPremium && "text-jazz-amber",
             className
           )}
           style={{ WebkitTapHighlightColor: 'transparent' }}
