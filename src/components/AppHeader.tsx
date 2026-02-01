@@ -96,7 +96,7 @@ export function AppHeader() {
               <div className="flex items-baseline gap-1">
                 <span className="font-semibold leading-tight text-foreground">Noteshare</span>
                 {!isPremiumLoading && isPremium && (
-                  <span className="font-semibold italic leading-tight text-primary animate-fade-in-slow">
+                  <span className="font-semibold leading-tight text-primary animate-fade-in-slow">
                     Pro
                   </span>
                 )}
