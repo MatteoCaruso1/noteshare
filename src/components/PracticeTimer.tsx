@@ -92,10 +92,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     };
   }, []);
   
-  const startTimer = async (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const startTimer = async () => {
     // Create and unlock AudioContext on user gesture (required for mobile)
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext();
@@ -120,23 +117,17 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     setIsPaused(false);
   };
   
-  const endTimer = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const endTimer = () => {
     setIsRunning(false);
     setIsPaused(false);
     setRemainingSeconds(0);
   };
   
-  const pauseTimer = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const pauseTimer = () => {
     setIsPaused(true);
   };
   
-  const resumeTimer = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const resumeTimer = () => {
     setIsPaused(false);
   };
   
@@ -151,9 +142,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     setInputValue(numericValue);
   };
   
-  const handlePresetClick = (mins: number, e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handlePresetClick = (mins: number) => {
     setInputValue(mins.toString());
   };
   
@@ -222,7 +211,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     {isPaused ? (
                       <button
                         type="button"
-                        onPointerDown={resumeTimer}
+                        onClick={resumeTimer}
                         className={cn(
                           "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
                           "bg-primary text-primary-foreground",
@@ -236,7 +225,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     ) : (
                       <button
                         type="button"
-                        onPointerDown={pauseTimer}
+                        onClick={pauseTimer}
                         className={cn(
                           "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
                           "bg-secondary text-secondary-foreground",
@@ -250,7 +239,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     )}
                     <button
                       type="button"
-                      onPointerDown={endTimer}
+                      onClick={endTimer}
                       className={cn(
                         "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
                         "border border-input bg-background",
@@ -265,7 +254,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                 ) : (
                   <button
                     type="button"
-                    onPointerDown={isValidInput ? startTimer : undefined}
+                    onClick={isValidInput ? startTimer : undefined}
                     disabled={!isValidInput}
                     className={cn(
                       "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
@@ -313,7 +302,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     <button
                       key={mins}
                       type="button"
-                      onPointerDown={(e) => handlePresetClick(mins, e)}
+                      onClick={() => handlePresetClick(mins)}
                       className={cn(
                         "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium",
                         "touch-manipulation select-none",
