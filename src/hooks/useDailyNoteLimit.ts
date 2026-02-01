@@ -43,10 +43,12 @@ export function useDailyNoteLimit() {
     staleTime: 30 * 1000, // Consider fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
-
   // Premium users have unlimited notes
-  const hasReachedLimit = !isPremium && notesPostedToday >= FREE_DAILY_LIMIT;
-  const remainingNotes = isPremium ? Infinity : Math.max(0, FREE_DAILY_LIMIT - notesPostedToday);
+  // DISABLED: Free users now have unlimited notes too
+  // const hasReachedLimit = !isPremium && notesPostedToday >= FREE_DAILY_LIMIT;
+  // const remainingNotes = isPremium ? Infinity : Math.max(0, FREE_DAILY_LIMIT - notesPostedToday);
+  const hasReachedLimit = false; // All users have unlimited notes
+  const remainingNotes = Infinity;
 
   // Optimistically increment the count and invalidate the query
   const incrementCount = useCallback(() => {
