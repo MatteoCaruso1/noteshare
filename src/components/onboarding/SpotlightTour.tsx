@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface TourStep {
   targetSelector: string;
   message: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  navigateTo?: string; // Route to navigate to before showing this step
 }
 
 const tourSteps: TourStep[] = [
@@ -33,6 +35,7 @@ const tourSteps: TourStep[] = [
     targetSelector: '[data-tour="help-tips"]',
     message: 'Learn how to best leverage Noteshare using the tips button',
     position: 'bottom',
+    navigateTo: '/profile',
   },
 ];
 
@@ -45,6 +48,9 @@ interface SpotlightTourProps {
 export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isFinalStep = step === 6;
   const currentTourStep = !isFinalStep ? tourSteps[step - 1] : null;
@@ -55,23 +61,44 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       if (element) {
         const rect = element.getBoundingClientRect();
         setTargetRect(rect);
+        return true;
       }
     }
+    return false;
   }, [currentTourStep]);
 
   useEffect(() => {
     if (isFinalStep) {
       setTargetRect(null);
+      setIsNavigating(false);
+      return;
+    }
+
+    // Check if we need to navigate to a different page
+    if (currentTourStep?.navigateTo && location.pathname !== currentTourStep.navigateTo) {
+      setIsNavigating(true);
+      setIsAnimating(true);
+      navigate(currentTourStep.navigateTo);
       return;
     }
 
     setIsAnimating(true);
+    
+    // Wait for navigation/DOM to settle, then find the element
+    const findElement = () => {
+      const found = updateTargetRect();
+      if (found) {
+        setIsNavigating(false);
+        setTimeout(() => setIsAnimating(false), 350);
+      } else {
+        // Element not found yet, retry
+        setTimeout(findElement, 100);
+      }
+    };
+
     // Use requestAnimationFrame for smoother animation sync
     requestAnimationFrame(() => {
-      updateTargetRect();
-      // Slightly longer delay for smoother visual transition
-      const timer = setTimeout(() => setIsAnimating(false), 350);
-      return () => clearTimeout(timer);
+      setTimeout(findElement, 100);
     });
 
     // Update on scroll/resize
@@ -82,7 +109,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       window.removeEventListener('scroll', updateTargetRect, true);
       window.removeEventListener('resize', updateTargetRect);
     };
-  }, [step, isFinalStep, updateTargetRect]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect]);
 
   const handleClick = () => {
     if (isFinalStep) {
