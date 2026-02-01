@@ -1,71 +1,61 @@
 
-# Plan: Bulletproof Audio Recording System ✅ IMPLEMENTED
+# Plan: Fix Blue Focus Ring on Premium Dialog Buttons
 
-## Problem Summary
-A 50-minute audio recording disappeared when pressing stop. This is unacceptable for a practice workflow tool. We need to ensure recordings are never lost and users always know the status of their recording.
+## Problem
+When clicking/focusing the "7 days free" button in the Premium dialog on desktop, a **blue ring** appears instead of the intended amber/gold ring. This persists even after previous attempts to fix it using Tailwind's `!important` modifier.
 
-## Implementation Status: COMPLETE ✅
+## Root Cause
+1. The `Button` component in `button.tsx` has a base style that includes `focus-visible:ring-ring`
+2. The CSS variable `--ring` in dark mode is set to `198 93% 59%` - a **cyan/blue color**
+3. Using `!ring-jazz-amber` doesn't fully override because:
+   - Tailwind Merge doesn't reliably merge CSS variable-based ring colors
+   - The `focus-visible:ring-ring` uses `var(--ring)` while our override uses a named color
 
-All three phases have been implemented:
+## Solution
+There are two approaches, and I recommend **Approach A** for reliability:
 
-### Phase 1: Immediate Safeguards in AudioRecorder ✅
-- Added cumulative size tracking displayed to user during recording
-- Added "Processing..." state between stop and upload callback
-- Added detailed error logging with chunk counts
-- Store blob to IndexedDB before passing to `onRecorded`
-- Show toast with recording size when complete
+### Approach A: Use inline style override (Recommended)
+Add an inline `style` prop to force the `--tw-ring-color` CSS variable to the jazz-amber value. This guarantees the override regardless of class specificity.
 
-### Phase 2: Enhanced Upload Flow ✅
-- Added upload progress percentage using XMLHttpRequest
-- Added retry logic with exponential backoff (1s, 2s, 4s)
-- Added explicit success/failure toasts
-- Return progress state for UI consumption
+**Files to modify:**
+- `src/components/PremiumDialog.tsx`
 
-### Phase 3: Recovery System ✅
-- Created RecordingRecoveryBanner component
-- Check IndexedDB on app load for orphaned recordings
-- Display dismissible banner with recovery option
-- Allow user to re-attempt upload or discard
+**Changes:**
+1. Add an inline style to both buttons:
+   ```tsx
+   style={{ '--tw-ring-color': 'hsl(38, 92%, 50%)' } as React.CSSProperties}
+   ```
+2. Simplify the className to use standard focus-visible classes without the `!` modifiers
 
----
-
-## Files Created/Modified
-
-### NEW Files:
-- `src/lib/recordingBackup.ts` - IndexedDB-based recording backup utility
-- `src/components/RecordingRecoveryBanner.tsx` - Recovery UI for orphaned recordings
-
-### Modified Files:
-- `src/components/AudioRecorder.tsx` - Added size tracking, backup before upload, detailed logging
-- `src/hooks/useMediaUpload.ts` - Added XHR progress, retry logic, uploadAudioWithProgress
-- `src/components/AudioFileItem.tsx` - Added upload progress bar and status indicators
-- `src/components/QuickNoteCapture.tsx` - Integrated backup clearing and recovery banner
-- `src/components/PracticeControls.tsx` - Integrated backup clearing and recovery banner
+### Approach B: Remove ring entirely for these buttons
+If the focus ring isn't important for accessibility in this modal context, we could remove it entirely with `focus-visible:ring-0 focus-visible:ring-offset-0`.
 
 ---
 
-## User Experience Improvements
+## Technical Details
 
-| Scenario | Old Behavior | New Behavior |
-|----------|--------------|--------------|
-| Recording stops | Silent processing | "Processing 45.2 MB recording..." toast |
-| During recording | Just timer | Timer + size indicator (e.g., "0:45 (12.3 MB)") |
-| Upload starts | No indication | Progress shown in audio item |
-| Upload succeeds | Audio appears in list | Audio appears + "Recording saved!" toast |
-| Upload fails | Audio doesn't appear, no error | Toast error + backup preserved for recovery |
-| App crashes during recording | Recording lost forever | Recovery banner on next load |
-| Large file timeout | Silent failure | Automatic retry with exponential backoff |
+### Current button code:
+```tsx
+<Button 
+  onClick={handleStartTrial}
+  className="... !ring-jazz-amber focus:!ring-jazz-amber focus-visible:!ring-jazz-amber"
+>
+```
 
----
+### Proposed button code (Approach A):
+```tsx
+<Button 
+  onClick={handleStartTrial}
+  className="... focus-visible:ring-2 focus-visible:ring-offset-2"
+  style={{ '--tw-ring-color': 'hsl(38, 92%, 50%)' } as React.CSSProperties}
+>
+```
 
-## Testing Checklist
-- [ ] Record 1-minute audio and verify save works
-- [ ] Record 10-minute audio and verify upload completes
-- [ ] Simulate network failure during upload and verify retry
-- [ ] Kill app during recording and verify recovery on reload
-- [ ] Test on iOS Safari with 30-minute recording
-- [ ] Verify upload progress is visible
+This directly sets the Tailwind ring color CSS variable to the jazz-amber HSL value (`38 92% 50%`), bypassing any class specificity issues.
 
----
-
-No more lost 50-minute recordings! 🎉
+## Testing
+After implementation, verify by:
+1. Opening the Premium dialog
+2. Clicking on the "7 days free" button
+3. Confirming the focus ring is amber/gold, not blue
+4. Repeat for the "Lifetime access" button
