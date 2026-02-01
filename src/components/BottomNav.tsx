@@ -109,6 +109,12 @@ export function BottomNav() {
         // Hide via transform when keyboard is open (instead of returning null)
         isKeyboardOpen && "translate-y-full pointer-events-none"
       )}
+      style={{
+        // Force GPU layer and prevent iOS Safari fixed positioning issues
+        WebkitTransform: isKeyboardOpen ? 'translateY(100%)' : 'translate3d(0,0,0)',
+        transform: isKeyboardOpen ? 'translateY(100%)' : 'translate3d(0,0,0)',
+        willChange: 'transform',
+      }}
     >
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
         <div className="flex items-start justify-around py-1.5">
