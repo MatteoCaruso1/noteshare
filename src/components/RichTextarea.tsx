@@ -342,12 +342,18 @@ export function RichTextarea({
       // Check for list patterns
       const bulletMatch = line.match(/^(\s*)([-•])\s/);
       const numberMatch = line.match(/^(\s*)(\d+)\.\s/);
+      const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
 
-      if (bulletMatch || numberMatch) {
+      if (bulletMatch || numberMatch || checkboxMatch) {
         // Check if line is empty (just the prefix)
-        const contentAfterPrefix = bulletMatch
-          ? line.replace(/^(\s*)[-•]\s/, '')
-          : line.replace(/^(\s*)\d+\.\s/, '');
+        let contentAfterPrefix: string;
+        if (bulletMatch) {
+          contentAfterPrefix = line.replace(/^(\s*)[-•]\s/, '');
+        } else if (numberMatch) {
+          contentAfterPrefix = line.replace(/^(\s*)\d+\.\s/, '');
+        } else {
+          contentAfterPrefix = line.replace(/^(\s*)[☐☑]\s/, '');
+        }
 
         if (contentAfterPrefix.trim() === '') {
           // Empty list item - end the list
@@ -363,14 +369,20 @@ export function RichTextarea({
         e.preventDefault();
 
         // Continue list on new line
-        const indent = bulletMatch ? bulletMatch[1] : numberMatch![1];
+        let indent: string;
         let prefix: string;
 
         if (bulletMatch) {
+          indent = bulletMatch[1];
           prefix = indent + bulletMatch[2] + ' ';
-        } else {
-          const num = parseInt(numberMatch![2], 10) + 1;
+        } else if (numberMatch) {
+          indent = numberMatch[1];
+          const num = parseInt(numberMatch[2], 10) + 1;
           prefix = indent + num + '. ';
+        } else {
+          // Checkbox - always add unchecked box for new items
+          indent = checkboxMatch![1];
+          prefix = indent + '☐ ';
         }
 
         let newValue = currentValue.substring(0, start) + '\n' + prefix + currentValue.substring(end);
@@ -386,6 +398,70 @@ export function RichTextarea({
       }
     }
   }, [onChange, getLineInfo, insertListPrefix, renumberList]);
+
+  // Check if a position is over a checkbox
+  const isOverCheckbox = useCallback((textarea: HTMLTextAreaElement, cursorPos: number): boolean => {
+    const text = textarea.value;
+    
+    // Find line start
+    let lineStart = cursorPos;
+    while (lineStart > 0 && text[lineStart - 1] !== '\n') {
+      lineStart--;
+    }
+    
+    // Get the line content
+    let lineEnd = cursorPos;
+    while (lineEnd < text.length && text[lineEnd] !== '\n') {
+      lineEnd++;
+    }
+    const line = text.substring(lineStart, lineEnd);
+    
+    // Check if line starts with a checkbox
+    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+    if (!checkboxMatch) return false;
+    
+    const indent = checkboxMatch[1];
+    const checkboxPosInLine = indent.length;
+    const clickPosInLine = cursorPos - lineStart;
+    
+    // Check if cursor is on or near the checkbox
+    return clickPosInLine <= checkboxPosInLine + 2;
+  }, []);
+
+  // Track mouse position for hover feedback
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    
+    // Get approximate character position from click coordinates
+    // This is a rough approximation - we use the selection API after a synthetic focus
+    const rect = textarea.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Check if we're in the left portion where checkboxes would be (first ~30px)
+    if (x < 40) {
+      // Check if any line has a checkbox
+      const lines = textarea.value.split('\n');
+      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 24;
+      const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 8;
+      const scrollTop = textarea.scrollTop;
+      
+      const lineIndex = Math.floor((y + scrollTop - paddingTop) / lineHeight);
+      if (lineIndex >= 0 && lineIndex < lines.length) {
+        const line = lines[lineIndex];
+        if (line.match(/^(\s*)(☐|☑)\s/)) {
+          textarea.style.cursor = 'pointer';
+          return;
+        }
+      }
+    }
+    
+    textarea.style.cursor = 'text';
+  }, []);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    (e.target as HTMLTextAreaElement).style.cursor = 'text';
+  }, []);
 
   // Handle clicks on checkbox characters to toggle them
   const handleClick = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
@@ -438,6 +514,8 @@ export function RichTextarea({
         onChange={handleInput}
         onKeyDown={handleKeyDown}
         onClick={handleClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         placeholder={displayPlaceholder}
         rows={rows}
         className={cn("practice-board-textarea resize-none text-sm min-h-[36px]", className)}
