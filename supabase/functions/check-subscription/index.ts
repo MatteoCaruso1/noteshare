@@ -177,7 +177,7 @@ serve(async (req) => {
       }
     }
 
-    // Then check for active subscriptions
+    // Check for active subscriptions first
     let subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -192,6 +192,32 @@ serve(async (req) => {
         status: "trialing",
         limit: 1,
       });
+    }
+    
+    // If still no subscription, check for canceled subscriptions that are still within their paid period
+    // (user canceled but hasn't reached end of billing period yet)
+    if (subscriptions.data.length === 0) {
+      logStep("No trialing subscription, checking for canceled with remaining access");
+      const canceledSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "canceled",
+        limit: 10,
+      });
+      
+      // Find any canceled subscription where current_period_end is still in the future
+      const now = Math.floor(Date.now() / 1000);
+      const stillValidSub = canceledSubs.data.find((sub: Stripe.Subscription) => {
+        const periodEnd = sub.current_period_end;
+        return periodEnd && typeof periodEnd === 'number' && periodEnd > now;
+      });
+      
+      if (stillValidSub) {
+        logStep("Found canceled subscription with remaining access period", {
+          subscriptionId: stillValidSub.id,
+          periodEnd: new Date(stillValidSub.current_period_end * 1000).toISOString()
+        });
+        subscriptions = { data: [stillValidSub] } as Stripe.ApiList<Stripe.Subscription>;
+      }
     }
     
     const hasActiveSub = subscriptions.data.length > 0;
@@ -217,7 +243,7 @@ serve(async (req) => {
         endDate: subscriptionEnd 
       });
     } else {
-      logStep("No active or trialing subscription found");
+      logStep("No active, trialing, or valid canceled subscription found");
     }
 
     return new Response(JSON.stringify({
