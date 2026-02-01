@@ -766,6 +766,7 @@ export function PracticeControls() {
               placeholder="What are you practicing this session?"
               value={noteText}
               onChange={setNoteText}
+              showTips
             />
           </div>
 
