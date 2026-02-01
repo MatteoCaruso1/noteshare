@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 
 // Metronome icon - simple circle with tick marks
-function MetronomeIcon({ className, isPlaying }: { className?: string; isPlaying?: boolean }) {
+export function MetronomeIcon({ className, isPlaying }: { className?: string; isPlaying?: boolean }) {
   return (
     <svg 
       viewBox="0 0 24 24" 

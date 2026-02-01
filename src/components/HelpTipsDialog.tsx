@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, Mic, Target, Music, Timer, ClipboardList, Save, List, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
+import { HelpCircle, Mic, Target, Timer, ClipboardList, Save, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
+import { MetronomeIcon } from '@/components/Metronome';
 
 const HELP_VIEWED_KEY = 'noteshare_help_viewed';
 
@@ -50,7 +51,7 @@ const helpSections: HelpSection[] = [
     items: [
       { icon: <Mic className="w-4 h-4" />, label: 'Record Audio', description: 'Record clips directly within your practice session' },
       { icon: <Target className="w-4 h-4" />, label: 'Link to Pursuit', description: 'Tie your session to a pursuit for organized practicing' },
-      { icon: <Music className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM' },
+      { icon: <MetronomeIcon className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM' },
       { icon: <Timer className="w-4 h-4" />, label: 'Practice Timer', description: 'Set a countdown timer with audio chime when complete' },
       { icon: <Lock className="w-4 h-4" />, label: 'Unlock Screen', description: 'Keep your mobile screen unlocked while practicing' },
       { icon: <PracticeBoardToggleIcon />, label: 'Link to Practice Board', description: 'Connect your session to your cross-session focus' },
@@ -63,7 +64,7 @@ const helpSections: HelpSection[] = [
     definition: 'Document your cross-session focus areas to maintain intentionality across sessions',
     items: [
       { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Boards to revisit later' },
-      { icon: <List className="w-4 h-4" />, label: 'View Backlog', description: 'Revisit saved focuses' },
+      { icon: <FolderOpen className="w-4 h-4" />, label: 'View Backlog', description: 'Revisit saved focuses' },
     ],
   },
   {
