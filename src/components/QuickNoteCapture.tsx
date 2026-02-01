@@ -285,6 +285,7 @@ export function QuickNoteCapture() {
             placeholder="What ideas or sounds do you want to save?"
             value={noteText}
             onChange={setNoteText}
+            showTips
           />
 
           {/* Action Buttons - inline */}

@@ -1,6 +1,20 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+
+// Tips shown occasionally as placeholders
+const PLACEHOLDER_TIPS = [
+  'Tip: Type [ ] to create checkable practice items',
+  'Tip: Type - to create bulleted lists',
+];
+
+// Get a random tip with 1/7 probability
+function getPlaceholderWithTip(defaultPlaceholder: string): string {
+  if (Math.random() < 1 / 7) {
+    return PLACEHOLDER_TIPS[Math.floor(Math.random() * PLACEHOLDER_TIPS.length)];
+  }
+  return defaultPlaceholder;
+}
 
 interface RichTextareaProps {
   value: string;
@@ -10,6 +24,7 @@ interface RichTextareaProps {
   className?: string;
   showToolbar?: boolean;
   autoExpand?: boolean;
+  showTips?: boolean;
 }
 
 export function RichTextarea({
@@ -20,8 +35,17 @@ export function RichTextarea({
   className,
   showToolbar = false, // Toolbar now hidden by default
   autoExpand = true,
+  showTips = false,
 }: RichTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Memoize placeholder with tip to avoid changing on every render
+  const displayPlaceholder = useMemo(() => {
+    if (showTips && placeholder) {
+      return getPlaceholderWithTip(placeholder);
+    }
+    return placeholder;
+  }, [placeholder, showTips]);
 
   // Auto-expand textarea as content grows
   useEffect(() => {
@@ -199,6 +223,19 @@ export function RichTextarea({
     }
     const lineBeforeCursor = newValue.substring(lineStart, cursorPos);
     
+    // Auto-convert "[]" or "[ ]" at line start to checkbox
+    if (lineBeforeCursor === '[] ' || lineBeforeCursor === '[ ] ' || lineBeforeCursor.match(/^\s+\[\s?\]\s$/)) {
+      const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
+      const transformed = newValue.substring(0, lineStart) + indent + '☐ ' + newValue.substring(cursorPos);
+      const newCursor = lineStart + indent.length + 2;
+      
+      onChange(transformed);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = newCursor;
+      }, 0);
+      return;
+    }
+    
     // Auto-convert "- " at line start to bullet
     if (lineBeforeCursor === '- ' || lineBeforeCursor.match(/^\s+- $/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
@@ -357,7 +394,7 @@ export function RichTextarea({
         value={value}
         onChange={handleInput}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={displayPlaceholder}
         rows={rows}
         className={cn("practice-board-textarea resize-none text-sm min-h-[36px]", className)}
       />
