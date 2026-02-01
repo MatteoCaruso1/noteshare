@@ -4,14 +4,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Price IDs for different currencies (with 30-day trial)
-const PRICE_IDS = {
-  USD: "price_1SqlanGiNcIsULtkonowz5Fd", // $2.99/month USD
-  CAD: "price_1Sr1nPGiNcIsULtkfvqszh5A", // $3.99/month CAD
-};
+// Price ID for $2.49 CAD/month subscription
+const SUBSCRIPTION_PRICE_ID = "price_1Sw8ilGiNcIsULtkGOJKoXdT";
+
+// Trial period in days
+const TRIAL_DAYS = 7;
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -38,18 +38,6 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
-
-    // Parse request body for currency
-    let currency = "USD";
-    try {
-      const body = await req.json();
-      if (body.currency && (body.currency === "CAD" || body.currency === "USD")) {
-        currency = body.currency;
-      }
-    } catch {
-      // No body or invalid JSON, use default USD
-    }
-    logStep("Currency determined", { currency });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -182,26 +170,21 @@ serve(async (req) => {
 
     logStep("Trial eligibility determined", { shouldOfferTrial, graceReason });
 
-    // Select price based on currency
-    const priceId = PRICE_IDS[currency as keyof typeof PRICE_IDS] || PRICE_IDS.USD;
-    logStep("Selected price", { priceId, currency });
-
     const origin = req.headers.get("origin") || "https://noteshare.app";
-    const trialDays = shouldOfferTrial ? 30 : 0;
 
     // Create checkout session with ui_mode: 'embedded' for embedded checkout
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: priceId,
+          price: SUBSCRIPTION_PRICE_ID,
           quantity: 1,
         },
       ],
       mode: "subscription",
       ui_mode: "embedded",
       subscription_data: shouldOfferTrial 
-        ? { trial_period_days: 30 }
+        ? { trial_period_days: TRIAL_DAYS }
         : {},
       return_url: `${origin}/profile?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
       payment_method_types: ["card"],
@@ -210,7 +193,7 @@ serve(async (req) => {
     logStep("Checkout session created", { 
       sessionId: session.id, 
       trialOffered: shouldOfferTrial,
-      trialDays,
+      trialDays: shouldOfferTrial ? TRIAL_DAYS : 0,
       hasClientSecret: !!session.client_secret 
     });
 
@@ -233,7 +216,7 @@ serve(async (req) => {
       clientSecret: session.client_secret,
       sessionId: session.id,
       trialEndDate: shouldOfferTrial 
-        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        ? new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString()
         : null,
       trialOffered: shouldOfferTrial,
     }), {
