@@ -4,6 +4,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Timer, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePremium } from '@/contexts/PremiumContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface PracticeTimerProps {
   className?: string;
@@ -11,6 +13,8 @@ interface PracticeTimerProps {
 
 export function PracticeTimer({ className }: PracticeTimerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { toast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [inputValue, setInputValue] = useState('15');
@@ -152,10 +156,22 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     : 0;
   
   const presets = [5, 10, 15, 20, 30];
+
+  const handleOpenChange = (newOpen: boolean) => {
+    // If free user tries to open, show toast and block
+    if (newOpen && !isPremiumLoading && !isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: "Practice Timer is available for Premium users.",
+      });
+      return;
+    }
+    setIsOpen(newOpen);
+  };
   
   return (
     <>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <button
             type="button"

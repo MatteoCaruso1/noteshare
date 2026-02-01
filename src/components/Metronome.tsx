@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { usePremium } from '@/contexts/PremiumContext';
+import { useToast } from '@/hooks/use-toast';
 
 // Metronome icon - simple circle with tick marks
 export function MetronomeIcon({ className, isPlaying }: { className?: string; isPlaying?: boolean }) {
@@ -37,6 +39,8 @@ interface MetronomeProps {
 
 export function Metronome({ className }: MetronomeProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [bpm, setBpm] = useState(120);
   
@@ -152,9 +156,21 @@ export function Metronome({ className }: MetronomeProps) {
   const handleTempoClick = (tempo: number) => {
     setBpm(tempo);
   };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    // If free user tries to open, show toast and block
+    if (newOpen && !isPremiumLoading && !isPremium) {
+      toast({
+        title: "Premium Feature",
+        description: "Metronome is available for Premium users.",
+      });
+      return;
+    }
+    setIsOpen(newOpen);
+  };
   
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
