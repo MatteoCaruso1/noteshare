@@ -11,20 +11,39 @@ export function SessionFocusOverlay() {
   if (!hasActiveSession) return null;
 
   return (
-    <div 
-      className="fixed inset-0 pointer-events-none z-[5] transition-opacity duration-500"
-      style={{
-        background: `
-          radial-gradient(
-            ellipse 120% 50% at 50% 0%,
-            transparent 0%,
-            transparent 30%,
-            hsla(var(--background) / 0.7) 70%,
-            hsla(var(--background) / 0.85) 100%
-          )
-        `,
-      }}
-      aria-hidden="true"
-    />
+    <>
+      {/* Top vignette - fades from transparent at top to dark */}
+      <div 
+        className="fixed left-0 right-0 pointer-events-none z-[5] transition-opacity duration-500"
+        style={{
+          top: '56px', // Below header
+          height: '100px',
+          background: 'linear-gradient(to bottom, transparent 0%, hsl(var(--background) / 0.6) 100%)',
+        }}
+        aria-hidden="true"
+      />
+      
+      {/* Bottom vignette - dark overlay over lower content */}
+      <div 
+        className="fixed left-0 right-0 pointer-events-none z-[5] transition-opacity duration-500"
+        style={{
+          top: '156px', // After top vignette
+          bottom: '64px', // Above bottom nav
+          background: 'hsl(var(--background) / 0.75)',
+        }}
+        aria-hidden="true"
+      />
+      
+      {/* Bottom fade to nav */}
+      <div 
+        className="fixed left-0 right-0 pointer-events-none z-[5] transition-opacity duration-500"
+        style={{
+          bottom: '64px',
+          height: '60px',
+          background: 'linear-gradient(to bottom, hsl(var(--background) / 0.75) 0%, transparent 100%)',
+        }}
+        aria-hidden="true"
+      />
+    </>
   );
 }
