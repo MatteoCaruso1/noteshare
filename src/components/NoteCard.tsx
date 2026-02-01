@@ -326,8 +326,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     // If non-owner (viewing friend's note) and not premium, show toast
     if (!isOwner && !isPremiumLoading && !isPremium) {
       toast({
-        title: "Premium Feature",
-        description: "Viewing linked projects, gigs, and goals is available for Premium users.",
+        title: "Pro Feature",
+        description: "Viewing linked projects, gigs, and goals is available for Pro users.",
       });
       return;
     }
@@ -341,8 +341,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     // If non-owner (viewing friend's note) and not premium, show toast
     if (!isOwner && !isPremiumLoading && !isPremium) {
       toast({
-        title: "Premium Feature",
-        description: "Viewing linked projects, gigs, and goals is available for Premium users.",
+        title: "Pro Feature",
+        description: "Viewing linked projects, gigs, and goals is available for Pro users.",
       });
       return;
     }

@@ -17,7 +17,7 @@ export function DailyLimitBanner({ notesPostedToday, dailyLimit }: DailyLimitBan
           Daily note limit reached
         </p>
         <p className="text-xs text-muted-foreground">
-          Lite users can post one note per day. Try Premium for Free for unlimited notes.
+          Lite users can post one note per day. Get Pro for unlimited notes.
         </p>
       </div>
       <Button 
@@ -27,7 +27,7 @@ export function DailyLimitBanner({ notesPostedToday, dailyLimit }: DailyLimitBan
         className="gap-1.5"
       >
         <Sparkles className="h-3.5 w-3.5" />
-        Try Premium for Free
+        Get Noteshare Pro
       </Button>
     </div>
   );

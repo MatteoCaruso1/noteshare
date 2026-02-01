@@ -42,14 +42,14 @@ function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
           <Lock className="h-6 w-6 text-jazz-gold" />
         </div>
         <p className="text-sm text-muted-foreground">
-          Upgrade to Premium to access your full practice history
+          Upgrade to Pro to access your full practice history
         </p>
         <Button 
           onClick={onUpgrade}
           variant="hero"
         >
           <Sparkles className="w-4 h-4 mr-2" />
-          Try Premium for Free
+          Get Noteshare Pro
         </Button>
       </div>
     </div>

@@ -161,8 +161,8 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     // If free user tries to open, show toast and block
     if (newOpen && !isPremiumLoading && !isPremium) {
       toast({
-        title: "Premium Feature",
-        description: "Practice Timer is available for Premium users.",
+        title: "Pro Feature",
+        description: "Practice Timer is available for Pro users.",
       });
       return;
     }

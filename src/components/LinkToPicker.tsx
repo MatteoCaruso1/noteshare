@@ -47,8 +47,8 @@ export function LinkToPicker({
     // If lite user tries to open, show toast and block
     if (newOpen && !isPremiumLoading && !isPremium) {
       toast({
-        title: "Premium Feature",
-        description: "Linking notes to goals, projects, and gigs is available for Premium users.",
+        title: "Pro Feature",
+        description: "Linking notes to goals, projects, and gigs is available for Pro users.",
       });
       return;
     }

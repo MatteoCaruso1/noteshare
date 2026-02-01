@@ -36,8 +36,8 @@ const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 // Noteshare Team profile ID (Matteo)
 const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
 
-// Premium upgrade button component for profile
-function PremiumUpgradeButton() {
+// Pro upgrade button component for profile
+function ProUpgradeButton() {
   const { isPremium, openPremiumDialog } = usePremium();
   
   if (isPremium) return null;
@@ -50,8 +50,8 @@ function PremiumUpgradeButton() {
       className="gap-1 text-xs h-8 px-2 self-start"
     >
       <Sparkles className="h-3 w-3" />
-      <span className="hidden sm:inline">Try Premium for Free</span>
-      <span className="sm:hidden">Try Premium</span>
+      <span className="hidden sm:inline">Get Noteshare Pro</span>
+      <span className="sm:hidden">Get Pro</span>
     </Button>
   );
 }
@@ -320,7 +320,7 @@ const Profile = () => {
               )}
             </div>
             {!editing && (
-              <PremiumUpgradeButton />
+              <ProUpgradeButton />
             )}
           </div>
 
@@ -410,7 +410,7 @@ const Profile = () => {
               featureName="Practice Stats" 
               blur={true}
               icon={TrendingUp}
-              description="Upgrade to Premium to view detailed practice stats"
+              description="Upgrade to Pro to view detailed practice stats"
             >
               <PracticeStats profileId={profile?.id} />
             </PremiumGate>
@@ -424,7 +424,7 @@ const Profile = () => {
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Target className="w-5 h-5 text-primary" />
-                <h3 className="font-medium">Premium Features</h3>
+                <h3 className="font-medium">Pro Features</h3>
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">

@@ -101,7 +101,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
           blur={false}
           showPreview={false}
           icon={ClipboardList}
-          description="Upgrade to Premium to view archived Practice Boards"
+          description="Upgrade to Pro to view archived Practice Boards"
         >
           {/* Search and Filter */}
           <div className="flex gap-2 mb-4">
