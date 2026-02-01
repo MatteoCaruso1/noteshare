@@ -387,6 +387,49 @@ export function RichTextarea({
     }
   }, [onChange, getLineInfo, insertListPrefix, renumberList]);
 
+  // Handle clicks on checkbox characters to toggle them
+  const handleClick = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    const cursorPos = textarea.selectionStart;
+    const text = textarea.value;
+    
+    // Find line start
+    let lineStart = cursorPos;
+    while (lineStart > 0 && text[lineStart - 1] !== '\n') {
+      lineStart--;
+    }
+    
+    // Get the line content
+    let lineEnd = cursorPos;
+    while (lineEnd < text.length && text[lineEnd] !== '\n') {
+      lineEnd++;
+    }
+    const line = text.substring(lineStart, lineEnd);
+    
+    // Check if line starts with a checkbox (with optional leading whitespace)
+    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+    if (!checkboxMatch) return;
+    
+    const indent = checkboxMatch[1];
+    const checkboxChar = checkboxMatch[2];
+    const checkboxPosInLine = indent.length;
+    const clickPosInLine = cursorPos - lineStart;
+    
+    // Only toggle if clicked on or near the checkbox (within 2 characters)
+    if (clickPosInLine <= checkboxPosInLine + 2) {
+      const newCheckbox = checkboxChar === '☐' ? '☑' : '☐';
+      const newLine = indent + newCheckbox + line.substring(checkboxPosInLine + 1);
+      const newValue = text.substring(0, lineStart) + newLine + text.substring(lineEnd);
+      
+      onChange(newValue);
+      
+      // Keep cursor position
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      }, 0);
+    }
+  }, [onChange]);
+
   return (
     <div className="space-y-1">
       <Textarea
@@ -394,6 +437,7 @@ export function RichTextarea({
         value={value}
         onChange={handleInput}
         onKeyDown={handleKeyDown}
+        onClick={handleClick}
         placeholder={displayPlaceholder}
         rows={rows}
         className={cn("practice-board-textarea resize-none text-sm min-h-[36px]", className)}
