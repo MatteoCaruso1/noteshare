@@ -5,11 +5,13 @@ import { useGlint } from '@/contexts/GlintContext';
  * A focus overlay that dramatically darkens the page during active practice sessions
  * to help users focus on the practice session and practice board.
  * Adds body class to darken background and elevate focused cards.
+ * All visual effects are CSS-based for smooth transitions.
  */
 export function SessionFocusOverlay() {
   const { hasActiveSession } = useGlint();
 
   // Add/remove class to body to control focus mode styling
+  // CSS handles all the visual transitions smoothly
   useEffect(() => {
     if (hasActiveSession) {
       document.body.classList.add('session-active');
@@ -21,29 +23,7 @@ export function SessionFocusOverlay() {
     };
   }, [hasActiveSession]);
 
-  if (!hasActiveSession) return null;
-
-  return (
-    <>
-      {/* Dark overlay covering content area */}
-      <div 
-        className="fixed inset-0 pointer-events-none transition-all duration-500 ease-out"
-        style={{
-          zIndex: 15,
-          top: 0,
-          bottom: 0,
-          background: `
-            linear-gradient(
-              to bottom,
-              hsl(var(--background) / 0) 0px,
-              hsl(var(--background) / 0) 56px,
-              hsl(0 0% 0% / 0.6) 56px,
-              hsl(0 0% 0% / 0.7) 100%
-            )
-          `,
-        }}
-        aria-hidden="true"
-      />
-    </>
-  );
+  // All effects are CSS-based via body.session-active class
+  // No overlay div needed - prevents hard edges and split backgrounds
+  return null;
 }
