@@ -205,6 +205,72 @@
     --jazz-purple: 265 55% 55%;
     --jazz-warm-black: 225 15% 8%;
   }
+
+  /* Pro Color Theme Variants */
+  /* Red/Coral Theme */
+  .theme-red {
+    --primary: 0 72% 50%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 0 72% 50%;
+  }
+  .dark.theme-red,
+  .theme-red.dark {
+    --primary: 0 72% 60%;
+    --primary-foreground: 0 0% 10%;
+    --ring: 0 72% 60%;
+  }
+
+  /* Purple Theme */
+  .theme-purple {
+    --primary: 265 55% 50%;
+    --primary-foreground: 265 100% 98%;
+    --ring: 265 55% 50%;
+  }
+  .dark.theme-purple,
+  .theme-purple.dark {
+    --primary: 265 60% 65%;
+    --primary-foreground: 265 80% 10%;
+    --ring: 265 60% 65%;
+  }
+
+  /* Green Theme */
+  .theme-green {
+    --primary: 145 55% 38%;
+    --primary-foreground: 145 100% 98%;
+    --ring: 145 55% 38%;
+  }
+  .dark.theme-green,
+  .theme-green.dark {
+    --primary: 145 55% 50%;
+    --primary-foreground: 145 80% 10%;
+    --ring: 145 55% 50%;
+  }
+
+  /* Amber Theme */
+  .theme-amber {
+    --primary: 38 92% 45%;
+    --primary-foreground: 38 100% 98%;
+    --ring: 38 92% 45%;
+  }
+  .dark.theme-amber,
+  .theme-amber.dark {
+    --primary: 38 92% 55%;
+    --primary-foreground: 38 80% 10%;
+    --ring: 38 92% 55%;
+  }
+
+  /* Teal Theme */
+  .theme-teal {
+    --primary: 175 60% 38%;
+    --primary-foreground: 175 100% 98%;
+    --ring: 175 60% 38%;
+  }
+  .dark.theme-teal,
+  .theme-teal.dark {
+    --primary: 175 55% 48%;
+    --primary-foreground: 175 80% 10%;
+    --ring: 175 55% 48%;
+  }
 }
 
 @layer base {

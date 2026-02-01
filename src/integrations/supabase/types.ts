@@ -1013,6 +1013,7 @@ export type Database = {
           avatar: string | null
           bio: string | null
           celebrated_streak_milestones: number[]
+          color_theme: string | null
           created_at: string
           current_streak: number
           followers_count: number
@@ -1035,6 +1036,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           celebrated_streak_milestones?: number[]
+          color_theme?: string | null
           created_at?: string
           current_streak?: number
           followers_count?: number
@@ -1057,6 +1059,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           celebrated_streak_milestones?: number[]
+          color_theme?: string | null
           created_at?: string
           current_streak?: number
           followers_count?: number

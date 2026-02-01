@@ -30,6 +30,7 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
+import { ThemePicker } from '@/components/ThemePicker';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
@@ -426,24 +427,30 @@ const Profile = () => {
                 <Target className="w-5 h-5 text-primary" />
                 <h3 className="font-medium">Pro Features</h3>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="weekly-goal-toggle" className="text-sm font-medium">
-                    Weekly Practice Goal Prompt
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Show goal-setting modal on Mondays
-                  </p>
+              <div className="space-y-4">
+                {/* Color Theme Picker */}
+                <ThemePicker />
+                
+                {/* Weekly Goal Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="weekly-goal-toggle" className="text-sm font-medium">
+                      Weekly Practice Goal Prompt
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Show goal-setting modal on Mondays
+                    </p>
+                  </div>
+                  <Switch
+                    id="weekly-goal-toggle"
+                    checked={!weeklyGoalDisabled}
+                    onCheckedChange={(checked) => {
+                      setWeeklyGoalDisabled(!checked);
+                      localStorage.setItem(WEEKLY_GOAL_DISABLED_KEY, (!checked).toString());
+                      toast.success(checked ? 'Weekly goal prompts enabled' : 'Weekly goal prompts disabled');
+                    }}
+                  />
                 </div>
-                <Switch
-                  id="weekly-goal-toggle"
-                  checked={!weeklyGoalDisabled}
-                  onCheckedChange={(checked) => {
-                    setWeeklyGoalDisabled(!checked);
-                    localStorage.setItem(WEEKLY_GOAL_DISABLED_KEY, (!checked).toString());
-                    toast.success(checked ? 'Weekly goal prompts enabled' : 'Weekly goal prompts disabled');
-                  }}
-                />
               </div>
             </Card>
           )}
