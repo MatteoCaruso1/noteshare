@@ -29,8 +29,8 @@ const BENEFITS = [
   },
   {
     icon: Sparkles,
-    title: 'Consistent Premium Feature Drops',
-    description: 'I am constantly working on new Premium features to make Noteshare the ultimate tool for musicians',
+    title: 'Consistent Feature Drops',
+    description: 'I am constantly working on new Pro features to make Noteshare the ultimate tool for musicians',
   },
 ];
 

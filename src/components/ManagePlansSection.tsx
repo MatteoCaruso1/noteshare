@@ -54,7 +54,7 @@ export function ManagePlansSection() {
           )}
           <div className="flex items-center gap-2">
             <span className={`text-sm font-medium ${isPremium ? 'text-amber-500' : ''}`}>
-              {isPremium ? 'Noteshare Premium' : 'Noteshare'}
+              {isPremium ? 'Noteshare Pro' : 'Noteshare'}
             </span>
             <Badge 
               variant="secondary"
@@ -77,7 +77,7 @@ export function ManagePlansSection() {
           className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
           disabled={isLoading}
         >
-          {isPremium ? 'Downgrade Plan' : 'Upgrade to Premium'}
+          {isPremium ? 'Downgrade Plan' : 'Upgrade to Pro'}
         </Button>
 
         {/* Help Email */}
