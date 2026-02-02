@@ -804,13 +804,13 @@ body.session-active main {
   background-color: transparent !important;
 }
 
-/* Cinematic vignette overlay at screen edges */
+/* Cinematic vignette overlay at screen edges - low z-index to not block toasts/modals */
 body.session-active::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 40;
+  z-index: 1;
   background: radial-gradient(
     ellipse 80% 60% at 50% 50%,
     transparent 30%,
@@ -826,7 +826,7 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 40;
+  z-index: 1;
   background: radial-gradient(
     ellipse 80% 60% at 50% 50%,
     transparent 30%,
