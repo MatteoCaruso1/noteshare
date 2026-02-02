@@ -38,6 +38,9 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
   const [isVisible, setIsVisible] = useState(false);
   const prevPathRef = useRef(location.pathname);
   const initialMount = useRef(true);
+  
+  // Skip blur for performance-critical pages
+  const skipBlur = location.pathname === '/friends';
 
   useEffect(() => {
     // On route change, animate in using requestAnimationFrame for smoother timing
@@ -63,10 +66,11 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        // CRITICAL: Use 'none' when visible to avoid creating a persistent stacking context
-        // that traps fixed/z-indexed elements (like toasts) beneath other content
-        filter: isVisible ? 'none' : 'blur(2px)',
-        transition: 'opacity 280ms cubic-bezier(0.4, 0, 0.2, 1), filter 280ms cubic-bezier(0.4, 0, 0.2, 1)',
+        // Skip blur for performance-critical pages, use 'none' when visible
+        filter: isVisible ? 'none' : (skipBlur ? 'none' : 'blur(2px)'),
+        transition: skipBlur 
+          ? 'opacity 200ms ease-out' 
+          : 'opacity 280ms cubic-bezier(0.4, 0, 0.2, 1), filter 280ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {children}

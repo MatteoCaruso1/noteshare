@@ -46,14 +46,10 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
   const { data: friends } = useFriends();
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
   const queryClient = useQueryClient();
-  const [avatarsReady, setAvatarsReady] = useState(false);
 
-  // Prefetch avatars from notes authors BEFORE rendering cards
+  // Prefetch avatars in background - don't block rendering
   useEffect(() => {
-    if (!notes || notes.length === 0) {
-      setAvatarsReady(true);
-      return;
-    }
+    if (!notes || notes.length === 0) return;
 
     const prefetchAvatars = async () => {
       const avatarsToFetch: string[] = [];
@@ -74,10 +70,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
         }
       }
 
-      if (avatarsToFetch.length === 0) {
-        setAvatarsReady(true);
-        return;
-      }
+      if (avatarsToFetch.length === 0) return;
 
       try {
         const { data, error } = await supabase.functions.invoke('get-signed-url', {
@@ -101,8 +94,6 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
       } catch (err) {
         console.warn('[FriendsFeed] Failed to prefetch avatars:', err);
       }
-
-      setAvatarsReady(true);
     };
 
     prefetchAvatars();
@@ -193,8 +184,8 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
   };
 
-  // Show skeleton while loading OR while avatars are being prefetched
-  if (isLoading || (notes && notes.length > 0 && !avatarsReady)) {
+  // Only show skeleton while data is loading - don't wait for avatars
+  if (isLoading) {
     return <FriendsFeedSkeleton count={skeletonCount} />;
   }
 
