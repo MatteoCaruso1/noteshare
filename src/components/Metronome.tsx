@@ -209,14 +209,11 @@ export function Metronome({ className }: MetronomeProps) {
               type="button"
               onClick={toggleMetronome}
               className={cn(
-                "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
-                "touch-manipulation select-none",
-                "active:opacity-80",
+                "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors",
                 isPlaying 
                   ? "bg-primary text-primary-foreground" 
                   : "border border-input bg-background hover:bg-accent"
               )}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               {isPlaying ? 'Stop' : 'Start'}
             </button>
@@ -246,14 +243,11 @@ export function Metronome({ className }: MetronomeProps) {
                 type="button"
                 onClick={() => handleTempoClick(tempo)}
                 className={cn(
-                  "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium",
-                  "touch-manipulation select-none",
-                  "active:opacity-80",
+                  "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium transition-colors",
                   bpm === tempo 
                     ? "bg-secondary text-secondary-foreground" 
                     : "hover:bg-accent hover:text-accent-foreground"
                 )}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {tempo}
               </button>

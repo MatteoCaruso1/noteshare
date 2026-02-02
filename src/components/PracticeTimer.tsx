@@ -230,13 +230,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                       <button
                         type="button"
                         onClick={resumeTimer}
-                        className={cn(
-                          "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
-                          "bg-primary text-primary-foreground",
-                          "touch-manipulation select-none",
-                          "active:opacity-80"
-                        )}
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                        className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground"
                       >
                         Resume
                       </button>
@@ -244,13 +238,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                       <button
                         type="button"
                         onClick={pauseTimer}
-                        className={cn(
-                          "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
-                          "bg-secondary text-secondary-foreground",
-                          "touch-manipulation select-none",
-                          "active:opacity-80"
-                        )}
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                        className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground"
                       >
                         Pause
                       </button>
@@ -258,13 +246,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     <button
                       type="button"
                       onClick={endTimer}
-                      className={cn(
-                        "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
-                        "border border-input bg-background",
-                        "touch-manipulation select-none",
-                        "active:opacity-80"
-                      )}
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                      className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors border border-input bg-background"
                     >
                       End
                     </button>
@@ -274,14 +256,7 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                     type="button"
                     onClick={isValidInput ? startTimer : undefined}
                     disabled={!isValidInput}
-                    className={cn(
-                      "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium",
-                      "bg-primary text-primary-foreground",
-                      "touch-manipulation select-none",
-                      "active:opacity-80",
-                      "disabled:opacity-50 disabled:pointer-events-none"
-                    )}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground disabled:opacity-50 disabled:pointer-events-none"
                   >
                     Start
                   </button>
@@ -322,14 +297,11 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                       type="button"
                       onClick={() => handlePresetClick(mins)}
                       className={cn(
-                        "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium",
-                        "touch-manipulation select-none",
-                        "active:opacity-80",
+                        "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium transition-colors",
                         selectedMinutes === mins 
                           ? "bg-secondary text-secondary-foreground" 
                           : "hover:bg-accent hover:text-accent-foreground"
                       )}
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       {mins}
                     </button>
