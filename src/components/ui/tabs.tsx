@@ -32,8 +32,21 @@ const TabsTrigger = React.forwardRef<
       "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm",
       // Inactive state
       "data-[state=inactive]:text-muted-foreground",
+      // Mobile touch fix: disable the problematic :active and hover states on touch
+      // Use touch-action manipulation to prevent delays and stuck states
+      "touch-action-manipulation select-none",
+      // Disable hover/focus background on inactive tabs to prevent stuck states
+      "active:bg-transparent",
       className,
     )}
+    // Prevent focus from sticking on mobile by blurring after selection
+    onPointerUp={(e) => {
+      // Blur after a short delay to allow the click to register
+      const target = e.currentTarget;
+      requestAnimationFrame(() => {
+        target.blur();
+      });
+    }}
     {...props}
   />
 ));
