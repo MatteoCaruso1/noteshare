@@ -48,12 +48,35 @@ export function RichTextarea({
     return placeholder;
   }, [placeholder, showTips]);
 
-  // Auto-expand textarea as content grows
+  // Auto-expand textarea as content grows (without causing scroll jumps)
   useEffect(() => {
     if (autoExpand && textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      const textarea = textareaRef.current;
       const minHeight = rows * 24; // Approximate line height
-      textareaRef.current.style.height = `${Math.max(minHeight, textareaRef.current.scrollHeight)}px`;
+      
+      // Save scroll position before measuring
+      const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') || window;
+      const savedScrollTop = scrollParent === window 
+        ? window.scrollY 
+        : (scrollParent as HTMLElement).scrollTop;
+      
+      // Temporarily set to auto to measure, then restore
+      textarea.style.height = 'auto';
+      const newHeight = Math.max(minHeight, textarea.scrollHeight);
+      textarea.style.height = `${newHeight}px`;
+      
+      // Restore scroll position if it changed
+      requestAnimationFrame(() => {
+        if (scrollParent === window) {
+          if (window.scrollY !== savedScrollTop) {
+            window.scrollTo({ top: savedScrollTop, behavior: 'instant' });
+          }
+        } else {
+          if ((scrollParent as HTMLElement).scrollTop !== savedScrollTop) {
+            (scrollParent as HTMLElement).scrollTop = savedScrollTop;
+          }
+        }
+      });
     }
   }, [value, autoExpand, rows]);
 

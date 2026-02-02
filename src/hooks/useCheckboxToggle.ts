@@ -99,16 +99,16 @@ export function useCheckboxToggle({
     return Math.floor((y + scrollTop - paddingTop) / lineHeight);
   }, []);
 
-  // Check if X coordinate is in checkbox zone
+  // Check if X coordinate is in checkbox zone (expanded for mobile)
   const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
     const rect = textarea.getBoundingClientRect();
     const x = clientX - rect.left;
     const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
-    // Checkbox zone is roughly the first 40px from text start
-    return x < paddingLeft + 40;
+    // Expanded checkbox zone to 60px from text start for easier mobile tapping
+    return x < paddingLeft + 60;
   }, []);
 
-  // Check if cursor is on a checkbox character
+  // Check if cursor is on a checkbox character (with expanded hit area for mobile)
   const isOnCheckbox = useCallback((text: string, cursorPos: number): { isCheckbox: boolean; lineIndex: number } => {
     const { lineIndex, lineStart } = getLineIndexFromCursor(text, cursorPos);
     if (lineIndex === -1) return { isCheckbox: false, lineIndex: -1 };
@@ -121,11 +121,11 @@ export function useCheckboxToggle({
     
     const indent = checkboxMatch[1];
     const checkboxStartInLine = indent.length;
-    const checkboxEndInLine = checkboxStartInLine + 1;
     const clickPosInLine = cursorPos - lineStart;
     
-    // Check if on or right after the checkbox character
-    const isCheckbox = clickPosInLine >= checkboxStartInLine && clickPosInLine <= checkboxEndInLine + 1;
+    // Expanded hit area: anywhere from start of line to 3 chars after checkbox
+    // This makes it much easier to tap on mobile
+    const isCheckbox = clickPosInLine >= 0 && clickPosInLine <= checkboxStartInLine + 4;
     
     return { isCheckbox, lineIndex };
   }, [getLineIndexFromCursor]);
