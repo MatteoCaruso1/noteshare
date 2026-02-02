@@ -22,7 +22,7 @@ export function FeedbackCard() {
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-sm">Give feedback on Noteshare</h3>
             <p className="text-xs text-muted-foreground">
-              We would really appreciate your input!      
+              I would really appreciate your input!      
             </p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />

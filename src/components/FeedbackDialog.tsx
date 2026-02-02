@@ -105,7 +105,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
             <DialogTitle>Help Shape Noteshare</DialogTitle>
           </div>
           <DialogDescription>
-            Your thoughts help us build something musicians actually want. Thanks for being part of this.
+            Your thoughts help me build something musicians actually want. Thanks for being part of this.
           </DialogDescription>
         </DialogHeader>
 
