@@ -19,10 +19,12 @@ import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 
-// Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
-// Lazy load CheckoutDialog to defer Stripe.js (~155KB) until checkout is needed
+// Lazy load Checkout Dialogs to defer Stripe.js (~155KB) until checkout is needed
 const CheckoutDialog = lazy(() => 
   import("@/components/CheckoutDialog").then(module => ({ default: module.CheckoutDialog }))
+);
+const LifetimeCheckoutDialog = lazy(() => 
+  import("@/components/LifetimeCheckoutDialog").then(module => ({ default: module.LifetimeCheckoutDialog }))
 );
 
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
@@ -95,6 +97,20 @@ function CheckoutDialogWrapper() {
   );
 }
 
+// Wrapper for lifetime checkout dialog
+function LifetimeCheckoutDialogWrapper() {
+  const { isLifetimeCheckoutDialogOpen, closeLifetimeCheckoutDialog } = usePremium();
+  
+  // Only render (and thus load Stripe.js) when lifetime checkout dialog is requested
+  if (!isLifetimeCheckoutDialogOpen) return null;
+  
+  return (
+    <Suspense fallback={null}>
+      <LifetimeCheckoutDialog open={isLifetimeCheckoutDialogOpen} onOpenChange={closeLifetimeCheckoutDialog} />
+    </Suspense>
+  );
+}
+
 // Component to run avatar prefetch inside auth context
 function AvatarPrefetcher() {
   useAvatarPrefetch();
@@ -129,6 +145,7 @@ function AppInner() {
                     <AddToHomescreenPrompt />
                     <PremiumDialog />
                     <CheckoutDialogWrapper />
+                    <LifetimeCheckoutDialogWrapper />
                     <OnboardingFlow />
                     <AvatarPrefetcher />
                     <Routes>
