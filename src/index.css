@@ -920,8 +920,11 @@ section,
   transition: filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* During session: dim all sections by default using brightness filter */
-body.session-active section {
+/* During session: dim app content sections by default using brightness filter.
+   IMPORTANT: Sonner renders its toaster as a <section> in some versions.
+   We scope dimming to main/page content so we don't accidentally dim/hide toasts. */
+body.session-active main > section,
+body.session-active .page-body > section {
   filter: brightness(0.35) saturate(0.8);
 }
 
@@ -929,8 +932,9 @@ body.session-active [data-tour="timeline"] {
   opacity: 0.3;
 }
 
-/* OVERRIDE: Sections containing focus cards stay bright */
-body.session-active section:has(.session-focus-card) {
+/* OVERRIDE: Content sections containing focus cards stay bright */
+body.session-active main > section:has(.session-focus-card),
+body.session-active .page-body > section:has(.session-focus-card) {
   filter: none !important;
   opacity: 1 !important;
 }
@@ -940,6 +944,16 @@ body.session-active section:has(.session-focus-card) {
 body.session-active .session-focus-section {
   filter: none !important;
   opacity: 1 !important;
+}
+
+/* Extra-hard exemption for Sonner/Radix toasts (some builds render toaster as <section>) */
+body.session-active [data-sonner-toaster],
+body.session-active [data-sonner-toast],
+body.session-active .toaster,
+body.session-active .toaster * {
+  filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* ========================================
