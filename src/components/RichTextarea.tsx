@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 
 // Tips shown occasionally as placeholders
 const PLACEHOLDER_TIPS = [
@@ -399,112 +400,33 @@ export function RichTextarea({
     }
   }, [onChange, getLineInfo, insertListPrefix, renumberList]);
 
-  // Check if a position is over a checkbox
-  const isOverCheckbox = useCallback((textarea: HTMLTextAreaElement, cursorPos: number): boolean => {
-    const text = textarea.value;
-    
-    // Find line start
-    let lineStart = cursorPos;
-    while (lineStart > 0 && text[lineStart - 1] !== '\n') {
-      lineStart--;
-    }
-    
-    // Get the line content
-    let lineEnd = cursorPos;
-    while (lineEnd < text.length && text[lineEnd] !== '\n') {
-      lineEnd++;
-    }
-    const line = text.substring(lineStart, lineEnd);
-    
-    // Check if line starts with a checkbox
-    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
-    if (!checkboxMatch) return false;
-    
-    const indent = checkboxMatch[1];
-    const checkboxPosInLine = indent.length;
-    const clickPosInLine = cursorPos - lineStart;
-    
-    // Check if cursor is on or near the checkbox
-    return clickPosInLine <= checkboxPosInLine + 2;
-  }, []);
-
-  // Track mouse position for hover feedback
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target as HTMLTextAreaElement;
-    
-    // Get approximate character position from click coordinates
-    // This is a rough approximation - we use the selection API after a synthetic focus
-    const rect = textarea.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Check if we're in the left portion where checkboxes would be (first ~30px)
-    if (x < 40) {
-      // Check if any line has a checkbox
-      const lines = textarea.value.split('\n');
-      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 24;
-      const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 8;
-      const scrollTop = textarea.scrollTop;
-      
-      const lineIndex = Math.floor((y + scrollTop - paddingTop) / lineHeight);
-      if (lineIndex >= 0 && lineIndex < lines.length) {
-        const line = lines[lineIndex];
-        if (line.match(/^(\s*)(☐|☑)\s/)) {
-          textarea.style.cursor = 'pointer';
-          return;
-        }
-      }
-    }
-    
-    textarea.style.cursor = 'text';
-  }, []);
-
-  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
-    (e.target as HTMLTextAreaElement).style.cursor = 'text';
-  }, []);
-
-  // Toggle checkbox at a given line
-  const toggleCheckboxAtLine = useCallback((textarea: HTMLTextAreaElement, lineIndex: number): boolean => {
-    const text = textarea.value;
-    const lines = text.split('\n');
-    
-    if (lineIndex < 0 || lineIndex >= lines.length) return false;
+  // Checkbox toggle with haptic feedback and protection
+  const performCheckboxToggle = useCallback((lineIndex: number, isNowChecked: boolean) => {
+    const lines = value.split('\n');
+    if (lineIndex < 0 || lineIndex >= lines.length) return;
     
     const line = lines[lineIndex];
     const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
-    if (!checkboxMatch) return false;
+    if (!checkboxMatch) return;
     
     const indent = checkboxMatch[1];
-    const checkboxChar = checkboxMatch[2];
-    const newCheckbox = checkboxChar === '☐' ? '☑' : '☐';
+    const newCheckbox = isNowChecked ? '☑' : '☐';
     const newLine = indent + newCheckbox + line.substring(indent.length + 1);
     
     lines[lineIndex] = newLine;
-    const newValue = lines.join('\n');
-    
-    onChange(newValue);
-    return true;
-  }, [onChange]);
+    onChange(lines.join('\n'));
+  }, [value, onChange]);
 
-  // Get line index from Y coordinate
-  const getLineIndexFromY = useCallback((textarea: HTMLTextAreaElement, clientY: number): number => {
-    const rect = textarea.getBoundingClientRect();
-    const y = clientY - rect.top;
-    const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 24;
-    const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 8;
-    const scrollTop = textarea.scrollTop;
-    
-    return Math.floor((y + scrollTop - paddingTop) / lineHeight);
-  }, []);
-
-  // Check if X coordinate is in checkbox zone
-  const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
-    const rect = textarea.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
-    // Checkbox zone is roughly the first 40px from text start
-    return x < paddingLeft + 40;
-  }, []);
+  const { 
+    toggleCheckbox, 
+    getLineIndexFromY, 
+    isInCheckboxZone, 
+    isOnCheckbox 
+  } = useCheckboxToggle({
+    onToggle: performCheckboxToggle,
+    getText: () => value,
+    requireDoubleToUncheck: true, // Protect against accidental unchecks
+  });
 
   // Handle touch end for mobile checkbox toggling
   const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLTextAreaElement>) => {
@@ -516,7 +438,7 @@ export function RichTextarea({
     if (!isInCheckboxZone(textarea, touch.clientX)) return;
     
     const lineIndex = getLineIndexFromY(textarea, touch.clientY);
-    const lines = textarea.value.split('\n');
+    const lines = value.split('\n');
     
     if (lineIndex >= 0 && lineIndex < lines.length) {
       const line = lines[lineIndex];
@@ -528,8 +450,8 @@ export function RichTextarea({
         const savedStart = textarea.selectionStart;
         const savedEnd = textarea.selectionEnd;
         
-        // Toggle the checkbox
-        toggleCheckboxAtLine(textarea, lineIndex);
+        // Toggle the checkbox (with haptic feedback and double-tap protection)
+        toggleCheckbox(lineIndex);
         
         // Restore cursor position after the state update
         setTimeout(() => {
@@ -538,50 +460,47 @@ export function RichTextarea({
         }, 0);
       }
     }
-  }, [toggleCheckboxAtLine, getLineIndexFromY, isInCheckboxZone]);
+  }, [value, toggleCheckbox, getLineIndexFromY, isInCheckboxZone]);
 
   // Handle clicks on checkbox characters to toggle them (desktop)
   const handleClick = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
     const cursorPos = textarea.selectionStart;
-    const text = textarea.value;
     
-    // Find line start
-    let lineStart = cursorPos;
-    while (lineStart > 0 && text[lineStart - 1] !== '\n') {
-      lineStart--;
-    }
+    const { isCheckbox, lineIndex } = isOnCheckbox(value, cursorPos);
     
-    // Get the line content
-    let lineEnd = cursorPos;
-    while (lineEnd < text.length && text[lineEnd] !== '\n') {
-      lineEnd++;
-    }
-    const line = text.substring(lineStart, lineEnd);
-    
-    // Check if line starts with a checkbox (with optional leading whitespace)
-    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
-    if (!checkboxMatch) return;
-    
-    const indent = checkboxMatch[1];
-    const checkboxChar = checkboxMatch[2];
-    const checkboxPosInLine = indent.length;
-    const clickPosInLine = cursorPos - lineStart;
-    
-    // Only toggle if clicked on or near the checkbox (within 2 characters)
-    if (clickPosInLine <= checkboxPosInLine + 2) {
-      const newCheckbox = checkboxChar === '☐' ? '☑' : '☐';
-      const newLine = indent + newCheckbox + line.substring(checkboxPosInLine + 1);
-      const newValue = text.substring(0, lineStart) + newLine + text.substring(lineEnd);
-      
-      onChange(newValue);
+    if (isCheckbox && lineIndex !== -1) {
+      toggleCheckbox(lineIndex);
       
       // Keep cursor position
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = cursorPos;
       }, 0);
     }
-  }, [onChange]);
+  }, [value, toggleCheckbox, isOnCheckbox]);
+
+  // Track mouse position for hover feedback on checkboxes
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    
+    if (isInCheckboxZone(textarea, e.clientX)) {
+      const lineIndex = getLineIndexFromY(textarea, e.clientY);
+      const lines = value.split('\n');
+      
+      if (lineIndex >= 0 && lineIndex < lines.length) {
+        const line = lines[lineIndex];
+        if (line.match(/^(\s*)(☐|☑)\s/)) {
+          textarea.style.cursor = 'pointer';
+          return;
+        }
+      }
+    }
+    textarea.style.cursor = 'text';
+  }, [value, isInCheckboxZone, getLineIndexFromY]);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    (e.target as HTMLTextAreaElement).style.cursor = 'text';
+  }, []);
 
   return (
     <div className="space-y-1">
