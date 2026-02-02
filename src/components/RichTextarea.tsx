@@ -515,7 +515,7 @@ export function RichTextarea({
         onMouseLeave={handleMouseLeave}
         placeholder={displayPlaceholder}
         rows={rows}
-        className={cn("practice-board-textarea resize-none text-sm min-h-[36px]", className)}
+        className={cn("practice-board-textarea resize-none text-sm !min-h-[40px]", className)}
       />
     </div>
   );
