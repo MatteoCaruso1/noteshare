@@ -366,6 +366,39 @@ export function TodaysFocus() {
       const { line } = info;
       const bulletMatch = line.match(/^(\s*)([-•])\s/);
       const numberMatch = line.match(/^(\s*)(\d+)\.\s/);
+      const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+      
+      // Handle checkbox lists
+      if (checkboxMatch) {
+        const contentAfterPrefix = line.replace(/^(\s*)(☐|☑)\s/, '');
+        
+        if (contentAfterPrefix.trim() === '') {
+          // Empty checkbox line - clear it
+          e.preventDefault();
+          const info = getLineInfo();
+          if (info) {
+            const newValue = text.substring(0, info.lineStart) + '\n' + text.substring(info.lineEnd);
+            handleTextChange(newValue);
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = info.lineStart + 1;
+            }, 0);
+          }
+          return;
+        }
+        
+        // Continue checkbox list
+        e.preventDefault();
+        const indent = checkboxMatch[1];
+        const prefix = indent + '☐ ';
+        
+        const newValue = text.substring(0, start) + '\n' + prefix + text.substring(end);
+        handleTextChange(newValue);
+        
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + 1 + prefix.length;
+        }, 0);
+        return;
+      }
       
       if (bulletMatch || numberMatch) {
         const contentAfterPrefix = bulletMatch 
@@ -443,6 +476,21 @@ export function TodaysFocus() {
     }
     const lineBeforeCursor = value.substring(lineStart, cursorPos);
     
+    // Auto-convert "[]" or "[ ]" at line start to checkbox (immediately, no space needed)
+    const checkboxPatternMatch = lineBeforeCursor.match(/^(\s*)\[\]$/) || lineBeforeCursor.match(/^(\s*)\[ \]$/);
+    if (checkboxPatternMatch) {
+      const indent = checkboxPatternMatch[1];
+      const patternLength = lineBeforeCursor.length - indent.length; // 2 for [] or 3 for [ ]
+      value = value.substring(0, lineStart) + indent + '☐ ' + value.substring(cursorPos);
+      cursorPos = lineStart + indent.length + 2; // Position after "☐ "
+      
+      handleTextChange(value);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+      }, 0);
+      return;
+    }
+    
     // Auto-convert "- " at line start to bullet
     if (lineBeforeCursor === '- ' || lineBeforeCursor.match(/^\s+- $/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
@@ -488,6 +536,145 @@ export function TodaysFocus() {
       handleTextChange(value);
     }
   }, [renumberList, autoCapitalizeAfterPrefix]);
+
+  // Toggle checkbox at a given line
+  const toggleCheckboxAtLine = useCallback((textarea: HTMLTextAreaElement, lineIndex: number): boolean => {
+    const lines = text.split('\n');
+    
+    if (lineIndex < 0 || lineIndex >= lines.length) return false;
+    
+    const line = lines[lineIndex];
+    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+    if (!checkboxMatch) return false;
+    
+    const indent = checkboxMatch[1];
+    const checkboxChar = checkboxMatch[2];
+    const newCheckbox = checkboxChar === '☐' ? '☑' : '☐';
+    const newLine = indent + newCheckbox + line.substring(indent.length + 1);
+    
+    lines[lineIndex] = newLine;
+    const newValue = lines.join('\n');
+    
+    handleTextChange(newValue);
+    return true;
+  }, [text, handleTextChange]);
+
+  // Get line index from Y coordinate
+  const getLineIndexFromY = useCallback((textarea: HTMLTextAreaElement, clientY: number): number => {
+    const rect = textarea.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 24;
+    const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 8;
+    const scrollTop = textarea.scrollTop;
+    
+    return Math.floor((y + scrollTop - paddingTop) / lineHeight);
+  }, []);
+
+  // Check if X coordinate is in checkbox zone
+  const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
+    const rect = textarea.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
+    // Checkbox zone is roughly the first 40px from text start
+    return x < paddingLeft + 40;
+  }, []);
+
+  // Handle touch end for mobile checkbox toggling
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    
+    // Check if touch is in the checkbox zone (left side)
+    if (!isInCheckboxZone(textarea, touch.clientX)) return;
+    
+    const lineIndex = getLineIndexFromY(textarea, touch.clientY);
+    const lines = text.split('\n');
+    
+    if (lineIndex >= 0 && lineIndex < lines.length) {
+      const line = lines[lineIndex];
+      if (line.match(/^(\s*)(☐|☑)\s/)) {
+        // Prevent the default behavior that would move the cursor
+        e.preventDefault();
+        
+        // Store current selection to restore it
+        const savedStart = textarea.selectionStart;
+        const savedEnd = textarea.selectionEnd;
+        
+        // Toggle the checkbox
+        toggleCheckboxAtLine(textarea, lineIndex);
+        
+        // Restore cursor position after the state update
+        setTimeout(() => {
+          textarea.selectionStart = savedStart;
+          textarea.selectionEnd = savedEnd;
+        }, 0);
+      }
+    }
+  }, [text, toggleCheckboxAtLine, getLineIndexFromY, isInCheckboxZone]);
+
+  // Handle clicks on checkbox characters to toggle them (desktop)
+  const handleClick = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    const cursorPos = textarea.selectionStart;
+    
+    // Find which line the cursor is on
+    const lines = text.split('\n');
+    let charCount = 0;
+    let targetLineIndex = -1;
+    let lineStart = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const lineEnd = charCount + lines[i].length;
+      if (cursorPos >= charCount && cursorPos <= lineEnd) {
+        targetLineIndex = i;
+        lineStart = charCount;
+        break;
+      }
+      charCount = lineEnd + 1; // +1 for newline
+    }
+    
+    if (targetLineIndex === -1) return;
+    
+    const line = lines[targetLineIndex];
+    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+    
+    if (!checkboxMatch) return;
+    
+    // Check if click is within the checkbox character position
+    const indent = checkboxMatch[1];
+    const checkboxStartInLine = indent.length;
+    const checkboxEndInLine = checkboxStartInLine + 1;
+    const clickPosInLine = cursorPos - lineStart;
+    
+    // Toggle if clicked on or right after the checkbox character
+    if (clickPosInLine >= checkboxStartInLine && clickPosInLine <= checkboxEndInLine + 1) {
+      toggleCheckboxAtLine(textarea, targetLineIndex);
+    }
+  }, [text, toggleCheckboxAtLine]);
+
+  // Handle mouse move for checkbox hover cursor
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    
+    if (isInCheckboxZone(textarea, e.clientX)) {
+      const lineIndex = getLineIndexFromY(textarea, e.clientY);
+      const lines = text.split('\n');
+      
+      if (lineIndex >= 0 && lineIndex < lines.length) {
+        const line = lines[lineIndex];
+        if (line.match(/^(\s*)(☐|☑)\s/)) {
+          textarea.style.cursor = 'pointer';
+          return;
+        }
+      }
+    }
+    textarea.style.cursor = 'text';
+  }, [text, isInCheckboxZone, getLineIndexFromY]);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    (e.target as HTMLTextAreaElement).style.cursor = 'text';
+  }, []);
 
   // Read localStorage during loading to match the expected loaded state
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
@@ -617,6 +804,10 @@ export function TodaysFocus() {
                   onInput={handleInput}
                   onPaste={handlePaste}
                   onKeyDown={handleKeyDown}
+                  onClick={handleClick}
+                  onTouchEnd={handleTouchEnd}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
                   onFocus={(e) => {
                     e.target.scrollIntoView = () => {};
                     setIsFocused(true);
