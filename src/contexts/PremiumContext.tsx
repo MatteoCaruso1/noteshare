@@ -45,7 +45,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const [isLifetimeCheckoutDialogOpen, setIsLifetimeCheckoutDialogOpen] = useState(false);
   
   // Detect currency on mount
-  const [detectedCurrency, setDetectedCurrency] = useState<SupportedCurrency>('USD');
+  const [detectedCurrency, setDetectedCurrency] = useState<SupportedCurrency>('CAD');
   
   useEffect(() => {
     setDetectedCurrency(detectUserCurrency());
