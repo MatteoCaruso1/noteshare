@@ -847,10 +847,12 @@ body.session-active h1 {
   opacity: 0.2;
 }
 
-/* Elevate focused cards above dimmed content - use lower z-index to not block toasts */
+/* Elevate focused cards ABOVE the vignette overlay (z-index: 1) */
 body.session-active .session-focus-card {
   position: relative;
-  z-index: 5;
+  z-index: 10;
+  /* Create stacking context to ensure children also render above vignette */
+  isolation: isolate;
 }
 
 /* Subtle glow on focused cards - much softer than before */
