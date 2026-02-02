@@ -855,6 +855,18 @@ body.session-active .session-focus-card {
   isolation: isolate;
 }
 
+/* Focus cards must have FULL BRIGHTNESS - override any dimming */
+body.session-active .session-focus-card,
+body.session-active .session-focus-card * {
+  opacity: 1 !important;
+}
+
+/* Ensure card backgrounds are solid and bright during session */
+body.session-active .session-focus-card [class*="Card"],
+body.session-active .session-focus-card > div {
+  background-color: hsl(var(--card)) !important;
+}
+
 /* Subtle glow on focused cards - much softer than before */
 .session-focus-card > div,
 .session-focus-card > [class*="Card"] {
