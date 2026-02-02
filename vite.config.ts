@@ -15,6 +15,8 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      // Defer service worker registration to avoid render-blocking
+      injectRegister: null,
       includeAssets: ["favicon.png", "apple-touch-icon.png", "pwa-icon-192.png", "pwa-icon-512.png"],
       manifest: {
         name: "Noteshare - Practice Smarter",
