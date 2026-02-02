@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -75,9 +75,6 @@ export function WeeklyGoalModal({ open, onOpenChange, onComplete }: WeeklyGoalMo
             <Target className="w-5 h-5 text-primary" />
             <DialogTitle>Weekly Practice Goal</DialogTitle>
           </div>
-          <DialogDescription>
-            Set your practice target for this week
-          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 pt-2">
