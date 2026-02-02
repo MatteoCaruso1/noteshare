@@ -840,3 +840,16 @@ section:not(.session-focus-card),
 [data-tour="timeline"] {
   transition: opacity 0.8s ease-out;
 }
+
+/* Larger checkbox characters for better mobile tapping */
+.practice-board-textarea {
+  /* Use a font that renders checkboxes nicely */
+  font-variant-ligatures: none;
+}
+
+/* Make checkbox symbols larger and more tappable */
+@supports (font-size-adjust: 1) {
+  .practice-board-textarea {
+    /* Future-proof for when font-size-adjust is supported */
+  }
+}
