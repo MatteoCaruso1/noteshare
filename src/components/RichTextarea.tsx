@@ -463,7 +463,84 @@ export function RichTextarea({
     (e.target as HTMLTextAreaElement).style.cursor = 'text';
   }, []);
 
-  // Handle clicks on checkbox characters to toggle them
+  // Toggle checkbox at a given line
+  const toggleCheckboxAtLine = useCallback((textarea: HTMLTextAreaElement, lineIndex: number): boolean => {
+    const text = textarea.value;
+    const lines = text.split('\n');
+    
+    if (lineIndex < 0 || lineIndex >= lines.length) return false;
+    
+    const line = lines[lineIndex];
+    const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+    if (!checkboxMatch) return false;
+    
+    const indent = checkboxMatch[1];
+    const checkboxChar = checkboxMatch[2];
+    const newCheckbox = checkboxChar === '☐' ? '☑' : '☐';
+    const newLine = indent + newCheckbox + line.substring(indent.length + 1);
+    
+    lines[lineIndex] = newLine;
+    const newValue = lines.join('\n');
+    
+    onChange(newValue);
+    return true;
+  }, [onChange]);
+
+  // Get line index from Y coordinate
+  const getLineIndexFromY = useCallback((textarea: HTMLTextAreaElement, clientY: number): number => {
+    const rect = textarea.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 24;
+    const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 8;
+    const scrollTop = textarea.scrollTop;
+    
+    return Math.floor((y + scrollTop - paddingTop) / lineHeight);
+  }, []);
+
+  // Check if X coordinate is in checkbox zone
+  const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
+    const rect = textarea.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
+    // Checkbox zone is roughly the first 40px from text start
+    return x < paddingLeft + 40;
+  }, []);
+
+  // Handle touch end for mobile checkbox toggling
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target as HTMLTextAreaElement;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    
+    // Check if touch is in the checkbox zone (left side)
+    if (!isInCheckboxZone(textarea, touch.clientX)) return;
+    
+    const lineIndex = getLineIndexFromY(textarea, touch.clientY);
+    const lines = textarea.value.split('\n');
+    
+    if (lineIndex >= 0 && lineIndex < lines.length) {
+      const line = lines[lineIndex];
+      if (line.match(/^(\s*)(☐|☑)\s/)) {
+        // Prevent the default behavior that would move the cursor
+        e.preventDefault();
+        
+        // Store current selection to restore it
+        const savedStart = textarea.selectionStart;
+        const savedEnd = textarea.selectionEnd;
+        
+        // Toggle the checkbox
+        toggleCheckboxAtLine(textarea, lineIndex);
+        
+        // Restore cursor position after the state update
+        setTimeout(() => {
+          textarea.selectionStart = savedStart;
+          textarea.selectionEnd = savedEnd;
+        }, 0);
+      }
+    }
+  }, [toggleCheckboxAtLine, getLineIndexFromY, isInCheckboxZone]);
+
+  // Handle clicks on checkbox characters to toggle them (desktop)
   const handleClick = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
     const cursorPos = textarea.selectionStart;
@@ -514,6 +591,7 @@ export function RichTextarea({
         onChange={handleInput}
         onKeyDown={handleKeyDown}
         onClick={handleClick}
+        onTouchEnd={handleTouchEnd}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         placeholder={displayPlaceholder}
