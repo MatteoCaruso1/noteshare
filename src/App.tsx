@@ -134,8 +134,6 @@ function AppInner() {
             <OnboardingProvider>
               <BottomNavProvider>
                 <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
                   <BrowserRouter>
                     <ScrollToTop />
                     <ScrollLockDebugger />
@@ -175,6 +173,9 @@ function AppInner() {
                     </Routes>
                     <BottomNav />
                   </BrowserRouter>
+                  {/* Toasts render AFTER router content to ensure they paint above all stacking contexts */}
+                  <Toaster />
+                  <Sonner />
                 </TooltipProvider>
               </BottomNavProvider>
             </OnboardingProvider>

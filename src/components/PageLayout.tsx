@@ -63,7 +63,9 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        filter: isVisible ? 'blur(0px)' : 'blur(2px)',
+        // CRITICAL: Use 'none' when visible to avoid creating a persistent stacking context
+        // that traps fixed/z-indexed elements (like toasts) beneath other content
+        filter: isVisible ? 'none' : 'blur(2px)',
         transition: 'opacity 280ms cubic-bezier(0.4, 0, 0.2, 1), filter 280ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
