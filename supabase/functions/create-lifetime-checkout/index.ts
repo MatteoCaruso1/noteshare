@@ -99,7 +99,9 @@ serve(async (req) => {
       logStep("No existing customer found, will create new");
     }
 
-    // Create one-time payment session for lifetime access
+    const origin = req.headers.get("origin") || "https://noteshare.app";
+
+    // Create one-time payment session for lifetime access with embedded UI
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -110,15 +112,22 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/profile?lifetime=success`,
-      cancel_url: `${req.headers.get("origin")}/profile?lifetime=cancelled`,
+      ui_mode: "embedded",
+      return_url: `${origin}/profile?lifetime=success&session_id={CHECKOUT_SESSION_ID}`,
       payment_method_types: ["card"],
       allow_promotion_codes: true,
     });
 
-    logStep("Lifetime checkout session created", { sessionId: session.id });
+    logStep("Lifetime checkout session created", { 
+      sessionId: session.id, 
+      hasClientSecret: !!session.client_secret 
+    });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    // Return the client secret for embedded checkout
+    return new Response(JSON.stringify({ 
+      clientSecret: session.client_secret,
+      sessionId: session.id,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

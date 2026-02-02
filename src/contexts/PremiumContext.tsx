@@ -8,15 +8,18 @@ interface PremiumContextType {
   isLifetime: boolean;
   openCustomerPortal: () => Promise<void>;
   checkSubscription: () => Promise<void>;
-  startLifetimeCheckout: (currency?: SupportedCurrency) => Promise<void>;
   // Premium dialog state
   isPremiumDialogOpen: boolean;
   openPremiumDialog: () => void;
   closePremiumDialog: () => void;
-  // Checkout dialog state
+  // Checkout dialog state (subscription)
   isCheckoutDialogOpen: boolean;
   openCheckoutDialog: () => void;
   closeCheckoutDialog: () => void;
+  // Lifetime checkout dialog state
+  isLifetimeCheckoutDialogOpen: boolean;
+  openLifetimeCheckoutDialog: () => void;
+  closeLifetimeCheckoutDialog: () => void;
   // Currency
   detectedCurrency: SupportedCurrency;
 }
@@ -30,14 +33,16 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     isLifetime,
     openCustomerPortal,
     checkSubscription,
-    startLifetimeCheckout,
   } = useSubscription();
 
   // Premium dialog state
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
   
-  // Checkout dialog state
+  // Checkout dialog state (subscription)
   const [isCheckoutDialogOpen, setIsCheckoutDialogOpen] = useState(false);
+  
+  // Lifetime checkout dialog state
+  const [isLifetimeCheckoutDialogOpen, setIsLifetimeCheckoutDialogOpen] = useState(false);
   
   // Detect currency on mount
   const [detectedCurrency, setDetectedCurrency] = useState<SupportedCurrency>('USD');
@@ -62,6 +67,14 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     setIsCheckoutDialogOpen(false);
   }, []);
 
+  const openLifetimeCheckoutDialog = useCallback(() => {
+    setIsLifetimeCheckoutDialogOpen(true);
+  }, []);
+
+  const closeLifetimeCheckoutDialog = useCallback(() => {
+    setIsLifetimeCheckoutDialogOpen(false);
+  }, []);
+
   return (
     <PremiumContext.Provider value={{ 
       isPremium, 
@@ -69,13 +82,15 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       isLifetime,
       openCustomerPortal,
       checkSubscription,
-      startLifetimeCheckout,
       isPremiumDialogOpen,
       openPremiumDialog,
       closePremiumDialog,
       isCheckoutDialogOpen,
       openCheckoutDialog,
       closeCheckoutDialog,
+      isLifetimeCheckoutDialogOpen,
+      openLifetimeCheckoutDialog,
+      closeLifetimeCheckoutDialog,
       detectedCurrency,
     }}>
       {children}

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Timer, BarChart3, FolderKanban, Heart, Sparkles, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { usePremium } from '@/contexts/PremiumContext';
-import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const BENEFITS = [
@@ -43,10 +42,9 @@ export function PremiumDialog() {
     isPremiumDialogOpen, 
     closePremiumDialog, 
     openCheckoutDialog,
-    startLifetimeCheckout,
+    openLifetimeCheckoutDialog,
   } = usePremium();
   
-  const [isLifetimeLoading, setIsLifetimeLoading] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
 
   const handleStartTrial = () => {
@@ -54,17 +52,9 @@ export function PremiumDialog() {
     openCheckoutDialog();
   };
 
-  const handleLifetimePurchase = async () => {
-    setIsLifetimeLoading(true);
-    try {
-      await startLifetimeCheckout();
-      closePremiumDialog();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start checkout';
-      toast.error(message);
-    } finally {
-      setIsLifetimeLoading(false);
-    }
+  const handleLifetimePurchase = () => {
+    closePremiumDialog();
+    openLifetimeCheckoutDialog();
   };
 
   return (
@@ -147,8 +137,7 @@ export function PremiumDialog() {
             <button
               type="button"
               onClick={handleLifetimePurchase}
-              disabled={isLifetimeLoading}
-              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] border-2 border-jazz-amber text-jazz-amber bg-transparent [@media(hover:hover)]:hover:bg-jazz-amber/10 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
+              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] border-2 border-jazz-amber text-jazz-amber bg-transparent [@media(hover:hover)]:hover:bg-jazz-amber/10 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
             >
               <span>
                 <span className="font-bold">Lifetime access</span> for $9.99
