@@ -4,22 +4,8 @@
 export type SupportedCurrency = 'CAD' | 'USD';
 
 export function detectUserCurrency(): SupportedCurrency {
-  try {
-    // Check navigator.language and navigator.languages for Canadian locale
-    const languages = navigator.languages || [navigator.language];
-    
-    for (const lang of languages) {
-      // Canadian locales: en-CA, fr-CA
-      if (lang.toLowerCase().endsWith('-ca')) {
-        return 'CAD';
-      }
-    }
-  } catch (e) {
-    // Fallback if navigator not available (SSR)
-    console.warn('Could not detect locale, defaulting to USD');
-  }
-  
-  return 'USD';
+  // Always use CAD - USD pricing not available
+  return 'CAD';
 }
 
 // Pricing by currency: $1.99/month subscription, $9.99 lifetime
@@ -64,12 +50,12 @@ export function getPrices(currency: SupportedCurrency) {
   return PREMIUM_PRICES[currency];
 }
 
-export function formatSubscriptionPrice(currency: SupportedCurrency = 'USD'): string {
+export function formatSubscriptionPrice(currency: SupportedCurrency = 'CAD'): string {
   const prices = getPrices(currency);
   return prices.subscription.label;
 }
 
-export function formatLifetimePrice(currency: SupportedCurrency = 'USD'): string {
+export function formatLifetimePrice(currency: SupportedCurrency = 'CAD'): string {
   const prices = getPrices(currency);
   return prices.lifetime.label;
 }
