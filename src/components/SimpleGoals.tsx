@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/useGoals';
 import { Compass, X, Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WeeklyGoalCard } from './WeeklyGoalCard';
 
 interface SimpleGoalsProps {
   profileId: string;
@@ -134,6 +134,9 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </button>
         )}
       </div>
+      
+      {/* Weekly Practice Goal - shown for premium users with an active goal */}
+      <WeeklyGoalCard />
       
       <div className="space-y-2">
         {activeGoals.map((goal, index) => (
