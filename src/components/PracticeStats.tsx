@@ -1,12 +1,34 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award, Palette, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemePicker } from '@/components/ThemePicker';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useAuth } from '@/hooks/useAuth';
+
+function ThemesUpgradePrompt() {
+  const { openPremiumDialog } = usePremium();
+
+  return (
+    <div className="flex flex-col items-center py-4 gap-3">
+      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+        <Palette className="w-5 h-5 text-primary" />
+      </div>
+      <p className="text-sm text-muted-foreground text-center">
+        Upgrade to Pro to customize your theme
+      </p>
+      <button
+        onClick={openPremiumDialog}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-jazz-amber text-jazz-amber-foreground font-medium text-sm hover:bg-jazz-amber/90 transition-colors"
+      >
+        <Sparkles className="w-4 h-4" />
+        Get Noteshare Pro
+      </button>
+    </div>
+  );
+}
 
 interface PracticeStatsProps {
   profileId: string;
@@ -274,9 +296,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           {isPremium ? (
             <ThemePicker />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Upgrade to Noteshare Pro to gain access to custom themes
-            </p>
+            <ThemesUpgradePrompt />
           )}
         </Card>
       )}
