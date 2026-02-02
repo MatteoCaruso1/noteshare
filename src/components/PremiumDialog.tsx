@@ -24,7 +24,7 @@ const BENEFITS = [
   {
     icon: Palette,
     title: 'Custom Themes',
-    description: 'Personalize Noteshare with custom color themes to match your style',
+    description: 'Personalize Noteshare with custom color themes',
   },
   {
     icon: Heart,
