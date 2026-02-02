@@ -33,14 +33,14 @@ export function detectUserCurrency(): SupportedCurrency {
   return 'USD';
 }
 
-// New pricing: $2.49 CAD/month subscription, $9.99 CAD lifetime
+// New pricing: $1.99 CAD/month subscription, $9.99 CAD lifetime
 export const PREMIUM_PRICES = {
   subscription: {
-    amount: 2.49,
-    priceId: 'price_1Sw8ilGiNcIsULtkGOJKoXdT',
+    amount: 1.99,
+    priceId: 'price_1SwECHGiNcIsULtk8vfidptO',
     currency: 'CAD',
     symbol: '$',
-    label: '$2.49/mo'
+    label: '$1.99/mo'
   },
   lifetime: {
     amount: 9.99,
