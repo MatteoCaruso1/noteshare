@@ -7,8 +7,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Lifetime access price ID (CAD $9.99)
-const LIFETIME_PRICE_ID = "price_1Sw8hBGiNcIsULtkxrZRuf6O";
+// Lifetime access price IDs ($9.99)
+const LIFETIME_PRICES = {
+  CAD: "price_1Sw8hBGiNcIsULtkxrZRuf6O",
+  USD: "price_1SwEHaGiNcIsULtkrQuVwm7M",
+};
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -28,6 +31,12 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Parse currency from request body
+    const body = await req.json().catch(() => ({}));
+    const currency = body.currency === 'CAD' ? 'CAD' : 'USD';
+    const lifetimePriceId = LIFETIME_PRICES[currency as keyof typeof LIFETIME_PRICES];
+    logStep("Using currency", { currency, priceId: lifetimePriceId });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -74,7 +83,8 @@ serve(async (req) => {
               });
               
               const hasLifetimePrice = fullSession.line_items?.data?.some(
-                (item: Stripe.LineItem) => item.price?.id === LIFETIME_PRICE_ID
+                (item: Stripe.LineItem) => 
+                  item.price?.id === LIFETIME_PRICES.CAD || item.price?.id === LIFETIME_PRICES.USD
               );
               
               if (hasLifetimePrice) {
@@ -95,7 +105,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: LIFETIME_PRICE_ID,
+          price: lifetimePriceId,
           quantity: 1,
         },
       ],

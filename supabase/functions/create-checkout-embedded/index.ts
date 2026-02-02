@@ -7,8 +7,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Price ID for $2.49 CAD/month subscription
-const SUBSCRIPTION_PRICE_ID = "price_1Sw8ilGiNcIsULtkGOJKoXdT";
+// Price IDs for $1.99/month subscription
+const SUBSCRIPTION_PRICES = {
+  CAD: "price_1SwECHGiNcIsULtk8vfidptO",
+  USD: "price_1SwEHEGiNcIsULtkXsU7dXl7",
+};
 
 // Trial period in days
 const TRIAL_DAYS = 7;
@@ -38,6 +41,12 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Parse currency from request body
+    const body = await req.json().catch(() => ({}));
+    const currency = body.currency === 'CAD' ? 'CAD' : 'USD';
+    const priceId = SUBSCRIPTION_PRICES[currency as keyof typeof SUBSCRIPTION_PRICES];
+    logStep("Using currency", { currency, priceId });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -177,7 +186,7 @@ serve(async (req) => {
       customer: customerId,
       line_items: [
         {
-          price: SUBSCRIPTION_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],

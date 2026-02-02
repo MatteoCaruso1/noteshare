@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useEmbeddedCheckout } from '@/hooks/useEmbeddedCheckout';
 import { usePremium } from '@/contexts/PremiumContext';
-import { formatPrice, PREMIUM_PRICES } from '@/lib/currencyUtils';
+import { getPrices } from '@/lib/currencyUtils';
 import { format, addDays } from 'date-fns';
 
 // Stripe publishable key - this is a public key, safe to include
@@ -54,7 +54,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
     }
   }, [open, resetCheckout]);
 
-  const priceInfo = PREMIUM_PRICES.subscription;
+  const priceInfo = getPrices(detectedCurrency).subscription;
   const billingDate = format(addDays(new Date(), 30), 'MMMM d, yyyy');
 
   if (!user) {
