@@ -235,14 +235,25 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
       </Card>
 
-      {/* Section 4: Themes */}
+      {/* Section 4: Color Themes (Pro users only) */}
+      {isPremium && profile?.id === profileId && (
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
+            <h3 className="font-semibold">Themes</h3>
+          </div>
+          <ThemePicker />
+        </Card>
+      )}
+
+      {/* Section 5: Recent Focuses */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-2">
           <Hash className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Themes</h3>
+          <h3 className="font-semibold">Recent Focuses</h3>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Based on words from your practice notes and daily focus.
+          Based on words from your practice notes and boards.
         </p>
         
         <div className="space-y-4">
@@ -261,14 +272,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               )}
             </div>
           </div>
-
-          {/* Theme picker lives directly under the Themes section */}
-          {isPremium && profile?.id === profileId && (
-            <div className="pt-2">
-              <ThemePicker />
-            </div>
-          )}
-          
         </div>
       </Card>
     </div>
