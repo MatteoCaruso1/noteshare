@@ -823,13 +823,18 @@ body h1 {
   transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Darken the entire page background during active session - deeper, more dramatic */
+/* Darken the entire page background during active session - match nav bar darkness */
 body.session-active {
-  background-color: hsl(225 25% 4%) !important;
+  background-color: hsl(225 30% 3%) !important;
 }
 
 body.session-active main {
-  background-color: transparent !important;
+  background-color: hsl(225 30% 3%) !important;
+}
+
+/* Ensure PageLayout wrapper also gets the dark background */
+body.session-active .min-h-screen {
+  background-color: hsl(225 30% 3%) !important;
 }
 
 /* Cinematic vignette overlay at screen edges
