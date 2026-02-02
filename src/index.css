@@ -779,25 +779,25 @@ html {
 /* ========================================
    SESSION FOCUS MODE
    Dramatic visual state when practicing
-   All effects use slow transitions for smooth fade in/out
+   Slower, more dramatic transitions for clear feedback
    ======================================== */
 
-/* Base transition states for smooth fade in/out */
+/* Base transition states for smooth, dramatic fade in/out */
 body {
-  transition: background-color 0.8s ease-out;
+  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body main {
-  transition: background-color 0.8s ease-out;
+  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body h1 {
-  transition: opacity 0.8s ease-out;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Darken the entire page background during active session */
+/* Darken the entire page background during active session - deeper, more dramatic */
 body.session-active {
-  background-color: hsl(225 20% 6%) !important;
+  background-color: hsl(225 25% 4%) !important;
 }
 
 body.session-active main {
@@ -806,7 +806,7 @@ body.session-active main {
 
 /* Dim content that isn't focused */
 body.session-active h1 {
-  opacity: 0.25;
+  opacity: 0.2;
 }
 
 /* Elevate focused cards above dimmed content - use lower z-index to not block toasts */
@@ -818,27 +818,79 @@ body.session-active .session-focus-card {
 /* Subtle glow on focused cards - much softer than before */
 .session-focus-card > div,
 .session-focus-card > [class*="Card"] {
-  transition: box-shadow 0.8s ease-out, border-color 0.8s ease-out;
+  transition: box-shadow 1.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.session-active .session-focus-card > div,
 body.session-active .session-focus-card > [class*="Card"] {
   box-shadow: 
-    0 0 20px -8px hsl(var(--primary) / 0.15),
-    0 2px 12px -4px hsl(0 0% 0% / 0.3);
-  border-color: hsl(var(--primary) / 0.2);
+    0 0 30px -8px hsl(var(--primary) / 0.2),
+    0 4px 20px -4px hsl(0 0% 0% / 0.5);
+  border-color: hsl(var(--primary) / 0.3);
 }
 
 /* Dim non-focused sections */
 body.session-active section:not(.session-focus-card),
 body.session-active [data-tour="timeline"] {
-  opacity: 0.4;
-  transition: opacity 0.8s ease-out;
+  opacity: 0.3;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 section:not(.session-focus-card),
 [data-tour="timeline"] {
-  transition: opacity 0.8s ease-out;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   NAV BAR FOCUS DIMMING
+   Top header and bottom nav dim during session,
+   except timer and streak which stay bright
+   ======================================== */
+
+/* Base transitions for nav elements */
+header,
+nav {
+  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header and bottom nav - darken background during session */
+body.session-active header {
+  background-color: hsl(225 25% 4%) !important;
+  border-color: hsl(225 20% 12%) !important;
+}
+
+body.session-active nav {
+  background-color: hsl(225 25% 4%) !important;
+  border-color: hsl(225 20% 12%) !important;
+}
+
+/* Logo and nav items - dim during session */
+header > div > div:first-child {
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.session-active header > div > div:first-child {
+  opacity: 0.25;
+}
+
+/* Bottom nav items - dim during session */
+nav a {
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.session-active nav a {
+  opacity: 0.25;
+}
+
+/* Timer and streak container - EXEMPT from dimming, stays bright */
+.session-focus-exempt {
+  transition: none !important;
+  opacity: 1 !important;
+}
+
+body.session-active .session-focus-exempt {
+  opacity: 1 !important;
 }
 
 /* Larger checkbox characters for better mobile tapping */

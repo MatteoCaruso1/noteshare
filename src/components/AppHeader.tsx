@@ -109,9 +109,9 @@ export function AppHeader() {
           
         </div>
         
-        {/* Timer & Streak Indicator - fade out on welcome page */}
+        {/* Timer & Streak Indicator - fade out on welcome page, EXEMPT from session focus dimming */}
         <div 
-          className={`flex items-center gap-2 transition-opacity duration-700 ${
+          className={`flex items-center gap-2 transition-opacity duration-700 session-focus-exempt ${
             isOnWelcomePage ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
