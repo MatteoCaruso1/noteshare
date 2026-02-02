@@ -131,7 +131,7 @@ export function PremiumDialog() {
               className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] bg-jazz-amber text-jazz-midnight [@media(hover:hover)]:hover:bg-jazz-amber/90 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
             >
               <span>
-                <span className="font-bold">7 days free,</span> then $2.49/mo
+                <span className="font-bold">7 days free,</span> then $1.99/mo
               </span>
             </button>
             <button
