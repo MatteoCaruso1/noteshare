@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Timer, BarChart3, FolderKanban, Heart, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Timer, BarChart3, FolderKanban, Heart, Sparkles, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { toast } from 'sonner';
@@ -20,6 +20,11 @@ const BENEFITS = [
     icon: FolderKanban,
     title: 'Musical Pursuits',
     description: 'Organize your notes around goals, projects, gigs, and archived practice boards',
+  },
+  {
+    icon: Palette,
+    title: 'Custom Themes',
+    description: 'Personalize Noteshare with custom color themes to match your style',
   },
   {
     icon: Heart,
