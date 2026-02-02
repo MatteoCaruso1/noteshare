@@ -674,14 +674,14 @@ export function PracticeControls() {
                             Delete session
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="sm:max-w-xs">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete session?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will discard the session and any unsaved notes.
+                            <AlertDialogDescription className="sr-only">
+                              Confirm session deletion
                             </AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter>
+                          <AlertDialogFooter className="mt-2">
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={handleDeleteSession}
