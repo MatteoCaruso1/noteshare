@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award, Palette, Sparkles } from 'lucide-react';
@@ -12,20 +13,22 @@ function ThemesUpgradePrompt() {
   const { openPremiumDialog } = usePremium();
 
   return (
-    <div className="flex flex-col items-center py-4 gap-3">
-      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-        <Palette className="w-5 h-5 text-primary" />
+    <div className="flex flex-col items-center justify-center gap-2 py-4 px-6 text-center">
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
+        <Palette className="h-5 w-5 text-jazz-gold" />
       </div>
-      <p className="text-sm text-muted-foreground text-center">
+      <p className="text-sm text-muted-foreground leading-relaxed">
         Upgrade to Pro to customize your theme
       </p>
-      <button
+      <Button 
+        size="sm" 
         onClick={openPremiumDialog}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-jazz-amber text-jazz-amber-foreground font-medium text-sm hover:bg-jazz-amber/90 transition-colors"
+        variant="hero"
+        className="gap-1.5"
       >
-        <Sparkles className="w-4 h-4" />
+        <Sparkles className="h-3.5 w-3.5" />
         Get Noteshare Pro
-      </button>
+      </Button>
     </div>
   );
 }
