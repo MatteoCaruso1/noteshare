@@ -8,7 +8,7 @@ interface PremiumContextType {
   isLifetime: boolean;
   openCustomerPortal: () => Promise<void>;
   checkSubscription: () => Promise<void>;
-  startLifetimeCheckout: () => Promise<void>;
+  startLifetimeCheckout: (currency?: SupportedCurrency) => Promise<void>;
   // Premium dialog state
   isPremiumDialogOpen: boolean;
   openPremiumDialog: () => void;

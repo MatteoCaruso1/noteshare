@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { PREMIUM_PRICES, SupportedCurrency } from '@/lib/currencyUtils';
+import { PREMIUM_PRICES, SupportedCurrency, detectUserCurrency } from '@/lib/currencyUtils';
 
 // Product/Price mapping for Noteshare Premium
 export const SUBSCRIPTION_TIERS = {
@@ -165,13 +165,17 @@ export function useSubscription() {
     }
   };
 
-  const startLifetimeCheckout = async () => {
+  const startLifetimeCheckout = async (currency?: SupportedCurrency) => {
     if (!user) {
       throw new Error('Must be logged in to purchase');
     }
 
+    const currencyToUse = currency ?? detectUserCurrency();
+
     try {
-      const { data, error } = await supabase.functions.invoke('create-lifetime-checkout');
+      const { data, error } = await supabase.functions.invoke('create-lifetime-checkout', {
+        body: { currency: currencyToUse }
+      });
       
       if (error) throw error;
       if (!data?.url) throw new Error('No checkout URL returned');
@@ -207,7 +211,10 @@ export function useSubscription() {
   const VALID_PREMIUM_PRODUCT_IDS = [
     SUBSCRIPTION_TIERS.premium.product_id,  // prod_ToONzcZjkyqsAJ - main premium
     SUBSCRIPTION_TIERS.lifetime.product_id, // prod_TsrnqaaViDJAas - old $19.99 lifetime
-    'prod_TtwaOYfMnVypk4',                  // new $9.99 lifetime product
+    'prod_TtwaOYfMnVypk4',                  // CAD $9.99 lifetime product
+    'prod_Tu2MnCtrEfyciQ',                  // USD $9.99 lifetime product
+    'prod_Tu2GAnzdYIrnKZ',                  // CAD $1.99/mo subscription
+    'prod_Tu2LNk7QzsQY2k',                  // USD $1.99/mo subscription
     'prod_TofQhqCDH1KicB',                  // legacy USD product
     'prod_TofQx0QRLi6tEe',                  // legacy CAD product
   ];
