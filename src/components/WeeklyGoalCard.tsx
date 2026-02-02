@@ -1,10 +1,8 @@
-import { useMemo } from 'react';
-import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
 import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
-import { Target, Clock, Trophy } from 'lucide-react';
+import { Target, Trophy } from 'lucide-react';
 
 export function WeeklyGoalCard() {
   const { profile } = useAuth();
@@ -31,49 +29,46 @@ export function WeeklyGoalCard() {
   };
   
   return (
-    <Card className={`p-3 border transition-colors ${
+    <div className={`p-3 rounded-lg border transition-colors ${
       isComplete 
         ? 'border-green-500/30 bg-green-500/5' 
-        : 'border-primary/20 bg-primary/5'
+        : 'border-border bg-muted/30'
     }`}>
       <div className="space-y-2">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        {/* Header row with badge and progress */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             {isComplete ? (
-              <Trophy className="w-4 h-4 text-green-500" />
+              <Trophy className="w-4 h-4 text-green-500 shrink-0" />
             ) : (
-              <Target className="w-4 h-4 text-primary" />
+              <Target className="w-4 h-4 text-primary shrink-0" />
             )}
-            <span className="text-sm font-medium">Weekly Practice Goal</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Weekly Goal</span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            <span>This week</span>
-          </div>
-        </div>
-        
-        {/* Progress */}
-        <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between">
-            <span className={`text-lg font-bold ${isComplete ? 'text-green-500' : ''}`}>
+          
+          {/* Progress display */}
+          <div className="flex items-center gap-1.5">
+            <span className={`text-sm font-bold ${isComplete ? 'text-green-500' : ''}`}>
               {formatMinutes(currentMinutes)}
             </span>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               / {formatMinutes(targetMinutes)}
             </span>
           </div>
-          <Progress 
-            value={progressPercent} 
-            className={`h-2 ${isComplete ? '[&>div]:bg-green-500' : ''}`}
-          />
-          {isComplete && (
-            <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-              🎉 Goal achieved! Keep up the momentum!
-            </p>
-          )}
         </div>
+        
+        {/* Progress bar */}
+        <Progress 
+          value={progressPercent} 
+          className={`h-1.5 ${isComplete ? '[&>div]:bg-green-500' : ''}`}
+        />
+        
+        {isComplete && (
+          <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+            🎉 Goal achieved!
+          </p>
+        )}
       </div>
-    </Card>
+    </div>
   );
 }
