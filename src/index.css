@@ -764,6 +764,16 @@ html {
   }
 }
 
+/* Ensure toasts are NEVER dimmed by Focus Mode and always sit above the vignette */
+body.session-active [data-sonner-toaster],
+body.session-active .toaster,
+body.session-active [data-radix-toast-viewport] {
+  opacity: 1 !important;
+  filter: none !important;
+  z-index: 9999 !important;
+  isolation: isolate;
+}
+
 /* Confetti animation for celebrations */
 @keyframes confetti {
   0% {
@@ -882,13 +892,20 @@ body.session-active .session-focus-card > [class*="Card"] {
 }
 
 /* Dim non-focused sections */
-body.session-active section:not(.session-focus-card),
+/*
+  IMPORTANT:
+  We cannot dim a parent container with `opacity` if it contains focused content,
+  because children cannot override parent opacity.
+
+  So we only dim sections that *do not contain* a .session-focus-card.
+*/
+body.session-active section:not(:has(.session-focus-card)),
 body.session-active [data-tour="timeline"] {
   opacity: 0.3;
   transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-section:not(.session-focus-card),
+section:not(:has(.session-focus-card)),
 [data-tour="timeline"] {
   transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
