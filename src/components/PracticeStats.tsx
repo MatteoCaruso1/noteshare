@@ -235,18 +235,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
       </Card>
 
-      {/* Section 4: Color Themes (Pro users only) */}
-      {isPremium && profile?.id === profileId && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
-            <h3 className="font-semibold">Themes</h3>
-          </div>
-          <ThemePicker />
-        </Card>
-      )}
-
-      {/* Section 5: Recent Focuses */}
+      {/* Section 4: Recent Focuses */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-2">
           <Hash className="w-5 h-5 text-primary" />
@@ -274,6 +263,23 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </div>
       </Card>
+
+      {/* Section 5: Color Themes */}
+      {profile?.id === profileId && (
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
+            <h3 className="font-semibold">Themes</h3>
+          </div>
+          {isPremium ? (
+            <ThemePicker />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Upgrade to Pro to customize your Noteshare theme
+            </p>
+          )}
+        </Card>
+      )}
     </div>
   );
 }
