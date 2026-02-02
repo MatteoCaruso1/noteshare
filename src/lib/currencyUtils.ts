@@ -1,33 +1,22 @@
-// Currency detection based on user's timezone
+// Currency detection based on browser locale
 // Falls back to USD for non-Canadian users
 
 export type SupportedCurrency = 'CAD' | 'USD';
 
-const CANADIAN_TIMEZONES = [
-  'America/Toronto',
-  'America/Vancouver', 
-  'America/Edmonton',
-  'America/Winnipeg',
-  'America/Halifax',
-  'America/St_Johns',
-  'America/Regina',
-  'America/Montreal',
-  'America/Moncton',
-  'America/Yellowknife',
-  'America/Whitehorse',
-  'America/Iqaluit',
-];
-
 export function detectUserCurrency(): SupportedCurrency {
   try {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Check navigator.language and navigator.languages for Canadian locale
+    const languages = navigator.languages || [navigator.language];
     
-    if (CANADIAN_TIMEZONES.some(tz => timezone.includes(tz) || tz.includes(timezone))) {
-      return 'CAD';
+    for (const lang of languages) {
+      // Canadian locales: en-CA, fr-CA
+      if (lang.toLowerCase().endsWith('-ca')) {
+        return 'CAD';
+      }
     }
   } catch (e) {
-    // Fallback if Intl API not available
-    console.warn('Could not detect timezone, defaulting to USD');
+    // Fallback if navigator not available (SSR)
+    console.warn('Could not detect locale, defaulting to USD');
   }
   
   return 'USD';
