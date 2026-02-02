@@ -262,14 +262,17 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
                 {isWeeklyComplete && ' 🎉'}
               </span>
             </div>
-            {/* Subtle progress bar */}
+            {/* Styled progress bar with skewed edges */}
             <div className="ml-5 pl-2">
-              <div className="h-1 w-full bg-muted/50 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-muted/30 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 98% 100%, 2% 100%)' }}>
                 <div 
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    isWeeklyComplete ? 'bg-green-500' : 'bg-primary/60'
+                  className={`h-full transition-all duration-500 ${
+                    isWeeklyComplete ? 'bg-green-500' : 'bg-primary/70'
                   }`}
-                  style={{ width: `${weeklyProgressPercent}%` }}
+                  style={{ 
+                    width: `${weeklyProgressPercent}%`,
+                    clipPath: 'polygon(0 0, 100% 0, 96% 100%, 0 100%)'
+                  }}
                 />
               </div>
             </div>
