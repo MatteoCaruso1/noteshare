@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
+import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
 // Tips shown occasionally as placeholders
 const PLACEHOLDER_TIPS = [
@@ -69,7 +70,7 @@ export function RichTextarea({
       requestAnimationFrame(() => {
         if (scrollParent === window) {
           if (window.scrollY !== savedScrollTop) {
-            window.scrollTo({ top: savedScrollTop, behavior: 'instant' });
+            window.scrollTo({ top: savedScrollTop, behavior: 'auto' });
           }
         } else {
           if ((scrollParent as HTMLElement).scrollTop !== savedScrollTop) {
@@ -249,13 +250,19 @@ export function RichTextarea({
     
     // Auto-convert "[]" or "[ ]" at line start to checkbox (no trailing space required)
     if (lineBeforeCursor === '[]' || lineBeforeCursor === '[ ]' || lineBeforeCursor.match(/^\s+\[\s?\]$/)) {
+      const scrollContainer = getScrollContainerFor(textarea);
+      const savedScrollTop = getScrollTop(scrollContainer);
+
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const transformed = newValue.substring(0, lineStart) + indent + '☐ ' + newValue.substring(cursorPos);
       const newCursor = lineStart + indent.length + 2;
       
       onChange(transformed);
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = newCursor;
+        // Keep selection stable and prevent the browser from auto-scrolling to the caret
+        focusWithoutScroll(textarea);
+        textarea.setSelectionRange(newCursor, newCursor);
+        restoreScrollNextFrame(scrollContainer, savedScrollTop);
       }, 0);
       return;
     }
@@ -468,6 +475,10 @@ export function RichTextarea({
       if (line.match(/^(\s*)(☐|☑)\s/)) {
         // Prevent the default behavior that would move the cursor
         e.preventDefault();
+
+        // Preserve page scroll so toggling a checkbox never repositions the viewport on mobile
+        const scrollContainer = getScrollContainerFor(textarea);
+        const savedScrollTop = getScrollTop(scrollContainer);
         
         // Store current selection to restore it
         const savedStart = textarea.selectionStart;
@@ -478,8 +489,9 @@ export function RichTextarea({
         
         // Restore cursor position after the state update
         setTimeout(() => {
-          textarea.selectionStart = savedStart;
-          textarea.selectionEnd = savedEnd;
+          focusWithoutScroll(textarea);
+          textarea.setSelectionRange(savedStart, savedEnd);
+          restoreScrollNextFrame(scrollContainer, savedScrollTop);
         }, 0);
       }
     }
@@ -493,11 +505,16 @@ export function RichTextarea({
     const { isCheckbox, lineIndex } = isOnCheckbox(value, cursorPos);
     
     if (isCheckbox && lineIndex !== -1) {
+      const scrollContainer = getScrollContainerFor(textarea);
+      const savedScrollTop = getScrollTop(scrollContainer);
+
       toggleCheckbox(lineIndex);
       
       // Keep cursor position
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        focusWithoutScroll(textarea);
+        textarea.setSelectionRange(cursorPos, cursorPos);
+        restoreScrollNextFrame(scrollContainer, savedScrollTop);
       }, 0);
     }
   }, [value, toggleCheckbox, isOnCheckbox]);
