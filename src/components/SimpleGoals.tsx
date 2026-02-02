@@ -4,7 +4,9 @@ import { Compass, X, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { WeeklyGoalCard } from './WeeklyGoalCard';
+import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
+import { useAuth } from '@/hooks/useAuth';
+import { usePremium } from '@/contexts/PremiumContext';
 
 interface SimpleGoalsProps {
   profileId: string;
@@ -22,11 +24,27 @@ const EXAMPLE_GOALS = [
   "Play at the Emmet Ray Jam before winter ends",
 ];
 
+// Format minutes to readable format (e.g., "45m" or "1h 30m")
+function formatMinutes(mins: number): string {
+  if (mins >= 60) {
+    const hours = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
+  }
+  return `${mins}m`;
+}
+
 export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const { data: goals = [], isLoading } = useGoals(profileId);
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
   const deleteGoal = useDeleteGoal();
+  
+  // Weekly goal data
+  const { profile } = useAuth();
+  const { isPremium } = usePremium();
+  const { currentWeekGoal, isLoading: weeklyLoading } = useWeeklyGoal(profile?.id);
+  const currentMinutes = useCurrentWeekPracticeMinutes(profile?.id);
 
   // Only show active (non-completed) goals, sorted by priority
   const activeGoals = goals
@@ -39,6 +57,12 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newGoalText, setNewGoalText] = useState('');
   const [pendingGoal, setPendingGoal] = useState<string | null>(null);
+  
+  // Check if weekly goal should be shown
+  const showWeeklyGoal = isPremium && !weeklyLoading && currentWeekGoal && !currentWeekGoal.skipped;
+  const weeklyTargetMinutes = currentWeekGoal?.target_minutes || 0;
+  const weeklyProgressPercent = weeklyTargetMinutes > 0 ? Math.min(100, (currentMinutes / weeklyTargetMinutes) * 100) : 0;
+  const isWeeklyComplete = currentMinutes >= weeklyTargetMinutes;
 
   // Pick a random example goal when adding starts
   const examplePlaceholder = useMemo(() => {
@@ -93,6 +117,9 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
 
   // Icon should light up when editing or adding
   const isActive = isAdding || editingId !== null;
+  
+  // Calculate next goal number (weekly goal comes after custom goals)
+  const weeklyGoalNumber = activeGoals.length + (pendingGoal ? 1 : 0) + 1;
 
   // Show loading skeleton with stable min-height to prevent layout shifts
   if (isLoading) {
@@ -134,9 +161,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </button>
         )}
       </div>
-      
-      {/* Weekly Practice Goal - shown for premium users with an active goal */}
-      <WeeklyGoalCard />
       
       <div className="space-y-2">
         {activeGoals.map((goal, index) => (
@@ -222,7 +246,37 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         )}
 
-        {activeGoals.length === 0 && !isAdding && !pendingGoal && (
+        {/* Weekly Practice Goal - integrated as next numbered goal */}
+        {showWeeklyGoal && (
+          <div className="flex flex-col gap-1 animate-fade-in">
+            <div className="flex items-start gap-2">
+              <span className={`w-5 text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5 ${
+                isWeeklyComplete ? 'text-green-500' : 'text-muted-foreground'
+              }`}>
+                {weeklyGoalNumber}.
+              </span>
+              <span className={`text-sm flex-1 ${isWeeklyComplete ? 'text-green-500' : ''}`}>
+                Weekly practice goal:{' '}
+                <span className="font-medium">{formatMinutes(currentMinutes)}</span>
+                <span className="text-muted-foreground"> / {formatMinutes(weeklyTargetMinutes)}</span>
+                {isWeeklyComplete && ' 🎉'}
+              </span>
+            </div>
+            {/* Subtle progress bar */}
+            <div className="ml-5 pl-2">
+              <div className="h-1 w-full bg-muted/50 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    isWeeklyComplete ? 'bg-green-500' : 'bg-primary/60'
+                  }`}
+                  style={{ width: `${weeklyProgressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeGoals.length === 0 && !isAdding && !pendingGoal && !showWeeklyGoal && (
           <p className="text-sm text-muted-foreground animate-fade-in">No goals yet. Click + to add one.</p>
         )}
       </div>
