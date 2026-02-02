@@ -172,10 +172,10 @@ function AppInner() {
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
+                    {/* Toasts render AFTER all page content to ensure they paint above all stacking contexts */}
+                    <Toaster />
+                    <Sonner />
                   </BrowserRouter>
-                  {/* Toasts render AFTER router content to ensure they paint above all stacking contexts */}
-                  <Toaster />
-                  <Sonner />
                 </TooltipProvider>
               </BottomNavProvider>
             </OnboardingProvider>
