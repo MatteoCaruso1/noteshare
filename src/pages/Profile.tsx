@@ -14,7 +14,7 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette } from 'lucide-react';
 import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -30,6 +30,7 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
+import { ThemePicker } from '@/components/ThemePicker';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
@@ -414,6 +415,25 @@ const Profile = () => {
             >
               <PracticeStats profileId={profile?.id} />
             </PremiumGate>
+          )}
+
+          {/* Themes - separate from Practice Stats so it never gets blurred by the stats gate */}
+          {!editing && (
+            <Card className="p-4 bg-card border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
+                <h3 className="font-semibold">Themes</h3>
+              </div>
+              <PremiumGate
+                featureName="Themes"
+                blur={false}
+                showPreview={false}
+                icon={Palette}
+                description="Upgrade to Pro to gain access to custom themes"
+              >
+                <ThemePicker />
+              </PremiumGate>
+            </Card>
           )}
 
           {/* Manage Plans Section - only in edit mode */}

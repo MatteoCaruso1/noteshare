@@ -1,37 +1,9 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award, Palette, Sparkles } from 'lucide-react';
+import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ThemePicker } from '@/components/ThemePicker';
-import { usePremium } from '@/contexts/PremiumContext';
-import { useAuth } from '@/hooks/useAuth';
-
-function ThemesUpgradePrompt() {
-  const { openPremiumDialog } = usePremium();
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 py-4 px-6 text-center">
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-jazz-gold/10">
-        <Palette className="h-5 w-5 text-jazz-gold" />
-      </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Upgrade to Pro to customize your theme
-      </p>
-      <Button 
-        size="sm" 
-        onClick={openPremiumDialog}
-        variant="hero"
-        className="gap-1.5"
-      >
-        <Sparkles className="h-3.5 w-3.5" />
-        Get Noteshare Pro
-      </Button>
-    </div>
-  );
-}
 
 interface PracticeStatsProps {
   profileId: string;
@@ -39,8 +11,6 @@ interface PracticeStatsProps {
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
-  const { isPremium } = usePremium();
-  const { profile } = useAuth();
 
   // Show error state with retry option
   if (error) {
@@ -289,20 +259,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
       </Card>
 
-      {/* Section 5: Color Themes */}
-      {profile?.id === profileId && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
-            <h3 className="font-semibold">Themes</h3>
-          </div>
-          {isPremium ? (
-            <ThemePicker />
-          ) : (
-            <ThemesUpgradePrompt />
-          )}
-        </Card>
-      )}
     </div>
   );
 }
