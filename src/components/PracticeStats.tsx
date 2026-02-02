@@ -275,7 +275,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <ThemePicker />
           ) : (
             <p className="text-sm text-muted-foreground">
-              Upgrade to Pro to customize your Noteshare theme
+              Upgrade to Noteshare Pro to gain access to custom themes
             </p>
           )}
         </Card>
