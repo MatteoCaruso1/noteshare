@@ -76,7 +76,9 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
           }
         }, 400);
 
-        audioManager.pauseAll();
+        // Pause all OTHER audio - but not this instance!
+        // We use play() with the instance ID to exclude self from pausing
+        audioManager.play({ pause: () => ws.pause() }, instanceId);
       }
 
       ws.playPause();
@@ -84,7 +86,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       console.error('[WaveformPlayer] Error during playPause:', err);
       setError(true);
     }
-  }, [isReady]);
+  }, [isReady, instanceId]);
 
   useEffect(() => {
     if (!containerRef.current || !signedUrl || urlLoading) return;
