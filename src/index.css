@@ -800,8 +800,13 @@ body.session-active [data-radix-toast-viewport] * {
 /* ========================================
    SESSION FOCUS MODE
    Dramatic visual state when practicing
-   Slower, more dramatic transitions for clear feedback
+   All elements use unified transition timing for smooth, synchronized fades
    ======================================== */
+
+/* Unified transition timing - all focus-mode elements use this */
+:root {
+  --focus-transition: 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
 
 /* Establish #root as the main stacking context ABOVE the vignette */
 #root {
@@ -810,30 +815,23 @@ body.session-active [data-radix-toast-viewport] * {
   isolation: isolate;
 }
 
-/* Base transition states for smooth, dramatic fade in/out */
-body {
-  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* ========================================
+   UNIFIED BACKGROUND TRANSITIONS
+   All background layers transition together with identical timing
+   ======================================== */
+
+body,
+body main,
+body .min-h-screen,
+body .bg-background {
+  transition: background-color var(--focus-transition);
 }
 
-body main {
-  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-body h1 {
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Darken the entire page background during active session - match nav bar darkness */
-body.session-active {
-  background-color: hsl(225 30% 3%) !important;
-}
-
-body.session-active main {
-  background-color: hsl(225 30% 3%) !important;
-}
-
-/* Ensure PageLayout wrapper also gets the dark background */
-body.session-active .min-h-screen {
+/* Darken the entire page background during active session */
+body.session-active,
+body.session-active main,
+body.session-active .min-h-screen,
+body.session-active .bg-background {
   background-color: hsl(225 30% 3%) !important;
 }
 
@@ -852,19 +850,18 @@ body::before {
     hsl(225 30% 2% / 0.7) 100%
   );
   opacity: 0;
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity var(--focus-transition);
 }
 
 body.session-active::before {
   opacity: 1;
 }
 
-@keyframes vignetteIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Page title dimming */
+body h1 {
+  transition: opacity var(--focus-transition);
 }
 
-/* Dim content that isn't focused */
 body.session-active h1 {
   opacity: 0.2;
 }
@@ -899,10 +896,10 @@ body.session-active .session-focus-card > div {
   background-color: hsl(var(--card)) !important;
 }
 
-/* Subtle glow on focused cards - much softer than before */
+/* Subtle glow on focused cards - uses unified timing */
 .session-focus-card > div,
 .session-focus-card > [class*="Card"] {
-  transition: box-shadow 1.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: box-shadow var(--focus-transition), border-color var(--focus-transition);
 }
 
 body.session-active .session-focus-card > div,
@@ -919,10 +916,10 @@ body.session-active .session-focus-card > [class*="Card"] {
    Fallback for browsers without :has() support
    ======================================== */
 
-/* Base transition for all sections */
+/* Base transition for all sections - unified timing */
 section,
 [data-tour="timeline"] {
-  transition: filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: filter var(--focus-transition), opacity var(--focus-transition);
 }
 
 /* During session: dim app content sections by default using brightness filter.
@@ -965,13 +962,14 @@ body.session-active .toaster * {
    NAV BAR FOCUS DIMMING
    Top header and bottom nav dim during session,
    except timer and streak which stay bright
+   All using unified transition timing
    ======================================== */
 
-/* Base transitions for nav elements */
+/* Base transitions for nav elements - unified timing */
 header,
 nav {
-  transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1), 
-              border-color 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--focus-transition), 
+              border-color var(--focus-transition);
 }
 
 /* Header and bottom nav - darken background during session */
@@ -985,18 +983,18 @@ body.session-active nav {
   border-color: hsl(225 20% 12%) !important;
 }
 
-/* Logo and nav items - dim during session */
+/* Logo and nav items - dim during session with unified timing */
 header > div > div:first-child {
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity var(--focus-transition);
 }
 
 body.session-active header > div > div:first-child {
   opacity: 0.25;
 }
 
-/* Bottom nav items - dim during session */
+/* Bottom nav items - dim during session with unified timing */
 nav a {
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity var(--focus-transition);
 }
 
 body.session-active nav a {
