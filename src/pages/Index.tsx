@@ -134,7 +134,8 @@ const Index = () => {
             {/* Session Focus Overlay - darkens page during active sessions */}
             <SessionFocusOverlay />
             
-            <div className="space-y-4">
+            {/* Wrap focus cards in section for CSS targeting - session-focus-section for :has() fallback */}
+            <section className="space-y-4 session-focus-section">
               {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
               {/* These cards get elevated z-index during active session via SessionFocusOverlay context */}
               <div data-tour="practice-capture" className="relative session-focus-card">
@@ -150,7 +151,7 @@ const Index = () => {
                   <TodaysFocus />
                 </div>
               )}
-            </div>
+            </section>
           </GlintProvider>
 
           {/* Memory Reminder */}

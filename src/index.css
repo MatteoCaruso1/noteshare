@@ -764,14 +764,25 @@ html {
   }
 }
 
-/* Ensure toasts are NEVER dimmed by Focus Mode and always sit above the vignette */
+/* ========================================
+   TOAST LAYERING - ALWAYS ABOVE EVERYTHING
+   Toasts must NEVER be dimmed or hidden by focus mode
+   ======================================== */
+[data-sonner-toaster],
+.toaster,
+[data-radix-toast-viewport] {
+  position: fixed !important;
+  z-index: 99999 !important;
+}
+
 body.session-active [data-sonner-toaster],
 body.session-active .toaster,
-body.session-active [data-radix-toast-viewport] {
+body.session-active [data-radix-toast-viewport],
+body.session-active [data-sonner-toaster] *,
+body.session-active .toaster *,
+body.session-active [data-radix-toast-viewport] * {
   opacity: 1 !important;
   filter: none !important;
-  z-index: 9999 !important;
-  isolation: isolate;
 }
 
 /* Confetti animation for celebrations */
@@ -791,6 +802,13 @@ body.session-active [data-radix-toast-viewport] {
    Dramatic visual state when practicing
    Slower, more dramatic transitions for clear feedback
    ======================================== */
+
+/* Establish #root as the main stacking context ABOVE the vignette */
+#root {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
 
 /* Base transition states for smooth, dramatic fade in/out */
 body {
@@ -814,29 +832,14 @@ body.session-active main {
   background-color: transparent !important;
 }
 
-/* Cinematic vignette overlay at screen edges - low z-index to not block toasts/modals */
-body.session-active::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 50%,
-    transparent 30%,
-    hsl(225 30% 3% / 0.4) 70%,
-    hsl(225 30% 2% / 0.7) 100%
-  );
-  opacity: 1;
-  animation: vignetteIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
+/* Cinematic vignette overlay at screen edges
+   z-index: 0 ensures it's BEHIND #root (z-index: 1) so all UI content is above it */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
   background: radial-gradient(
     ellipse 80% 60% at 50% 50%,
     transparent 30%,
@@ -845,6 +848,10 @@ body::before {
   );
   opacity: 0;
   transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.session-active::before {
+  opacity: 1;
 }
 
 @keyframes vignetteIn {
@@ -857,17 +864,27 @@ body.session-active h1 {
   opacity: 0.2;
 }
 
-/* Elevate focused cards ABOVE the vignette overlay (z-index: 1) */
-body.session-active .session-focus-card {
+/* ========================================
+   FOCUS CARDS - ALWAYS FULLY BRIGHT
+   Use filter:brightness approach instead of opacity
+   so children CAN override parent dimming
+   ======================================== */
+
+/* Focus cards stay bright - positioned above vignette */
+.session-focus-card {
   position: relative;
   z-index: 10;
-  /* Create stacking context to ensure children also render above vignette */
   isolation: isolate;
 }
 
-/* Focus cards must have FULL BRIGHTNESS - override any dimming */
-body.session-active .session-focus-card,
+/* Ensure focus cards and ALL their children stay at full brightness */
+body.session-active .session-focus-card {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 body.session-active .session-focus-card * {
+  filter: none !important;
   opacity: 1 !important;
 }
 
@@ -891,23 +908,38 @@ body.session-active .session-focus-card > [class*="Card"] {
   border-color: hsl(var(--primary) / 0.3);
 }
 
-/* Dim non-focused sections */
-/*
-  IMPORTANT:
-  We cannot dim a parent container with `opacity` if it contains focused content,
-  because children cannot override parent opacity.
+/* ========================================
+   DIM NON-FOCUSED CONTENT
+   Use filter:brightness instead of opacity so children CAN override
+   Fallback for browsers without :has() support
+   ======================================== */
 
-  So we only dim sections that *do not contain* a .session-focus-card.
-*/
-body.session-active section:not(:has(.session-focus-card)),
-body.session-active [data-tour="timeline"] {
-  opacity: 0.3;
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* Base transition for all sections */
+section,
+[data-tour="timeline"] {
+  transition: filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-section:not(:has(.session-focus-card)),
-[data-tour="timeline"] {
-  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* During session: dim all sections by default using brightness filter */
+body.session-active section {
+  filter: brightness(0.35) saturate(0.8);
+}
+
+body.session-active [data-tour="timeline"] {
+  opacity: 0.3;
+}
+
+/* OVERRIDE: Sections containing focus cards stay bright */
+body.session-active section:has(.session-focus-card) {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Fallback for browsers without :has(): 
+   Add .session-focus-section class to parent sections containing focus cards */
+body.session-active .session-focus-section {
+  filter: none !important;
+  opacity: 1 !important;
 }
 
 /* ========================================
