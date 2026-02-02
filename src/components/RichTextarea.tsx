@@ -5,8 +5,8 @@ import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 
 // Tips shown occasionally as placeholders
 const PLACEHOLDER_TIPS = [
-  'Tip: Type [ ] to create checkable practice items',
-  'Tip: Type - to create bulleted lists',
+  'Tip: Type [] for checkboxes',
+  'Tip: Type - for bullets',
 ];
 
 // Get a random tip with 1/7 probability
