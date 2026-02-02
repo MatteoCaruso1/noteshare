@@ -4,6 +4,7 @@ import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
+import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -480,6 +481,9 @@ export function TodaysFocus() {
     // Auto-convert "[]" or "[ ]" at line start to checkbox (immediately, no space needed)
     const checkboxPatternMatch = lineBeforeCursor.match(/^(\s*)\[\]$/) || lineBeforeCursor.match(/^(\s*)\[ \]$/);
     if (checkboxPatternMatch) {
+      const scrollContainer = getScrollContainerFor(textarea);
+      const savedScrollTop = getScrollTop(scrollContainer);
+
       const indent = checkboxPatternMatch[1];
       const patternLength = lineBeforeCursor.length - indent.length; // 2 for [] or 3 for [ ]
       value = value.substring(0, lineStart) + indent + '☐ ' + value.substring(cursorPos);
@@ -487,7 +491,9 @@ export function TodaysFocus() {
       
       handleTextChange(value);
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = cursorPos;
+        focusWithoutScroll(textarea);
+        textarea.setSelectionRange(cursorPos, cursorPos);
+        restoreScrollNextFrame(scrollContainer, savedScrollTop);
       }, 0);
       return;
     }
@@ -583,6 +589,9 @@ export function TodaysFocus() {
       if (line.match(/^(\s*)(☐|☑)\s/)) {
         // Prevent the default behavior that would move the cursor
         e.preventDefault();
+
+        const scrollContainer = getScrollContainerFor(textarea);
+        const savedScrollTop = getScrollTop(scrollContainer);
         
         // Store current selection to restore it
         const savedStart = textarea.selectionStart;
@@ -593,8 +602,9 @@ export function TodaysFocus() {
         
         // Restore cursor position after the state update
         setTimeout(() => {
-          textarea.selectionStart = savedStart;
-          textarea.selectionEnd = savedEnd;
+          focusWithoutScroll(textarea);
+          textarea.setSelectionRange(savedStart, savedEnd);
+          restoreScrollNextFrame(scrollContainer, savedScrollTop);
         }, 0);
       }
     }
@@ -608,7 +618,16 @@ export function TodaysFocus() {
     const { isCheckbox, lineIndex } = isOnCheckbox(text, cursorPos);
     
     if (isCheckbox && lineIndex !== -1) {
+      const scrollContainer = getScrollContainerFor(textarea);
+      const savedScrollTop = getScrollTop(scrollContainer);
+
       toggleCheckbox(lineIndex);
+
+      setTimeout(() => {
+        focusWithoutScroll(textarea);
+        textarea.setSelectionRange(cursorPos, cursorPos);
+        restoreScrollNextFrame(scrollContainer, savedScrollTop);
+      }, 0);
     }
   }, [text, toggleCheckbox, isOnCheckbox]);
 
