@@ -88,7 +88,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
     }
   };
 
-  const { data: memory } = useQuery({
+  const { data: memory, isLoading } = useQuery({
     queryKey: ['memories', profile?.id, shouldRefresh()],
     queryFn: async (): Promise<{ note: NoteWithAuthor; label: string } | null> => {
       if (!profile) return null;
@@ -187,7 +187,9 @@ export const MemoryReminder = memo(function MemoryReminder() {
     }
   };
 
-  if (!memory?.note || isDismissed) return null;
+  // Don't render anything while loading to prevent flash
+  // Only show if we have memory data AND it's not dismissed
+  if (isLoading || !memory?.note || isDismissed) return null;
 
   return (
     <Card className="p-4 border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 relative">
