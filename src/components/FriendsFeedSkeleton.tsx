@@ -10,6 +10,7 @@ interface FriendsFeedSkeletonProps {
 /**
  * A skeleton loader for the friends feed that reserves proper space
  * for all card elements including the footer, preventing layout shifts.
+ * Cards appear with a staggered fade-in animation for polish.
  */
 export const FriendsFeedSkeleton = memo(function FriendsFeedSkeleton({ 
   count = 3 
@@ -17,19 +18,34 @@ export const FriendsFeedSkeleton = memo(function FriendsFeedSkeleton({
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, i) => (
-        <FriendNoteCardSkeleton key={i} />
+        <FriendNoteCardSkeleton key={i} index={i} />
       ))}
     </div>
   );
 });
 
+interface FriendNoteCardSkeletonProps {
+  index?: number;
+}
+
 /**
  * Individual skeleton card that matches the exact layout of a NoteCard
  * including space reserved for the ApplauseFooter to prevent expansion.
  */
-const FriendNoteCardSkeleton = memo(function FriendNoteCardSkeleton() {
+const FriendNoteCardSkeleton = memo(function FriendNoteCardSkeleton({ 
+  index = 0 
+}: FriendNoteCardSkeletonProps) {
+  // Stagger delay: 80ms per card for smooth cascade effect
+  const staggerDelay = index * 80;
+  
   return (
-    <Card className="p-3 sm:p-4 bg-background border border-border rounded-lg">
+    <Card 
+      className="p-3 sm:p-4 bg-background border border-border rounded-lg animate-fade-in opacity-0"
+      style={{ 
+        animationDelay: `${staggerDelay}ms`,
+        animationFillMode: 'forwards'
+      }}
+    >
       {/* Type Badge Row */}
       <div className="flex items-center gap-2 mb-3">
         <Skeleton className="h-5 w-28 rounded-full" />
