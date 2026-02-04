@@ -14,9 +14,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group session-focus-exempt"
       position={isMobile ? "bottom-center" : "bottom-right"}
       style={{ 
-        // Position at the bottom, below the nav bar area
-        // Use a low bottom value so toasts appear "behind" the nav
-        bottom: isMobile ? 'calc(16px + env(safe-area-inset-bottom, 0px))' : '24px',
+        // Position above the bottom nav bar on mobile (nav is ~64px + safe area)
+        bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : '24px',
         // z-index below nav (z-50) so nav covers the toast, but above other content
         zIndex: 40,
         // Smooth GPU-accelerated transitions for enter/exit
