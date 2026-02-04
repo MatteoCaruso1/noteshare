@@ -1,5 +1,5 @@
-import { memo, useMemo, useEffect, useState } from 'react';
-import { useFriendsNotes, useFriends } from '@/hooks/useFriendships';
+import { memo, useMemo, useEffect } from 'react';
+import { useFriendsNotes } from '@/hooks/useFriendships';
 import { NoteCard } from './NoteCard';
 import { FriendsFeedSkeleton } from './FriendsFeedSkeleton';
 import { Card } from '@/components/ui/card';
@@ -43,7 +43,6 @@ function extractStoragePath(url: string): string | null {
 
 export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
   const { data: notes, isLoading } = useFriendsNotes();
-  const { data: friends } = useFriends();
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
   const queryClient = useQueryClient();
 
@@ -133,14 +132,8 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     });
   }, [notes, displayCount, queryClient]);
 
-  // Calculate skeleton count based on friend count
-  const skeletonCount = useMemo(() => {
-    // If we know user has friends, show more skeletons
-    if (friends && friends.length > 0) {
-      return Math.min(friends.length * 2, 5); // At most 5 skeletons
-    }
-    return 3; // Default reasonable count
-  }, [friends]);
+  // Fixed skeleton count - don't wait for friends data to load
+  const skeletonCount = 3;
 
   // Filter notes based on search query and focus date
   const filteredNotes = useMemo(() => {
