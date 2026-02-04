@@ -5,11 +5,11 @@ export function triggerHapticFeedback(isChecking: boolean) {
   // Use Vibration API for haptic feedback
   if ('vibrate' in navigator) {
     if (isChecking) {
-      // Satisfying "check" feedback - single crisp pulse
-      navigator.vibrate(15);
+      // Satisfying "check" feedback - stronger pulse for confirmation
+      navigator.vibrate(25);
     } else {
-      // Gentler "uncheck" feedback - softer pulse
-      navigator.vibrate(8);
+      // Clear "uncheck" feedback - distinct double pulse
+      navigator.vibrate([10, 30, 10]);
     }
   }
 }
@@ -17,17 +17,17 @@ export function triggerHapticFeedback(isChecking: boolean) {
 interface UseCheckboxToggleOptions {
   onToggle: (lineIndex: number, isNowChecked: boolean) => void;
   getText: () => string;
-  requireDoubleToUncheck?: boolean;
+  requireDoubleToUncheck?: boolean; // DEPRECATED - kept for API compatibility but ignored
 }
 
 export function useCheckboxToggle({ 
   onToggle, 
   getText,
-  requireDoubleToUncheck = true 
+  requireDoubleToUncheck = false // Now disabled by default - single tap for both check and uncheck
 }: UseCheckboxToggleOptions) {
-  // Track recent uncheck attempts for double-tap protection
-  const lastUncheckAttempt = useRef<{ lineIndex: number; timestamp: number } | null>(null);
-  const DOUBLE_TAP_THRESHOLD = 400; // ms
+  // Track last toggle to prevent rapid double-toggles from touch events
+  const lastToggleRef = useRef<{ lineIndex: number; timestamp: number } | null>(null);
+  const DEBOUNCE_THRESHOLD = 150; // ms - prevents accidental double-taps
 
   const toggleCheckbox = useCallback((lineIndex: number): boolean => {
     const text = getText();
@@ -42,35 +42,25 @@ export function useCheckboxToggle({
     const checkboxChar = checkboxMatch[2];
     const isCurrentlyChecked = checkboxChar === '☑';
     
-    // If unchecking with protection enabled, require double-tap
-    if (isCurrentlyChecked && requireDoubleToUncheck) {
-      const now = Date.now();
-      const lastAttempt = lastUncheckAttempt.current;
-      
-      if (lastAttempt && 
-          lastAttempt.lineIndex === lineIndex && 
-          (now - lastAttempt.timestamp) < DOUBLE_TAP_THRESHOLD) {
-        // Second tap within threshold - allow uncheck
-        lastUncheckAttempt.current = null;
-        triggerHapticFeedback(false);
-        onToggle(lineIndex, false);
-        return true;
-      } else {
-        // First tap - record and give subtle feedback, but don't toggle
-        lastUncheckAttempt.current = { lineIndex, timestamp: now };
-        // Subtle feedback to indicate "tap again to uncheck"
-        if ('vibrate' in navigator) {
-          navigator.vibrate(5);
-        }
-        return false;
-      }
+    // Simple debounce to prevent accidental rapid toggles
+    const now = Date.now();
+    const lastToggle = lastToggleRef.current;
+    
+    if (lastToggle && 
+        lastToggle.lineIndex === lineIndex && 
+        (now - lastToggle.timestamp) < DEBOUNCE_THRESHOLD) {
+      // Too quick - ignore this toggle
+      return false;
     }
     
-    // Checking (or unchecking without protection)
+    // Record this toggle
+    lastToggleRef.current = { lineIndex, timestamp: now };
+    
+    // Single tap toggles in both directions
     triggerHapticFeedback(!isCurrentlyChecked);
     onToggle(lineIndex, !isCurrentlyChecked);
     return true;
-  }, [getText, onToggle, requireDoubleToUncheck]);
+  }, [getText, onToggle]);
 
   // Get line index from cursor position
   const getLineIndexFromCursor = useCallback((text: string, cursorPos: number): { lineIndex: number; lineStart: number } => {
@@ -88,24 +78,27 @@ export function useCheckboxToggle({
     return { lineIndex: -1, lineStart: 0 };
   }, []);
 
-  // Get line index from Y coordinate
+  // Get line index from Y coordinate - improved for mobile accuracy
   const getLineIndexFromY = useCallback((textarea: HTMLTextAreaElement, clientY: number): number => {
     const rect = textarea.getBoundingClientRect();
     const y = clientY - rect.top;
-    const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 24;
-    const paddingTop = parseInt(getComputedStyle(textarea).paddingTop) || 8;
+    const computedStyle = getComputedStyle(textarea);
+    const lineHeight = parseInt(computedStyle.lineHeight) || 24;
+    const paddingTop = parseInt(computedStyle.paddingTop) || 8;
     const scrollTop = textarea.scrollTop;
     
-    return Math.floor((y + scrollTop - paddingTop) / lineHeight);
+    // Calculate with better precision for mobile
+    const rawLineIndex = (y + scrollTop - paddingTop) / lineHeight;
+    return Math.floor(rawLineIndex);
   }, []);
 
-  // Check if X coordinate is in checkbox zone (expanded for mobile)
+  // Check if X coordinate is in checkbox zone - MUCH larger for mobile (80px)
   const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
     const rect = textarea.getBoundingClientRect();
     const x = clientX - rect.left;
     const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
-    // Expanded checkbox zone to 60px from text start for easier mobile tapping
-    return x < paddingLeft + 60;
+    // Expanded checkbox zone to 80px from text start for much easier mobile tapping
+    return x < paddingLeft + 80;
   }, []);
 
   // Check if cursor is on a checkbox character (with expanded hit area for mobile)
@@ -123,9 +116,9 @@ export function useCheckboxToggle({
     const checkboxStartInLine = indent.length;
     const clickPosInLine = cursorPos - lineStart;
     
-    // Expanded hit area: anywhere from start of line to 3 chars after checkbox
+    // Expanded hit area: anywhere from start of line to 5 chars after checkbox
     // This makes it much easier to tap on mobile
-    const isCheckbox = clickPosInLine >= 0 && clickPosInLine <= checkboxStartInLine + 4;
+    const isCheckbox = clickPosInLine >= 0 && clickPosInLine <= checkboxStartInLine + 5;
     
     return { isCheckbox, lineIndex };
   }, [getLineIndexFromCursor]);
