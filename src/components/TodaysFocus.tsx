@@ -46,11 +46,20 @@ export function TodaysFocus() {
   }, [isFocused, setFocusFocused]);
 
   // Stable autosize function - sets height to content without timeouts
+  // Returns the new height for sanity checking
   const autosizeTextarea = useCallback(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) return 0;
+    
+    // Force a layout reflow by reading offsetHeight before measuring
+    // This ensures accurate scrollHeight after browser restoration
+    void textarea.offsetHeight;
+    
     textarea.style.height = 'auto';
-    textarea.style.height = `${Math.max(36, textarea.scrollHeight)}px`;
+    const newHeight = Math.max(36, textarea.scrollHeight);
+    textarea.style.height = `${newHeight}px`;
+    
+    return newHeight;
   }, []);
 
   // Initialize text from focus data - only once on initial load
@@ -138,25 +147,56 @@ export function TodaysFocus() {
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
-  // Handle visibility change (app resume from background on iOS/mobile)
+  // Handle visibility change and window focus (app resume from background on iOS/mobile)
   // When user leaves the app and comes back, the textarea may have collapsed
+  // Uses a multi-attempt strategy with increasing delays to catch browser restoration timing
   useEffect(() => {
     if (!isOpen) return;
 
+    const timeoutIds: NodeJS.Timeout[] = [];
+
+    const scheduleAutosize = () => {
+      // Clear any pending timeouts from previous calls
+      timeoutIds.forEach(clearTimeout);
+      timeoutIds.length = 0;
+
+      // Immediate attempt
+      autosizeTextarea();
+
+      // Multiple delayed attempts to catch browser restoration at different stages
+      const timings = [50, 150, 300, 500];
+      timings.forEach(delay => {
+        const id = setTimeout(() => {
+          const height = autosizeTextarea();
+          // Sanity check: if we have text but height is still minimum, try again
+          if (text.trim() && height <= 40) {
+            const retryId = setTimeout(autosizeTextarea, 100);
+            timeoutIds.push(retryId);
+          }
+        }, delay);
+        timeoutIds.push(id);
+      });
+    };
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Small delay to ensure DOM is ready after app resume
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            autosizeTextarea();
-          });
-        });
+        scheduleAutosize();
       }
     };
 
+    const handleWindowFocus = () => {
+      scheduleAutosize();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [isOpen, autosizeTextarea]);
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleWindowFocus);
+      timeoutIds.forEach(clearTimeout);
+    };
+  }, [isOpen, autosizeTextarea, text]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
