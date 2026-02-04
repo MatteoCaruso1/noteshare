@@ -1,9 +1,23 @@
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function NoteCardSkeleton() {
+interface NoteCardSkeletonProps {
+  /** Index for stagger animation delay */
+  index?: number;
+}
+
+export function NoteCardSkeleton({ index = 0 }: NoteCardSkeletonProps) {
+  // Stagger delay: 60ms per card for smooth cascade effect
+  const staggerDelay = index * 60;
+  
   return (
-    <Card className="p-3 sm:p-4 bg-note border border-note-border/50 rounded-lg border-l-[3px] border-l-primary/40">
+    <Card 
+      className="p-3 sm:p-4 bg-note border border-note-border/50 rounded-lg border-l-[3px] border-l-primary/40 animate-fade-in opacity-0"
+      style={{ 
+        animationDelay: `${staggerDelay}ms`,
+        animationFillMode: 'forwards'
+      }}
+    >
       {/* Type Badge Row */}
       <div className="flex items-center gap-2 mb-3">
         <Skeleton className="h-5 w-28 rounded-full" />

@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { NoteCard } from './NoteCard';
+import { NoteCardSkeleton } from './NoteCardSkeleton';
 import { Button } from '@/components/ui/button';
 import { useSignedUrlPrefetch } from '@/hooks/useSignedUrlPrefetch';
 import { Loader2, Music, Lock, Sparkles } from 'lucide-react';
@@ -18,7 +19,7 @@ interface TimelineProps {
 const LOAD_MORE_COUNT = 10;
 const FREE_USER_DAYS_LIMIT = 14;
 
-// Loading skeleton component
+// Loading skeleton component with staggered animation
 const LoadingSkeleton = ({ message }: { message?: string }) => (
   <div className="space-y-4">
     {message && (
@@ -27,8 +28,8 @@ const LoadingSkeleton = ({ message }: { message?: string }) => (
         <p className="text-sm">{message}</p>
       </div>
     )}
-    {[1, 2, 3].map((i) => (
-      <div key={i} className="h-32 bg-card rounded-lg animate-pulse" />
+    {[0, 1, 2].map((i) => (
+      <NoteCardSkeleton key={i} index={i} />
     ))}
   </div>
 );
