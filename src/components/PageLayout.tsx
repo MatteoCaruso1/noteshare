@@ -35,29 +35,18 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Start visible to prevent blank flash
   const prevPathRef = useRef(location.pathname);
-  const initialMount = useRef(true);
   
   // Skip blur for performance-critical pages
   const skipBlur = location.pathname === '/friends';
 
   useEffect(() => {
-    // On route change, animate in using requestAnimationFrame for smoother timing
+    // On route change, briefly fade then restore
     if (location.pathname !== prevPathRef.current) {
       prevPathRef.current = location.pathname;
-      // Use rAF to ensure we're synchronized with the browser's render cycle
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true);
-        });
-      });
-    } else if (initialMount.current) {
-      // Initial mount - immediate visibility, no delay
-      initialMount.current = false;
-      requestAnimationFrame(() => {
-        setIsVisible(true);
-      });
+      // Content stays visible - no blank flash, just a subtle refresh
+      setIsVisible(true);
     }
   }, [location.pathname]);
 
@@ -69,8 +58,8 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
         // Skip blur for performance-critical pages, use 'none' when visible
         filter: isVisible ? 'none' : (skipBlur ? 'none' : 'blur(2px)'),
         transition: skipBlur 
-          ? 'opacity 200ms ease-out' 
-          : 'opacity 280ms cubic-bezier(0.4, 0, 0.2, 1), filter 280ms cubic-bezier(0.4, 0, 0.2, 1)',
+          ? 'opacity 150ms ease-out' 
+          : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), filter 200ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {children}
