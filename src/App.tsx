@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { PremiumProvider, usePremium } from "@/contexts/PremiumContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
+import { ShareEducationProvider } from "@/contexts/ShareEducationContext";
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
@@ -17,6 +18,7 @@ import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
+import { ShareEducationTour } from "@/components/onboarding/ShareEducationTour";
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 
 // Lazy load Checkout Dialogs to defer Stripe.js (~155KB) until checkout is needed
@@ -132,20 +134,22 @@ function AppInner() {
           <PremiumProvider>
             <ColorThemeProvider>
             <OnboardingProvider>
-              <BottomNavProvider>
-                <TooltipProvider>
-                  <BrowserRouter>
-                    <ScrollToTop />
-                    <ScrollLockDebugger />
-                    <FloatingInstruments />
-                    <AppHeader />
-                    <GlobalSessionBanner />
-                    <AddToHomescreenPrompt />
-                    <PremiumDialog />
-                    <CheckoutDialogWrapper />
-                    <LifetimeCheckoutDialogWrapper />
-                    <OnboardingFlow />
-                    <AvatarPrefetcher />
+              <ShareEducationProvider>
+                <BottomNavProvider>
+                  <TooltipProvider>
+                    <BrowserRouter>
+                      <ScrollToTop />
+                      <ScrollLockDebugger />
+                      <FloatingInstruments />
+                      <AppHeader />
+                      <GlobalSessionBanner />
+                      <AddToHomescreenPrompt />
+                      <PremiumDialog />
+                      <CheckoutDialogWrapper />
+                      <LifetimeCheckoutDialogWrapper />
+                      <OnboardingFlow />
+                      <ShareEducationTour />
+                      <AvatarPrefetcher />
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/welcome" element={<Welcome />} />
@@ -175,9 +179,10 @@ function AppInner() {
                     {/* Toasts render AFTER all page content to ensure they paint above all stacking contexts */}
                     <Toaster />
                     <Sonner />
-                  </BrowserRouter>
-                </TooltipProvider>
-              </BottomNavProvider>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </BottomNavProvider>
+              </ShareEducationProvider>
             </OnboardingProvider>
             </ColorThemeProvider>
           </PremiumProvider>
