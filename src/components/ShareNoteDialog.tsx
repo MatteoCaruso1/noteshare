@@ -727,7 +727,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
           )}
 
           {/* Share Actions - Two buttons */}
-          <div className="grid grid-cols-2 gap-2 pt-2">
+          <div className="grid grid-cols-2 gap-2 pt-2" data-tour="share-options">
             {/* Loading indicator for avatars */}
             {!areAvatarsReady && selectedJammerIds.length > 0 && (
               <div className="col-span-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">

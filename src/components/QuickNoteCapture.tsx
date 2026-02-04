@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
@@ -7,6 +7,7 @@ import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useActiveSession } from '@/hooks/useSessions';
+import { useShareEducation } from '@/contexts/ShareEducationContext';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -49,7 +50,13 @@ export function QuickNoteCapture() {
   const { data: gigs } = useMyPromoPosts(profile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
   const { data: activeSession } = useActiveSession(profile?.id);
-  const createNote = useCreateNote();
+  const { checkAndTrigger } = useShareEducation();
+  
+  const handleNoteCreated = useCallback((noteId: string, totalCount: number) => {
+    checkAndTrigger(noteId, totalCount);
+  }, [checkAndTrigger]);
+  
+  const createNote = useCreateNote(handleNoteCreated);
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   
   const { setQuickNoteExpanded } = useGlint();

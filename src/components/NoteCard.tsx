@@ -551,6 +551,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                data-tour="share-button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onShareClick();

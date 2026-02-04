@@ -8,6 +8,7 @@ import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
+import { useShareEducation } from '@/contexts/ShareEducationContext';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -99,7 +100,13 @@ export function PracticeControls() {
   const deleteSession = useDeleteSession();
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
-  const createNote = useCreateNote();
+  const { checkAndTrigger } = useShareEducation();
+  
+  const handleNoteCreated = useCallback((noteId: string, totalCount: number) => {
+    checkAndTrigger(noteId, totalCount);
+  }, [checkAndTrigger]);
+  
+  const createNote = useCreateNote(handleNoteCreated);
   const createNoteShares = useCreateNoteShares();
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
   const { isPaused, glintStyle, setPracticeExpanded, setHasActiveSession } = useGlint();

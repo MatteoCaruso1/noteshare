@@ -199,8 +199,9 @@ export function usePrefetchNote() {
   }, [queryClient]);
 }
 
-export function useCreateNote() {
+export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: number) => void) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
   return useMutation({
     mutationFn: async ({
@@ -261,7 +262,7 @@ export function useCreateNote() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       // Quick notes count towards streak, so refresh practice stats to update streak immediately
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
@@ -269,6 +270,18 @@ export function useCreateNote() {
       queryClient.invalidateQueries({ queryKey: ['daily-note-count'] });
       // Show appropriate message based on whether this is a session note
       toast.success(variables.sessionId ? 'Practice session saved' : 'Note saved!');
+      
+      // If callback provided, fetch total note count and call it
+      if (onNoteCreated && profile?.id) {
+        const { count } = await supabase
+          .from('notes')
+          .select('id', { count: 'exact', head: true })
+          .eq('author_id', profile.id);
+        
+        if (count !== null) {
+          onNoteCreated(data.id, count);
+        }
+      }
     },
     onError: (error) => {
       console.error('Error creating note:', error);
