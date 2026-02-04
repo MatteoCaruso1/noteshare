@@ -19,11 +19,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
         bottom: isMobile ? 'calc(16px + env(safe-area-inset-bottom, 0px))' : '24px',
         // z-index below nav (z-50) so nav covers the toast, but above other content
         zIndex: 40,
+        // Smooth GPU-accelerated transitions for enter/exit
+        ['--toast-enter-duration' as string]: '300ms',
+        ['--toast-exit-duration' as string]: '200ms',
       }}
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:animate-fade-in session-focus-exempt",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg session-focus-exempt [transition:transform_200ms_ease-out,opacity_200ms_ease-out]",
           description: "group-[.toast]:text-muted-foreground",
           actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
