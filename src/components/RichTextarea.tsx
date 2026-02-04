@@ -455,7 +455,7 @@ export function RichTextarea({
   } = useCheckboxToggle({
     onToggle: performCheckboxToggle,
     getText: () => value,
-    requireDoubleToUncheck: true, // Protect against accidental unchecks
+    requireDoubleToUncheck: false, // Single tap for both check and uncheck - better mobile UX
   });
 
   // Handle touch end for mobile checkbox toggling

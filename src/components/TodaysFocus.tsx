@@ -589,7 +589,7 @@ export function TodaysFocus() {
   } = useCheckboxToggle({
     onToggle: performCheckboxToggle,
     getText: () => text,
-    requireDoubleToUncheck: true, // Protect against accidental unchecks
+    requireDoubleToUncheck: false, // Single tap for both check and uncheck - better mobile UX
   });
 
   // Handle touch end for mobile checkbox toggling

@@ -699,11 +699,7 @@ textarea::-webkit-scrollbar {
   display: none;
 }
 
-/* Practice Board textarea - consistent padding for all lines */
-textarea.practice-board-textarea {
-  padding-left: 0.75rem;
-  line-height: 1.6;
-}
+/* Practice Board textarea base - moved to bottom of file for mobile optimization */
 
 /* Mobile keyboard handling - prevent jarring scroll on input focus */
 @supports (height: 100dvh) {
@@ -1011,15 +1007,35 @@ body.session-active .session-focus-exempt {
   opacity: 1 !important;
 }
 
-/* Larger checkbox characters for better mobile tapping */
+/* ========================================
+   CHECKBOX STYLING - MOBILE OPTIMIZED
+   Larger, more visible, easier to tap
+   ======================================== */
+
+/* Practice board textarea with larger line height for checkbox tapping */
 .practice-board-textarea {
-  /* Use a font that renders checkboxes nicely */
   font-variant-ligatures: none;
+  /* Increase line height for easier tapping between lines */
+  line-height: 1.75 !important;
+  /* Ensure enough left padding for checkbox hit zone */
+  padding-left: 1rem !important;
 }
 
-/* Make checkbox symbols larger and more tappable */
-@supports (font-size-adjust: 1) {
+/* On mobile, make the textarea have even more touch-friendly spacing */
+@media (max-width: 768px) {
   .practice-board-textarea {
-    /* Future-proof for when font-size-adjust is supported */
+    /* Larger font for mobile readability */
+    font-size: 16px !important;
+    /* Even more generous line height for fat fingers */
+    line-height: 1.85 !important;
+    /* More left padding for larger checkbox hit zone */
+    padding-left: 1.25rem !important;
+    /* Prevent any text selection delay on touch */
+    -webkit-touch-callout: none;
+  }
+  
+  /* Increase touch target for the entire left edge */
+  .practice-board-textarea::selection {
+    background: hsl(var(--primary) / 0.3);
   }
 }
