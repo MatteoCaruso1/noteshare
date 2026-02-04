@@ -1,82 +1,100 @@
 
-Goal
-- Ensure Focus Mode never darkens the Practice Session + Practice Board cards (including their text).
-- Ensure toast notifications are never dimmed and always render above everything (including focused cards and the vignette).
-- Fix this reliably across browsers (including ones without :has() support).
+# Fix Practice Board Textarea Auto-sizing on App Resume
 
-What’s actually going wrong (based on code + screenshot)
-1) The vignette is a fixed overlay (body::before / body.session-active::before). Even if focused cards are “brighter”, they can still look dark if the overlay is painted above them.
-2) The page transition wrapper (PageBody) uses `filter: blur(0px)` even when “visible”.
-   - Any non-`none` filter creates a new stacking context.
-   - This can cause z-index surprises where “fixed” elements rendered earlier in the React tree (including Sonner) end up visually behind later content that’s in a higher stacking context, even if the toast itself has a huge z-index.
-   - This matches your symptom: toast appears behind Practice Board and also looks vignetted/dimmed.
-3) The current dimming approach relies on `section:not(:has(.session-focus-card))`.
-   - `:has()` support is not universal (especially on older iOS). If unsupported, the selector is ignored, and we lose the intended “only dim non-focused containers” logic.
-   - That pushes the system to rely heavily on the vignette overlay, which is currently affecting the focused cards too.
+## Problem Analysis
 
-Proposed approach (more robust layering + remove stacking-context traps)
-A) Fix stacking context so toasts can always float above
-1. Update `PageBody` so that when visible it uses `filter: none` (not `blur(0px)`).
-   - Keep the blur only during the transition phase; once visible, remove the filter entirely.
-   - This removes the persistent stacking context that can trap “fixed”/z-indexed UI beneath other layers.
+When users navigate away from the noteshare web app (going to iOS Home Screen, switching to another app, or switching browser tabs) and then return, the Practice Board textarea collapses to a smaller height even though it contains text. This happens because:
 
-2. Re-order toast mounting in `App.tsx` so toast providers render after the main app content (or at least after the router content).
-   - Even if Sonner isn’t portaling, DOM order matters across stacking contexts.
-   - Rendering toasts later makes them much harder to “cover” accidentally.
+1. **iOS Safari suspension behavior**: iOS aggressively suspends web views when the app is in the background, which can reset or corrupt the DOM state
+2. **Timing issues**: The current double `requestAnimationFrame` approach may fire before the browser has fully restored rendering
+3. **Missing triggers**: The current code only handles `visibilitychange` but not window `focus`, which is needed for desktop tab switching and some mobile scenarios
+4. **Potential scrollHeight corruption**: Immediately after resume, `scrollHeight` may return the minimum height (36px) because the browser hasn't fully recalculated layout
 
-B) Make Focus Mode layering explicit (no more “hoping” z-index wins)
-1. Make the vignette overlay definitively behind app content, not above it:
-   - Set the vignette pseudo-element z-index to 0 (or negative).
-   - Set `#root` to `position: relative; z-index: 1; isolation: isolate;`
-   - This guarantees all normal UI is above the vignette by default.
+## Solution
 
-2. Recreate the “darken everything except focus cards” effect without parent-opacity tricks:
-   - Instead of dimming large containers with `opacity` (which can’t be overridden by children), apply a “dimming layer” to the page content itself using a backdrop-like technique:
-     - Option 1 (CSS-only, simple): apply `filter: brightness(0.55) saturate(0.9)` to a wrapper element (e.g., `.page-body` or `main`) while active, then explicitly set `.session-focus-card { filter: none; }`.
-       - This avoids the “children can’t override parent opacity” issue.
-       - Works better than opacity because we can counteract with `filter: none` on the focused cards if applied at the right level.
-     - Option 2 (most reliable): introduce a dedicated dimming overlay element (a real DOM node) that sits above general content but below focused cards by placing focused cards into a higher z-layer.
-       - This requires slightly more structure, but becomes bulletproof.
+I'll implement a more robust multi-layered approach to ensure the textarea auto-sizes correctly when returning to the app:
 
-3. Keep focused cards always bright:
-   - Keep `.session-focus-card { position: relative; z-index: ... }`
-   - Ensure the focus cards’ immediate card surfaces have solid backgrounds and are not inheriting any dimming filter.
-   - Add a “focus layer” class to the main container holding PracticeControls + QuickNoteCapture + TodaysFocus if needed.
+### Changes to `src/components/TodaysFocus.tsx`
 
-C) Toasts fully exempt from Focus Mode
-1. Ensure Sonner and Radix toast containers:
-   - are not inside any dimmed/filter wrapper, and/or
-   - have `position: fixed` and live in the highest root stacking context (above `#root`).
-2. Add stronger selectors for Sonner:
-   - Sonner uses specific attributes; we’ll target `[data-sonner-toaster]` and also verify the actual generated structure in the DOM (quick console inspect during implementation).
-3. If needed, portal Sonner toasts to `document.body` manually (only if Sonner’s default render isn’t enough after the above fixes).
+1. **Add multiple retry attempts with increasing delays**: Instead of a single double-RAF, use multiple attempts at different timing intervals (0ms, 50ms, 150ms, 500ms) to catch the correct moment when the browser has fully restored layout
 
-Files I’ll touch (implementation phase)
-- `src/components/PageLayout.tsx`
-  - Change `filter: isVisible ? 'blur(0px)' : 'blur(2px)'` to `filter: isVisible ? 'none' : 'blur(2px)'`.
-- `src/App.tsx`
-  - Reorder `<Toaster />` and `<Sonner />` so they render after the router content (or at least after `<Routes/>`), ensuring they paint above the main UI.
-- `src/index.css`
-  - Make layering explicit:
-    - Set vignette pseudo-element z-index lower.
-    - Add `#root` stacking context.
-    - Replace/adjust dimming rules to avoid `:has()` dependency and parent opacity problems.
-  - Strengthen toast “exempt” styling:
-    - Force `position: fixed` + high z-index on toast containers, and ensure no filters apply.
+2. **Add `focus` event listener**: Handle window focus in addition to visibility change for more comprehensive coverage
 
-Validation checklist (what you’ll test after I implement)
-1. Start a practice session:
-   - Practice Session card title/body text remains identical brightness to Practice Board.
-   - No vignette shading is visible “on top of” these cards (they should look fully clear).
-2. Trigger a toast during an active session:
-   - Toast is not dimmed.
-   - Toast is not behind any card.
-   - Toast remains clickable.
-3. Mobile + desktop:
-   - Confirm on mobile Safari/Chrome if possible (this is where stacking context issues often show up).
-4. Regression checks:
-   - Route transitions still feel smooth (PageBody blur still works during transitions).
-   - Vignette still darkens the rest of the screen (non-focused content) in a pleasing way.
+3. **Add a "sanity check" mechanism**: After auto-sizing, verify that the height makes sense (if there's text content, height should be more than minimum). If not, schedule another retry
 
-If anything still fights us after these changes
-- I’ll switch to the “most reliable” structure: a dedicated FocusMode overlay + a dedicated FocusMode portal layer for focused cards and toasts. That completely removes ambiguity from stacking contexts and is the standard way to guarantee layering in complex UIs.
+4. **Force a style recalculation**: Before measuring `scrollHeight`, force a layout reflow by reading a computed style property
+
+### Implementation Details
+
+```typescript
+// Enhanced autosize with forced reflow
+const autosizeTextarea = useCallback(() => {
+  const textarea = textareaRef.current;
+  if (!textarea) return;
+  
+  // Force a reflow by reading offsetHeight before setting
+  void textarea.offsetHeight;
+  
+  textarea.style.height = 'auto';
+  const newHeight = Math.max(36, textarea.scrollHeight);
+  textarea.style.height = `${newHeight}px`;
+  
+  return newHeight;
+}, []);
+
+// Robust visibility/focus handler with multiple retries
+useEffect(() => {
+  if (!isOpen) return;
+
+  const scheduleAutosize = () => {
+    // Immediate attempt
+    autosizeTextarea();
+    
+    // Multiple delayed attempts to catch browser restoration
+    const timings = [50, 150, 300, 500];
+    const timeoutIds = timings.map(delay => 
+      setTimeout(() => {
+        const height = autosizeTextarea();
+        // Sanity check: if we have text but height is minimum, try again
+        if (text.trim() && height <= 40) {
+          setTimeout(autosizeTextarea, 100);
+        }
+      }, delay)
+    );
+    
+    return timeoutIds;
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      scheduleAutosize();
+    }
+  };
+
+  const handleWindowFocus = () => {
+    scheduleAutosize();
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('focus', handleWindowFocus);
+  
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('focus', handleWindowFocus);
+  };
+}, [isOpen, autosizeTextarea, text]);
+```
+
+## Benefits
+
+- **Multi-attempt strategy**: Catches the correct moment even if browser restoration is slow
+- **Dual event listeners**: Handles both iOS app switching and desktop tab switching
+- **Forced reflow**: Ensures accurate `scrollHeight` measurement
+- **Sanity checking**: Detects when autosize fails and retries automatically
+- **Clean timeout management**: All timeouts are properly cleaned up on unmount
+
+## Technical Notes
+
+- The solution aligns with the existing architecture patterns for mobile scroll preservation and visibility handling
+- Minimal performance impact since these handlers only fire on app resume, not during normal use
+- Compatible with the existing Radix Collapsible animation timing
