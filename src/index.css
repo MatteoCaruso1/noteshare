@@ -771,6 +771,24 @@ html {
   z-index: 99999 !important;
 }
 
+/* ========================================
+   SONNER TOAST ANIMATION OVERRIDES
+   Goal: smooth exit with opacity only (no translate/"flying")
+   ======================================== */
+
+/* Sonner animates toast stacking using transforms; on exit it can look choppy
+   (non-linear velocity changes). We force closed toasts to only fade out. */
+[data-sonner-toast][data-state="closed"] {
+  transform: translate3d(0, 0, 0) !important;
+  transition: opacity 220ms cubic-bezier(0.2, 0, 0, 1) !important;
+  opacity: 0 !important;
+}
+
+/* Avoid accidentally animating transforms on open state (keeps stacking stable). */
+[data-sonner-toast][data-state="open"] {
+  transition-property: opacity !important;
+}
+
 body.session-active [data-sonner-toaster],
 body.session-active .toaster,
 body.session-active [data-radix-toast-viewport],
