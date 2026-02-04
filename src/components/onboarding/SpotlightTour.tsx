@@ -113,7 +113,17 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const handleClick = () => {
     if (isFinalStep) {
-      onComplete();
+      // Navigate back to My Practice before completing
+      if (location.pathname !== '/') {
+        setIsAnimating(true);
+        navigate('/');
+        // Small delay to let navigation start, then complete
+        setTimeout(() => {
+          onComplete();
+        }, 100);
+      } else {
+        onComplete();
+      }
     } else {
       onNext();
     }
