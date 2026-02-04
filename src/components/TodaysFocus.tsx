@@ -138,6 +138,26 @@ export function TodaysFocus() {
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
+  // Handle visibility change (app resume from background on iOS/mobile)
+  // When user leaves the app and comes back, the textarea may have collapsed
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Small delay to ensure DOM is ready after app resume
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            autosizeTextarea();
+          });
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isOpen, autosizeTextarea]);
+
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
     setText(value);
