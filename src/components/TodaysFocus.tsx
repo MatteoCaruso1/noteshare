@@ -718,18 +718,26 @@ export function TodaysFocus() {
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
   const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
 
-  // Loading state with stable min-height to prevent layout shifts
+  // Loading state - matches the structure of loaded state for smooth transition
+  // Uses opacity fade instead of layout shift
   if (isLoading) {
     return (
-      <Card className="bg-card border-border min-h-[60px]">
-        <div className="p-4 flex items-center gap-2">
-          <ClipboardList className="w-5 h-5 text-muted-foreground" />
-          <h2 className="font-semibold">Practice Board</h2>
+      <Card className="bg-card border-border">
+        <div className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-muted-foreground" />
+            <h2 className="font-semibold">Practice Board</h2>
+          </div>
+          {/* Placeholder for action buttons + chevron to match loaded state width */}
+          <div className="flex items-center gap-1">
+            <div className="w-[76px]" /> {/* Space for 2 buttons */}
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
+          </div>
         </div>
         {willBeOpen && (
-          <div className="px-4 pb-4">
-            {/* Reserve realistic height to prevent layout shift during scroll restoration */}
-            <div className="min-h-[120px] bg-muted/50 rounded animate-pulse" />
+          <div className="px-4 pb-4 animate-pulse">
+            {/* Skeleton textarea - matches min-height of real textarea */}
+            <div className="min-h-[36px] bg-muted/40 rounded-md" />
           </div>
         )}
       </Card>
@@ -765,8 +773,8 @@ export function TodaysFocus() {
 
   return (
     <>
-      <Card className="bg-card border-border">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="bg-card border-border animate-fade-in" style={{ animationDuration: '150ms' }}>
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="transition-all duration-300 ease-out">
           {/* Header row - trigger spans full width with chevron on the right */}
           <CollapsibleTrigger asChild>
             <div className="p-4 flex items-center justify-between cursor-pointer group touch-manipulation">
@@ -826,7 +834,7 @@ export function TodaysFocus() {
               </div>
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-4 pb-4" style={{ overflow: 'visible' }}>
+          <CollapsibleContent className="px-4 pb-4 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up" style={{ overflow: 'visible' }}>
             <div ref={collapsibleContentRef}>
               <div 
                 className={isFocused ? '' : 'cursor-text'}
