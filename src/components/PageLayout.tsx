@@ -35,18 +35,26 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
-  const [isVisible, setIsVisible] = useState(true); // Start visible to prevent blank flash
+  const [isVisible, setIsVisible] = useState(true);
   const prevPathRef = useRef(location.pathname);
   
   // Skip blur for performance-critical pages
   const skipBlur = location.pathname === '/friends';
 
   useEffect(() => {
-    // On route change, briefly fade then restore
+    // On route change, fade out then fade in
     if (location.pathname !== prevPathRef.current) {
       prevPathRef.current = location.pathname;
-      // Content stays visible - no blank flash, just a subtle refresh
-      setIsVisible(true);
+      
+      // Fade out briefly
+      setIsVisible(false);
+      
+      // Fade back in after a short delay
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 50);
+      
+      return () => clearTimeout(timer);
     }
   }, [location.pathname]);
 
@@ -55,7 +63,6 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        // Skip blur for performance-critical pages, use 'none' when visible
         filter: isVisible ? 'none' : (skipBlur ? 'none' : 'blur(2px)'),
         transition: skipBlur 
           ? 'opacity 150ms ease-out' 
