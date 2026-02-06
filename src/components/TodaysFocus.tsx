@@ -742,11 +742,15 @@ export function TodaysFocus() {
   const showSkeleton = isLoading || !isInitialized;
 
   // Loading/initializing state - reserves the exact height from last render
+  // Uses opacity fade to prevent jarring flash on page transitions
   if (showSkeleton) {
     const reservedHeight = willBeOpen ? getStoredContentHeight() : 0;
     
     return (
-      <Card className="bg-card border-border">
+      <Card 
+        className="bg-card border-border animate-fade-in" 
+        style={{ animationDuration: '150ms' }}
+      >
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-muted-foreground" />
@@ -762,7 +766,7 @@ export function TodaysFocus() {
           <div className="px-4 pb-4">
             {/* Reserve exact height from last render to prevent layout shift */}
             <div 
-              className="bg-muted/30 rounded-md"
+              className="bg-muted/20 rounded-md"
               style={{ height: reservedHeight }}
             />
           </div>
