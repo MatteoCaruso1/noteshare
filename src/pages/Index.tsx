@@ -21,7 +21,7 @@ import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 
 // Delay before showing MemoryReminder to allow Practice Board to stabilize
-const MEMORY_RENDER_DELAY_MS = 40;
+const MEMORY_RENDER_DELAY_MS = 0;
 
 const LOAD_MORE_COUNT = 10;
 
