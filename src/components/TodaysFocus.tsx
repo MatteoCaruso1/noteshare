@@ -717,10 +717,30 @@ export function TodaysFocus() {
   // Read localStorage during loading to match the expected loaded state
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
   const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
+  
+  // Persist content height to localStorage so skeleton can reserve correct space
+  const CONTENT_HEIGHT_KEY = 'noteshare-focus-content-height';
+  
+  // Track and persist content height when it changes
+  useEffect(() => {
+    if (!isLoading && collapsibleContentRef.current && isOpen) {
+      const height = collapsibleContentRef.current.offsetHeight;
+      if (height > 0) {
+        localStorage.setItem(CONTENT_HEIGHT_KEY, String(height));
+      }
+    }
+  }, [isLoading, isOpen, text]); // Re-measure when text changes
+  
+  // Get stored height for skeleton (read synchronously to avoid flash)
+  const getStoredContentHeight = (): number => {
+    const stored = localStorage.getItem(CONTENT_HEIGHT_KEY);
+    return stored ? parseInt(stored, 10) : 36; // Default to min textarea height
+  };
 
-  // Loading state - matches the structure of loaded state for smooth transition
-  // Uses opacity fade instead of layout shift
+  // Loading state - reserves the exact height from last render to prevent layout shift
   if (isLoading) {
+    const reservedHeight = willBeOpen ? getStoredContentHeight() : 0;
+    
     return (
       <Card className="bg-card border-border">
         <div className="p-4 flex items-center justify-between">
@@ -735,9 +755,12 @@ export function TodaysFocus() {
           </div>
         </div>
         {willBeOpen && (
-          <div className="px-4 pb-4 animate-pulse">
-            {/* Skeleton textarea - matches min-height of real textarea */}
-            <div className="min-h-[36px] bg-muted/40 rounded-md" />
+          <div className="px-4 pb-4">
+            {/* Reserve exact height from last render to prevent layout shift */}
+            <div 
+              className="bg-muted/30 rounded-md transition-opacity duration-150"
+              style={{ height: reservedHeight }}
+            />
           </div>
         )}
       </Card>
