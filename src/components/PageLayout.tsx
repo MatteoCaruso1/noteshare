@@ -29,36 +29,48 @@ export function usePageTransition() {
 
 /**
  * PageTransitionProvider - Wraps the entire app to provide smooth page transitions.
- * Handles the fade out/in effect when navigating between routes.
+ * Uses useLayoutEffect to set opacity to 0 BEFORE browser paint on route change,
+ * preventing the flash of new content before fade animation.
  */
 export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const prevPathRef = useRef(location.pathname);
+  const isFirstRender = useRef(true);
   
   // Skip blur for performance-critical pages
   const skipBlur = location.pathname === '/friends';
 
-  useEffect(() => {
-    // On route change, fade out then fade in
+  // useLayoutEffect runs BEFORE browser paint - critical for preventing flash
+  useLayoutEffect(() => {
+    // Skip first render to avoid fade-in on initial page load
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    // On route change, immediately hide before paint
     if (location.pathname !== prevPathRef.current) {
       prevPathRef.current = location.pathname;
       setIsTransitioning(true);
-      
-      // Fade out briefly
       setIsVisible(false);
-      
+    }
+  }, [location.pathname]);
+
+  // useEffect for the delayed fade-in (runs after paint)
+  useEffect(() => {
+    if (!isVisible && !isFirstRender.current) {
       // Fade back in after a short delay
       const timer = setTimeout(() => {
         setIsVisible(true);
         // End transition state after fade completes
         setTimeout(() => setIsTransitioning(false), 200);
-      }, 50);
+      }, 80);
       
       return () => clearTimeout(timer);
     }
-  }, [location.pathname]);
+  }, [isVisible]);
 
   return (
     <PageTransitionContext.Provider value={{ isTransitioning }}>
@@ -69,7 +81,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
           filter: isVisible ? 'none' : (skipBlur ? 'none' : 'blur(2px)'),
           transition: skipBlur 
             ? 'opacity 150ms ease-out' 
-            : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), filter 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+            : 'opacity 180ms cubic-bezier(0.4, 0, 0.2, 1), filter 180ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {children}
