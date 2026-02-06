@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
@@ -19,6 +19,9 @@ import { TimelineSearch } from '@/components/TimelineSearch';
 import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
 import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
+
+// Delay before showing MemoryReminder to allow Practice Board to stabilize
+const MEMORY_RENDER_DELAY_MS = 400;
 
 const LOAD_MORE_COUNT = 10;
 
@@ -49,6 +52,24 @@ const Index = () => {
   const [focusDateFilter, setFocusDateFilter] = useState<Date | undefined>(undefined);
   
   const { displayCount, setDisplayCount } = useScrollRestoration('index-feed', 10);
+  
+  // Track when Practice Board layout is stable for MemoryReminder positioning
+  const [memoryReady, setMemoryReady] = useState(false);
+  const practiceBoardRef = useRef<HTMLDivElement>(null);
+  
+  // Delay MemoryReminder render until Practice Board has had time to expand
+  // This prevents the "jump" glitch when returning to the page
+  useEffect(() => {
+    // Reset on route entry (when user navigates back to practice page)
+    setMemoryReady(false);
+    
+    // Wait for Practice Board to stabilize before showing memory
+    const timer = setTimeout(() => {
+      setMemoryReady(true);
+    }, MEMORY_RENDER_DELAY_MS);
+    
+    return () => clearTimeout(timer);
+  }, []); // Only run on mount
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
@@ -147,15 +168,15 @@ const Index = () => {
 
               {/* Ongoing Focus - Practice Board */}
               {profile && (
-                <div data-tour="practice-board" className="session-focus-card">
+                <div ref={practiceBoardRef} data-tour="practice-board" className="session-focus-card">
                   <TodaysFocus />
                 </div>
               )}
             </section>
           </GlintProvider>
 
-          {/* Memory Reminder */}
-          <MemoryReminder />
+          {/* Memory Reminder - delayed render to wait for Practice Board to stabilize */}
+          {memoryReady && <MemoryReminder />}
 
           {/* Timeline */}
           <section data-tour="timeline">
