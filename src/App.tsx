@@ -12,6 +12,7 @@ import { ShareEducationProvider } from "@/contexts/ShareEducationContext";
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
+import { PageTransitionProvider } from "@/components/PageLayout";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
@@ -150,31 +151,33 @@ function AppInner() {
                       <OnboardingFlow />
                       <ShareEducationTour />
                       <AvatarPrefetcher />
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/welcome" element={<Welcome />} />
-                      <Route path="/projects" element={<Suspense fallback={null}><Projects /></Suspense>} />
-                      <Route path="/projects/:id" element={<Suspense fallback={null}><ProjectDetail /></Suspense>} />
-                      <Route path="/notes/:id" element={<Suspense fallback={null}><NoteDetail /></Suspense>} />
-                      <Route path="/profile" element={<Suspense fallback={null}><Profile /></Suspense>} />
-                      <Route path="/user/:id" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
-                      <Route path="/profile/:username" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
-                      <Route path="/discover" element={<Suspense fallback={null}><Discover /></Suspense>} />
-                      <Route path="/gigs" element={<Suspense fallback={null}><Gigs /></Suspense>} />
-                      <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
-                      <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
-                      <Route path="/groups" element={<Suspense fallback={null}><Groups /></Suspense>} />
-                      <Route path="/groups/:id" element={<Suspense fallback={null}><GroupDetail /></Suspense>} />
-                      <Route path="/pursuits" element={<Suspense fallback={null}><Pursuits /></Suspense>} />
-                      <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
-                      <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
-                      <Route path="/admin/analytics" element={
-                        <AdminGuard>
-                          <Suspense fallback={null}><AdminAnalytics /></Suspense>
-                        </AdminGuard>
-                      } />
-                      <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
-                    </Routes>
+                    <PageTransitionProvider>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/welcome" element={<Welcome />} />
+                        <Route path="/projects" element={<Suspense fallback={null}><Projects /></Suspense>} />
+                        <Route path="/projects/:id" element={<Suspense fallback={null}><ProjectDetail /></Suspense>} />
+                        <Route path="/notes/:id" element={<Suspense fallback={null}><NoteDetail /></Suspense>} />
+                        <Route path="/profile" element={<Suspense fallback={null}><Profile /></Suspense>} />
+                        <Route path="/user/:id" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
+                        <Route path="/profile/:username" element={<Suspense fallback={null}><PublicProfile /></Suspense>} />
+                        <Route path="/discover" element={<Suspense fallback={null}><Discover /></Suspense>} />
+                        <Route path="/gigs" element={<Suspense fallback={null}><Gigs /></Suspense>} />
+                        <Route path="/gigs/:id" element={<Suspense fallback={null}><GigDetail /></Suspense>} />
+                        <Route path="/friends" element={<Suspense fallback={null}><FriendsJournals /></Suspense>} />
+                        <Route path="/groups" element={<Suspense fallback={null}><Groups /></Suspense>} />
+                        <Route path="/groups/:id" element={<Suspense fallback={null}><GroupDetail /></Suspense>} />
+                        <Route path="/pursuits" element={<Suspense fallback={null}><Pursuits /></Suspense>} />
+                        <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
+                        <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
+                        <Route path="/admin/analytics" element={
+                          <AdminGuard>
+                            <Suspense fallback={null}><AdminAnalytics /></Suspense>
+                          </AdminGuard>
+                        } />
+                        <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
+                      </Routes>
+                    </PageTransitionProvider>
                     <BottomNav />
                     {/* Toasts render AFTER all page content to ensure they paint above all stacking contexts */}
                     <Toaster />
