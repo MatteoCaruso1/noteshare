@@ -723,13 +723,13 @@ export function TodaysFocus() {
   
   // Track and persist content height when it changes
   useEffect(() => {
-    if (!isLoading && collapsibleContentRef.current && isOpen) {
+    if (isInitialized && collapsibleContentRef.current && isOpen) {
       const height = collapsibleContentRef.current.offsetHeight;
       if (height > 0) {
         localStorage.setItem(CONTENT_HEIGHT_KEY, String(height));
       }
     }
-  }, [isLoading, isOpen, text]); // Re-measure when text changes
+  }, [isInitialized, isOpen, text]); // Re-measure when text changes
   
   // Get stored height for skeleton (read synchronously to avoid flash)
   const getStoredContentHeight = (): number => {
@@ -737,8 +737,12 @@ export function TodaysFocus() {
     return stored ? parseInt(stored, 10) : 36; // Default to min textarea height
   };
 
-  // Loading state - reserves the exact height from last render to prevent layout shift
-  if (isLoading) {
+  // Show skeleton until BOTH: data is loaded AND text is initialized
+  // This eliminates the "empty default board" flash between loading and initialization
+  const showSkeleton = isLoading || !isInitialized;
+
+  // Loading/initializing state - reserves the exact height from last render
+  if (showSkeleton) {
     const reservedHeight = willBeOpen ? getStoredContentHeight() : 0;
     
     return (
@@ -758,7 +762,7 @@ export function TodaysFocus() {
           <div className="px-4 pb-4">
             {/* Reserve exact height from last render to prevent layout shift */}
             <div 
-              className="bg-muted/30 rounded-md transition-opacity duration-150"
+              className="bg-muted/30 rounded-md"
               style={{ height: reservedHeight }}
             />
           </div>
