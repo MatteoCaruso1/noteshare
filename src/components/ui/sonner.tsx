@@ -13,9 +13,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group session-focus-exempt"
       position={isMobile ? "bottom-center" : "bottom-right"}
+      offset={24}
+      mobileOffset={80}
       style={{ 
-        // Position above the bottom nav bar on mobile (nav is ~64px + safe area)
-        bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : '24px',
         // z-index above nav (z-50) so toasts are always visible
         zIndex: 60,
         // Smooth GPU-accelerated transitions for enter/exit
