@@ -47,17 +47,31 @@ export function TodaysFocus() {
 
   // Stable autosize function - sets height to content without timeouts
   // Returns the new height for sanity checking
+  // Enhanced for bfcache restoration scenarios (Safari iOS/macOS)
   const autosizeTextarea = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return 0;
     
-    // Force a layout reflow by reading offsetHeight before measuring
-    // This ensures accurate scrollHeight after browser restoration
+    // Force layout reflow by reading multiple layout properties
+    // This is more aggressive than just offsetHeight for bfcache scenarios
+    void textarea.getBoundingClientRect();
     void textarea.offsetHeight;
+    void textarea.scrollHeight;
+    
+    // Temporarily remove overflow:hidden to get accurate scrollHeight
+    const originalOverflow = textarea.style.overflow;
+    textarea.style.overflow = 'visible';
     
     textarea.style.height = 'auto';
+    
+    // Force another reflow after height reset
+    void textarea.scrollHeight;
+    
     const newHeight = Math.max(36, textarea.scrollHeight);
     textarea.style.height = `${newHeight}px`;
+    
+    // Restore overflow
+    textarea.style.overflow = originalOverflow || 'hidden';
     
     return newHeight;
   }, []);
@@ -147,9 +161,10 @@ export function TodaysFocus() {
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
-  // Handle visibility change and window focus (app resume from background on iOS/mobile)
+  // Handle visibility change, window focus, and bfcache restoration (app resume from background)
   // When user leaves the app and comes back, the textarea may have collapsed
   // Uses a multi-attempt strategy with increasing delays to catch browser restoration timing
+  // Safari uses bfcache aggressively - the pageshow event is the canonical signal for restoration
   useEffect(() => {
     if (!isOpen) return;
 
@@ -163,15 +178,19 @@ export function TodaysFocus() {
       // Immediate attempt
       autosizeTextarea();
 
-      // Multiple delayed attempts to catch browser restoration at different stages
-      const timings = [50, 150, 300, 500];
+      // Extended timings - Safari bfcache can be slow to fully restore
+      const timings = [50, 150, 300, 500, 1000, 1500];
       timings.forEach(delay => {
         const id = setTimeout(() => {
           const height = autosizeTextarea();
-          // Sanity check: if we have text but height is still minimum, try again
+          // More aggressive sanity check: if we have text but height is still minimum
           if (text.trim() && height <= 40) {
-            const retryId = setTimeout(autosizeTextarea, 100);
-            timeoutIds.push(retryId);
+            // Double-try with RAF for painting cycle - ensures DOM is fully rendered
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                autosizeTextarea();
+              });
+            });
           }
         }, delay);
         timeoutIds.push(id);
@@ -188,15 +207,49 @@ export function TodaysFocus() {
       scheduleAutosize();
     };
 
+    // bfcache restoration - the most reliable Safari event for page restoration
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // Page was restored from bfcache - trigger aggressive autosize
+        scheduleAutosize();
+      }
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('pageshow', handlePageShow);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('pageshow', handlePageShow);
       timeoutIds.forEach(clearTimeout);
     };
   }, [isOpen, autosizeTextarea, text]);
+
+  // MutationObserver for Radix CollapsibleContent hidden attribute changes
+  // When Radix removes the hidden attribute during transitions, we need to re-measure
+  useEffect(() => {
+    if (!isOpen) return;
+    const contentEl = collapsibleContentRef.current;
+    if (!contentEl) return;
+    
+    // Watch for Radix removing the hidden attribute (happens during transitions)
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
+          // Hidden state changed - re-measure after paint
+          requestAnimationFrame(() => {
+            autosizeTextarea();
+          });
+        }
+      }
+    });
+    
+    observer.observe(contentEl, { attributes: true, attributeFilter: ['hidden'] });
+    
+    return () => observer.disconnect();
+  }, [isOpen, autosizeTextarea]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
@@ -855,8 +908,8 @@ export function TodaysFocus() {
                     handleBlur();
                   }}
                   placeholder="What are you practicing across sessions?"
-                  className="practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
-                  style={{ overscrollBehavior: 'contain' }}
+                  className="practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground"
+                  style={{ overscrollBehavior: 'contain', overflow: 'hidden' }}
                   rows={1}
                 />
               </div>
