@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,12 +11,14 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  isNewUser: boolean; // True if this is a brand new user (profile just created)
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  clearNewUserFlag: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
+  // Track if we've already processed the current session to avoid re-triggering isNewUser
+  const processedSessionRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Check if user should be signed out (browser was closed without "Remember me")
@@ -123,7 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Note: TOKEN_REFRESHED no longer clears any URL caches
         
         if (session?.user) {
-          fetchProfile(session.user.id);
+          // Check for new user on SIGNED_IN events (includes OAuth)
+          fetchProfile(session.user.id, event === 'SIGNED_IN');
         } else {
           setProfile(null);
         }
@@ -133,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, checkIsNew: boolean = false): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -142,9 +148,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       console.error('Error fetching profile:', error);
+      return null;
     } else if (data) {
-      setProfile(data as Profile);
+      const profileData = data as Profile;
+      setProfile(profileData);
+      
+      // Check if this is a genuinely new user (profile created within last 30 seconds)
+      // This handles OAuth signups where we can't distinguish signup from signin
+      if (checkIsNew && processedSessionRef.current !== userId) {
+        const createdAt = new Date(profileData.created_at);
+        const now = new Date();
+        const ageMs = now.getTime() - createdAt.getTime();
+        const isNew = ageMs < 30000; // Profile created less than 30 seconds ago
+        
+        if (isNew) {
+          console.log('[Auth] Detected new user - profile age:', ageMs, 'ms');
+          setIsNewUser(true);
+        }
+        processedSessionRef.current = userId;
+      }
+      
+      return profileData;
     }
+    return null;
   };
 
   const refreshProfile = async () => {
@@ -270,8 +296,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const clearNewUserFlag = () => {
+    setIsNewUser(false);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, session, loading, signUp, signIn, signInWithGoogle, signOut, resetPassword, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, session, loading, isNewUser, signUp, signIn, signInWithGoogle, signOut, resetPassword, refreshProfile, clearNewUserFlag }}>
       {children}
     </AuthContext.Provider>
   );

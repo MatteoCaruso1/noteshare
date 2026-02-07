@@ -15,7 +15,7 @@ interface OnboardingContextType {
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const { profile } = useAuth();
+  const { profile, isNewUser, clearNewUserFlag } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentStep, setCurrentStep] = useState(0); // 0 = welcome modal
 
@@ -48,6 +48,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
     setShowOnboarding(false);
     setCurrentStep(0);
+    // Clear the new user flag so it doesn't re-trigger
+    clearNewUserFlag();
   };
 
   const nextStep = () => {
@@ -58,8 +60,21 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Check if this is a fresh signup - triggered externally via startOnboarding
-  // Not auto-triggered here to avoid race conditions
+  // Auto-trigger onboarding for truly new users (detected via profile creation time)
+  // This handles OAuth signups where we can't distinguish signup from signin at call time
+  useEffect(() => {
+    if (isNewUser && profile?.id) {
+      // Double-check localStorage in case they completed it before
+      const alreadyCompleted = hasCompletedOnboarding(profile.id);
+      if (!alreadyCompleted) {
+        console.log('[Onboarding] New user detected, starting onboarding');
+        startOnboarding();
+      } else {
+        // They've completed before, clear the flag
+        clearNewUserFlag();
+      }
+    }
+  }, [isNewUser, profile?.id]);
 
   return (
     <OnboardingContext.Provider

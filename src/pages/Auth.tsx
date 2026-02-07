@@ -10,7 +10,7 @@ import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
-import { useOnboarding, checkOnboardingCompleted } from '@/contexts/OnboardingContext';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
 // Google icon component
 const GoogleIcon = () => (
@@ -191,16 +191,9 @@ const Auth = () => {
       
       // If redirected, the page will navigate away, so we don't need to do anything
       if (!redirected && !error) {
-        // Check if this is a new user (for onboarding)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Check if onboarding is needed
-          const onboardingCompleted = checkOnboardingCompleted(session.user.id);
-          if (!onboardingCompleted) {
-            startOnboarding();
-          }
-          navigate('/');
-        }
+        // After OAuth redirect, the session will be set and user will be redirected
+        // The actual onboarding check happens in useAuth's onAuthStateChange
+        navigate('/');
       }
     } catch (error) {
       console.error('[Auth] Google auth error:', error);
