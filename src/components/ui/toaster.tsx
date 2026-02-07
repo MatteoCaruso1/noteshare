@@ -33,8 +33,10 @@ export function Toaster() {
         );
       })}
       <ToastViewport
-        className={isMobile ? "top-auto" : ""}
-        style={isMobile ? { bottom: mobileBottomOffset } : undefined}
+        style={{
+          bottom: isMobile ? mobileBottomOffset : undefined,
+          zIndex: 9999,
+        }}
       />
     </ToastProvider>
   );
