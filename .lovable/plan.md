@@ -1,81 +1,86 @@
 
-## What’s happening (root cause)
-Yes — we’re editing the right toaster file (`src/components/ui/sonner.tsx`), but the app’s global CSS is overriding the toast z-index with `!important`, forcing Sonner (and Radix) toasts to sit at `z-index: 40`, which is below the bottom nav (`z-50`).
+Goal
+- Remove the “weird dark box” outline that appears around Card UI during route transitions while a practice session is active.
+- Make the visual transition feel smooth without sacrificing the “content slides behind bars” vibe.
 
-In `src/index.css`:
-```css
-[data-sonner-toaster],
-.toaster,
-[data-radix-toast-viewport] {
-  position: fixed !important;
-  z-index: 40 !important; /* This defeats inline zIndex: 60 */
-}
-```
+What I found (why the last glow tweak didn’t help)
+- The glow you changed is applied via box-shadow on `.session-focus-card` children.
+- Your page transitions use `filter: blur(2px)` on `.page-body` (see `PageBody` in `src/components/PageLayout.tsx`).
+- When an element (or an ancestor) is being filtered/blurred, browsers often rasterize it into an offscreen texture. Any box-shadow + blur combo can produce a rectangular “texture bounds” artifact (it looks like a dark box/halo rectangle) during the opacity/blur animation.
+- So changing the shadow values alone can be too subtle to fix the root cause: the artifact is mostly coming from “blurred layer compositing”, not the exact shadow color.
 
-So even though `sonner.tsx` sets `zIndex: 60`, it cannot win against `z-index: 40 !important`.
+Additionally important
+- Right now, `body.session-active` is only controlled by `SessionFocusOverlay` rendered inside `Index.tsx`’s `GlintProvider`. That means session focus styling can “drop” or change across route transitions, making the compositing artifact worse (class toggles while transitions are running). Making session-active truly global will reduce visual discontinuities.
 
-This matches your screenshot: the toast is “under” the nav (stacking context), not necessarily “too low” (offset).
+Plan (what I’m going to change)
 
-## Goal
-During an active practice session, toasts should appear above the bottom nav (both stacked above it and positioned with enough bottom offset).
+1) Make “session-active” a global app state (stable across route transitions)
+- Update `src/components/SessionFocusOverlay.tsx` so it does NOT rely on `GlintContext`.
+  - Instead, it will read the authenticated profile and active session directly (via `useAuth()` and `useActiveSession(profile?.id)`).
+  - It will add/remove `body.session-active` based on the real session state.
+- Render `SessionFocusOverlay` once globally in `src/App.tsx` (inside auth provider), so:
+  - The class stays consistent no matter what page you navigate to.
+  - Focus mode doesn’t “blink” on transitions.
 
-## Implementation approach
-### 1) Fix the z-index override to allow “above nav during practice”
-Update `src/index.css` so:
-- Default behavior can stay “below nav” if you still want that outside practice.
-- During practice session state (`body.session-active`), bump toast z-index above nav.
+Why this helps the box artifact
+- Fewer rapid style toggles (background, filters, borders, shadows) during route transitions reduces the chance of weird intermediate compositing frames.
 
-Planned CSS change:
-- Keep base rule at z-index 40 (or raise it globally if you decide to always show above nav).
-- Add a more specific session rule:
-```css
-body.session-active [data-sonner-toaster],
-body.session-active .toaster,
-body.session-active [data-radix-toast-viewport] {
-  z-index: 60 !important;
-}
-```
+2) Remove blur-based route transitions during active session (keep opacity-only)
+- Update `src/components/PageLayout.tsx` (`PageBody`) so that when a practice session is active, it uses opacity-only transitions (no `filter: blur(...)`).
+  - We can detect session-active either by:
+    - Reading `document.body.classList.contains('session-active')`, or preferably
+    - Consuming the same active session hook/context used by the global overlay (cleaner, but requires plumbing).
+- The end result: during session-active, the page transition remains smooth, but avoids the GPU rasterization edge-case that creates the dark rectangle.
 
-Why this works:
-- Same `!important` level, but more specific selector wins.
-- It uses the existing “practice session” body class your app already applies.
+Why this is likely the real fix
+- The “dark box” looks exactly like a filtered layer’s bounding box. Eliminating the blur filter in that state removes the main trigger.
 
-### 2) Keep / verify bottom offset logic in Sonner
-Your `src/components/ui/sonner.tsx` already computes:
-- `calc(92px + env(safe-area-inset-bottom))` normally
-- `calc(112px + env(safe-area-inset-bottom))` during practice
+3) Change glow implementation to avoid box-shadow artifacts during transitions
+Even after removing blur transitions during session-active, I’ll also make glow more “transition-safe”:
+- In `src/index.css`, change the focused-card glow from box-shadow on the card itself to a pseudo-element glow:
+  - Add `position: relative` (already), then for session-active:
+    - `.session-focus-card::before` as an absolutely-positioned element with:
+      - `inset: -10px` (slightly larger than card)
+      - `border-radius: inherit` (or match the card’s radius)
+      - `background: radial-gradient(...)`
+      - `opacity` transition
+      - `filter: blur(...)` (on the pseudo element, not the whole page)
+      - `pointer-events: none`
+      - `z-index: -1` while keeping `.session-focus-card` isolated
+- Reduce reliance on heavy shadows on the real card element; keep a minimal shadow for depth but let the pseudo-element do the “glow”.
 
-We’ll keep this, but after the z-index fix, it should finally be visible above the nav.
+Why this helps
+- Pseudo-element glows blend more gracefully and are less likely to show “hard rectangle edges” than large box-shadow stacks during animated state changes.
 
-Optional refinement (if needed after the z-index fix):
-- Increase those numbers slightly if the nav is taller on certain devices (especially iOS with safe-area + extra padding). We’ll only do this if it still overlaps after layering is corrected.
+4) Verify and tune with an end-to-end reproduction
+In the preview:
+- Start a practice session.
+- Navigate rapidly between pages that contain Cards (Practice → Profile → Projects → back).
+- Confirm:
+  - No dark-box outline appears during the transition.
+  - The glow still reads as “focused” and premium, but not harsh.
+  - Header/footer border enhancements still look good.
 
-### 3) Confirm we’re not seeing a different toaster
-`src/App.tsx` renders **two** toasters:
-- `src/components/ui/toaster.tsx` (Radix/shadcn toast)
-- `src/components/ui/sonner.tsx` (Sonner)
+If the artifact still appears (fallback measures)
+- Apply `contain: paint;` selectively to the page body or to card containers during session-active to constrain paint/raster behavior.
+- Ensure elements with transforms (e.g., BottomNav uses `translate3d`) don’t create unexpected stacking contexts interacting with filters; if needed, bump isolation/containment for `.page-body` only during session-active.
 
-Most of your code calls `toast` from `sonner`, so Sonner is the one that matters, but we’ll update CSS in a way that also covers Radix’s viewport to prevent the same problem there.
+Files I will modify
+- src/components/SessionFocusOverlay.tsx
+  - Make it derive active session state directly; remove GlintContext dependency.
+- src/App.tsx
+  - Render SessionFocusOverlay globally (so class persists across pages).
+- src/components/PageLayout.tsx
+  - During session-active, use opacity-only transitions (remove blur filter).
+- src/index.css
+  - Move glow to `.session-focus-card::before` (pseudo-element glow), simplify box-shadow.
 
-## Files to change
-1) `src/index.css`
-- Adjust the “TOAST LAYERING” section:
-  - keep base z-index
-  - add `body.session-active ... { z-index: 60 !important; }`
+Acceptance criteria (what “fixed” means)
+- While a session is active, route transitions do not show a rectangular dark outline around cards.
+- The focused practice cards still feel elevated (glow preserved), but transitions look clean.
+- No regressions: toasts remain above the bottom nav; nav borders still visible.
 
-(We likely won’t need to change `src/components/ui/sonner.tsx` beyond what’s already there, but we’ll confirm after CSS is fixed.)
-
-## Testing checklist (what you should do right after)
-1) Start a practice session (so `body.session-active` is applied).
-2) Trigger any toast.
-3) Confirm:
-   - Toast is visually on top of the bottom nav (not behind it).
-   - Toast remains above nav when the keyboard opens/closes (BottomNav transforms).
-4) Repeat not in a practice session (optional):
-   - Confirm whether you still want toasts below nav outside practice. If you decide you always want them above, we’ll simplify CSS to use z-index 60 globally.
-
-## If it still fails after this
-We’ll inspect the computed styles in-browser:
-- Check `[data-sonner-toaster]` computed `z-index`
-- Check if some parent stacking context / transform is causing unexpected stacking behavior
-- Verify `body.session-active` is actually present when you think practice is active
+Test checklist for you (after I implement)
+- Start session → navigate Practice ⇄ Profile 5–10 times quickly.
+- Scroll a bit, then navigate again (to test “content behind bars” feel).
+- Confirm on mobile-sized viewport (iPhone size) and desktop if possible.
