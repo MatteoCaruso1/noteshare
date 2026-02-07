@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMetronome } from '@/contexts/MetronomeContext';
@@ -69,12 +70,18 @@ export function Metronome({ className }: MetronomeProps) {
     }
     setIsOpen(newOpen);
   };
+
+  // Blur handler to clear stuck focus/hover on mobile
+  const handleInteractionEnd = (e: React.TouchEvent | React.PointerEvent) => {
+    (e.currentTarget as HTMLButtonElement).blur();
+  };
   
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
+          data-no-hover-reset
           className={cn(
             "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
             "hover:bg-accent hover:text-accent-foreground",
@@ -87,6 +94,8 @@ export function Metronome({ className }: MetronomeProps) {
             className
           )}
           style={{ WebkitTapHighlightColor: 'transparent' }}
+          onTouchEnd={handleInteractionEnd}
+          onPointerUp={handleInteractionEnd}
         >
           <MetronomeIcon className="w-4 h-4" isPlaying={isPlaying} />
         </button>
@@ -106,18 +115,16 @@ export function Metronome({ className }: MetronomeProps) {
           {/* Header with toggle */}
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Metronome</span>
-            <button
+            <Button
               type="button"
+              variant={isPlaying ? "default" : "outline"}
+              size="sm"
+              data-no-hover-reset
               onClick={toggleMetronome}
-              className={cn(
-                "inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors",
-                isPlaying 
-                  ? "bg-primary text-primary-foreground" 
-                  : "border border-input bg-background hover:bg-accent"
-              )}
+              className="h-7 px-3"
             >
               {isPlaying ? 'Stop' : 'Start'}
-            </button>
+            </Button>
           </div>
           
           {/* BPM Display */}
@@ -139,19 +146,17 @@ export function Metronome({ className }: MetronomeProps) {
           {/* Quick tempo buttons - 5 options to fit on one line */}
           <div className="flex gap-1.5 justify-center">
             {[60, 80, 100, 120, 140].map((tempo) => (
-              <button
+              <Button
                 key={tempo}
                 type="button"
+                variant={bpm === tempo ? "secondary" : "ghost"}
+                size="sm"
+                data-no-hover-reset
                 onClick={() => handleTempoClick(tempo)}
-                className={cn(
-                  "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium transition-colors",
-                  bpm === tempo 
-                    ? "bg-secondary text-secondary-foreground" 
-                    : "hover:bg-accent hover:text-accent-foreground"
-                )}
+                className="h-6 px-2 text-xs"
               >
                 {tempo}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

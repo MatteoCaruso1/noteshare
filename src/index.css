@@ -404,11 +404,11 @@
       -webkit-tap-highlight-color: transparent;
     }
     
-    /* Reset any hover backgrounds that might get stuck - exclude stateful buttons and selected items */
-    button:not([aria-pressed="true"]):hover,
-    a:hover,
-    [role="button"]:not([aria-pressed="true"]):hover,
-    .cursor-pointer:not([data-selected="true"]):hover {
+    /* Reset any hover backgrounds that might get stuck - exclude stateful buttons, selected items, and buttons with explicit backgrounds */
+    button:not([aria-pressed="true"]):not([data-no-hover-reset]):hover,
+    a:not([data-no-hover-reset]):hover,
+    [role="button"]:not([aria-pressed="true"]):not([data-no-hover-reset]):hover,
+    .cursor-pointer:not([data-selected="true"]):not([data-no-hover-reset]):hover {
       background-color: inherit;
     }
     

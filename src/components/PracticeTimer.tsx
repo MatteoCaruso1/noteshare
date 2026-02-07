@@ -66,28 +66,36 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
     }
     setIsOpen(newOpen);
   };
+
+  // Blur handler to clear stuck focus/hover on mobile
+  const handleInteractionEnd = (e: React.TouchEvent | React.PointerEvent) => {
+    (e.currentTarget as HTMLButtonElement).blur();
+  };
   
   return (
     <>
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
-            "hover:bg-accent hover:text-accent-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            "touch-manipulation select-none",
-            "active:bg-accent/80",
-            isRunning && "text-primary",
-            // Grey out for free users to indicate premium feature
-            !isPremiumLoading && !isPremium && "text-muted-foreground opacity-50",
-            className
-          )}
-          style={{ WebkitTapHighlightColor: 'transparent' }}
-        >
-          <Timer className="w-4 h-4" />
-          {isRunning && (
+          <button
+            type="button"
+            data-no-hover-reset
+            className={cn(
+              "inline-flex items-center justify-center h-8 w-8 rounded-md relative",
+              "hover:bg-accent hover:text-accent-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "touch-manipulation select-none",
+              "active:bg-accent/80",
+              isRunning && "text-primary",
+              // Grey out for free users to indicate premium feature
+              !isPremiumLoading && !isPremium && "text-muted-foreground opacity-50",
+              className
+            )}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+            onTouchEnd={handleInteractionEnd}
+            onPointerUp={handleInteractionEnd}
+          >
+            <Timer className="w-4 h-4" />
+            {isRunning && (
               <svg 
                 className="absolute inset-0 w-8 h-8 -rotate-90 pointer-events-none"
                 viewBox="0 0 32 32"
@@ -125,39 +133,51 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
                 {isRunning ? (
                   <>
                     {isPaused ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="default"
+                        size="sm"
+                        data-no-hover-reset
                         onClick={resumeTimer}
-                        className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground"
+                        className="h-7 px-3"
                       >
                         Resume
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
+                        data-no-hover-reset
                         onClick={pauseTimer}
-                        className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground"
+                        className="h-7 px-3"
                       >
                         Pause
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
+                      data-no-hover-reset
                       onClick={endTimer}
-                      className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors border border-input bg-background"
+                      className="h-7 px-3"
                     >
                       End
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button
+                  <Button
                     type="button"
+                    variant="default"
+                    size="sm"
+                    data-no-hover-reset
                     onClick={isValidInput ? startTimer : undefined}
                     disabled={!isValidInput}
-                    className="inline-flex items-center justify-center h-7 px-3 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground disabled:opacity-50 disabled:pointer-events-none"
+                    className="h-7 px-3"
                   >
                     Start
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -190,19 +210,17 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
               <div className="space-y-2">
                 <div className="flex gap-1.5 justify-center">
                   {presets.map((mins) => (
-                    <button
+                    <Button
                       key={mins}
                       type="button"
+                      variant={selectedMinutes === mins ? "secondary" : "ghost"}
+                      size="sm"
+                      data-no-hover-reset
                       onClick={() => handlePresetClick(mins)}
-                      className={cn(
-                        "inline-flex items-center justify-center h-6 px-2 rounded-md text-xs font-medium transition-colors",
-                        selectedMinutes === mins 
-                          ? "bg-secondary text-secondary-foreground" 
-                          : "hover:bg-accent hover:text-accent-foreground"
-                      )}
+                      className="h-6 px-2 text-xs"
                     >
                       {mins}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
