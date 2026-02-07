@@ -26,6 +26,7 @@ export function TodaysFocus() {
   const [isFocused, setIsFocused] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false); // Hide content during bfcache restoration
   const [isOpen, setIsOpen] = useState(() => {
     // Initialize from localStorage, default to expanded (true)
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
@@ -170,17 +171,22 @@ export function TodaysFocus() {
 
     const timeoutIds: NodeJS.Timeout[] = [];
 
-    const scheduleAutosize = () => {
+    const scheduleAutosize = (fromHidden: boolean) => {
       // Clear any pending timeouts from previous calls
       timeoutIds.forEach(clearTimeout);
       timeoutIds.length = 0;
+
+      // If resuming from hidden state with text, hide content briefly to prevent visual glitch
+      if (fromHidden && text.trim()) {
+        setIsRestoring(true);
+      }
 
       // Immediate attempt
       autosizeTextarea();
 
       // Extended timings - Safari bfcache can be slow to fully restore
       const timings = [50, 150, 300, 500, 1000, 1500];
-      timings.forEach(delay => {
+      timings.forEach((delay, index) => {
         const id = setTimeout(() => {
           const height = autosizeTextarea();
           // More aggressive sanity check: if we have text but height is still minimum
@@ -191,6 +197,14 @@ export function TodaysFocus() {
                 autosizeTextarea();
               });
             });
+          } else if (text.trim() && height > 40) {
+            // Height is correct - we can reveal the content
+            setIsRestoring(false);
+          }
+          
+          // On the last timing, always reveal (even if height is still wrong)
+          if (index === timings.length - 1) {
+            setIsRestoring(false);
           }
         }, delay);
         timeoutIds.push(id);
@@ -199,19 +213,19 @@ export function TodaysFocus() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        scheduleAutosize();
+        scheduleAutosize(true);
       }
     };
 
     const handleWindowFocus = () => {
-      scheduleAutosize();
+      scheduleAutosize(true);
     };
 
     // bfcache restoration - the most reliable Safari event for page restoration
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         // Page was restored from bfcache - trigger aggressive autosize
-        scheduleAutosize();
+        scheduleAutosize(true);
       }
     };
 
@@ -882,12 +896,7 @@ export function TodaysFocus() {
           <CollapsibleContent className="px-4 pb-4" style={{ overflow: 'visible' }}>
             <div ref={collapsibleContentRef}>
               <div 
-                className={isFocused ? '' : 'cursor-text'}
-                onClick={() => {
-                  if (!isFocused) {
-                    textareaRef.current?.focus({ preventScroll: true });
-                  }
-                }}
+                className={`transition-opacity duration-75 ${isRestoring ? 'opacity-0' : 'opacity-100'}`}
               >
                 <Textarea
                   ref={textareaRef}
@@ -908,7 +917,7 @@ export function TodaysFocus() {
                     handleBlur();
                   }}
                   placeholder="What are you practicing across sessions?"
-                  className="practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground"
+                  className={`practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? '' : 'cursor-text'}`}
                   style={{ overscrollBehavior: 'contain', overflow: 'hidden' }}
                   rows={1}
                 />
