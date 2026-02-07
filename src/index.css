@@ -765,6 +765,11 @@ html {
   z-index: 9999 !important;
 }
 
+/* Belt-and-suspenders: ensure toast viewport clears BottomNav via CSS variable */
+[data-radix-toast-viewport] {
+  bottom: calc(var(--bottom-nav-height, 0px) + 16px) !important;
+}
+
 /* ========================================
    SONNER TOAST ANIMATION OVERRIDES
    Goal: smooth exit with opacity fade (no translate/"flying")
