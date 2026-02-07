@@ -12,6 +12,7 @@ import { ShareEducationProvider } from "@/contexts/ShareEducationContext";
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
+import { SessionFocusOverlay } from "@/components/SessionFocusOverlay";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
@@ -141,6 +142,7 @@ function AppInner() {
                       <ScrollToTop />
                       <ScrollLockDebugger />
                       <FloatingInstruments />
+                      <SessionFocusOverlay />
                       <AppHeader />
                       <GlobalSessionBanner />
                       <AddToHomescreenPrompt />

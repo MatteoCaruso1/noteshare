@@ -919,21 +919,48 @@ body.session-active .session-focus-card > div {
   background-color: hsl(var(--card)) !important;
 }
 
-/* Subtle glow on focused cards - uses unified timing
-   NOTE: Use subtle, diffused shadows that don't create harsh "dark box" outlines 
-   during page transitions. Avoid concentrated dark shadows that become visible 
-   when opacity/blur transitions are applied. */
+/* ========================================
+   PSEUDO-ELEMENT GLOW FOR FOCUSED CARDS
+   Uses ::before instead of box-shadow to avoid "dark box" artifacts
+   during page transitions. The pseudo-element glow blends more gracefully
+   with opacity transitions than box-shadow stacks.
+   ======================================== */
+.session-focus-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.session-focus-card::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: calc(var(--radius) + 8px);
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--primary) / 0.2) 0%,
+    hsl(var(--primary) / 0.08) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  filter: blur(12px);
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity var(--focus-transition);
+}
+
+body.session-active .session-focus-card::before {
+  opacity: 1;
+}
+
+/* Minimal border enhancement (no heavy box-shadow) */
 .session-focus-card > div,
 .session-focus-card > [class*="Card"] {
-  transition: box-shadow var(--focus-transition), border-color var(--focus-transition);
+  transition: border-color var(--focus-transition);
 }
 
 body.session-active .session-focus-card > div,
 body.session-active .session-focus-card > [class*="Card"] {
-  box-shadow: 
-    0 0 40px -10px hsl(var(--primary) / 0.15),
-    0 0 60px -15px hsl(var(--primary) / 0.1);
-  border-color: hsl(var(--primary) / 0.25);
+  border-color: hsl(var(--primary) / 0.3);
 }
 
 /* ========================================
