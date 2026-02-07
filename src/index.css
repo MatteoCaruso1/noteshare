@@ -755,14 +755,14 @@ html {
 
 /* ========================================
    TOAST LAYERING
-   z-index 60 keeps toasts ABOVE bottom nav (z-50) in all states
+   z-index 9999 keeps toasts ABOVE everything (nav, dialogs, overlays)
    Toasts must NEVER be dimmed or hidden by focus mode
    ======================================== */
 [data-sonner-toaster],
 .toaster,
 [data-radix-toast-viewport] {
   position: fixed !important;
-  z-index: 60 !important;
+  z-index: 9999 !important;
 }
 
 /* ========================================
