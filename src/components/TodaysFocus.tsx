@@ -168,18 +168,24 @@ export function TodaysFocus() {
   // When user leaves the app and comes back, the textarea may have collapsed
   // Uses a multi-attempt strategy with increasing delays to catch browser restoration timing
   // Safari uses bfcache aggressively - the pageshow event is the canonical signal for restoration
+  // 
+  // IMPORTANT: We track "wasHidden" to distinguish between:
+  // 1. Genuine page restoration (tab switch, bfcache) - needs isRestoring animation
+  // 2. Simple window focus from clicking within the app - should NOT trigger isRestoring
   useEffect(() => {
     if (!isOpen) return;
 
     const timeoutIds: NodeJS.Timeout[] = [];
+    let wasDocumentHidden = false; // Track if document was actually hidden
 
-    const scheduleAutosize = (fromHidden: boolean) => {
+    const scheduleAutosize = (triggerRestoringAnimation: boolean) => {
       // Clear any pending timeouts from previous calls
       timeoutIds.forEach(clearTimeout);
       timeoutIds.length = 0;
 
-      // If resuming from hidden state with text, hide content briefly to prevent visual glitch
-      if (fromHidden && text.trim()) {
+      // Only hide content briefly if this is a genuine restoration AND we have text content
+      // This prevents the "flash" of collapsed textarea during bfcache restoration
+      if (triggerRestoringAnimation && text.trim()) {
         setIsRestoring(true);
       }
 
@@ -214,19 +220,34 @@ export function TodaysFocus() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        scheduleAutosize(true);
+      if (document.visibilityState === 'hidden') {
+        // Mark that we went hidden - next focus should trigger restoration
+        wasDocumentHidden = true;
+      } else if (document.visibilityState === 'visible') {
+        // Only trigger restoration animation if we were genuinely hidden
+        if (wasDocumentHidden) {
+          wasDocumentHidden = false; // Reset the flag
+          scheduleAutosize(true);
+        }
       }
     };
 
     const handleWindowFocus = () => {
-      scheduleAutosize(true);
+      // Only trigger full restoration if the document was previously hidden
+      // This prevents the textarea from disappearing when simply clicking within the app
+      if (wasDocumentHidden) {
+        wasDocumentHidden = false;
+        scheduleAutosize(true);
+      } else {
+        // Just do a quick autosize without the restoration animation
+        autosizeTextarea();
+      }
     };
 
     // bfcache restoration - the most reliable Safari event for page restoration
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        // Page was restored from bfcache - trigger aggressive autosize
+        // Page was restored from bfcache - trigger aggressive autosize with animation
         scheduleAutosize(true);
       }
     };
