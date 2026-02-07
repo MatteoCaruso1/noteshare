@@ -995,15 +995,19 @@ nav {
               border-color var(--focus-transition);
 }
 
-/* Header and bottom nav - darken background during session */
+/* Header and bottom nav - darken background during session + enhanced borders */
 body.session-active header {
   background-color: hsl(225 25% 4%) !important;
-  border-color: hsl(225 20% 12%) !important;
+  border-color: hsl(200 60% 35%) !important;
+  border-bottom-width: 2px !important;
+  box-shadow: 0 2px 8px hsl(200 60% 25% / 0.3) !important;
 }
 
 body.session-active nav {
   background-color: hsl(225 25% 4%) !important;
-  border-color: hsl(225 20% 12%) !important;
+  border-color: hsl(200 60% 35%) !important;
+  border-top-width: 2px !important;
+  box-shadow: 0 -2px 8px hsl(200 60% 25% / 0.3) !important;
 }
 
 /* Logo and nav items - dim during session with unified timing */
