@@ -653,8 +653,8 @@ export function TodaysFocus() {
       return;
     }
     
-    // Auto-convert "- " at line start to bullet
-    if (lineBeforeCursor === '- ' || lineBeforeCursor.match(/^\s+- $/)) {
+    // Auto-convert "-" at line start to bullet (no space required)
+    if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       value = value.substring(0, lineStart) + indent + '• ' + value.substring(cursorPos);
       cursorPos = lineStart + indent.length + 2;
