@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Music, Target, User, Users, Waypoints } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,21 @@ export function BottomNav() {
   const { data: unreadCount } = useUnreadNotificationCount();
   const { overrideActiveRoute } = useBottomNavOverride();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  
+  // Optimistic active route - updates immediately on click before navigation completes
+  const [optimisticRoute, setOptimisticRoute] = useState<string | null>(null);
+  const optimisticTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Clear optimistic state when location actually changes
+  useEffect(() => {
+    if (optimisticRoute && location.pathname === optimisticRoute) {
+      setOptimisticRoute(null);
+    }
+    // Also clear after a timeout as fallback
+    if (optimisticTimeoutRef.current) {
+      clearTimeout(optimisticTimeoutRef.current);
+    }
+  }, [location.pathname, optimisticRoute]);
   
   // Simple visibility - always visible, no complex fade-in logic that could cause issues
   const [isVisible, setIsVisible] = useState(true);
@@ -88,6 +103,17 @@ export function BottomNav() {
       return;
     }
 
+    // Set optimistic active state immediately for instant visual feedback
+    setOptimisticRoute(to);
+    
+    // Clear optimistic state after 3 seconds as fallback (in case navigation fails)
+    if (optimisticTimeoutRef.current) {
+      clearTimeout(optimisticTimeoutRef.current);
+    }
+    optimisticTimeoutRef.current = setTimeout(() => {
+      setOptimisticRoute(null);
+    }, 3000);
+
     // Clear scroll state for the destination so it starts at top
     const scrollKey = routeScrollKeys[to];
     if (scrollKey) {
@@ -119,9 +145,12 @@ export function BottomNav() {
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
         <div className="flex items-start justify-around py-1.5">
           {links.map(({ to, icon: Icon, label, mobileLabel, showBadge }) => {
-            // Use override if provided, otherwise fall back to standard logic
+            // Use optimistic route for instant feedback, then override, then standard logic
             let isActive: boolean;
-            if (overrideActiveRoute) {
+            if (optimisticRoute) {
+              // Optimistic: immediately show the clicked tab as active
+              isActive = to === optimisticRoute;
+            } else if (overrideActiveRoute) {
               isActive = to === overrideActiveRoute;
             } else {
               // Friends tab stays active when viewing user profiles
