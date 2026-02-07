@@ -507,19 +507,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           )}
           
           {/* Focus Date Badge - now inline with type badge and tags */}
-          {note.focus_date && (
-            <Badge 
-              variant="outline" 
-              className="inline-flex items-center text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setFocusDialogOpen(true);
-              }}
-            >
-              <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
-              <span>Practice Board</span>
-            </Badge>
-          )}
+          {/* Practice Board badge removed - text is now shown in note content */}
 
           {/* Linked Goal Badge - only visible to note owner since goals are private */}
           {note.goal_id && isOwner && (
