@@ -1,14 +1,27 @@
-import { useEffect } from 'react';
-import { useGlint } from '@/contexts/GlintContext';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useActiveSession } from '@/hooks/useSessions';
 
 /**
- * A focus overlay that dramatically darkens the page during active practice sessions
- * to help users focus on the practice session and practice board.
- * Adds body class to darken background and elevate focused cards.
- * All visual effects are CSS-based for smooth transitions.
+ * A global focus overlay that manages the session-active class on <body>.
+ * This component should be rendered ONCE at the app root level (inside AuthProvider)
+ * so the class persists across route transitions—preventing visual artifacts
+ * caused by rapid class toggles during page navigation.
+ * 
+ * All visual effects are CSS-based via body.session-active class.
+ * No overlay div is rendered—prevents hard edges and split backgrounds.
  */
 export function SessionFocusOverlay() {
-  const { hasActiveSession } = useGlint();
+  const { profile } = useAuth();
+  const activeSessionQuery = useActiveSession(profile?.id);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
+
+  // Derive session state from the actual active session data
+  useEffect(() => {
+    const session = activeSessionQuery.data;
+    const isActive = !!session && session.is_active;
+    setHasActiveSession(isActive);
+  }, [activeSessionQuery.data]);
 
   // Add/remove class to body to control focus mode styling
   // CSS handles all the visual transitions smoothly

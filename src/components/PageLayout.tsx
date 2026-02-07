@@ -32,15 +32,43 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
  * PageBody - Animated content area with subtle crossfade + blur transition.
  * Animation: opacity 0→1, blur 4px→0 for smooth page switching
  * Delay: 120ms, Duration: 280ms
+ * 
+ * NOTE: During active practice sessions (body.session-active), blur is disabled
+ * to prevent "dark box" artifacts caused by GPU rasterization of filtered layers
+ * combined with box-shadow glows.
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(false); // Start hidden for initial fade-in
+  const [isSessionActive, setIsSessionActive] = useState(false);
   const prevPathRef = useRef(location.pathname);
   const isInitialMount = useRef(true);
   
-  // Skip blur for performance-critical pages
-  const skipBlur = location.pathname === '/friends';
+  // Skip blur for performance-critical pages OR during active session
+  const skipBlur = location.pathname === '/friends' || isSessionActive;
+
+  // Check for session-active class on body
+  useEffect(() => {
+    const checkSessionActive = () => {
+      setIsSessionActive(document.body.classList.contains('session-active'));
+    };
+    
+    // Initial check
+    checkSessionActive();
+    
+    // Observe body class changes
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          checkSessionActive();
+        }
+      }
+    });
+    
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     // Initial mount - fade in immediately
