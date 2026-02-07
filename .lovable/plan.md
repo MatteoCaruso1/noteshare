@@ -1,83 +1,84 @@
 
-Problem diagnosis (why it flickers small → big → small → big)
-- The Timeline has 3 different “no notes” render paths that mount/unmount depending on fast-changing flags:
-  1) “Empty list container” (when notes.length === 0, isLoading === true, but showLoadingSkeleton === false during the first ~300ms)  
-     - This renders almost nothing, so the timeline area collapses to a small height.
-  2) “LoadingSkeleton” (after the 300ms timer)  
-     - This suddenly expands the timeline area.
-  3) “No notes yet” empty state (when loading/refetching flips to false)  
-     - This expands again, but if loading toggles briefly (common right after ending a session + invalidations + query state settling), it can bounce between these states quickly.
-- Your fade-in didn’t help because the flicker is primarily layout reflow (height changes) caused by switching between these mutually exclusive returns—not a simple opacity transition.
+# Fix Regular Toast Positioning
 
-Root cause in code (specific)
-- In `src/components/Timeline.tsx`:
-  - When `notes.length === 0` and `isLoading === true` and `showLoadingSkeleton === false`, the component falls through to the “normal” render and returns:
-    - `<div className="space-y-4"> ...nothing... </div>`
-  - That “fall-through empty render” is the “started small” phase.
-  - Then when `showLoadingSkeleton` flips true, it returns the skeleton (big).
-  - Then when `isLoading` flips false briefly (or `isRefetching` flips), it can return empty state or fall through again, creating the double flicker.
+## Problem Identified
+The previous fix applied a `bottom` offset via inline styles to the Radix `ToastViewport`, but the component's base CSS class has `top-0` which anchors toasts to the **top** of the screen on mobile. Setting `bottom` has no effect when `top` is already defined - the element stays pinned to the top.
 
-Robust fix strategy
-- Never allow the “no notes” area to collapse to a tiny height while state is settling.
-- Replace the current early-return switching with a single, stable “empty-state shell” that:
-  - always reserves a consistent min-height from the first paint
-  - crossfades between “Loading” and “Empty” content without changing outer container height
-  - debounces the transition from “loading” → “empty” so brief refetch flips don’t show the wrong UI
+Sonner works because it uses a dedicated `mobileOffset` prop that properly overrides its internal positioning. Radix Toast requires manual CSS fixes.
 
-Implementation plan (minimal surface area, strong stability)
+## Solution
+Match Sonner's approach by modifying the `ToastViewport` base styling to position from the bottom on mobile (not top), and ensuring the dynamic offset is applied correctly.
 
-1) Convert the “no notes” rendering into a stable shell (no more collapsing)
-File: `src/components/Timeline.tsx`
-- Introduce a wrapper that always renders when `notes.length === 0`, with a fixed minimum height (and optionally a fixed padding layout) so the space stays stable from the first frame:
-  - e.g. `min-h-[180px] flex items-center justify-center` (you already used min-h for empty state; we’ll apply it to the entire empty/loading shell)
-- Inside that wrapper, we conditionally show:
-  - skeleton content
-  - or “No notes yet” content
-- Important: we do not render the “empty list container with nothing” anymore.
+---
 
-2) Add a small “state stabilizer” (debounce + minimum display time)
-File: `src/components/Timeline.tsx`
-- Add a small internal UI state to prevent rapid toggles:
-  - `uiMode: 'loading' | 'empty' | 'list'`
-- Rules:
-  - If `notes.length > 0` → `uiMode = 'list'` immediately.
-  - If `notes.length === 0`:
-    - while `isLoading` is true → `uiMode = 'loading'` (but only show skeleton after a short delay to prevent flash, as you intended)
-    - when `isLoading` becomes false → wait ~150–250ms before switching to `empty`
-      - if `isLoading` becomes true again during that window, cancel the switch
-  - Once skeleton is shown, keep it shown for a minimum time (e.g. 300–400ms) so you don’t get “skeleton pops in for 50ms then disappears” flicker.
+## Changes
 
-This addresses the exact symptom you described: multiple quick flips in loading/refetch will no longer cause visible expand/retract cycles.
+### 1. Update `src/components/ui/toast.tsx` - Fix Base Viewport Styling
 
-3) Crossfade content (optional, but helps perception)
-File: `src/components/Timeline.tsx`
-- Apply a simple opacity transition between skeleton and empty content inside the stable shell:
-  - Outer container stays the same size
-  - Inner content fades between “Loading your notes…” and “No notes yet”
-- Keep this very lightweight (no blur filters) to avoid performance artifacts you’ve already been carefully avoiding elsewhere.
+The `ToastViewport` currently has:
+```tsx
+className="fixed top-0 z-[100] flex ... sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col"
+```
 
-4) Ensure refetching doesn’t trigger empty UI
-- Currently `isLoading = loading || isRefetching`. That’s fine, but the “empty shell” logic must treat refetching as loading-like only if there’s truly no data.
-- With the new state machine:
-  - If notes.length === 0 and (loading || isRefetching) → show loading shell
-  - If notes.length === 0 and !loading and !isRefetching → show empty shell
-  - Crucially: there will never be a render where notes.length === 0 and we show an “empty list container” (tiny height).
+This anchors toasts to the TOP on mobile. Change to anchor to the BOTTOM and remove `top-0` for mobile:
+```tsx
+className="fixed bottom-0 left-0 right-0 z-[100] flex ... sm:right-0 sm:left-auto sm:flex-col md:max-w-[420px]"
+```
 
-5) Validation steps (reproduce your scenario)
-- On `/`:
-  1) Start a practice session, then end it, and land back on the home page.
-  2) Observe the Notes area while the toast appears and queries refetch.
-  3) Confirm the Notes area:
-     - does not collapse to a small height at any point
-     - shows either a stable skeleton area or a stable “No notes yet” area
-     - does not flicker twice even if the query flags flip quickly
+Also add `top-auto` explicitly to prevent any cascade issues.
 
-Files that will change
-- `src/components/Timeline.tsx` (primary, robust fix)
+### 2. Update `src/components/ui/toaster.tsx` - Simplify Offset Logic
 
-Why this is robust (vs. more min-height / fade tweaks)
-- The issue is not “empty state needs animation”; it’s “we render three different layouts during a short state transition window.”
-- This plan removes the collapsing layout entirely and adds a small stabilizer so transient loading/refetch flips can’t leak into the UI.
+Since the base viewport now positions from the bottom, the inline style offset will work correctly. Keep the existing dynamic `mobileBottomOffset` calculation (92px/112px + safe-area) and ensure it applies.
 
-Potential follow-up (only if needed)
-- If we still see unexpected `notes` becoming `[]` momentarily due to query enable/disable (e.g., auth session briefly null), we can additionally guard at the `useNotes` layer by ensuring the query never returns `[]` unless it’s truly final, but I expect the Timeline-level stabilizer to fix the visible flicker regardless.
+Additionally, add `zIndex: 9999` inline to match Sonner's approach (defense in depth, in case the CSS selector `[data-radix-toast-viewport]` isn't matching).
+
+---
+
+## Technical Details
+
+### File: `src/components/ui/toast.tsx`
+Change ToastViewport className from:
+```tsx
+"fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+```
+
+To:
+```tsx
+"fixed bottom-0 left-0 right-0 top-auto z-[100] flex max-h-screen w-full flex-col p-4 sm:right-0 sm:left-auto md:max-w-[420px]"
+```
+
+Key changes:
+- Remove `top-0` (was anchoring to top on mobile)
+- Add `bottom-0 left-0 right-0 top-auto` for consistent bottom anchoring
+- Change `flex-col-reverse` to `flex-col` so toasts stack correctly from bottom
+- Remove `sm:bottom-0 sm:top-auto` (now always bottom-anchored)
+
+### File: `src/components/ui/toaster.tsx`
+Update to include `zIndex` inline and ensure the bottom offset applies:
+```tsx
+<ToastViewport
+  className={isMobile ? "" : ""}
+  style={{
+    bottom: isMobile ? mobileBottomOffset : undefined,
+    zIndex: 9999,
+  }}
+/>
+```
+
+---
+
+## Why This Will Work
+- Sonner works because its `mobileOffset` prop properly sets the distance from the bottom
+- Radix Toast will now also anchor to the bottom, so the inline `bottom` style will correctly push the viewport up above the BottomNav
+- Both toast systems will use `z-index: 9999` ensuring they're above all other UI elements
+- The dynamic offset (92px normal / 112px during practice) will correctly clear the BottomNav in both states
+
+---
+
+## Validation
+After implementation:
+1. Trigger a regular toast in "Capture Quick Note" mode - should appear above the bottom nav
+2. Trigger a regular toast during a practice session - should appear above the expanded session UI
+3. Trigger a Sonner toast - should remain working (no regression)
+4. Test on both mobile and desktop viewports
