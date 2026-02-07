@@ -1014,28 +1014,19 @@ nav {
               border-color var(--focus-transition);
 }
 
-/* Header and bottom nav - darken background during session + enhanced borders */
+/* Header and bottom nav - darken background during session + subtle borders */
 body.session-active header {
   background-color: hsl(225 25% 4%) !important;
-  border-color: hsl(200 60% 35%) !important;
-  border-bottom-width: 2px !important;
-  box-shadow: 0 2px 8px hsl(200 60% 25% / 0.3) !important;
+  border-color: hsl(200 30% 18%) !important;
+  border-bottom-width: 1px !important;
+  box-shadow: 0 2px 8px hsl(200 30% 10% / 0.2) !important;
 }
 
 body.session-active nav {
   background-color: hsl(225 25% 4%) !important;
-  border-color: hsl(200 60% 35%) !important;
-  border-top-width: 2px !important;
-  box-shadow: 0 -2px 8px hsl(200 60% 25% / 0.3) !important;
-}
-
-/* Logo and nav items - dim during session with unified timing */
-header > div > div:first-child {
-  transition: opacity var(--focus-transition);
-}
-
-body.session-active header > div > div:first-child {
-  opacity: 0.25;
+  border-color: hsl(200 30% 18%) !important;
+  border-top-width: 1px !important;
+  box-shadow: 0 -2px 8px hsl(200 30% 10% / 0.2) !important;
 }
 
 /* Bottom nav items - dim during session with unified timing */
