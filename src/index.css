@@ -920,33 +920,56 @@ body.session-active .session-focus-card > div {
 }
 
 /* ========================================
-   FOCUSED CARDS - NO GLOW EFFECT
-   Glow effects disabled to prevent "dark box" artifacts
-   caused by blur filters + pseudo-elements during focus mode.
-   Cards are simply kept at full brightness without additional effects.
+   FOCUSED CARDS - GLOW EFFECT
+   Subtle teal glow on ::before pseudo-element during focus mode.
+   Glow is isolated to prevent GPU rasterization artifacts.
    ======================================== */
 .session-focus-card {
   position: relative;
 }
 
-/* ========================================
-   DIM NON-FOCUSED CONTENT
-   Use filter:brightness instead of opacity so children CAN override
-   Fallback for browsers without :has() support
-   ======================================== */
-
-/* Base transition for all sections - unified timing */
-section,
-[data-tour="timeline"] {
-  transition: filter var(--focus-transition), opacity var(--focus-transition);
+/* Glow pseudo-element - hidden by default */
+.session-focus-card::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--primary) / 0.15) 0%,
+    hsl(var(--primary) / 0.05) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--focus-transition);
 }
 
-/* During session: dim app content sections by default using brightness filter.
+/* Show glow during active session */
+body.session-active .session-focus-card::before {
+  opacity: 1;
+}
+
+/* ========================================
+   DIM NON-FOCUSED CONTENT
+   Use opacity instead of filter:brightness to avoid GPU rasterization
+   artifacts ("dark box") during page transitions.
+   ======================================== */
+
+/* Base transition for all sections - unified timing with will-change for smooth transitions */
+section,
+[data-tour="timeline"] {
+  transition: opacity var(--focus-transition);
+  will-change: opacity;
+}
+
+/* During session: dim app content sections by default using opacity.
    IMPORTANT: Sonner renders its toaster as a <section> in some versions.
    We scope dimming to main/page content so we don't accidentally dim/hide toasts. */
 body.session-active main > section,
 body.session-active .page-body > section {
-  filter: brightness(0.35) saturate(0.8);
+  opacity: 0.35;
 }
 
 body.session-active [data-tour="timeline"] {
@@ -956,14 +979,12 @@ body.session-active [data-tour="timeline"] {
 /* OVERRIDE: Content sections containing focus cards stay bright */
 body.session-active main > section:has(.session-focus-card),
 body.session-active .page-body > section:has(.session-focus-card) {
-  filter: none !important;
   opacity: 1 !important;
 }
 
 /* Fallback for browsers without :has(): 
    Add .session-focus-section class to parent sections containing focus cards */
 body.session-active .session-focus-section {
-  filter: none !important;
   opacity: 1 !important;
 }
 
