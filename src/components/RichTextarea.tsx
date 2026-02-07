@@ -464,15 +464,20 @@ export function RichTextarea({
     const touch = e.changedTouches[0];
     if (!touch) return;
     
-    // Check if touch is in the checkbox zone (left side)
-    if (!isInCheckboxZone(textarea, touch.clientX)) return;
-    
     const lineIndex = getLineIndexFromY(textarea, touch.clientY);
     const lines = value.split('\n');
     
     if (lineIndex >= 0 && lineIndex < lines.length) {
       const line = lines[lineIndex];
-      if (line.match(/^(\s*)(☐|☑)\s/)) {
+      const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
+      
+      if (checkboxMatch) {
+        const isChecked = checkboxMatch[2] === '☑';
+        
+        // Check if touch is in the checkbox zone
+        // Use wider zone for checked boxes to bias towards unchecking
+        if (!isInCheckboxZone(textarea, touch.clientX, isChecked)) return;
+        
         // Prevent the default behavior that would move the cursor
         e.preventDefault();
 

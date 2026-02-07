@@ -92,13 +92,17 @@ export function useCheckboxToggle({
     return Math.floor(rawLineIndex);
   }, []);
 
-  // Check if X coordinate is in checkbox zone - 64px for mobile (20% smaller than original 80px)
-  const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
+  // Check if X coordinate is in checkbox zone
+  // For checked boxes, use a wider zone (100px) to bias towards unchecking
+  // For unchecked boxes, use a narrower zone (64px)
+  const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number, isChecked?: boolean): boolean => {
     const rect = textarea.getBoundingClientRect();
     const x = clientX - rect.left;
     const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
-    // Checkbox zone of 64px from text start for mobile tapping
-    return x < paddingLeft + 64;
+    // Wider zone for checked boxes (100px) to bias towards unchecking
+    // Narrower zone for unchecked boxes (64px)
+    const zoneWidth = isChecked ? 100 : 64;
+    return x < paddingLeft + zoneWidth;
   }, []);
 
   // Check if cursor is on a checkbox character (with expanded hit area for mobile)
