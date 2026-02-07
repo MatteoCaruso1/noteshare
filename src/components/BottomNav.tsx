@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Music, Target, User, Users, Waypoints } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,46 @@ import { clearScrollState } from '@/hooks/useScrollRestoration';
 import { useAuth } from '@/hooks/useAuth';
 import { markScrollToTop } from '@/components/ScrollToTop';
 import { useBottomNavOverride } from '@/contexts/BottomNavContext';
+
+// Updates CSS variable with the actual measured height of the BottomNav
+function useBottomNavHeightVariable(navRef: React.RefObject<HTMLElement | null>, shouldHide: boolean) {
+  const updateHeight = useCallback(() => {
+    if (shouldHide) {
+      document.documentElement.style.setProperty('--bottom-nav-height', '0px');
+      return;
+    }
+    if (navRef.current) {
+      const height = navRef.current.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--bottom-nav-height', `${height}px`);
+    }
+  }, [navRef, shouldHide]);
+
+  useEffect(() => {
+    updateHeight();
+
+    // ResizeObserver to track nav height changes
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateHeight();
+    });
+    resizeObserver.observe(nav);
+
+    // Also listen for visualViewport changes (safe-area, keyboard)
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', updateHeight);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+      if (vv) {
+        vv.removeEventListener('resize', updateHeight);
+      }
+    };
+  }, [navRef, updateHeight]);
+}
 
 // Map routes to their scroll restoration keys
 const routeScrollKeys: Record<string, string> = {
@@ -27,10 +67,18 @@ export function BottomNav() {
   const { data: unreadCount } = useUnreadNotificationCount();
   const { overrideActiveRoute } = useBottomNavOverride();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
   
   // Optimistic active route - updates immediately on click before navigation completes
   const [optimisticRoute, setOptimisticRoute] = useState<string | null>(null);
   const optimisticTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hide on auth/welcome routes, or on root when not authenticated (landing page)
+  const shouldHide = hiddenRoutes.includes(location.pathname) || 
+    (location.pathname === '/' && !user);
+
+  // Measure and expose BottomNav height as a CSS variable for toasts/overlays
+  useBottomNavHeightVariable(navRef, shouldHide);
   
   // Clear optimistic state when location actually changes
   useEffect(() => {
@@ -45,10 +93,6 @@ export function BottomNav() {
   
   // Simple visibility - always visible, no complex fade-in logic that could cause issues
   const [isVisible, setIsVisible] = useState(true);
-
-  // Hide on auth/welcome routes, or on root when not authenticated (landing page)
-  const shouldHide = hiddenRoutes.includes(location.pathname) || 
-    (location.pathname === '/' && !user);
 
   // Detect keyboard open/close on mobile - only hide for large keyboards (not search bars)
   useEffect(() => {
@@ -130,6 +174,8 @@ export function BottomNav() {
 
   return (
     <nav 
+      ref={navRef}
+      data-bottom-nav="true"
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
         // Hide via transform when keyboard is open (instead of returning null)

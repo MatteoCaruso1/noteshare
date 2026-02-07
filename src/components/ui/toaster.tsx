@@ -1,24 +1,15 @@
+import { createPortal } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/hooks/useAuth";
-import { useActiveSession } from "@/hooks/useSessions";
 
 export function Toaster() {
   const { toasts } = useToast();
-  const isMobile = useIsMobile();
-  const { profile } = useAuth();
-  const { data: activeSession } = useActiveSession(profile?.id);
 
-  const isPracticeActive = !!activeSession?.is_active;
+  // Bottom offset uses the measured BottomNav height CSS variable (set by BottomNav component)
+  // This ensures toasts always clear the nav regardless of viewport size or safe-area insets
+  const bottomOffset = "calc(var(--bottom-nav-height, 0px) + 16px)";
 
-  // Keep toasts above the bottom nav, with extra clearance during active practice sessions.
-  // Matches the Sonner toast offset logic for consistency.
-  const mobileBottomOffset = isPracticeActive
-    ? "calc(112px + env(safe-area-inset-bottom, 0px))"
-    : "calc(92px + env(safe-area-inset-bottom, 0px))";
-
-  return (
+  const toasterContent = (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
@@ -34,10 +25,17 @@ export function Toaster() {
       })}
       <ToastViewport
         style={{
-          bottom: isMobile ? mobileBottomOffset : undefined,
+          bottom: bottomOffset,
           zIndex: 9999,
         }}
       />
     </ToastProvider>
   );
+
+  // Portal to body to escape any stacking contexts from the app tree
+  if (typeof document !== "undefined") {
+    return createPortal(toasterContent, document.body);
+  }
+
+  return toasterContent;
 }

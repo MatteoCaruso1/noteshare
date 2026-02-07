@@ -2,24 +2,16 @@ import * as React from "react";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/hooks/useAuth";
-import { useActiveSession } from "@/hooks/useSessions";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
   const isMobile = useIsMobile();
-  const { profile } = useAuth();
-  const { data: activeSession } = useActiveSession(profile?.id);
 
-  const isPracticeActive = !!activeSession?.is_active;
-
-  // Keep toasts above the bottom nav, and give extra clearance during active practice sessions.
-  // Use safe-area inset so iOS devices with a home indicator don’t clip the toast.
-  const mobileBottomOffset = isPracticeActive
-    ? "calc(112px + env(safe-area-inset-bottom, 0px))"
-    : "calc(92px + env(safe-area-inset-bottom, 0px))";
+  // Bottom offset uses the measured BottomNav height CSS variable (set by BottomNav component)
+  // This ensures toasts always clear the nav regardless of viewport size or safe-area insets
+  const bottomOffset = "calc(var(--bottom-nav-height, 0px) + 16px)";
 
   return (
     <Sonner
@@ -27,10 +19,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group session-focus-exempt"
       position={isMobile ? "bottom-center" : "bottom-right"}
       offset={24}
-      mobileOffset={{ bottom: mobileBottomOffset }}
+      mobileOffset={{ bottom: bottomOffset }}
       style={{
         // z-index well above nav (z-50) so toasts are always visible
         zIndex: 9999,
+        // Apply bottom offset for non-mobile viewports as well (BottomNav is always present)
+        bottom: !isMobile ? bottomOffset : undefined,
         // Smooth GPU-accelerated transitions for enter/exit
         ["--toast-enter-duration" as string]: "300ms",
         ["--toast-exit-duration" as string]: "200ms",
@@ -51,4 +45,3 @@ const Toaster = ({ ...props }: ToasterProps) => {
 };
 
 export { Toaster, toast };
-
