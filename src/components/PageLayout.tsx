@@ -35,18 +35,35 @@ export function PageHeader({ children, className = '' }: PageHeaderProps) {
  */
 export function PageBody({ children, className = '' }: PageBodyProps) {
   const location = useLocation();
-  const [isVisible, setIsVisible] = useState(true); // Start visible to prevent blank flash
+  const [isVisible, setIsVisible] = useState(false); // Start hidden for initial fade-in
   const prevPathRef = useRef(location.pathname);
+  const isInitialMount = useRef(true);
   
   // Skip blur for performance-critical pages
   const skipBlur = location.pathname === '/friends';
 
   useEffect(() => {
-    // On route change, briefly fade then restore
+    // Initial mount - fade in immediately
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // Small delay to ensure DOM is ready, then fade in
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+      return;
+    }
+
+    // On route change, briefly fade out then fade back in
     if (location.pathname !== prevPathRef.current) {
       prevPathRef.current = location.pathname;
-      // Content stays visible - no blank flash, just a subtle refresh
-      setIsVisible(true);
+      setIsVisible(false); // Trigger fade out
+      
+      // After fade out, fade back in
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 80); // Short delay for subtle transition
+      
+      return () => clearTimeout(timer);
     }
   }, [location.pathname]);
 
@@ -55,11 +72,10 @@ export function PageBody({ children, className = '' }: PageBodyProps) {
       className={`page-body ${className}`}
       style={{
         opacity: isVisible ? 1 : 0,
-        // Skip blur for performance-critical pages, use 'none' when visible
         filter: isVisible ? 'none' : (skipBlur ? 'none' : 'blur(2px)'),
         transition: skipBlur 
           ? 'opacity 150ms ease-out' 
-          : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), filter 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+          : 'opacity 180ms cubic-bezier(0.4, 0, 0.2, 1), filter 180ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {children}
