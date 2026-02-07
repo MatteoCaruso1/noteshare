@@ -129,8 +129,8 @@ export function LinkToPicker({
               className={cn(
                 "h-8 w-8",
                 isSelected ? 'text-primary' : '',
-                // Amber color for free users to indicate premium feature
-                !isPremiumLoading && !isPremium && 'text-jazz-amber',
+                // Grey out for free users to indicate premium feature
+                !isPremiumLoading && !isPremium && 'text-muted-foreground opacity-50',
                 className
               )}
             >
