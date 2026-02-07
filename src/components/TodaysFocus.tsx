@@ -360,7 +360,7 @@ export function TodaysFocus() {
     return newLines.join('\n');
   }, []);
 
-  // Auto-capitalize first letter after bullet/number prefix
+  // Auto-capitalize first letter after bullet/number/checkbox prefix
   const autoCapitalizeAfterPrefix = useCallback((value: string, cursorPos: number): { newValue: string; newCursorPos: number } => {
     const lines = value.split('\n');
     let charCount = 0;
@@ -376,6 +376,7 @@ export function TodaysFocus() {
         // Match bullet or number prefix followed by exactly one lowercase letter
         const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])$/);
         const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])$/);
+        const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])$/);
         
         if (bulletCapMatch) {
           modified = true;
@@ -384,6 +385,10 @@ export function TodaysFocus() {
         if (numberCapMatch) {
           modified = true;
           return numberCapMatch[1] + numberCapMatch[2].toUpperCase();
+        }
+        if (checkboxCapMatch) {
+          modified = true;
+          return checkboxCapMatch[1] + checkboxCapMatch[2].toUpperCase();
         }
       }
       
