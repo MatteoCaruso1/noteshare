@@ -1,86 +1,105 @@
 
-Goal
-- Remove the “weird dark box” outline that appears around Card UI during route transitions while a practice session is active.
-- Make the visual transition feel smooth without sacrificing the “content slides behind bars” vibe.
+## Plan: Fix Dark Box Artifact and Re-Add Focus Card Glow
 
-What I found (why the last glow tweak didn’t help)
-- The glow you changed is applied via box-shadow on `.session-focus-card` children.
-- Your page transitions use `filter: blur(2px)` on `.page-body` (see `PageBody` in `src/components/PageLayout.tsx`).
-- When an element (or an ancestor) is being filtered/blurred, browsers often rasterize it into an offscreen texture. Any box-shadow + blur combo can produce a rectangular “texture bounds” artifact (it looks like a dark box/halo rectangle) during the opacity/blur animation.
-- So changing the shadow values alone can be too subtle to fix the root cause: the artifact is mostly coming from “blurred layer compositing”, not the exact shadow color.
+### Problem Analysis
 
-Additionally important
-- Right now, `body.session-active` is only controlled by `SessionFocusOverlay` rendered inside `Index.tsx`’s `GlintProvider`. That means session focus styling can “drop” or change across route transitions, making the compositing artifact worse (class toggles while transitions are running). Making session-active truly global will reduce visual discontinuities.
+The "dark box" artifact around Card UI elements during page transitions in practice session state is **NOT caused by the glow effect** - it's caused by the combination of:
 
-Plan (what I’m going to change)
+1. **Brightness filter on sections**: `filter: brightness(0.35) saturate(0.8)` applied to `main > section` and `.page-body > section` elements during `body.session-active` state (lines 947-950 of `index.css`)
 
-1) Make “session-active” a global app state (stable across route transitions)
-- Update `src/components/SessionFocusOverlay.tsx` so it does NOT rely on `GlintContext`.
-  - Instead, it will read the authenticated profile and active session directly (via `useAuth()` and `useActiveSession(profile?.id)`).
-  - It will add/remove `body.session-active` based on the real session state.
-- Render `SessionFocusOverlay` once globally in `src/App.tsx` (inside auth provider), so:
-  - The class stays consistent no matter what page you navigate to.
-  - Focus mode doesn’t “blink” on transitions.
+2. **Page transitions with opacity**: When navigating between pages, the `PageBody` component fades content in/out with opacity transitions. When an element has a `filter` property AND undergoes opacity transitions, browsers rasterize the filtered layer to a GPU texture - this creates a visible rectangular boundary (the "dark box")
 
-Why this helps the box artifact
-- Fewer rapid style toggles (background, filters, borders, shadows) during route transitions reduces the chance of weird intermediate compositing frames.
+3. **Non-focus sections get filtered**: On pages like Profile, the cards are NOT wrapped in `.session-focus-card`, so they receive the brightness filter. The boundary of this filtered section becomes visible during transitions
 
-2) Remove blur-based route transitions during active session (keep opacity-only)
-- Update `src/components/PageLayout.tsx` (`PageBody`) so that when a practice session is active, it uses opacity-only transitions (no `filter: blur(...)`).
-  - We can detect session-active either by:
-    - Reading `document.body.classList.contains('session-active')`, or preferably
-    - Consuming the same active session hook/context used by the global overlay (cleaner, but requires plumbing).
-- The end result: during session-active, the page transition remains smooth, but avoids the GPU rasterization edge-case that creates the dark rectangle.
+### Solution
 
-Why this is likely the real fix
-- The “dark box” looks exactly like a filtered layer’s bounding box. Eliminating the blur filter in that state removes the main trigger.
+Replace the brightness filter approach with an opacity-based dimming that doesn't trigger GPU rasterization artifacts:
 
-3) Change glow implementation to avoid box-shadow artifacts during transitions
-Even after removing blur transitions during session-active, I’ll also make glow more “transition-safe”:
-- In `src/index.css`, change the focused-card glow from box-shadow on the card itself to a pseudo-element glow:
-  - Add `position: relative` (already), then for session-active:
-    - `.session-focus-card::before` as an absolutely-positioned element with:
-      - `inset: -10px` (slightly larger than card)
-      - `border-radius: inherit` (or match the card’s radius)
-      - `background: radial-gradient(...)`
-      - `opacity` transition
-      - `filter: blur(...)` (on the pseudo element, not the whole page)
-      - `pointer-events: none`
-      - `z-index: -1` while keeping `.session-focus-card` isolated
-- Reduce reliance on heavy shadows on the real card element; keep a minimal shadow for depth but let the pseudo-element do the “glow”.
+**1. Change section dimming from `filter: brightness()` to `opacity`**
+- Remove `filter: brightness(0.35) saturate(0.8)` from section styling
+- Use `opacity: 0.35` instead for non-focused sections
+- Opacity changes are handled more gracefully by browsers during compositing
 
-Why this helps
-- Pseudo-element glows blend more gracefully and are less likely to show “hard rectangle edges” than large box-shadow stacks during animated state changes.
+**2. Re-add the glow effect for focus cards**
+- Re-introduce the `::before` pseudo-element glow on `.session-focus-card`
+- Use a subtle teal/primary color radial gradient
+- Keep the blur contained to the pseudo-element (not the page)
 
-4) Verify and tune with an end-to-end reproduction
-In the preview:
-- Start a practice session.
-- Navigate rapidly between pages that contain Cards (Practice → Profile → Projects → back).
-- Confirm:
-  - No dark-box outline appears during the transition.
-  - The glow still reads as “focused” and premium, but not harsh.
-  - Header/footer border enhancements still look good.
+**3. Add `will-change: opacity` for sections undergoing transitions**
+- Helps browser optimize the opacity transition
+- Prevents unexpected layer creation during route changes
 
-If the artifact still appears (fallback measures)
-- Apply `contain: paint;` selectively to the page body or to card containers during session-active to constrain paint/raster behavior.
-- Ensure elements with transforms (e.g., BottomNav uses `translate3d`) don’t create unexpected stacking contexts interacting with filters; if needed, bump isolation/containment for `.page-body` only during session-active.
+### Technical Changes
 
-Files I will modify
-- src/components/SessionFocusOverlay.tsx
-  - Make it derive active session state directly; remove GlintContext dependency.
-- src/App.tsx
-  - Render SessionFocusOverlay globally (so class persists across pages).
-- src/components/PageLayout.tsx
-  - During session-active, use opacity-only transitions (remove blur filter).
-- src/index.css
-  - Move glow to `.session-focus-card::before` (pseudo-element glow), simplify box-shadow.
+#### File: `src/index.css`
 
-Acceptance criteria (what “fixed” means)
-- While a session is active, route transitions do not show a rectangular dark outline around cards.
-- The focused practice cards still feel elevated (glow preserved), but transitions look clean.
-- No regressions: toasts remain above the bottom nav; nav borders still visible.
+**Lines 944-960 (section dimming):**
+```css
+/* BEFORE - causes dark box artifact */
+body.session-active main > section,
+body.session-active .page-body > section {
+  filter: brightness(0.35) saturate(0.8);
+}
 
-Test checklist for you (after I implement)
-- Start session → navigate Practice ⇄ Profile 5–10 times quickly.
-- Scroll a bit, then navigate again (to test “content behind bars” feel).
-- Confirm on mobile-sized viewport (iPhone size) and desktop if possible.
+/* AFTER - opacity-based dimming */
+body.session-active main > section,
+body.session-active .page-body > section {
+  opacity: 0.35;
+}
+```
+
+**Lines 922-930 (focus card glow - re-add):**
+```css
+/* Subtle glow effect for focused cards during session */
+body.session-active .session-focus-card::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--primary) / 0.15) 0%,
+    hsl(var(--primary) / 0.05) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--focus-transition);
+}
+
+body.session-active .session-focus-card::before {
+  opacity: 1;
+}
+```
+
+**Lines 936-942 (section transitions):**
+```css
+/* Add will-change for smoother transitions */
+section,
+[data-tour="timeline"] {
+  transition: opacity var(--focus-transition);
+  will-change: opacity;
+}
+```
+
+### Why This Fixes the Issue
+
+1. **No filter = no rasterization boundary**: Opacity changes don't create the same GPU texture boundaries that filter operations do
+
+2. **Glow on pseudo-element is isolated**: The `::before` glow has its own stacking context and blur is contained to that element only
+
+3. **Consistent brightness perception**: While technically different, `opacity: 0.35` creates a similar visual dimming effect to `brightness(0.35)` against a dark background
+
+### Visual Behavior After Fix
+
+- Non-focused content dims to 35% opacity during active session (similar visual effect)
+- Focus cards remain at full opacity with a subtle teal glow
+- Page transitions no longer show dark box outlines around cards
+- Header and nav border enhancements remain unchanged
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/index.css` | Replace brightness filter with opacity; re-add glow pseudo-element |
