@@ -93,9 +93,21 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   }, [currentTourStep, step]);
 
   useEffect(() => {
+    // For final step, navigate to My Practice first and scroll to top
     if (isFinalStep) {
+      if (location.pathname !== '/') {
+        setIsNavigating(true);
+        navigate('/');
+        // Wait for navigation, then scroll to top
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+          setIsNavigating(false);
+        }, 100);
+      } else {
+        // Already on My Practice, just scroll to top
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
       setTargetRect(null);
-      setIsNavigating(false);
       return;
     }
 
@@ -138,17 +150,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const handleClick = () => {
     if (isFinalStep) {
-      // Navigate back to My Practice before completing
-      if (location.pathname !== '/') {
-        setIsAnimating(true);
-        navigate('/');
-        // Small delay to let navigation start, then complete
-        setTimeout(() => {
-          onComplete();
-        }, 100);
-      } else {
-        onComplete();
-      }
+      // Already on My Practice page, just complete
+      onComplete();
     } else {
       onNext();
     }
