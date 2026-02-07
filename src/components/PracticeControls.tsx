@@ -9,6 +9,7 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
+import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -101,10 +102,12 @@ export function PracticeControls() {
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
   const { checkAndTrigger } = useShareEducation();
+  const { triggerPrompt: triggerHomescreenPrompt } = useHomescreenPromptTrigger();
   
   const handleNoteCreated = useCallback((noteId: string, totalCount: number) => {
     checkAndTrigger(noteId, totalCount);
-  }, [checkAndTrigger]);
+    triggerHomescreenPrompt(totalCount);
+  }, [checkAndTrigger, triggerHomescreenPrompt]);
   
   const createNote = useCreateNote(handleNoteCreated);
   const createNoteShares = useCreateNoteShares();

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Smartphone, Share, Plus, Check } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Share, Plus, Check } from 'lucide-react';
 
 const HOMESCREEN_PROMPT_KEY = 'noteshare_homescreen_prompt_dismissed_v2';
+const HOMESCREEN_PROMPT_TRIGGERED_KEY = 'noteshare_homescreen_prompt_triggered';
 
 // Check if the app is installed as a PWA
 const isAppInstalled = () => {
@@ -13,32 +13,60 @@ const isAppInstalled = () => {
          (window.navigator as any).standalone === true;
 };
 
+// Check if should show the prompt (mobile, not installed, not dismissed)
+const shouldShowPrompt = () => {
+  if (typeof window === 'undefined') return false;
+  
+  // Check if already dismissed
+  const alreadyDismissed = localStorage.getItem(HOMESCREEN_PROMPT_KEY);
+  if (alreadyDismissed === 'true') return false;
+  
+  // Detect mobile device
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (!isMobile) return false;
+  
+  // Check if already installed as PWA
+  if (isAppInstalled()) return false;
+  
+  return true;
+};
+
+// Hook to trigger the homescreen prompt after first note
+export function useHomescreenPromptTrigger() {
+  const triggerPrompt = useCallback((totalNoteCount: number) => {
+    // Only trigger on first note creation
+    if (totalNoteCount !== 1) return;
+    
+    // Check if already triggered or dismissed
+    if (localStorage.getItem(HOMESCREEN_PROMPT_TRIGGERED_KEY) === 'true') return;
+    if (localStorage.getItem(HOMESCREEN_PROMPT_KEY) === 'true') return;
+    
+    // Mark as triggered
+    localStorage.setItem(HOMESCREEN_PROMPT_TRIGGERED_KEY, 'true');
+    
+    // Dispatch custom event to trigger the prompt
+    window.dispatchEvent(new CustomEvent('show-homescreen-prompt'));
+  }, []);
+  
+  return { triggerPrompt };
+}
+
 export function AddToHomescreenPrompt() {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
 
   useEffect(() => {
-    // Only show to logged-in users
-    if (!user) return;
-
-    // Check if already dismissed
-    const alreadyDismissed = localStorage.getItem(HOMESCREEN_PROMPT_KEY);
-    if (alreadyDismissed === 'true') return;
-
-    // Detect mobile device
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (!isMobile) return;
-
-    // Check if already installed as PWA
-    if (isAppInstalled()) return;
-
-    // Show after a short delay
-    const timer = setTimeout(() => {
-      setOpen(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [user]);
+    const handleShowPrompt = () => {
+      if (!shouldShowPrompt()) return;
+      
+      // Show after a short delay
+      setTimeout(() => {
+        setOpen(true);
+      }, 1500);
+    };
+    
+    window.addEventListener('show-homescreen-prompt', handleShowPrompt);
+    return () => window.removeEventListener('show-homescreen-prompt', handleShowPrompt);
+  }, []);
 
   const handleClose = () => {
     localStorage.setItem(HOMESCREEN_PROMPT_KEY, 'true');
