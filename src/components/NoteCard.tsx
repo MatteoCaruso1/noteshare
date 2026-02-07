@@ -156,7 +156,7 @@ interface NoteCardProps {
 export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig, onShareClick }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   const { toast } = useToast();
   const updateVisibility = useUpdateNoteVisibility();
   const updateAudioNames = useUpdateNoteAudioNames();
@@ -328,6 +328,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       toast({
         title: "Pro Feature",
         description: "Viewing linked projects, gigs, and goals is available for Pro users.",
+        action: (
+          <button
+            onClick={openPremiumDialog}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            See Pro
+          </button>
+        ),
       });
       return;
     }
@@ -343,6 +351,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       toast({
         title: "Pro Feature",
         description: "Viewing linked projects, gigs, and goals is available for Pro users.",
+        action: (
+          <button
+            onClick={openPremiumDialog}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            See Pro
+          </button>
+        ),
       });
       return;
     }

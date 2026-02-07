@@ -13,7 +13,7 @@ interface PracticeTimerProps {
 
 export function PracticeTimer({ className }: PracticeTimerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   const { toast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -163,6 +163,14 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
       toast({
         title: "Pro Feature",
         description: "Practice Timer is available for Pro users.",
+        action: (
+          <button
+            onClick={openPremiumDialog}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            See Pro
+          </button>
+        ),
       });
       return;
     }
