@@ -765,6 +765,13 @@ html {
   z-index: 40 !important;
 }
 
+/* During active practice sessions, toasts must appear ABOVE the bottom nav (z-50) */
+body.session-active [data-sonner-toaster],
+body.session-active .toaster,
+body.session-active [data-radix-toast-viewport] {
+  z-index: 60 !important;
+}
+
 /* ========================================
    SONNER TOAST ANIMATION OVERRIDES
    Goal: smooth exit with opacity only (no translate/"flying")
