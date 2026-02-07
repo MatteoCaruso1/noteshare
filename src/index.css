@@ -920,47 +920,13 @@ body.session-active .session-focus-card > div {
 }
 
 /* ========================================
-   PSEUDO-ELEMENT GLOW FOR FOCUSED CARDS
-   Uses ::before instead of box-shadow to avoid "dark box" artifacts
-   during page transitions. The pseudo-element glow blends more gracefully
-   with opacity transitions than box-shadow stacks.
+   FOCUSED CARDS - NO GLOW EFFECT
+   Glow effects disabled to prevent "dark box" artifacts
+   caused by blur filters + pseudo-elements during focus mode.
+   Cards are simply kept at full brightness without additional effects.
    ======================================== */
 .session-focus-card {
   position: relative;
-  isolation: isolate;
-}
-
-.session-focus-card::before {
-  content: '';
-  position: absolute;
-  inset: -8px;
-  border-radius: calc(var(--radius) + 8px);
-  background: radial-gradient(
-    ellipse at center,
-    hsl(var(--primary) / 0.2) 0%,
-    hsl(var(--primary) / 0.08) 40%,
-    transparent 70%
-  );
-  opacity: 0;
-  filter: blur(12px);
-  pointer-events: none;
-  z-index: -1;
-  transition: opacity var(--focus-transition);
-}
-
-body.session-active .session-focus-card::before {
-  opacity: 1;
-}
-
-/* Minimal border enhancement (no heavy box-shadow) */
-.session-focus-card > div,
-.session-focus-card > [class*="Card"] {
-  transition: border-color var(--focus-transition);
-}
-
-body.session-active .session-focus-card > div,
-body.session-active .session-focus-card > [class*="Card"] {
-  border-color: hsl(var(--primary) / 0.3);
 }
 
 /* ========================================
