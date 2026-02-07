@@ -1,117 +1,207 @@
 
-Goal
-- Make Sonner toasts disappear with a smooth opacity-only fade (no downward/translate movement), and remove the “choppy” exit velocity changes.
+# Plan: Fix Practice Board Textarea Collapse After Tab/App Switch
 
-What’s going wrong (root cause)
-1) You have multiple, conflicting toast rules fighting each other:
-   - src/components/ui/sonner.tsx sets zIndex: 40 and bottom: 16px (to sit “behind” the bottom nav).
-   - src/index.css currently forces:
-     - [data-sonner-toaster] bottom: calc(80px + …) !important (puts the toaster above the nav)
-     - [data-sonner-toaster], .toaster z-index: 99999 !important (puts the toaster above the nav)
-   These global overrides negate the component-level settings and can also cause visible “movement” as layout/stacking recalculates.
+## Problem Summary
+When the Practice Board is expanded and the user switches to another browser tab (or backgrounds the web app on mobile), upon returning, the textarea collapses to its minimum height despite containing multi-line content. The existing `visibilitychange` and `focus` event handlers with multiple retry attempts are not reliably fixing the issue.
 
-2) The animation override is targeting the wrong attributes:
-   - Sonner does NOT use data-state="closed" for exit.
-   - Sonner’s own CSS exits via:
-     - [data-sonner-toast][data-removed='true' ...] rules that change --y (which directly changes transform), producing the downward slide.
-   So our current selector ([data-sonner-toast][data-state="closed"]) never actually hits, and Sonner’s default transform-based exit continues to run.
+## Root Cause Analysis
 
-3) Why it looks choppy
-   - Sonner’s exit changes both transform and opacity, and sometimes changes transition timing (e.g. transform 500ms, opacity 200ms for some states).
-   - When stacked toasts reflow (front/non-front, expanded/collapsed), transform is recalculated via CSS variables, which can look like “speed up / slow down” mid-flight.
+After extensive investigation, I've identified **three likely contributing factors**:
 
-Implementation plan (code changes)
-A) Remove/neutralize the global CSS that is overriding placement and z-index
-File: src/index.css
-- Delete or rewrite these sections:
-  1) “Position Sonner toasts above bottom nav on mobile”
-     - Remove:
-       @media (max-width: 768px) { [data-sonner-toaster] { bottom: calc(80px + …) !important; } }
-     - Reason: it forces the toaster above the nav and contradicts your desired “behind nav” behavior.
-  2) “TOAST LAYERING - ALWAYS ABOVE EVERYTHING”
-     - Replace z-index: 99999 !important with a controlled value that respects the bottom nav.
-     - New behavior:
-       - Keep toaster fixed, but set z-index to 40 (or whatever value is below the nav’s z-50).
-       - Example target:
-         [data-sonner-toaster],
-         .toaster,
-         [data-radix-toast-viewport] { z-index: 40 !important; }
-     - Reason: This restores the intended layering (nav above toast) while still keeping toasts above the vignette (the vignette is behind app content via z-index 0; we’ll keep the “session-focus-exempt”/filter exemptions as-is).
+### 1. Safari's Back/Forward Cache (bfcache) Behavior
+Safari (iOS and macOS) uses an aggressive page caching mechanism called bfcache. When a page is restored from bfcache:
+- The `visibilitychange` event may fire before the DOM is fully re-rendered
+- The `pageshow` event (with `event.persisted = true`) is the **canonical event** for bfcache restoration, but it's **not being listened to** in the current code
+- `scrollHeight` measurements can return stale/incorrect values immediately after restoration
 
-B) Replace the incorrect “data-state=closed” override with the correct Sonner exit override
-File: src/index.css
-- Remove the current block that targets:
-  [data-sonner-toast][data-state="closed"] { ... }
-  [data-sonner-toast][data-state="open"] { ... }
-- Add a correct override that targets Sonner’s real exit mechanism:
-  - Base: Sonner exits when data-removed="true"
-  - We want:
-    - Opacity fades to 0
-    - Transform does not animate to an “exit” position (no translate down/up)
-    - Transition-property limited to opacity on removal
+### 2. Radix Collapsible CSS Variables
+The Radix `CollapsibleContent` component measures height and stores it in `--radix-collapsible-content-height`. Upon page restoration:
+- This measurement may be stale
+- The content may be in a "hidden" state briefly during restoration
+- The `hidden` attribute on the content div can cause `scrollHeight` to return 0
 
-  Proposed CSS (high level):
-  1) For removed toasts, force opacity-only transition:
-     [data-sonner-toast][data-removed='true'] {
-       opacity: 0 !important;
-       transition-property: opacity !important;
-       transition-duration: 220ms !important; /* tuneable */
-       transition-timing-function: cubic-bezier(0.2, 0, 0, 1) !important;
-     }
+### 3. Timing Race Conditions
+The current retry strategy uses delays of `[50, 150, 300, 500]` ms, but:
+- Safari's bfcache restoration can take longer
+- The textarea may still report incorrect `scrollHeight` at these intervals
+- The `overflow: hidden` class on the textarea prevents seeing a scrollbar but also may affect measurement
 
-  2) Prevent Sonner’s exit rules from changing the transform via --y:
-     Sonner changes --y in multiple selectors (front/non-front, expanded true/false).
-     We will override those selectors with “keep the non-removed positioning value” for --y so the toast stays in place and only fades.
+## Solution Architecture
 
-     Concretely, we will override these Sonner cases (from node_modules/sonner/dist/styles.css):
-     - [data-sonner-toast][data-removed='true'][data-front='true'][data-swipe-out='false']
-     - [data-sonner-toast][data-removed='true'][data-front='false'][data-swipe-out='false'][data-expanded='true']
-     - [data-sonner-toast][data-removed='true'][data-front='false'][data-swipe-out='false'][data-expanded='false']
+### Approach: Multi-Signal Detection with Aggressive Recovery
 
-     And set --y back to their “non-exit” equivalents:
-     - For front toast: use the mounted/expanded position:
-       --y: translateY(calc(var(--lift) * var(--offset))) !important;
-     - For non-front toasts: use the stacking position (same idea Sonner uses to stack):
-       --y: translateY(calc(var(--lift-amount) * var(--toasts-before))) scale(calc(-1 * var(--scale))) !important;
+I'll implement a more robust autosize recovery system that:
+1. **Adds `pageshow` event listener** - The official event for bfcache restoration
+2. **Forces a DOM reflow before measurement** - More aggressively than current `offsetHeight` read
+3. **Temporarily removes `overflow: hidden`** - To ensure accurate `scrollHeight` measurement
+4. **Extends retry timings** - Add longer delays (1000ms, 1500ms) for Safari's slower restoration
+5. **Adds a MutationObserver fallback** - Detects when `hidden` attribute is removed from CollapsibleContent
 
-     This avoids the downward/upward “fly away” entirely while still keeping the toast located where it already is in the stack.
+---
 
-  Notes:
-  - We keep swipe-out animations intact (data-swipe-out='true') so gestures still work naturally; the change applies to standard dismiss/timeout removal.
+## Implementation Details
 
-C) Simplify Sonner className exit attempts in the React wrapper (optional cleanup, but recommended)
-File: src/components/ui/sonner.tsx
-- Since the global CSS will now correctly control exit, we should avoid adding Tailwind “data-[state=closed]…” classes that don’t match Sonner’s attributes.
-- Update toastOptions.classNames.toast to remove:
-  data-[state=closed]:...
-- Keep your styling (bg/text/border/shadow, session-focus-exempt, etc.) but do not try to drive exit via non-existent state attributes.
+### File: `src/components/TodaysFocus.tsx`
 
-D) Verification steps (how we’ll confirm it’s fixed)
-1) Trigger a toast and let it auto-dismiss:
-   - Confirm: it fades out in-place (no downward slide).
-2) Trigger multiple toasts in quick succession:
-   - Confirm: no choppy velocity changes when one disappears and others re-stack.
-3) On mobile:
-   - Confirm: toast is visually behind the bottom nav (nav covers toast if they overlap), but toast is not dimmed by the practice vignette.
-4) Confirm we didn’t break swipe-to-dismiss (if you use it):
-   - Swipe out: should still animate in the swipe direction.
+#### Change 1: Enhanced `autosizeTextarea` function
+```tsx
+// Current (lines 48-63):
+const autosizeTextarea = useCallback(() => {
+  const textarea = textareaRef.current;
+  if (!textarea) return 0;
+  void textarea.offsetHeight;
+  textarea.style.height = 'auto';
+  const newHeight = Math.max(36, textarea.scrollHeight);
+  textarea.style.height = `${newHeight}px`;
+  return newHeight;
+}, []);
 
-Why this will work
-- It removes the major conflicting overrides that currently force bottom offset and extreme z-index.
-- It targets Sonner’s real exit condition (data-removed="true"), not a Radix-like state attribute.
-- It neutralizes Sonner’s “exit translation” by overriding the exact selectors that set --y during removal, while preserving normal stacking transforms.
+// New:
+const autosizeTextarea = useCallback((force = false) => {
+  const textarea = textareaRef.current;
+  if (!textarea) return 0;
+  
+  // Force layout reflow by reading multiple layout properties
+  // This is more aggressive than just offsetHeight for bfcache scenarios
+  void textarea.getBoundingClientRect();
+  void textarea.offsetHeight;
+  void textarea.scrollHeight;
+  
+  // Temporarily remove overflow:hidden to get accurate scrollHeight
+  const originalOverflow = textarea.style.overflow;
+  textarea.style.overflow = 'visible';
+  
+  textarea.style.height = 'auto';
+  
+  // Force another reflow after height reset
+  void textarea.scrollHeight;
+  
+  const newHeight = Math.max(36, textarea.scrollHeight);
+  textarea.style.height = `${newHeight}px`;
+  
+  // Restore overflow
+  textarea.style.overflow = originalOverflow;
+  
+  return newHeight;
+}, []);
+```
 
-Files to change
-- src/index.css
-  - Remove mobile bottom override for [data-sonner-toaster]
-  - Replace z-index: 99999 rule with z-index: 40 (or below nav)
-  - Replace incorrect data-state overrides with correct data-removed overrides
-- src/components/ui/sonner.tsx
-  - Remove data-[state=closed] Tailwind exit classes that don’t apply to Sonner
+#### Change 2: Add `pageshow` event listener for bfcache
+```tsx
+// In the visibility/focus effect (lines 150-199), add pageshow handler:
+useEffect(() => {
+  if (!isOpen) return;
 
-Edge cases / tradeoffs
-- Sonner’s default “lift/stack” transform behavior will remain for normal stacking; we’re only preventing the specific “removed moves out” behavior. This should keep layout stable while eliminating the exit flight.
-- If you prefer absolutely zero transform animation ever (even when stacking), we can also globally set transition-property to opacity for all toasts, but that will remove stack smoothing. I’m not proposing that first because it can make stacked updates look jumpy; the above is the best balance.
+  const timeoutIds: NodeJS.Timeout[] = [];
 
-After implementing, if you still see movement:
-- We’ll inspect which attributes are present at runtime (data-removed, data-visible, data-mounted, etc.) and adjust the override selectors accordingly. Sonner’s CSS is attribute-driven, so matching the correct attributes is key.
+  const scheduleAutosize = (source: string) => {
+    timeoutIds.forEach(clearTimeout);
+    timeoutIds.length = 0;
+
+    // Immediate attempt
+    autosizeTextarea(true);
+
+    // Extended timings - Safari bfcache can be slow
+    const timings = [50, 150, 300, 500, 1000, 1500];
+    timings.forEach(delay => {
+      const id = setTimeout(() => {
+        const height = autosizeTextarea(true);
+        // More aggressive sanity check
+        if (text.trim() && height <= 40) {
+          // Double-try with RAF for painting cycle
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              autosizeTextarea(true);
+            });
+          });
+        }
+      }, delay);
+      timeoutIds.push(id);
+    });
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      scheduleAutosize('visibility');
+    }
+  };
+
+  const handleWindowFocus = () => {
+    scheduleAutosize('focus');
+  };
+
+  // bfcache restoration - the most reliable Safari event
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (event.persisted) {
+      // Page was restored from bfcache
+      scheduleAutosize('pageshow');
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('focus', handleWindowFocus);
+  window.addEventListener('pageshow', handlePageShow);
+
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('focus', handleWindowFocus);
+    window.removeEventListener('pageshow', handlePageShow);
+    timeoutIds.forEach(clearTimeout);
+  };
+}, [isOpen, autosizeTextarea, text]);
+```
+
+#### Change 3: MutationObserver for Radix `hidden` attribute changes
+```tsx
+// New effect after the visibility effect:
+useEffect(() => {
+  if (!isOpen) return;
+  const contentEl = collapsibleContentRef.current;
+  if (!contentEl) return;
+  
+  // Watch for Radix removing the hidden attribute (happens during transitions)
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
+        // Hidden state changed - re-measure
+        requestAnimationFrame(() => {
+          autosizeTextarea(true);
+        });
+      }
+    }
+  });
+  
+  observer.observe(contentEl, { attributes: true, attributeFilter: ['hidden'] });
+  
+  return () => observer.disconnect();
+}, [isOpen, autosizeTextarea]);
+```
+
+#### Change 4: Ensure textarea doesn't have CSS hiding issues
+In the textarea className (line 858), replace:
+```tsx
+// Current:
+className="practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground overflow-hidden"
+
+// New - remove overflow-hidden from className, control it in JS:
+className="practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground"
+style={{ overscrollBehavior: 'contain', overflow: 'hidden' }}
+```
+
+This moves `overflow: hidden` to inline style so the autosize function can temporarily override it.
+
+---
+
+## Testing Strategy
+
+1. **Desktop**: Open Practice Board, add multi-line text, switch tabs, return - textarea should remain expanded
+2. **iOS Safari**: Same test in Safari mobile browser
+3. **iOS PWA**: Same test in installed web app
+4. **Quick switch**: Rapidly switch away and back (tests immediate bfcache)
+5. **Long background**: Leave app in background for 30+ seconds, return (tests extended timeouts)
+
+## Risk Assessment
+
+- **Low risk**: Changes are additive and don't modify core functionality
+- **Fallback safety**: Multiple retry attempts ensure eventual recovery even if some fail
+- **No breaking changes**: Existing behavior is preserved, just enhanced
