@@ -370,7 +370,7 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="w-full"
-                  style={{ backgroundColor: '#e4e4e7', color: '#18181b', borderColor: '#d4d4d8' }}
+                  style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
                   onClick={() => setMode('signup')}
                 >
                   Sign up with Email
