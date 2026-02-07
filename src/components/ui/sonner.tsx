@@ -29,8 +29,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       offset={24}
       mobileOffset={{ bottom: mobileBottomOffset }}
       style={{
-        // z-index above nav (z-50) so toasts are always visible
-        zIndex: 60,
+        // z-index well above nav (z-50) so toasts are always visible
+        zIndex: 9999,
         // Smooth GPU-accelerated transitions for enter/exit
         ["--toast-enter-duration" as string]: "300ms",
         ["--toast-exit-duration" as string]: "200ms",
