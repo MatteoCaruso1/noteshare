@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Check if the app is running as a PWA (standalone mode)
@@ -242,8 +243,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         // Final centered message
         <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center">
           <div className="animate-scale-in">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-6">
+              <Music className="w-8 h-8 text-primary-foreground" />
+            </div>
             <p className="text-2xl font-semibold text-foreground mb-4">
-              Happy practicing! 🎵
+              Happy practicing!
             </p>
             <p className="text-lg text-muted-foreground mb-8">
               Have fun exploring all Noteshare has to offer
