@@ -902,13 +902,10 @@ body.session-active h1 {
   isolation: isolate;
 }
 
-/* Ensure focus cards and ALL their children stay at full brightness */
+/* Ensure focus cards stay at full brightness during session.
+   Note: We deliberately do NOT force opacity: 1 on all children (*) because
+   that would override intentional UI patterns like Pro-feature greyed-out icons. */
 body.session-active .session-focus-card {
-  filter: none !important;
-  opacity: 1 !important;
-}
-
-body.session-active .session-focus-card * {
   filter: none !important;
   opacity: 1 !important;
 }
