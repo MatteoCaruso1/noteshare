@@ -10,6 +10,8 @@ import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { ShareEducationProvider } from "@/contexts/ShareEducationContext";
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
+import { MetronomeProvider } from "@/contexts/MetronomeContext";
+import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { SessionFocusOverlay } from "@/components/SessionFocusOverlay";
@@ -137,7 +139,9 @@ function AppInner() {
             <OnboardingProvider>
               <ShareEducationProvider>
                 <BottomNavProvider>
-                  <TooltipProvider>
+                  <MetronomeProvider>
+                    <PracticeTimerProvider>
+                      <TooltipProvider>
                     <BrowserRouter>
                       <ScrollToTop />
                       <ScrollLockDebugger />
@@ -183,7 +187,9 @@ function AppInner() {
                     <Sonner />
                     </BrowserRouter>
                   </TooltipProvider>
-                </BottomNavProvider>
+                </PracticeTimerProvider>
+              </MetronomeProvider>
+            </BottomNavProvider>
               </ShareEducationProvider>
             </OnboardingProvider>
             </ColorThemeProvider>
