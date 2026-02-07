@@ -363,7 +363,8 @@ const Auth = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-zinc-300 gap-2"
+                  className="w-full gap-2"
+                  style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
                   onClick={handleGoogleAuth}
                   disabled={loading}
                 >
@@ -375,7 +376,8 @@ const Auth = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300 transform-gpu"
+                  className="w-full"
+                  style={{ backgroundColor: '#e4e4e7', color: '#18181b', borderColor: '#d4d4d8' }}
                   onClick={() => setMode('signup')}
                 >
                   Sign up with Email
@@ -385,7 +387,8 @@ const Auth = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full bg-white text-zinc-900 hover:bg-zinc-100 border-zinc-300 gap-2"
+                  className="w-full gap-2"
+                  style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
                   onClick={handleGoogleAuth}
                   disabled={loading}
                 >
@@ -398,7 +401,8 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-zinc-400 text-zinc-900 hover:bg-zinc-500 border-zinc-400"
+                className="w-full"
+                style={{ backgroundColor: '#a1a1aa', color: '#18181b', borderColor: '#a1a1aa' }}
                 onClick={() => setMode('signin')}
               >
                 Go back
@@ -408,7 +412,8 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full bg-zinc-200 text-zinc-900 hover:bg-zinc-300 border-zinc-300"
+                className="w-full"
+                style={{ backgroundColor: '#e4e4e7', color: '#18181b', borderColor: '#d4d4d8' }}
                 onClick={() => setMode('signin')}
               >
                 Back to Sign In
