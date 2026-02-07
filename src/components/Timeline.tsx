@@ -176,10 +176,13 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
   }
 
   // Only show empty state if we're definitely done loading and have no notes
+  // Use min-height and fade-in animation to prevent choppy layout shifts
   if (notes.length === 0 && !loading && !isRefetching) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <div className="w-14 h-14 mx-auto rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+      <div 
+        className="text-center py-12 text-muted-foreground min-h-[180px] flex flex-col items-center justify-center animate-fade-in"
+      >
+        <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
           <Music className="w-7 h-7 text-muted-foreground" />
         </div>
         <p>No notes yet</p>
