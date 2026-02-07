@@ -182,8 +182,8 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
             "touch-manipulation select-none",
             "active:bg-accent/80",
             isRunning && "text-primary",
-            // Amber color for free users to indicate premium feature
-            !isPremiumLoading && !isPremium && "text-jazz-amber",
+            // Grey out for free users to indicate premium feature
+            !isPremiumLoading && !isPremium && "text-muted-foreground opacity-50",
             className
           )}
           style={{ WebkitTapHighlightColor: 'transparent' }}

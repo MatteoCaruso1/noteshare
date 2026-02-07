@@ -785,7 +785,7 @@ export function TodaysFocus() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className={`h-7 w-7 p-0 active:bg-transparent ${!isPremium ? 'text-jazz-amber' : ''}`}
+                          className={`h-7 w-7 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSaveToBacklog();
@@ -803,7 +803,7 @@ export function TodaysFocus() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className={`h-7 w-7 p-0 active:bg-transparent ${!isPremium ? 'text-jazz-amber' : ''}`}
+                          className={`h-7 w-7 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             setIsBacklogOpen(true);
