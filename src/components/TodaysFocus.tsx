@@ -396,22 +396,22 @@ export function TodaysFocus() {
       
       // Check if cursor is right after typing a character in this line
       if (cursorPos > lineStart && cursorPos <= lineEnd) {
-        // Match bullet or number prefix followed by exactly one lowercase letter
-        const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])$/);
-        const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])$/);
-        const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])$/);
+        // Match bullet, number, or checkbox prefix followed by a lowercase letter (with optional content after)
+        const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])(.*)$/);
+        const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])(.*)$/);
+        const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])(.*)$/);
         
         if (bulletCapMatch) {
           modified = true;
-          return bulletCapMatch[1] + bulletCapMatch[2].toUpperCase();
+          return bulletCapMatch[1] + bulletCapMatch[2].toUpperCase() + (bulletCapMatch[3] || '');
         }
         if (numberCapMatch) {
           modified = true;
-          return numberCapMatch[1] + numberCapMatch[2].toUpperCase();
+          return numberCapMatch[1] + numberCapMatch[2].toUpperCase() + (numberCapMatch[3] || '');
         }
         if (checkboxCapMatch) {
           modified = true;
-          return checkboxCapMatch[1] + checkboxCapMatch[2].toUpperCase();
+          return checkboxCapMatch[1] + checkboxCapMatch[2].toUpperCase() + (checkboxCapMatch[3] || '');
         }
       }
       

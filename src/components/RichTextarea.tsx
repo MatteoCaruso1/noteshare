@@ -204,7 +204,7 @@ export function RichTextarea({
     }, 0);
   }, [onChange, getLineInfo, renumberList]);
 
-  // Auto-capitalize the first letter after a list prefix
+  // Auto-capitalize the first letter after a list prefix (bullet, number, or checkbox)
   const autoCapitalizeAfterPrefix = useCallback((text: string, cursorPos: number): { text: string; newCursorPos: number } => {
     const lines = text.split('\n');
     let pos = 0;
@@ -217,9 +217,10 @@ export function RichTextarea({
       
       // Check if cursor is on this line and just after a list prefix
       if (cursorPos >= lineStart && cursorPos <= lineEnd) {
-        // Match bullet or number followed by a single lowercase letter
+        // Match bullet, number, or checkbox followed by a single lowercase letter (with optional content after)
         const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])(.*)$/);
         const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])(.*)$/);
+        const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])(.*)$/);
         
         if (bulletCapMatch) {
           modified = true;
@@ -228,6 +229,10 @@ export function RichTextarea({
         if (numberCapMatch) {
           modified = true;
           return numberCapMatch[1] + numberCapMatch[2].toUpperCase() + numberCapMatch[3];
+        }
+        if (checkboxCapMatch) {
+          modified = true;
+          return checkboxCapMatch[1] + checkboxCapMatch[2].toUpperCase() + checkboxCapMatch[3];
         }
       }
       return line;
