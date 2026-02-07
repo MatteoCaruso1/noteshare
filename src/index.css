@@ -755,35 +755,28 @@ html {
 
 /* ========================================
    TOAST LAYERING
-   z-index 40 keeps toasts below bottom nav (z-50) but above vignette (z-0)
+   z-index 60 keeps toasts ABOVE bottom nav (z-50) in all states
    Toasts must NEVER be dimmed or hidden by focus mode
    ======================================== */
 [data-sonner-toaster],
 .toaster,
 [data-radix-toast-viewport] {
   position: fixed !important;
-  z-index: 40 !important;
-}
-
-/* During active practice sessions, toasts must appear ABOVE the bottom nav (z-50) */
-body.session-active [data-sonner-toaster],
-body.session-active .toaster,
-body.session-active [data-radix-toast-viewport] {
   z-index: 60 !important;
 }
 
 /* ========================================
    SONNER TOAST ANIMATION OVERRIDES
-   Goal: smooth exit with opacity only (no translate/"flying")
+   Goal: smooth exit with opacity fade (no translate/"flying")
    Sonner uses data-removed="true" for exit, NOT data-state="closed"
    ======================================== */
 
-/* Force opacity-only fade for removed toasts */
+/* Subtle opacity fade-out for removed toasts */
 [data-sonner-toast][data-removed='true'] {
   opacity: 0 !important;
   transition-property: opacity !important;
-  transition-duration: 220ms !important;
-  transition-timing-function: cubic-bezier(0.2, 0, 0, 1) !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: ease-out !important;
 }
 
 /* Prevent Sonner's exit transform (--y) from triggering downward slide.
