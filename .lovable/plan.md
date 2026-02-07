@@ -1,84 +1,81 @@
 
-# Fix Toast Hidden Behind Bottom Nav During Practice Sessions
+## What’s happening (root cause)
+Yes — we’re editing the right toaster file (`src/components/ui/sonner.tsx`), but the app’s global CSS is overriding the toast z-index with `!important`, forcing Sonner (and Radix) toasts to sit at `z-index: 40`, which is below the bottom nav (`z-50`).
 
-## Problem
-Toasts are appearing behind the bottom navigation bar during active practice sessions. The current implementation tries to position toasts using `style={{ bottom: '80px + safe-area' }}`, but Sonner's internal positioning overrides this.
-
-## Root Cause
-Sonner has its own positioning system that ignores custom `bottom` values in the `style` prop. Instead, Sonner provides dedicated `offset` and `mobileOffset` props (see Sonner's TypeScript definitions) specifically for this purpose:
-
-```typescript
-type Offset = {
-    top?: string | number;
-    right?: string | number;
-    bottom?: string | number;
-    left?: string | number;
-} | string | number;
-
-offset?: Offset;
-mobileOffset?: Offset;
+In `src/index.css`:
+```css
+[data-sonner-toaster],
+.toaster,
+[data-radix-toast-viewport] {
+  position: fixed !important;
+  z-index: 40 !important; /* This defeats inline zIndex: 60 */
+}
 ```
 
-The `style={{ bottom: ... }}` approach does not work because Sonner internally sets its own positioning.
+So even though `sonner.tsx` sets `zIndex: 60`, it cannot win against `z-index: 40 !important`.
 
-## Solution
-Replace the `style.bottom` approach with Sonner's native `offset` and `mobileOffset` props.
+This matches your screenshot: the toast is “under” the nav (stacking context), not necessarily “too low” (offset).
 
----
+## Goal
+During an active practice session, toasts should appear above the bottom nav (both stacked above it and positioned with enough bottom offset).
 
-## Implementation
+## Implementation approach
+### 1) Fix the z-index override to allow “above nav during practice”
+Update `src/index.css` so:
+- Default behavior can stay “below nav” if you still want that outside practice.
+- During practice session state (`body.session-active`), bump toast z-index above nav.
 
-### File: `src/components/ui/sonner.tsx`
-
-**Current code:**
-```tsx
-<Sonner
-  theme={theme as ToasterProps["theme"]}
-  className="toaster group session-focus-exempt"
-  position={isMobile ? "bottom-center" : "bottom-right"}
-  style={{ 
-    bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : '24px',
-    zIndex: 60,
-    ['--toast-enter-duration' as string]: '300ms',
-    ['--toast-exit-duration' as string]: '200ms',
-  }}
-  ...
-/>
+Planned CSS change:
+- Keep base rule at z-index 40 (or raise it globally if you decide to always show above nav).
+- Add a more specific session rule:
+```css
+body.session-active [data-sonner-toaster],
+body.session-active .toaster,
+body.session-active [data-radix-toast-viewport] {
+  z-index: 60 !important;
+}
 ```
 
-**Updated code:**
-```tsx
-<Sonner
-  theme={theme as ToasterProps["theme"]}
-  className="toaster group session-focus-exempt"
-  position={isMobile ? "bottom-center" : "bottom-right"}
-  offset={24}
-  mobileOffset={80}
-  style={{ 
-    zIndex: 60,
-    ['--toast-enter-duration' as string]: '300ms',
-    ['--toast-exit-duration' as string]: '200ms',
-  }}
-  ...
-/>
-```
+Why this works:
+- Same `!important` level, but more specific selector wins.
+- It uses the existing “practice session” body class your app already applies.
 
-**Changes:**
-1. Add `offset={24}` - desktop offset from screen edge (24px from bottom-right)
-2. Add `mobileOffset={80}` - mobile offset from screen edge (80px from bottom to clear the nav bar)
-3. Remove the `bottom` property from the `style` object since Sonner handles this internally via the offset props
+### 2) Keep / verify bottom offset logic in Sonner
+Your `src/components/ui/sonner.tsx` already computes:
+- `calc(92px + env(safe-area-inset-bottom))` normally
+- `calc(112px + env(safe-area-inset-bottom))` during practice
 
----
+We’ll keep this, but after the z-index fix, it should finally be visible above the nav.
 
-## Technical Notes
+Optional refinement (if needed after the z-index fix):
+- Increase those numbers slightly if the nav is taller on certain devices (especially iOS with safe-area + extra padding). We’ll only do this if it still overlaps after layering is corrected.
 
-- The `mobileOffset` prop is specifically designed for mobile bottom navigation scenarios
-- Sonner internally detects mobile viewports and applies `mobileOffset` automatically
-- The safe-area-inset is typically handled by the nav bar itself, so 80px should be sufficient to clear the nav
-- The `zIndex: 60` stays in `style` to ensure toast is above the nav bar (z-50)
+### 3) Confirm we’re not seeing a different toaster
+`src/App.tsx` renders **two** toasters:
+- `src/components/ui/toaster.tsx` (Radix/shadcn toast)
+- `src/components/ui/sonner.tsx` (Sonner)
 
-## Testing
-1. Start a practice session
-2. Trigger a toast (e.g., via any action that shows a notification)
-3. Verify the toast appears fully visible above the bottom navigation bar
-4. Test on both mobile and desktop views
+Most of your code calls `toast` from `sonner`, so Sonner is the one that matters, but we’ll update CSS in a way that also covers Radix’s viewport to prevent the same problem there.
+
+## Files to change
+1) `src/index.css`
+- Adjust the “TOAST LAYERING” section:
+  - keep base z-index
+  - add `body.session-active ... { z-index: 60 !important; }`
+
+(We likely won’t need to change `src/components/ui/sonner.tsx` beyond what’s already there, but we’ll confirm after CSS is fixed.)
+
+## Testing checklist (what you should do right after)
+1) Start a practice session (so `body.session-active` is applied).
+2) Trigger any toast.
+3) Confirm:
+   - Toast is visually on top of the bottom nav (not behind it).
+   - Toast remains above nav when the keyboard opens/closes (BottomNav transforms).
+4) Repeat not in a practice session (optional):
+   - Confirm whether you still want toasts below nav outside practice. If you decide you always want them above, we’ll simplify CSS to use z-index 60 globally.
+
+## If it still fails after this
+We’ll inspect the computed styles in-browser:
+- Check `[data-sonner-toaster]` computed `z-index`
+- Check if some parent stacking context / transform is causing unexpected stacking behavior
+- Verify `body.session-active` is actually present when you think practice is active
