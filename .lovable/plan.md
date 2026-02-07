@@ -1,89 +1,115 @@
 
-Goal
-- Make “regular” (Radix/shadcn) toasts always appear above the persistent BottomNav in every state (normal, active practice session, quick note capture, etc.) with a fix that cannot drift as UI heights change.
+## Goal
+Fix a mobile-only iOS Safari/PWA interaction bug where buttons inside the Metronome and Practice Timer popovers temporarily become “transparent / hollow” after tap, and only return to normal after tapping elsewhere. Ensure a robust solution that doesn’t depend on fragile `:active` / `:hover` behavior and works consistently across:
+- Metronome “Start/Stop” button
+- Practice Timer “Start / Pause / Resume / End” buttons
+- Metronome quick-tempo buttons (60/80/100/120/140)
+- Practice Timer presets (5/10/15/20/30)
 
-What’s actually going wrong (why the previous fixes can still fail)
-1) The offset is gated by `useIsMobile()`
-- In `src/components/ui/toaster.tsx`, we only apply the `bottom` offset when `isMobile` is true:
-  - `bottom: isMobile ? mobileBottomOffset : undefined`
-- BottomNav is fixed and present across breakpoints in this app, so on wider viewports (>= 768px) `isMobile` becomes false, and the regular toast viewport falls back to `bottom: 0`.
-- Result: on non-“mobile” viewports the toast can sit behind the BottomNav even though the mobile offset logic is correct.
-- Sonner “feels” like it works more often because it’s typically positioned bottom-right and can visually avoid the nav content; but Radix viewport is bottom-center across widths and is more likely to overlap.
+## What’s happening (root cause)
+In `src/index.css`, there is a touch-device-specific CSS block intended to prevent “stuck hover” on iOS:
 
-2) The hard-coded 92px / 112px can be wrong in real UI
-- BottomNav height is not truly constant:
-  - It includes safe-area padding + an extra 12px on max-md (`max-md:pb-[calc(env(...)+12px)]`)
-  - It can be affected by font rendering, platform, and the keyboard-hide transform behavior.
-- Even on mobile, if the real nav height is >92 or >112, a fixed offset can still allow partial overlap.
+```css
+@media (hover: none) and (pointer: coarse) {
+  button:not([aria-pressed="true"]):hover { background-color: inherit; }
+  ...
+}
+```
 
-3) Stacking contexts can still bite us in edge cases
-- BottomNav uses `transform: translate3d(...)` (iOS stability fix), which creates its own stacking context.
-- While our z-index settings are high, rendering the toast layer in the same React tree can still be affected by ancestor stacking contexts/overflows in rare cases.
-- Sonner internally behaves more “portal-like”; copying that strategy for Radix makes this class of issues go away.
+On iOS Safari, after tapping a button, `:hover` can “stick” until the next tap. This rule forces the hovered button’s `background-color` to become `inherit` (often effectively transparent), which visually matches exactly what you’re seeing: a button looks unfilled until you tap elsewhere (which clears the stuck hover state).
 
-Robust fix (make it impossible to be wrong)
-A. Replace “mobile-only” offsets with a real measured BottomNav clearance
-- Measure the actual rendered height of BottomNav (including safe-area and padding) using a `ResizeObserver`.
-- Store that height in a global CSS variable on `document.documentElement` or `document.body`, e.g.:
-  - `--bottom-nav-height: 104px`
-- Then use this variable for both toast systems so they always clear the nav regardless of viewport size and future styling changes.
+This is also why it does not happen on desktop.
 
-B. Use the same clearance variable for both Radix (regular) and Sonner (pro) toasts
-- Regular Radix/shadcn toasts:
-  - Set `ToastViewport` bottom to `calc(var(--bottom-nav-height, 0px) + 16px)` (16px gives breathing room equal to the viewport padding).
-- Sonner toasts:
-  - Instead of hard-coded 92/112 in `mobileOffset`, use:
-    - `mobileOffset={{ bottom: "calc(var(--bottom-nav-height, 0px) + 16px)" }}`
-  - And optionally also apply a similar bottom offset when not mobile (to cover the >=768 case).
+## Strategy (robust fix)
+We’ll fix this at the correct layer: the global CSS rule that is causing the issue, and we’ll harden these particular controls so they are never affected by the “hover reset” logic.
 
-C. Portal the “regular” Toaster to `document.body` (like your tours already do)
-- Wrap the Radix ToastProvider/Viewport render with `createPortal(..., document.body)` so:
-  - It escapes any page-level stacking contexts/overflow
-  - It behaves more like Sonner and is reliably “top-layer UI”
-- This is a defensive improvement that prevents future regressions.
+### Design principles for the fix
+1. **Do not globally override `button:hover` to `inherit` on touch devices**, because it breaks any button that relies on a real background color.
+2. Keep the original intent (avoid “stuck hover” visuals), but **scope it narrowly** so it only affects elements where it’s safe.
+3. Prefer **state-driven styling** and **explicit “mobile-safe” interaction handling** (blur on touch/pointer up) over relying on pseudo-classes.
 
-Implementation steps (files and what will change)
-1) `src/components/BottomNav.tsx`
-- Add a stable selector for measurement, e.g. `data-bottom-nav="true"`.
-- Add a small effect that:
-  - Observes the nav element with `ResizeObserver`
-  - Updates `document.documentElement.style.setProperty('--bottom-nav-height', `${height}px`)`
-  - Also updates on `visualViewport.resize` (safe-area/keyboard changes) as a fallback
+## Implementation plan (code changes)
 
-2) `src/components/ui/toaster.tsx` (Radix/shadcn “regular” toasts)
-- Remove the `isMobile` gating for bottom positioning.
-- Apply bottom offset using the CSS variable:
-  - `bottom: "calc(var(--bottom-nav-height, 0px) + 16px)"`
-- Keep z-index at 9999.
-- Render via `createPortal` to `document.body` (guarded for SSR: only portal when `typeof document !== 'undefined'`).
+### 1) Replace the problematic touch hover reset in `src/index.css`
+Update the touch-device `:hover` reset so it does not clobber real buttons.
 
-3) `src/components/ui/sonner.tsx` (Pro/Sonner toasts)
-- Replace the hard-coded `92px/112px` logic with the same CSS variable-based approach so both systems stay in sync.
-- Ensure the offset applies in the relevant positioning mode(s) so desktop/tablet widths don’t regress.
+Recommended approach:
+- Introduce an opt-out attribute (e.g. `data-no-hover-reset`) and modify the selector so it only resets hover backgrounds for elements that do not opt out.
+- Also avoid touching buttons that clearly have a background color class applied (we can’t reliably detect computed styles in CSS, so attribute-based is safest).
 
-4) `src/index.css` (optional tightening)
-- Keep the existing `[data-radix-toast-viewport] { z-index: 9999 !important; }`.
-- Optionally add a small safety rule:
-  - `[data-radix-toast-viewport] { bottom: calc(var(--bottom-nav-height, 0px) + 16px) !important; }`
-  - This is “belt and suspenders” if an inline style ever gets missed, but we’ll prefer keeping logic in React unless we see a reason to enforce via CSS.
+Concretely:
+- Change:
+  - `button:not([aria-pressed="true"]):hover { background-color: inherit; }`
+- To something like:
+  - `button:not([aria-pressed="true"]):not([data-no-hover-reset]):hover { background-color: inherit; }`
 
-Validation checklist (what you should see after)
-- On mobile widths:
-  - Regular toast never overlaps BottomNav in normal mode, practice active, quick note capture.
-- On tablet/desktop widths:
-  - Regular toast still clears the BottomNav (this is the big missing piece today).
-- Regression check:
-  - Sonner toasts continue to behave the same (still above nav).
-- Stress test:
-  - Rotate device / resize browser; open/close keyboard on touch device; trigger toasts during transitions.
+And similarly for `[role="button"]` / `.cursor-pointer` if needed.
 
-Notes / tradeoffs
-- Measuring real element height is more robust than maintaining “magic numbers” (92/112) and eliminates future tuning.
-- Portaling the toast layer reduces the chance of stacking-context bugs and aligns with how top-level overlays are typically implemented.
+Why this is robust:
+- It preserves your original “unstick hover backgrounds” defense for most UI.
+- It gives us a deterministic escape hatch for controls where hover resetting is harmful.
 
-Feature suggestions (next)
-- Add a small “toast test” debug button (dev-only) to trigger both toast systems so you can verify stacking/offset quickly.
-- Add an automated visual regression route that shows BottomNav + practice state + triggered toasts (useful before publishing).
-- Add a unified “UI clearance” context (BottomNav height, session banners) so any overlay (dialogs, sheets, toasts) can position consistently.
-- Add a safe-area/keyboard QA checklist screen to quickly validate iOS/Android layout behavior.
-- Test end-to-end on mobile and desktop: trigger regular toasts from several actions (practice start/end, quick note capture, errors) and confirm they never sit under the BottomNav.
+### 2) Mark Metronome + Practice Timer popover buttons as “no hover reset”
+In:
+- `src/components/Metronome.tsx`
+- `src/components/PracticeTimer.tsx`
+
+Add `data-no-hover-reset` to:
+- Metronome Start/Stop button
+- Tempo buttons (60/80/100/120/140)
+- Practice Timer Start/Pause/Resume/End buttons
+- Practice Timer preset buttons (5/10/15/20/30)
+
+This ensures the global mobile hover reset never applies to these controls.
+
+### 3) Simplify and harden “pressed/focus” behavior on mobile (optional but recommended)
+Even after fixing the CSS root cause, iOS can still show odd “focused” states after taps on some elements, especially in overlays/popovers.
+
+We will:
+- Add a lightweight blur-on-interaction pattern to these specific buttons:
+  - `onTouchEnd={(e) => e.currentTarget.blur()}`
+  - `onPointerUp={(e) => (e.currentTarget as HTMLButtonElement).blur()}`
+- Keep using `onClick` to trigger audio-related actions (important for iOS audio gesture rules).
+
+This avoids “sticky focus” outlines and reduces the chance of iOS retaining a pseudo state.
+
+### 4) Standardize the popover control buttons to use the shared `<Button />` component (targeted refactor)
+Right now, these popover buttons are plain `<button>` elements. Your shared `src/components/ui/button.tsx` already includes:
+- `touch-manipulation`
+- `[-webkit-tap-highlight-color:transparent]`
+- `active:scale-[0.98]`
+- and importantly a built-in `onTouchEnd` blur handler.
+
+We will refactor the Metronome and Practice Timer control buttons to use `<Button variant="default|secondary|outline" size="sm">` (or a small custom “tool button” variant if needed) so behavior is consistent and centralized.
+
+Notes:
+- We’ll keep visuals minimal (per your request) and remove fancy feedback.
+- If the current exact sizing is important, we can keep the same `h-7 px-3` etc via `className` overrides on `<Button>`.
+
+### 5) Verify that the popover trigger buttons are not impacted
+The trigger buttons already have `active:bg-accent/80` and touch classes and are likely fine. But we’ll also add `data-no-hover-reset` to the trigger buttons for extra safety (since they are also buttons on touch devices inside a sticky-hover environment).
+
+### 6) Mobile verification checklist (what you should test)
+On an iPhone (Safari + “Add to Home Screen” PWA if you use it):
+1. Open Metronome popover → tap Start → ensure button stays filled and does not turn transparent.
+2. Tap Stop → same expectation.
+3. Tap various tempo preset buttons → none should become transparent/hollow after tap.
+4. Open Practice Timer → Start → Pause → Resume → End → none become transparent/hollow.
+5. Tap somewhere else after tapping a control → nothing visually “snaps back” (because it should never break in the first place).
+6. Repeat while scrolling the page (since stuck hover is often worse while scrolling).
+
+## Risks / tradeoffs
+- Narrowing the global “hover reset” may allow some other elements to show stuck hover again on iOS. Using `data-no-hover-reset` gives us control: we can apply it only where needed, and keep hover-reset behavior for other elements.
+- Refactoring to `<Button />` could change spacing slightly; we’ll keep classes aligned to preserve layout.
+
+## Files expected to change
+- `src/index.css` (fix / scope the touch hover reset rule)
+- `src/components/Metronome.tsx` (apply `data-no-hover-reset`, optional blur handlers, optionally replace with `<Button />`)
+- `src/components/PracticeTimer.tsx` (same)
+- Potentially (only if needed): `src/components/ui/button.tsx` (add `onPointerUp` blur in addition to `onTouchEnd`, or add a tiny variant/utility class for these compact controls)
+
+## Acceptance criteria
+- On iOS, tapping any button inside Metronome/Practice Timer popovers never causes it to become transparent/hollow.
+- No “tap elsewhere to fix” behavior remains.
+- Desktop behavior remains unchanged.
+- Metronome/Timer functionality continues uninterrupted (audio + timing unaffected).
