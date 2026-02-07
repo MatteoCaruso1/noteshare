@@ -303,7 +303,7 @@ export function QuickNoteCapture() {
 
           {/* Text Content */}
           <RichTextarea
-            placeholder="What ideas or sounds do you want to save?"
+            placeholder="What ideas do you want to save?"
             value={noteText}
             onChange={setNoteText}
             showTips
