@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { NoteCard } from './NoteCard';
 import { NoteCardSkeleton } from './NoteCardSkeleton';
@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useSignedUrlPrefetch } from '@/hooks/useSignedUrlPrefetch';
 import { Loader2, Music, Lock, Sparkles } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
-import { differenceInDays, parseISO } from 'date-fns';
 
 interface TimelineProps {
   notes: NoteWithAuthor[];
@@ -17,22 +16,55 @@ interface TimelineProps {
 }
 
 const LOAD_MORE_COUNT = 10;
-const FREE_USER_DAYS_LIMIT = 14;
 
-// Loading skeleton component with staggered animation
-const LoadingSkeleton = ({ message }: { message?: string }) => (
-  <div className="space-y-4">
-    {message && (
-      <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <p className="text-sm">{message}</p>
+type UIMode = 'loading' | 'empty' | 'list';
+
+// Stable empty/loading shell - always maintains consistent height
+function EmptyStateShell({ 
+  uiMode, 
+  showSkeleton,
+  showSlowMessage 
+}: { 
+  uiMode: 'loading' | 'empty';
+  showSkeleton: boolean;
+  showSlowMessage: boolean;
+}) {
+  return (
+    <div className="min-h-[180px] flex flex-col items-center justify-center">
+      {/* Loading state with skeleton */}
+      <div 
+        className={`w-full transition-opacity duration-200 ${
+          uiMode === 'loading' && showSkeleton ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+        }`}
+      >
+        <div className="space-y-4">
+          {showSlowMessage && (
+            <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <p className="text-sm">Still loading... This may take a moment on slower connections</p>
+            </div>
+          )}
+          {[0, 1, 2].map((i) => (
+            <NoteCardSkeleton key={i} index={i} />
+          ))}
+        </div>
       </div>
-    )}
-    {[0, 1, 2].map((i) => (
-      <NoteCardSkeleton key={i} index={i} />
-    ))}
-  </div>
-);
+      
+      {/* Empty state */}
+      <div 
+        className={`text-center text-muted-foreground transition-opacity duration-200 ${
+          uiMode === 'empty' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+        }`}
+      >
+        <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center mb-4 mx-auto">
+          <Music className="w-7 h-7 text-muted-foreground" />
+        </div>
+        <p>No notes yet</p>
+        <p className="text-sm mt-1">Start a practice session or capture a quick note!</p>
+      </div>
+    </div>
+  );
+}
 
 // History gate component for older notes
 function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
@@ -60,13 +92,106 @@ function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
 export const Timeline = memo(function Timeline({ notes, loading, isRefetching, displayCount, onLoadMore }: TimelineProps) {
   // ========================================
   // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
-  // React requires hooks to be called in the same order every render
   // ========================================
   
-  const [showSlowMessage, setShowSlowMessage] = useState(false);
-  // Delay showing loading skeleton to avoid flash when data arrives quickly
-  const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(false);
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
+  
+  // UI Mode state machine to prevent flickering
+  const [uiMode, setUiMode] = useState<UIMode>(() => {
+    if (notes.length > 0) return 'list';
+    return loading || isRefetching ? 'loading' : 'empty';
+  });
+  
+  // Track if skeleton should be visible (delay to prevent flash on quick loads)
+  const [showSkeleton, setShowSkeleton] = useState(false);
+  const [showSlowMessage, setShowSlowMessage] = useState(false);
+  
+  // Refs for debounce timers
+  const emptyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skeletonMinTimeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skeletonShownAtRef = useRef<number | null>(null);
+  
+  const isLoading = loading || isRefetching;
+  
+  // State machine effect - handles transitions with debouncing
+  useEffect(() => {
+    // Clear any pending empty transition when state changes
+    if (emptyDebounceRef.current) {
+      clearTimeout(emptyDebounceRef.current);
+      emptyDebounceRef.current = null;
+    }
+    
+    // If we have notes, immediately switch to list mode
+    if (notes.length > 0) {
+      setUiMode('list');
+      setShowSkeleton(false);
+      setShowSlowMessage(false);
+      skeletonShownAtRef.current = null;
+      return;
+    }
+    
+    // No notes - determine if loading or empty
+    if (isLoading) {
+      setUiMode('loading');
+      // Don't reset skeleton timers here - they're managed separately
+    } else {
+      // Loading finished with no notes - debounce transition to empty
+      // This prevents brief "empty" flashes during refetch cycles
+      const minSkeletonTime = 400; // ms
+      const emptyDebounceTime = 200; // ms
+      
+      // If skeleton was shown, ensure it stays for minimum time
+      if (skeletonShownAtRef.current && showSkeleton) {
+        const elapsed = Date.now() - skeletonShownAtRef.current;
+        const remaining = Math.max(0, minSkeletonTime - elapsed);
+        
+        emptyDebounceRef.current = setTimeout(() => {
+          setUiMode('empty');
+          setShowSkeleton(false);
+          setShowSlowMessage(false);
+          skeletonShownAtRef.current = null;
+        }, remaining + emptyDebounceTime);
+      } else {
+        // No skeleton was shown, just debounce the empty transition
+        emptyDebounceRef.current = setTimeout(() => {
+          setUiMode('empty');
+        }, emptyDebounceTime);
+      }
+    }
+    
+    return () => {
+      if (emptyDebounceRef.current) {
+        clearTimeout(emptyDebounceRef.current);
+      }
+    };
+  }, [notes.length, isLoading, showSkeleton]);
+  
+  // Skeleton display timer - show after delay to prevent flash
+  useEffect(() => {
+    if (uiMode === 'loading' && !showSkeleton) {
+      const skeletonDelayTimer = setTimeout(() => {
+        setShowSkeleton(true);
+        skeletonShownAtRef.current = Date.now();
+      }, 300);
+      
+      const slowMessageTimer = setTimeout(() => {
+        setShowSlowMessage(true);
+      }, 5000);
+      
+      return () => {
+        clearTimeout(skeletonDelayTimer);
+        clearTimeout(slowMessageTimer);
+      };
+    }
+  }, [uiMode, showSkeleton]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (emptyDebounceRef.current) clearTimeout(emptyDebounceRef.current);
+      if (skeletonMinTimeRef.current) clearTimeout(skeletonMinTimeRef.current);
+    };
+  }, []);
   
   // Separate notes into recent (last 14 days) and older
   // DISABLED: Free users now have full history access
@@ -78,130 +203,36 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
       olderNotesCount: 0,
       displayedNotes: allDisplayed,
     };
-    
-    /* PRESERVED FOR REVERSION:
-    const now = new Date();
-    
-    // For premium users or while loading, show all notes
-    if (isPremium || isPremiumLoading) {
-      return {
-        olderNotesCount: 0,
-        displayedNotes: allDisplayed,
-      };
-    }
-    
-    // For Lite users, filter to last 14 days
-    const recent: NoteWithAuthor[] = [];
-    let olderCount = 0;
-    
-    for (const note of allDisplayed) {
-      const noteDate = parseISO(note.created_at);
-      const daysAgo = differenceInDays(now, noteDate);
-      
-      if (daysAgo <= FREE_USER_DAYS_LIMIT) {
-        recent.push(note);
-      } else {
-        olderCount++;
-      }
-    }
-    
-    // Also count older notes not yet displayed
-    const remainingNotes = notes.slice(displayCount);
-    for (const note of remainingNotes) {
-      const noteDate = parseISO(note.created_at);
-      const daysAgo = differenceInDays(now, noteDate);
-      if (daysAgo > FREE_USER_DAYS_LIMIT) {
-        olderCount++;
-      }
-    }
-    
-    return {
-      olderNotesCount: olderCount,
-      displayedNotes: recent,
-    };
-    */
   }, [notes, displayCount]);
 
-  // Count total notes within free limit for comparison - MUST be before early returns
-  // DISABLED: Free users now have full history access
+  // Count total notes within free limit for comparison
   const totalRecentNotesCount = useMemo(() => {
-    return notes.length; // All users see all notes
-    
-    /* PRESERVED FOR REVERSION:
-    if (isPremium || isPremiumLoading) return notes.length;
-    const now = new Date();
-    return notes.filter(n => {
-      const daysAgo = differenceInDays(now, parseISO(n.created_at));
-      return daysAgo <= FREE_USER_DAYS_LIMIT;
-    }).length;
-    */
+    return notes.length;
   }, [notes]);
 
   // Prefetch signed URLs for all displayed notes in a single batch
   useSignedUrlPrefetch(displayedNotes);
-  
-  // Track extended loading time for user feedback
-  const isLoading = loading || isRefetching;
-  
-  // Delay showing loading skeleton to prevent flash on quick loads
-  useEffect(() => {
-    if (isLoading && notes.length === 0) {
-      // Only show skeleton after 300ms to avoid flash on quick empty responses
-      const skeletonTimer = setTimeout(() => setShowLoadingSkeleton(true), 300);
-      // Show slow message after 5 seconds of loading with no data
-      const slowTimer = setTimeout(() => setShowSlowMessage(true), 5000);
-      return () => {
-        clearTimeout(skeletonTimer);
-        clearTimeout(slowTimer);
-      };
-    }
-    setShowLoadingSkeleton(false);
-    setShowSlowMessage(false);
-  }, [isLoading, notes.length]);
 
   // ========================================
-  // EARLY RETURNS - Safe now that all hooks are called above
+  // RENDER - Single stable structure
   // ========================================
 
-  // If we have no notes and are loading, only show skeleton after delay to avoid flash
-  if (notes.length === 0 && isLoading && showLoadingSkeleton) {
+  // Render empty/loading shell when no notes
+  if (uiMode === 'loading' || uiMode === 'empty') {
     return (
-      <LoadingSkeleton 
-        message={showSlowMessage 
-          ? "Still loading... This may take a moment on slower connections" 
-          : "Loading your notes..."
-        } 
+      <EmptyStateShell 
+        uiMode={uiMode} 
+        showSkeleton={showSkeleton}
+        showSlowMessage={showSlowMessage}
       />
     );
   }
 
-  // Only show empty state if we're definitely done loading and have no notes
-  // Use min-height and fade-in animation to prevent choppy layout shifts
-  if (notes.length === 0 && !loading && !isRefetching) {
-    return (
-      <div 
-        className="text-center py-12 text-muted-foreground min-h-[180px] flex flex-col items-center justify-center animate-fade-in"
-      >
-        <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
-          <Music className="w-7 h-7 text-muted-foreground" />
-        </div>
-        <p>No notes yet</p>
-        <p className="text-sm mt-1">Start a practice session or capture a quick note!</p>
-      </div>
-    );
-  }
-
-  // ========================================
-  // COMPUTED VALUES - Not hooks, safe after early returns
-  // ========================================
-
-  // For premium users, show load more based on total notes
-  // For Lite users, show load more if there are more recent notes to load
+  // List mode - render notes
   const hasMoreRecentToLoad = isPremium 
     ? displayCount < notes.length
     : displayedNotes.length < totalRecentNotesCount;
 
-  // Only show the gate after all recent notes have been loaded
   const showOlderNotesGate = !isPremium && !isPremiumLoading && 
     olderNotesCount > 0 && 
     displayedNotes.length >= totalRecentNotesCount;
