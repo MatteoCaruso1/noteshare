@@ -94,7 +94,7 @@ export function PremiumDialog() {
                   My name is <span className="text-foreground">Matteo</span>, a pianist and independent developer. Your contributions make it possible for me to keep improving Noteshare. Thank you for your support!
                 </p>
                 <p>
-                  All I want is to build a great tool for musicians like me, so I've priced the product as cheaply as possible. Subscription or lifetime purchases both help me manage the development costs associated with my passion project.
+                  My objective is to build the ultimate tool for musicians, so I've attempted to price the product as reasonably as possible. Subscription or lifetime purchases both help me manage the development costs of my passion project.
                 </p>
               </div>
             </CollapsibleContent>
