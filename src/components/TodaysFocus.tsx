@@ -13,6 +13,7 @@ import { ClipboardList, Save, FolderOpen, ChevronDown, ChevronRight } from 'luci
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
@@ -21,6 +22,7 @@ export function TodaysFocus() {
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
+  const { toast: structuredToast } = useToast();
   const [text, setText] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -810,7 +812,18 @@ export function TodaysFocus() {
 
   const handleSaveToBacklog = () => {
     if (!isPremium) {
-      toast.error('Save to backlog is a Pro feature');
+      structuredToast({
+        title: "Pro Feature",
+        description: "Saving to backlog is available for Pro users.",
+        action: (
+          <button
+            onClick={openPremiumDialog}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            See Pro
+          </button>
+        ),
+      });
       return;
     }
     
