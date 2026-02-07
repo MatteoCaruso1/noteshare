@@ -8,6 +8,7 @@ import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
 import { useActiveSession } from '@/hooks/useSessions';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
+import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -51,10 +52,12 @@ export function QuickNoteCapture() {
   const { data: currentFocus } = useCurrentFocusEntry();
   const { data: activeSession } = useActiveSession(profile?.id);
   const { checkAndTrigger } = useShareEducation();
+  const { triggerPrompt: triggerHomescreenPrompt } = useHomescreenPromptTrigger();
   
   const handleNoteCreated = useCallback((noteId: string, totalCount: number) => {
     checkAndTrigger(noteId, totalCount);
-  }, [checkAndTrigger]);
+    triggerHomescreenPrompt(totalCount);
+  }, [checkAndTrigger, triggerHomescreenPrompt]);
   
   const createNote = useCreateNote(handleNoteCreated);
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
