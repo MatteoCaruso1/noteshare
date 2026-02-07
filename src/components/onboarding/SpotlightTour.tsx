@@ -3,6 +3,13 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
+// Check if the app is running as a PWA (standalone mode)
+const isStandaloneMode = () => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         (window.navigator as any).standalone === true;
+};
+
 interface TourStep {
   targetSelector: string;
   message: string;
@@ -60,12 +67,29 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       const element = document.querySelector(currentTourStep.targetSelector);
       if (element) {
         const rect = element.getBoundingClientRect();
+        
+        // For the timeline step (step 3), limit height on Safari mobile web (non-PWA)
+        // to prevent the highlight from extending into the bottom nav area
+        if (step === 3 && !isStandaloneMode()) {
+          // Bottom nav is roughly 80px high, add some buffer
+          const bottomNavHeight = 88;
+          const maxBottom = window.innerHeight - bottomNavHeight;
+          
+          if (rect.bottom > maxBottom) {
+            // Create a modified rect that doesn't extend into the nav area
+            const clampedHeight = Math.max(0, maxBottom - rect.top);
+            const modifiedRect = new DOMRect(rect.x, rect.y, rect.width, clampedHeight);
+            setTargetRect(modifiedRect);
+            return true;
+          }
+        }
+        
         setTargetRect(rect);
         return true;
       }
     }
     return false;
-  }, [currentTourStep]);
+  }, [currentTourStep, step]);
 
   useEffect(() => {
     if (isFinalStep) {
