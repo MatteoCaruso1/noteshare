@@ -1,80 +1,83 @@
 
-Goal: Fix regular (shadcn/Radix) toasts appearing underneath the persistent BottomNav, while keeping Pro-feature (Sonner) toasts behaving correctly.
+Problem diagnosis (why it flickers small → big → small → big)
+- The Timeline has 3 different “no notes” render paths that mount/unmount depending on fast-changing flags:
+  1) “Empty list container” (when notes.length === 0, isLoading === true, but showLoadingSkeleton === false during the first ~300ms)  
+     - This renders almost nothing, so the timeline area collapses to a small height.
+  2) “LoadingSkeleton” (after the 300ms timer)  
+     - This suddenly expands the timeline area.
+  3) “No notes yet” empty state (when loading/refetching flips to false)  
+     - This expands again, but if loading toggles briefly (common right after ending a session + invalidations + query state settling), it can bounce between these states quickly.
+- Your fade-in didn’t help because the flicker is primarily layout reflow (height changes) caused by switching between these mutually exclusive returns—not a simple opacity transition.
 
-What’s happening (why Pro toasts are fine but regular aren’t)
-- You have two toast systems mounted in `src/App.tsx`:
-  1) Sonner: `src/components/ui/sonner.tsx` (what you’re calling “pro feature toast”)
-     - It already computes a dynamic `mobileOffset` (92px or 112px + safe-area) so the toast sits above the BottomNav and (when active) the session UI.
-  2) Radix/shadcn: `src/components/ui/toaster.tsx` + `src/components/ui/toast.tsx` (what you’re calling “regular toast”)
-     - On mobile it only uses `bottom-20` (80px). That’s not enough clearance once your BottomNav has extra padding for safe-area + the larger session UI state. Result: the toast is rendered “behind/under” the nav visually (it’s actually just positioned too low).
+Root cause in code (specific)
+- In `src/components/Timeline.tsx`:
+  - When `notes.length === 0` and `isLoading === true` and `showLoadingSkeleton === false`, the component falls through to the “normal” render and returns:
+    - `<div className="space-y-4"> ...nothing... </div>`
+  - That “fall-through empty render” is the “started small” phase.
+  - Then when `showLoadingSkeleton` flips true, it returns the skeleton (big).
+  - Then when `isLoading` flips false briefly (or `isRefetching` flips), it can return empty state or fall through again, creating the double flicker.
 
-Additionally, `src/index.css` contains a global “TOAST LAYERING” rule that forces `[data-sonner-toaster], .toaster, [data-radix-toast-viewport] { z-index: 60 !important; }`.
-- This doesn’t currently explain the “under nav” symptom (because 60 > 50), but it is risky because it overrides the inline zIndex you set in Sonner (`9999`) and could become a problem if any other overlay/nav layer changes.
-- We’ll make the layering rule consistent with your intended “always above everything” behavior.
+Robust fix strategy
+- Never allow the “no notes” area to collapse to a tiny height while state is settling.
+- Replace the current early-return switching with a single, stable “empty-state shell” that:
+  - always reserves a consistent min-height from the first paint
+  - crossfades between “Loading” and “Empty” content without changing outer container height
+  - debounces the transition from “loading” → “empty” so brief refetch flips don’t show the wrong UI
 
-Implementation plan (code changes)
+Implementation plan (minimal surface area, strong stability)
 
-1) Make Radix/shadcn toasts use the same bottom clearance logic as Sonner
-Files:
-- `src/components/ui/toaster.tsx`
+1) Convert the “no notes” rendering into a stable shell (no more collapsing)
+File: `src/components/Timeline.tsx`
+- Introduce a wrapper that always renders when `notes.length === 0`, with a fixed minimum height (and optionally a fixed padding layout) so the space stays stable from the first frame:
+  - e.g. `min-h-[180px] flex items-center justify-center` (you already used min-h for empty state; we’ll apply it to the entire empty/loading shell)
+- Inside that wrapper, we conditionally show:
+  - skeleton content
+  - or “No notes yet” content
+- Important: we do not render the “empty list container with nothing” anymore.
 
-Changes:
-- Import `useAuth` and `useActiveSession` (same pattern as Sonner).
-- Compute `isPracticeActive` and a `mobileBottomOffset`:
-  - inactive: `calc(92px + env(safe-area-inset-bottom, 0px))`
-  - active: `calc(112px + env(safe-area-inset-bottom, 0px))`
-- Replace the current `bottom-20` with an arbitrary Tailwind bottom calc that matches the computed state. Example approach:
-  - When `isMobile` and session inactive: `bottom-[calc(92px+env(safe-area-inset-bottom,0px))]`
-  - When `isMobile` and session active: `bottom-[calc(112px+env(safe-area-inset-bottom,0px))]`
-- Also add `top-auto` on mobile so the viewport doesn’t stretch top-to-bottom unnecessarily (optional but makes the CSS easier to reason about).
+2) Add a small “state stabilizer” (debounce + minimum display time)
+File: `src/components/Timeline.tsx`
+- Add a small internal UI state to prevent rapid toggles:
+  - `uiMode: 'loading' | 'empty' | 'list'`
+- Rules:
+  - If `notes.length > 0` → `uiMode = 'list'` immediately.
+  - If `notes.length === 0`:
+    - while `isLoading` is true → `uiMode = 'loading'` (but only show skeleton after a short delay to prevent flash, as you intended)
+    - when `isLoading` becomes false → wait ~150–250ms before switching to `empty`
+      - if `isLoading` becomes true again during that window, cancel the switch
+  - Once skeleton is shown, keep it shown for a minimum time (e.g. 300–400ms) so you don’t get “skeleton pops in for 50ms then disappears” flicker.
 
-Why this fixes it:
-- The toast viewport’s “bottom edge” will be lifted above the nav by the correct amount in both “normal” and “practice session active” states, matching what already works for Sonner.
+This addresses the exact symptom you described: multiple quick flips in loading/refetch will no longer cause visible expand/retract cycles.
 
-2) Stop `src/index.css` from downgrading toast z-index back to 60
-Files:
-- `src/index.css`
+3) Crossfade content (optional, but helps perception)
+File: `src/components/Timeline.tsx`
+- Apply a simple opacity transition between skeleton and empty content inside the stable shell:
+  - Outer container stays the same size
+  - Inner content fades between “Loading your notes…” and “No notes yet”
+- Keep this very lightweight (no blur filters) to avoid performance artifacts you’ve already been carefully avoiding elsewhere.
 
-Changes:
-- Update the “TOAST LAYERING” block to set z-index to a truly “always on top” value (e.g. `9999`) for:
-  - `[data-sonner-toaster]`
-  - `.toaster`
-  - `[data-radix-toast-viewport]`
-- Keep `position: fixed !important;` if it’s helping across browsers, but ensure the z-index matches the intended stacking behavior.
+4) Ensure refetching doesn’t trigger empty UI
+- Currently `isLoading = loading || isRefetching`. That’s fine, but the “empty shell” logic must treat refetching as loading-like only if there’s truly no data.
+- With the new state machine:
+  - If notes.length === 0 and (loading || isRefetching) → show loading shell
+  - If notes.length === 0 and !loading and !isRefetching → show empty shell
+  - Crucially: there will never be a render where notes.length === 0 and we show an “empty list container” (tiny height).
 
-Why do this if position is the main problem:
-- It aligns the global CSS with your newer intent (you already tried 9999 inline for Sonner).
-- It prevents future regressions where a component gains a higher z-index than 60 (dialogs, drawers, nav variants, etc.).
+5) Validation steps (reproduce your scenario)
+- On `/`:
+  1) Start a practice session, then end it, and land back on the home page.
+  2) Observe the Notes area while the toast appears and queries refetch.
+  3) Confirm the Notes area:
+     - does not collapse to a small height at any point
+     - shows either a stable skeleton area or a stable “No notes yet” area
+     - does not flicker twice even if the query flags flip quickly
 
-3) Verify which toast API is used where (sanity check)
-Files:
-- `src/hooks/use-toast.ts` (Radix/shadcn)
-- Search for `toast(` imports to see which “toast” function is being called in “regular” cases:
-  - `import { toast } from "sonner"` versus `import { toast } from "@/hooks/use-toast"`
+Files that will change
+- `src/components/Timeline.tsx` (primary, robust fix)
 
-Outcome:
-- Confirm the “regular toast” in your screenshot is the Radix/shadcn toaster and not a Sonner toast with different styling.
-- If any “regular” actions are using shadcn toast, they will benefit immediately from the corrected bottom offset.
+Why this is robust (vs. more min-height / fade tweaks)
+- The issue is not “empty state needs animation”; it’s “we render three different layouts during a short state transition window.”
+- This plan removes the collapsing layout entirely and adds a small stabilizer so transient loading/refetch flips can’t leak into the UI.
 
-4) Manual test checklist (desktop + mobile)
-- Mobile (or narrow viewport):
-  - Trigger a “regular” toast (shadcn) while BottomNav is visible; confirm it appears above the nav.
-  - Start an active practice session state and trigger the same toast; confirm it clears the larger bottom UI.
-  - Trigger Sonner toasts too; confirm unchanged behavior.
-- Desktop:
-  - Confirm shadcn toast placement still looks reasonable (likely top-right/viewport per existing design).
-- Regression:
-  - Confirm the session focus dimming rules still don’t affect toasts (you already have exemptions; we won’t change those).
-
-Notes / edge cases considered
-- Safe-area inset: included in the calc so iOS home-indicator devices don’t clip the toast.
-- Keyboard-open behavior: BottomNav slides away on mobile keyboard; with the new bottom offset, toasts will still be safely visible, and may simply appear a bit higher (acceptable).
-- Because `src/index.css` currently has `z-index: 60 !important`, changing it to `9999` is the cleanest way to ensure both systems behave consistently.
-
-Files expected to change
-- `src/components/ui/toaster.tsx` (primary fix: correct bottom offset logic for Radix/shadcn toasts)
-- `src/index.css` (supporting fix: raise forced toast z-index to match intended “always above nav” behavior)
-
-Success criteria
-- Regular (shadcn/Radix) toast never visually sits underneath the BottomNav in either normal or active-practice-session states, even after refresh.
-- Pro-feature (Sonner) toast remains correct and unchanged.
+Potential follow-up (only if needed)
+- If we still see unexpected `notes` becoming `[]` momentarily due to query enable/disable (e.g., auth session briefly null), we can additionally guard at the `useNotes` layer by ensuring the query never returns `[]` unless it’s truly final, but I expect the Timeline-level stabilizer to fix the visible flicker regardless.
