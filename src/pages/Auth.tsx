@@ -328,7 +328,7 @@ const Auth = () => {
                   />
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  Stay signed in
+                  Stay logged in
                 </span>
               </label>
             )}
@@ -343,7 +343,7 @@ const Auth = () => {
                   ? 'Send Reset Link'
                   : mode === 'signup' 
                     ? 'Sign Up' 
-                    : 'Sign In'}
+                    : 'Log in'}
             </Button>
           </form>
         )}
