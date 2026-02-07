@@ -39,7 +39,7 @@ interface MetronomeProps {
 
 export function Metronome({ className }: MetronomeProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [bpm, setBpm] = useState(120);
@@ -163,6 +163,14 @@ export function Metronome({ className }: MetronomeProps) {
       toast({
         title: "Pro Feature",
         description: "Metronome is available for Pro users.",
+        action: (
+          <button
+            onClick={openPremiumDialog}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            See Pro
+          </button>
+        ),
       });
       return;
     }

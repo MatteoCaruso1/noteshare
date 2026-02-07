@@ -36,7 +36,7 @@ export function LinkToPicker({
 }: LinkToPickerProps) {
   const [linkType, setLinkType] = useState<LinkType>(selectedLink?.type || null);
   const [open, setOpen] = useState(false);
-  const { isPremium, isLoading: isPremiumLoading } = usePremium();
+  const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   const { toast } = useToast();
 
   const hasItems = projects.length > 0 || gigs.length > 0 || goals.length > 0;
@@ -51,6 +51,14 @@ export function LinkToPicker({
       toast({
         title: "Pro Feature",
         description: "Linking notes to goals, projects, and gigs is available for Pro users.",
+        action: (
+          <button
+            onClick={openPremiumDialog}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            See Pro
+          </button>
+        ),
       });
       return;
     }
