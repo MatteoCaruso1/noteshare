@@ -16,8 +16,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       style={{ 
         // Position above the bottom nav bar on mobile (nav is ~64px + safe area)
         bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : '24px',
-        // z-index below nav (z-50) so nav covers the toast, but above other content
-        zIndex: 40,
+        // z-index above nav (z-50) so toasts are always visible
+        zIndex: 60,
         // Smooth GPU-accelerated transitions for enter/exit
         ['--toast-enter-duration' as string]: '300ms',
         ['--toast-exit-duration' as string]: '200ms',
