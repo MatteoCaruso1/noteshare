@@ -955,7 +955,7 @@ export function TodaysFocus() {
                     setIsFocused(false);
                     handleBlur();
                   }}
-                  placeholder="What are your cross-session focuses?"
+                  placeholder="What is your practice to-do list?"
                   className={`practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? '' : 'cursor-text'}`}
                   style={{ overscrollBehavior: 'contain', overflow: 'hidden' }}
                   rows={1}
