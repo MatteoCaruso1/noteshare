@@ -92,13 +92,13 @@ export function useCheckboxToggle({
     return Math.floor(rawLineIndex);
   }, []);
 
-  // Check if X coordinate is in checkbox zone - MUCH larger for mobile (80px)
+  // Check if X coordinate is in checkbox zone - 64px for mobile (20% smaller than original 80px)
   const isInCheckboxZone = useCallback((textarea: HTMLTextAreaElement, clientX: number): boolean => {
     const rect = textarea.getBoundingClientRect();
     const x = clientX - rect.left;
     const paddingLeft = parseInt(getComputedStyle(textarea).paddingLeft) || 8;
-    // Expanded checkbox zone to 80px from text start for much easier mobile tapping
-    return x < paddingLeft + 80;
+    // Checkbox zone of 64px from text start for mobile tapping
+    return x < paddingLeft + 64;
   }, []);
 
   // Check if cursor is on a checkbox character (with expanded hit area for mobile)
