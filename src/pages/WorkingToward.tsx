@@ -123,9 +123,8 @@ const WorkingToward = () => {
   const [gigLink, setGigLink] = useState('');
   const [gigShowOnFeed, setGigShowOnFeed] = useState(true);
   const [gigCollaboratorIds, setGigCollaboratorIds] = useState<string[]>([]);
-  const [gigImage, setGigImage] = useState<string | null>(null);
-  const [isGigUploading, setIsGigUploading] = useState(false);
-  const gigFileInputRef = useRef<HTMLInputElement>(null);
+  const [gigCoverValue, setGigCoverValue] = useState<string | null>(null);
+  const [gigCoverPreview, setGigCoverPreview] = useState<string | null>(null);
 
   if (!user) {
     navigate('/auth');
@@ -133,36 +132,6 @@ const WorkingToward = () => {
   }
 
 
-  // Gig image upload
-  const handleGigImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsGigUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `gig-covers/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('practice-media')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('practice-media')
-        .getPublicUrl(filePath);
-
-      setGigImage(urlData.publicUrl);
-      toast.success('Image uploaded!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setIsGigUploading(false);
-    }
-  };
 
   const handleCreateProject = () => {
     if (!profile || !newProjectTitle.trim()) return;
@@ -213,7 +182,7 @@ const WorkingToward = () => {
         title: gigTitle,
         description: gigDescription,
         eventDate: combinedDateTime,
-        image: gigImage || undefined,
+        image: gigCoverValue || undefined,
         links: gigLink ? [gigLink] : [],
         showOnFeed: gigShowOnFeed,
         isPaidOpportunity: false,
@@ -228,7 +197,8 @@ const WorkingToward = () => {
           setGigLink('');
           setGigShowOnFeed(true);
           setGigCollaboratorIds([]);
-          setGigImage(null);
+          setGigCoverValue(null);
+          setGigCoverPreview(null);
           setIsGigDialogOpen(false);
         },
       }
@@ -578,31 +548,13 @@ const WorkingToward = () => {
                           <DialogTitle>Create New Gig</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
-                          <div className="flex flex-col items-center gap-3">
-                            <div
-                              className="w-24 h-24 rounded-lg bg-secondary flex items-center justify-center cursor-pointer hover:bg-secondary/80 transition-colors overflow-hidden"
-                              onClick={() => gigFileInputRef.current?.click()}
-                            >
-                              {gigImage ? (
-                                <img src={gigImage} alt="" className="w-full h-full object-cover" />
-                              ) : isGigUploading ? (
-                                <div className="text-xs text-muted-foreground">Uploading...</div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-1">
-                                  <Upload className="w-6 h-6 text-muted-foreground" />
-                                  <span className="text-xs text-muted-foreground">Add Image</span>
-                                </div>
-                              )}
-                            </div>
-                            <input
-                              ref={gigFileInputRef}
-                              type="file"
-                              accept="image/*"
-                              onChange={handleGigImageUpload}
-                              className="hidden"
-                            />
-                            <span className="text-xs text-muted-foreground">Optional gig image</span>
-                          </div>
+                          <ProjectCoverPicker
+                            value={gigCoverValue}
+                            onChange={setGigCoverValue}
+                            profileId={profile?.id || ''}
+                            previewUrl={gigCoverPreview}
+                            onPreviewUrlChange={setGigCoverPreview}
+                          />
 
                           <Input
                             placeholder="Gig title (e.g., Jazz Night at Blue Note)"
@@ -681,7 +633,7 @@ const WorkingToward = () => {
                           <Button
                             className="w-full bg-gradient-primary text-primary-foreground"
                             onClick={handleCreateGig}
-                            disabled={createPromoPost.isPending || isGigUploading || !gigTitle.trim()}
+                            disabled={createPromoPost.isPending || !gigTitle.trim()}
                           >
                             Create Gig
                           </Button>
