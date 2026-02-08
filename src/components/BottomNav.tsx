@@ -80,16 +80,14 @@ export function BottomNav() {
   // Measure and expose BottomNav height as a CSS variable for toasts/overlays
   useBottomNavHeightVariable(navRef, shouldHide);
   
-  // Clear optimistic state when location actually changes
+  // Clear optimistic state whenever location changes (including on app resume from background)
+  // This ensures we always sync with the actual route, not stale optimistic state
   useEffect(() => {
-    if (optimisticRoute && location.pathname === optimisticRoute) {
-      setOptimisticRoute(null);
-    }
-    // Also clear after a timeout as fallback
+    setOptimisticRoute(null);
     if (optimisticTimeoutRef.current) {
       clearTimeout(optimisticTimeoutRef.current);
     }
-  }, [location.pathname, optimisticRoute]);
+  }, [location.pathname]);
   
   // Simple visibility - always visible, no complex fade-in logic that could cause issues
   const [isVisible, setIsVisible] = useState(true);
