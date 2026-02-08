@@ -96,21 +96,31 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     setError(false);
     
     // Get theme-aware colors from CSS custom properties
-    // CSS variables are in format "200 98% 39%" (space-separated)
-    const computedStyle = getComputedStyle(document.documentElement);
+    // Theme classes are applied to body, so read computed style from there
+    const computedStyle = getComputedStyle(document.body);
     const primaryHsl = computedStyle.getPropertyValue('--primary').trim();
-    // Convert space-separated HSL to proper format: "200 98% 39%" -> "hsl(200, 98%, 39%)"
+    // CSS variables are in format "200 98% 39%" (space-separated)
+    // Convert to comma-separated for hsl() function
     const hslParts = primaryHsl.split(/\s+/);
-    const themeColor = hslParts.length === 3 
-      ? `hsl(${hslParts[0]}, ${hslParts[1]}, ${hslParts[2]})` 
-      : 'hsl(200, 98%, 39%)';
-    const themeColorFaded = hslParts.length === 3 
-      ? `hsla(${hslParts[0]}, ${hslParts[1]}, ${hslParts[2]}, 0.5)` 
-      : 'rgba(147, 197, 253, 0.5)';
+    
+    // Create washed-out versions by reducing saturation and adding transparency
+    let themeColor: string;
+    let themeColorFaded: string;
+    
+    if (hslParts.length === 3) {
+      const h = hslParts[0];
+      const s = parseInt(hslParts[1]) * 0.7; // Reduce saturation for washed-out look
+      const l = hslParts[2];
+      themeColor = `hsl(${h}, ${s}%, ${l})`;
+      themeColorFaded = `hsla(${h}, ${s * 0.6}%, ${l}, 0.4)`; // Even more washed out for wave
+    } else {
+      themeColor = 'hsl(200, 70%, 39%)';
+      themeColorFaded = 'rgba(147, 197, 253, 0.35)';
+    }
     
     // Sepia/amber colors for memory variant, theme-aware for default
     const isSepia = variant === 'sepia';
-    const waveColor = isSepia ? 'rgba(180, 140, 100, 0.5)' : themeColorFaded;
+    const waveColor = isSepia ? 'rgba(180, 140, 100, 0.4)' : themeColorFaded;
     const progressColor = isSepia ? 'rgb(180, 130, 70)' : themeColor;
     const cursorColor = isSepia ? 'rgb(200, 150, 80)' : themeColor;
 
