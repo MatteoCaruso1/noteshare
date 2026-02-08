@@ -470,7 +470,7 @@ const GigDetail = () => {
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Gig Settings</DialogTitle>
             <DialogDescription>Update your gig details or delete the gig.</DialogDescription>
