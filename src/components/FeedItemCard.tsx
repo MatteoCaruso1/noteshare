@@ -59,8 +59,26 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
           
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {/* Header with badge */}
-            <div className="flex items-center gap-2 mb-1">
+            {/* Title */}
+            <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
+              {item.title}
+            </h3>
+            
+            {/* Description - truncated to one line */}
+            {item.description && (
+              <p className="text-sm text-muted-foreground truncate mt-1">
+                {item.description}
+              </p>
+            )}
+            
+            {/* Bottom row: Event date, badge, created by - all inline */}
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              {isGig && item.eventDate && (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {format(new Date(item.eventDate), 'MMM d, yyyy')}
+                </span>
+              )}
               <span className={cn(
                 "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
                 badgeColor
@@ -69,48 +87,15 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
                 {label}
               </span>
               <span className="text-xs text-muted-foreground">
-                {format(new Date(item.createdAt), 'MMM d')}
+                Created by <span className="font-medium text-foreground">{item.owner.name}</span>
               </span>
             </div>
-            
-            {/* Title */}
-            <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
-              {item.title}
-            </h3>
-            
-            {/* Description - truncated */}
-            {item.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                {item.description}
-              </p>
-            )}
-            
-            {/* Event date for gigs */}
-            {isGig && item.eventDate && (
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {format(new Date(item.eventDate), 'MMM d, yyyy · h:mm a')}
-              </p>
-            )}
           </div>
           
           {/* Arrow indicator */}
           <div className="flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
             <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </div>
-        </div>
-        
-        {/* Author row */}
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-          <ClickableAvatar
-            profileId={item.owner.id}
-            avatar={item.owner.avatar}
-            name={item.owner.name}
-            size="xs"
-          />
-          <span className="text-xs text-muted-foreground">
-            Created by <span className="font-medium text-foreground">{item.owner.name}</span>
-          </span>
         </div>
       </CardContent>
     </Card>
