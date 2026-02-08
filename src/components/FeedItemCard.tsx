@@ -10,6 +10,12 @@ import type { Project, PromoPost, Profile } from '@/types';
 
 export type FeedItemType = 'project' | 'gig';
 
+export interface FeedItemOwner {
+  id: string;
+  name: string;
+  avatar: string | null;
+}
+
 export interface FeedItem {
   type: FeedItemType;
   id: string;
@@ -18,7 +24,7 @@ export interface FeedItem {
   coverImage: string | null;
   createdAt: string;
   eventDate?: string | null;
-  owner: Profile;
+  owner: FeedItemOwner;
 }
 
 interface FeedItemCardProps {
@@ -111,7 +117,11 @@ export function projectToFeedItem(project: Project & { owner: Profile }): FeedIt
     description: project.description,
     coverImage: project.cover_image,
     createdAt: project.created_at,
-    owner: project.owner,
+    owner: {
+      id: project.owner.id,
+      name: project.owner.name,
+      avatar: project.owner.avatar,
+    },
   };
 }
 
@@ -125,6 +135,10 @@ export function gigToFeedItem(gig: PromoPost & { author: Profile }): FeedItem {
     coverImage: gig.image,
     createdAt: gig.created_at,
     eventDate: gig.event_date,
-    owner: gig.author,
+    owner: {
+      id: gig.author.id,
+      name: gig.author.name,
+      avatar: gig.author.avatar,
+    },
   };
 }

@@ -139,6 +139,53 @@ export function useFeedGigs() {
   });
 }
 
+export function useFriendsFeedGigs() {
+  return useQuery({
+    queryKey: ['friends-feed-gigs'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!currentProfile) return [];
+
+      // Get friend IDs from accepted friendships
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${currentProfile.id},addressee_id.eq.${currentProfile.id}`);
+
+      if (friendshipsError) throw friendshipsError;
+
+      const friendIds = friendships.map(f => 
+        f.requester_id === currentProfile.id ? f.addressee_id : f.requester_id
+      );
+
+      if (friendIds.length === 0) return [];
+
+      // Get gigs from friends with show_on_feed enabled
+      const { data, error } = await supabase
+        .from('promo_posts')
+        .select(`*, profiles!promo_posts_author_id_fkey (*)`)
+        .in('author_id', friendIds)
+        .eq('show_on_feed', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data.map((post: any) => ({
+        ...post,
+        author: post.profiles,
+      }));
+    },
+  });
+}
+
 export function useCreatePromoPost() {
   const queryClient = useQueryClient();
 

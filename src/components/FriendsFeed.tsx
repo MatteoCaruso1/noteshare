@@ -1,6 +1,9 @@
 import { memo, useMemo, useEffect } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
+import { useFriendsFeedProjects } from '@/hooks/useProjects';
+import { useFriendsFeedGigs } from '@/hooks/usePromoPosts';
 import { NoteCard } from './NoteCard';
+import { FeedItemCard, FeedItem } from './FeedItemCard';
 import { FriendsFeedSkeleton } from './FriendsFeedSkeleton';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,9 +45,59 @@ function extractStoragePath(url: string): string | null {
 }
 
 export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
-  const { data: notes, isLoading } = useFriendsNotes();
+  const { data: notes, isLoading: notesLoading } = useFriendsNotes();
+  const { data: feedProjects, isLoading: projectsLoading } = useFriendsFeedProjects();
+  const { data: feedGigs, isLoading: gigsLoading } = useFriendsFeedGigs();
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
   const queryClient = useQueryClient();
+
+  const isLoading = notesLoading || projectsLoading || gigsLoading;
+
+  // Convert projects and gigs to FeedItem format
+  const feedItems: FeedItem[] = useMemo(() => {
+    const items: FeedItem[] = [];
+    
+    // Add projects
+    if (feedProjects) {
+      feedProjects.forEach((project: any) => {
+        items.push({
+          id: project.id,
+          type: 'project',
+          title: project.title,
+          description: project.description,
+          coverImage: project.cover_image,
+          createdAt: project.created_at,
+          owner: {
+            id: project.owner?.id || project.owner_id,
+            name: project.owner?.name || 'Unknown',
+            avatar: project.owner?.avatar,
+          },
+        });
+      });
+    }
+    
+    // Add gigs
+    if (feedGigs) {
+      feedGigs.forEach((gig: any) => {
+        items.push({
+          id: gig.id,
+          type: 'gig',
+          title: gig.title,
+          description: gig.description,
+          coverImage: gig.image,
+          eventDate: gig.event_date,
+          createdAt: gig.created_at,
+          owner: {
+            id: gig.author?.id || gig.author_id,
+            name: gig.author?.name || 'Unknown',
+            avatar: gig.author?.avatar,
+          },
+        });
+      });
+    }
+    
+    return items;
+  }, [feedProjects, feedGigs]);
 
   // Prefetch avatars in background - don't block rendering
   useEffect(() => {
@@ -166,12 +219,36 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     return filtered;
   }, [notes, searchQuery, focusDateFilter]);
 
-  const displayedNotes = useMemo(() => 
-    filteredNotes.slice(0, displayCount),
-    [filteredNotes, displayCount]
+  // Merge notes and feed items into a unified timeline sorted by date
+  type TimelineItem = 
+    | { type: 'note'; data: typeof filteredNotes[number]; createdAt: string }
+    | { type: 'feedItem'; data: FeedItem; createdAt: string };
+
+  const mergedTimeline = useMemo(() => {
+    const items: TimelineItem[] = [];
+    
+    // Add notes
+    filteredNotes.forEach(note => {
+      items.push({ type: 'note', data: note, createdAt: note.created_at });
+    });
+    
+    // Add feed items (projects and gigs with show_on_feed enabled)
+    feedItems.forEach(item => {
+      items.push({ type: 'feedItem', data: item, createdAt: item.createdAt });
+    });
+    
+    // Sort by created_at descending (newest first)
+    items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    return items;
+  }, [filteredNotes, feedItems]);
+
+  const displayedItems = useMemo(() => 
+    mergedTimeline.slice(0, displayCount),
+    [mergedTimeline, displayCount]
   );
 
-  const hasMore = displayCount < filteredNotes.length;
+  const hasMore = displayCount < mergedTimeline.length;
 
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
@@ -182,7 +259,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     return <FriendsFeedSkeleton count={skeletonCount} />;
   }
 
-  if (!notes || notes.length === 0) {
+  if (mergedTimeline.length === 0) {
     return (
       <Card className="p-8 bg-card border-border text-center">
         <div className="flex justify-center mb-4">
@@ -190,7 +267,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
             <Users className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h3 className="font-semibold text-lg mb-2">No friends' notes yet</h3>
+        <h3 className="font-semibold text-lg mb-2">No friends' activity yet</h3>
         <p className="text-muted-foreground text-sm max-w-sm mx-auto">
           Add friends to see what they're practicing!
         </p>
@@ -198,7 +275,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     );
   }
 
-  if ((searchQuery || focusDateFilter) && filteredNotes.length === 0) {
+  if ((searchQuery || focusDateFilter) && filteredNotes.length === 0 && feedItems.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p>No results found</p>
@@ -208,8 +285,12 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
 
   return (
     <div className="space-y-4">
-      {displayedNotes.map((note) => (
-        <NoteCard key={note.id} note={note} fromFriends />
+      {displayedItems.map((item) => (
+        item.type === 'note' ? (
+          <NoteCard key={`note-${item.data.id}`} note={item.data} fromFriends />
+        ) : (
+          <FeedItemCard key={`${item.data.type}-${item.data.id}`} item={item.data} />
+        )
       ))}
       {hasMore && (
         <Button 
@@ -217,7 +298,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
           className="w-full" 
           onClick={handleLoadMore}
         >
-          Load more ({filteredNotes.length - displayCount} remaining)
+          Load more ({mergedTimeline.length - displayCount} remaining)
         </Button>
       )}
     </div>
