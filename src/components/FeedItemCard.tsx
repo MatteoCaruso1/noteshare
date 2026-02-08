@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Disc3, Calendar, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
-import { ProjectCover } from '@/components/ProjectCoverPicker';
+import { ProjectCover, PRESET_ICONS } from '@/components/ProjectCoverPicker';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
 import type { Project, PromoPost, Profile } from '@/types';
@@ -31,6 +31,16 @@ interface FeedItemCardProps {
   item: FeedItem;
 }
 
+// Map Tailwind bg classes to badge-friendly versions (10% opacity bg + solid text)
+const getBadgeColorFromPreset = (bgClass: string): string => {
+  // Extract color from bg-{color}-{shade} pattern
+  const match = bgClass.match(/bg-(\w+)-(\d+)/);
+  if (!match) return 'bg-blue-500/10 text-blue-400';
+  
+  const [, color, shade] = match;
+  return `bg-${color}-500/10 text-${color}-400`;
+};
+
 export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardProps) {
   const navigate = useNavigate();
   
@@ -45,7 +55,25 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
   const isGig = item.type === 'gig';
   const Icon = isGig ? Calendar : Disc3;
   const label = isGig ? 'Gig' : 'Project';
-  const badgeColor = isGig ? 'bg-violet-500/10 text-violet-400' : 'bg-blue-500/10 text-blue-400';
+  
+  // Determine badge color based on cover image
+  const getGigBadgeColor = (): string => {
+    if (!item.coverImage) return 'bg-blue-500/10 text-blue-400';
+    
+    // Check if it's a preset icon
+    if (item.coverImage.startsWith('icon:')) {
+      const presetId = item.coverImage.replace('icon:', '');
+      const preset = PRESET_ICONS.find(p => p.id === presetId);
+      if (preset) {
+        return getBadgeColorFromPreset(preset.bgClass);
+      }
+    }
+    
+    // Custom upload - use noteshare blue
+    return 'bg-blue-500/10 text-blue-400';
+  };
+  
+  const badgeColor = isGig ? getGigBadgeColor() : 'bg-blue-500/10 text-blue-400';
 
   return (
     <Card 
