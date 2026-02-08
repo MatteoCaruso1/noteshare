@@ -121,11 +121,14 @@ export function ProjectCoverPicker({
           )
         ) : (
           <div className="flex flex-col items-center gap-1">
-            <Disc3 className={cn(smallIconClasses, "text-muted-foreground")} />
-            <span className="text-xs text-muted-foreground">Cover</span>
+            <Upload className={cn(smallIconClasses, "text-muted-foreground")} />
+            <span className="text-xs text-muted-foreground">Add Image</span>
           </div>
         )}
       </div>
+      
+      {/* Hint text */}
+      <p className="text-xs text-muted-foreground">Optional cover image or icon</p>
 
       <input
         ref={fileInputRef}
