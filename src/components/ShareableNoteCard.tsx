@@ -31,6 +31,7 @@ interface ShareableNoteCardProps {
   instruments?: string[]; // list of instruments
   jammers?: JammerInfo[]; // list of jammers with profile pics
   customNotes?: string; // optional custom/editable notes text
+  showDuration?: boolean; // whether to show duration section (default true)
   className?: string;
 }
 
@@ -65,6 +66,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   instruments = [],
   jammers = [],
   customNotes,
+  showDuration = true,
   className,
 }: ShareableNoteCardProps) {
   const style = CARD_STYLES.find(s => s.id === styleId) || CARD_STYLES[0];
@@ -171,7 +173,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
       {/* Main Content Area - use flex-1 with overflow hidden */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Duration Section (for practice sessions) */}
-        {isPracticeSession && sessionDuration && (
+        {isPracticeSession && sessionDuration && showDuration && (
           <div style={{ marginBottom: '10px' }} className="flex-shrink-0">
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Duration
