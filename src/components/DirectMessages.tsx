@@ -118,7 +118,7 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
                   <div className="flex items-center gap-1.5">
                     <p className="font-medium text-xs truncate">{conv.friend.name}</p>
                     {conv.unreadCount > 0 && (
-                      <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px]">
+                      <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px] bg-blue-500 text-white">
                         {conv.unreadCount}
                       </Badge>
                     )}
@@ -180,7 +180,7 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm truncate">{conv.friend.name}</p>
                   {conv.unreadCount > 0 && (
-                    <Badge className="h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                    <Badge className="h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-blue-500 text-white">
                       {conv.unreadCount}
                     </Badge>
                   )}

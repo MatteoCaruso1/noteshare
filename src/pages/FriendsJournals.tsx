@@ -107,7 +107,7 @@ const FriendsJournals = () => {
                   <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                     <MessageCircle className={`w-4 h-4 ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
                     {unreadMessagesCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-destructive text-destructive-foreground">
+                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-blue-500 text-white">
                         {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
                       </Badge>
                     )}
@@ -120,7 +120,7 @@ const FriendsJournals = () => {
                         <MessageCircle className="w-5 h-5 text-primary" />
                         Messages
                         {unreadMessagesCount > 0 && (
-                          <Badge className="ml-2 bg-destructive text-destructive-foreground">
+                          <Badge className="ml-2 bg-blue-500 text-white">
                             {unreadMessagesCount}
                           </Badge>
                         )}
