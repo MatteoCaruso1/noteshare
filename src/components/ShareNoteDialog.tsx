@@ -201,6 +201,22 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
     () => (note.audio_files?.length || 0) > 0 ? [0] : []
   );
   
+  // Editable notes - initialize with plain text content from note
+  const initialNotesText = useMemo(() => {
+    if (!note.text_content) return '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = note.text_content;
+    return tmp.textContent || tmp.innerText || '';
+  }, [note.text_content]);
+  const [customNotes, setCustomNotes] = useState('');
+  
+  // Initialize custom notes when dialog opens
+  useEffect(() => {
+    if (open) {
+      setCustomNotes(initialNotesText);
+    }
+  }, [open, initialNotesText]);
+  
   // Instruments input
   const [instrumentsInput, setInstrumentsInput] = useState('');
   const instruments = useMemo(() => {
@@ -593,6 +609,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                 audioToInclude={audioToInclude}
                 instruments={instruments}
                 jammers={selectedJammers}
+                customNotes={customNotes}
               />
             </div>
           </div>
@@ -623,6 +640,21 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Editable Session Notes */}
+          <div>
+            <Label className="text-sm text-muted-foreground mb-2 block">
+              Session Notes
+            </Label>
+            <textarea
+              value={customNotes}
+              onChange={(e) => setCustomNotes(e.target.value.slice(0, 200))}
+              placeholder="Add session notes..."
+              maxLength={200}
+              className="w-full bg-muted rounded-lg p-3 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <p className="text-xs text-muted-foreground text-right mt-1">{customNotes.length}/200</p>
           </div>
 
           {/* Instruments Input */}
