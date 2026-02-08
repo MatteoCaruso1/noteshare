@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalytics, PremiumUser, NoteActivatedUser } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
-
+const PREVIEW_COUNT = 5;
 // Metric definitions for tooltips
 const METRIC_DEFINITIONS = {
   noteActivatedUsers: "Users who created at least one Note on a given day. This measures daily active engagement with the core feature.",
@@ -49,6 +51,142 @@ const MetricCard = ({ icon, title, definition, value, subtitle }: MetricCardProp
     </CardContent>
   </Card>
 );
+
+const getTypeBadgeVariant = (type: PremiumUser['type']) => {
+  switch (type) {
+    case 'subscription': return 'default';
+    case 'lifetime': return 'secondary';
+    case 'trial': return 'outline';
+    case 'override': return 'secondary';
+    default: return 'outline';
+  }
+};
+
+const getTypeLabel = (type: PremiumUser['type']) => {
+  switch (type) {
+    case 'subscription': return 'Monthly';
+    case 'lifetime': return 'Lifetime';
+    case 'trial': return 'Trial';
+    case 'override': return 'Override';
+    default: return type;
+  }
+};
+
+const PremiumUsersList = ({ users }: { users: PremiumUser[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasMore = users.length > PREVIEW_COUNT;
+  const displayUsers = isOpen ? users : users.slice(0, PREVIEW_COUNT);
+
+  if (users.length === 0) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Crown className="w-5 h-5" />
+            Premium Users
+          </CardTitle>
+          <CardDescription>No premium users yet</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Crown className="w-5 h-5" />
+          Premium Users ({users.length})
+        </CardTitle>
+        <CardDescription>Users with active premium access</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {displayUsers.map((user, idx) => (
+            <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+              <div className="flex flex-col">
+                <span className="font-medium">{user.name}</span>
+                {user.username && (
+                  <span className="text-sm text-muted-foreground">@{user.username}</span>
+                )}
+              </div>
+              <Badge variant={getTypeBadgeVariant(user.type)}>
+                {getTypeLabel(user.type)}
+              </Badge>
+            </div>
+          ))}
+        </div>
+        {hasMore && (
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1 text-sm text-primary mt-3 hover:underline">
+              {isOpen ? (
+                <>Show less <ChevronUp className="w-4 h-4" /></>
+              ) : (
+                <>Show all {users.length} users <ChevronDown className="w-4 h-4" /></>
+              )}
+            </CollapsibleTrigger>
+          </Collapsible>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+const NoteActivatedUsersList = ({ users }: { users: NoteActivatedUser[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasMore = users.length > PREVIEW_COUNT;
+  const displayUsers = isOpen ? users : users.slice(0, PREVIEW_COUNT);
+
+  if (users.length === 0) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Music className="w-5 h-5" />
+            Note-activated Users
+          </CardTitle>
+          <CardDescription>No users have created notes yet</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Music className="w-5 h-5" />
+          Note-activated Users ({users.length})
+        </CardTitle>
+        <CardDescription>All users who have created at least one note</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {displayUsers.map((user, idx) => (
+            <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+              <div className="flex flex-col">
+                <span className="font-medium">{user.name}</span>
+                <span className="text-sm text-muted-foreground">@{user.username}</span>
+              </div>
+              <Badge variant="outline">{user.noteCount} notes</Badge>
+            </div>
+          ))}
+        </div>
+        {hasMore && (
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1 text-sm text-primary mt-3 hover:underline">
+              {isOpen ? (
+                <>Show less <ChevronUp className="w-4 h-4" /></>
+              ) : (
+                <>Show all {users.length} users <ChevronDown className="w-4 h-4" /></>
+              )}
+            </CollapsibleTrigger>
+          </Collapsible>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
@@ -436,55 +574,11 @@ const AdminAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Premium Breakdown Visual */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Premium Breakdown
-          </CardTitle>
-          <CardDescription>
-            Current subscription status across all accounts
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-8">
-            <div className="flex-1">
-              <div className="h-8 rounded-full overflow-hidden flex bg-muted">
-                {data.paidConversion.totalActive > 0 && (
-                  <>
-                    <div 
-                      className="bg-primary h-full transition-all"
-                      style={{ 
-                        width: `${(data.paidConversion.actuallyPaying / data.paidConversion.totalActive) * 100}%` 
-                      }}
-                    />
-                    <div 
-                      className="bg-primary/40 h-full transition-all"
-                      style={{ 
-                        width: `${(data.paidConversion.inTrial / data.paidConversion.totalActive) * 100}%` 
-                      }}
-                    />
-                  </>
-                )}
-              </div>
-              <div className="flex justify-between mt-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-primary" />
-                  <span>Paying: {data.paidConversion.actuallyPaying}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-primary/40" />
-                  <span>In Trial: {data.paidConversion.inTrial}</span>
-                </div>
-                <div className="text-muted-foreground">
-                  Total: {data.paidConversion.totalActive}
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Premium Users List */}
+      <PremiumUsersList users={data.premiumUsers || []} />
+
+      {/* Note-activated Users List */}
+      <NoteActivatedUsersList users={data.noteActivatedUsers.users || []} />
       </div>
     </div>
   );
