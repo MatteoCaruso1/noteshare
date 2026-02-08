@@ -8,7 +8,7 @@ import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -251,7 +251,7 @@ const ProjectDetail = () => {
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Project Settings</DialogTitle>
             <DialogDescription>Update your project details or delete the project.</DialogDescription>
@@ -274,15 +274,17 @@ const ProjectDetail = () => {
                 id="title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
+                autoFocus={false}
               />
             </div>
             <div>
               <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
+              <RichTextarea
                 value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
+                onChange={setEditDescription}
                 rows={3}
+                autoExpand
+                placeholder="Add a description..."
               />
             </div>
             <div>
