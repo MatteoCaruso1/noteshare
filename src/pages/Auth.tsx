@@ -49,7 +49,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
-  // Listen for password recovery event and handle URL hash tokens
+  // Listen for password recovery event and handle URL hash tokens (including OAuth callbacks)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[Auth] Auth state changed:', event);
@@ -57,9 +57,14 @@ const Auth = () => {
         console.log('[Auth] Password recovery event detected');
         setMode('update-password');
       }
+      // If we got a SIGNED_IN event from OAuth callback, redirect to home
+      if (event === 'SIGNED_IN' && session) {
+        console.log('[Auth] User signed in, redirecting to home');
+        navigate('/');
+      }
     });
 
-    // Parse URL hash for recovery tokens (Supabase puts tokens in hash fragment)
+    // Parse URL hash for tokens (password recovery or OAuth callback)
     const hashFragment = window.location.hash;
     if (hashFragment) {
       const hashParams = new URLSearchParams(hashFragment.substring(1));
@@ -67,7 +72,7 @@ const Auth = () => {
       const tokenType = hashParams.get('type');
       const refreshToken = hashParams.get('refresh_token');
       
-      console.log('[Auth] Hash params detected - type:', tokenType);
+      console.log('[Auth] Hash params detected - type:', tokenType, 'has access_token:', !!accessToken);
       
       if (accessToken && tokenType === 'recovery') {
         console.log('[Auth] Recovery token found in URL hash, setting session');
@@ -86,6 +91,24 @@ const Auth = () => {
             window.history.replaceState(null, '', window.location.pathname);
           }
         });
+      } else if (accessToken) {
+        // This is likely an OAuth callback - the lovable auth library should handle this
+        // but we'll set the session as a fallback
+        console.log('[Auth] OAuth access token found in URL hash, setting session');
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || '',
+        }).then(({ data, error }) => {
+          if (error) {
+            console.error('[Auth] Error setting session from OAuth token:', error);
+            toast.error('Failed to complete sign in. Please try again.');
+          } else if (data.session) {
+            console.log('[Auth] OAuth session set successfully, redirecting');
+            // Clear the hash from the URL
+            window.history.replaceState(null, '', window.location.pathname);
+            navigate('/');
+          }
+        });
       }
     }
 
@@ -100,7 +123,7 @@ const Auth = () => {
     }
 
     return () => subscription.unsubscribe();
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   // Reset password touched state when mode changes
   useEffect(() => {
@@ -180,13 +203,20 @@ const Auth = () => {
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
+      // Use /auth as the redirect URI to ensure we return to a valid route
+      // that can properly handle the OAuth callback
+      const redirectUri = `${window.location.origin}/auth`;
+      console.log('[Auth] Starting Google OAuth with redirect_uri:', redirectUri);
+      
       const { error, redirected } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectUri,
       });
       
       if (error) {
         console.error('[Auth] Google auth error:', error);
         toast.error('Failed to sign in with Google');
+        setLoading(false);
+        return;
       }
       
       // If redirected, the page will navigate away, so we don't need to do anything
