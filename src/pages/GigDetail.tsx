@@ -252,7 +252,8 @@ const GigDetail = () => {
   
   // Check if gig date is in the future
   const gigDateInFuture = gig?.event_date ? isAfter(new Date(gig.event_date), new Date()) : false;
-  const canSetReminder = gigDateInFuture && !hasReminder && profile;
+  // Don't show reminder button for gig owner - they created it, they know about it
+  const canSetReminder = gigDateInFuture && !hasReminder && profile && !isOwner;
 
   const handleSetReminder = () => {
     if (!profile || !gig || !gig.event_date || !id) return;
