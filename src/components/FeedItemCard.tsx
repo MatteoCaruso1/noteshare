@@ -77,7 +77,7 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
 
   return (
     <Card 
-      className="group cursor-pointer transition-all hover:bg-accent/50 active:scale-[0.99]"
+      className="group cursor-pointer transition-all hover:bg-muted/50 active:scale-[0.99] bg-background text-foreground border border-border"
       onClick={handleClick}
     >
       <CardContent className="p-4">
