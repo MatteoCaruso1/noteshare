@@ -95,11 +95,17 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     setIsLoading(true);
     setError(false);
     
-    // Sepia/amber colors for memory variant
+    // Get theme-aware colors from CSS custom properties
+    const computedStyle = getComputedStyle(document.documentElement);
+    const primaryHsl = computedStyle.getPropertyValue('--primary').trim();
+    const themeColor = primaryHsl ? `hsl(${primaryHsl})` : 'hsl(200, 98%, 39%)';
+    const themeColorFaded = primaryHsl ? `hsla(${primaryHsl}, 0.5)` : 'rgba(147, 197, 253, 0.5)';
+    
+    // Sepia/amber colors for memory variant, theme-aware for default
     const isSepia = variant === 'sepia';
-    const waveColor = isSepia ? 'rgba(180, 140, 100, 0.5)' : 'rgba(147, 197, 253, 0.5)';
-    const progressColor = isSepia ? 'rgb(180, 130, 70)' : 'hsl(var(--primary))';
-    const cursorColor = isSepia ? 'rgb(200, 150, 80)' : 'hsl(var(--primary))';
+    const waveColor = isSepia ? 'rgba(180, 140, 100, 0.5)' : themeColorFaded;
+    const progressColor = isSepia ? 'rgb(180, 130, 70)' : themeColor;
+    const cursorColor = isSepia ? 'rgb(200, 150, 80)' : themeColor;
 
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
