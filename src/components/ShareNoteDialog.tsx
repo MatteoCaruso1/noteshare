@@ -196,6 +196,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
   const [selectedStyle, setSelectedStyle] = useState<CardStyleId>('dark');
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'save' | null>(null);
+  const [showDuration, setShowDuration] = useState(true);
   // Default to first audio file if any exist
   const [audioToInclude, setAudioToInclude] = useState<number[]>(
     () => (note.audio_files?.length || 0) > 0 ? [0] : []
@@ -610,6 +611,7 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
                 instruments={instruments}
                 jammers={selectedJammers}
                 customNotes={customNotes}
+                showDuration={showDuration}
               />
             </div>
           </div>
@@ -641,6 +643,20 @@ export function ShareNoteDialog({ open, onOpenChange, note }: ShareNoteDialogPro
               ))}
             </div>
           </div>
+
+          {/* Show Duration Toggle - only for practice sessions */}
+          {note.session_id && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-duration"
+                checked={showDuration}
+                onCheckedChange={(checked) => setShowDuration(checked === true)}
+              />
+              <Label htmlFor="show-duration" className="text-sm cursor-pointer">
+                Show session duration
+              </Label>
+            </div>
+          )}
 
           {/* Editable Session Notes */}
           <div>
