@@ -2,6 +2,7 @@ import { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { NoteWithAuthor } from '@/types';
 import { NoteCard } from './NoteCard';
 import { NoteCardSkeleton } from './NoteCardSkeleton';
+import { FeedItemCard, FeedItem } from './FeedItemCard';
 import { Button } from '@/components/ui/button';
 import { useSignedUrlPrefetch } from '@/hooks/useSignedUrlPrefetch';
 import { Loader2, Music, Lock, Sparkles } from 'lucide-react';
@@ -9,6 +10,7 @@ import { usePremium } from '@/contexts/PremiumContext';
 
 interface TimelineProps {
   notes: NoteWithAuthor[];
+  feedItems?: FeedItem[];
   loading?: boolean;
   isRefetching?: boolean;
   displayCount: number;
@@ -89,16 +91,19 @@ function OlderNotesGate({ onUpgrade }: { onUpgrade: () => void }) {
   );
 }
 
-export const Timeline = memo(function Timeline({ notes, loading, isRefetching, displayCount, onLoadMore }: TimelineProps) {
+export const Timeline = memo(function Timeline({ notes, feedItems = [], loading, isRefetching, displayCount, onLoadMore }: TimelineProps) {
   // ========================================
   // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   // ========================================
   
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   
+  // Check if we have any content (notes or feed items)
+  const hasContent = notes.length > 0 || feedItems.length > 0;
+  
   // UI Mode state machine to prevent flickering
   const [uiMode, setUiMode] = useState<UIMode>(() => {
-    if (notes.length > 0) return 'list';
+    if (hasContent) return 'list';
     return loading || isRefetching ? 'loading' : 'empty';
   });
   
@@ -121,8 +126,8 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
       emptyDebounceRef.current = null;
     }
     
-    // If we have notes, immediately switch to list mode
-    if (notes.length > 0) {
+    // If we have any content (notes or feed items), immediately switch to list mode
+    if (hasContent) {
       setUiMode('list');
       setShowSkeleton(false);
       setShowSlowMessage(false);
@@ -164,7 +169,7 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
         clearTimeout(emptyDebounceRef.current);
       }
     };
-  }, [notes.length, isLoading, showSkeleton]);
+  }, [hasContent, isLoading, showSkeleton]);
   
   // Skeleton display timer - show after delay to prevent flash
   useEffect(() => {
@@ -205,6 +210,32 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
     };
   }, [notes, displayCount]);
 
+  // Merge notes and feed items into a unified timeline
+  type TimelineItem = 
+    | { type: 'note'; data: NoteWithAuthor }
+    | { type: 'feedItem'; data: FeedItem };
+
+  const mergedTimeline = useMemo(() => {
+    const items: TimelineItem[] = [];
+    
+    // Add notes
+    displayedNotes.forEach(note => {
+      items.push({ type: 'note', data: note });
+    });
+    
+    // Add feed items
+    feedItems.forEach(feedItem => {
+      items.push({ type: 'feedItem', data: feedItem });
+    });
+    
+    // Sort by date descending
+    return items.sort((a, b) => {
+      const dateA = a.type === 'note' ? new Date(a.data.created_at) : new Date(a.data.createdAt);
+      const dateB = b.type === 'note' ? new Date(b.data.created_at) : new Date(b.data.createdAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [displayedNotes, feedItems]);
+
   // Count total notes within free limit for comparison
   const totalRecentNotesCount = useMemo(() => {
     return notes.length;
@@ -239,8 +270,12 @@ export const Timeline = memo(function Timeline({ notes, loading, isRefetching, d
 
   return (
     <div className="space-y-4">
-      {displayedNotes.map((note) => (
-        <NoteCard key={note.id} note={note} />
+      {mergedTimeline.map((item) => (
+        item.type === 'note' ? (
+          <NoteCard key={`note-${item.data.id}`} note={item.data} />
+        ) : (
+          <FeedItemCard key={`feed-${item.data.id}`} item={item.data} />
+        )
       ))}
       
       {/* Load more button - show if there are more recent notes to load */}
