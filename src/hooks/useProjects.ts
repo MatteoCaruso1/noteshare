@@ -32,6 +32,40 @@ export function useProjects() {
   });
 }
 
+export function useFeedProjects() {
+  return useQuery({
+    queryKey: ['feed-projects'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!currentProfile) return [];
+
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          profiles!projects_owner_id_fkey (*)
+        `)
+        .eq('owner_id', currentProfile.id)
+        .eq('show_on_feed', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data.map((project: any) => ({
+        ...project,
+        owner: project.profiles,
+      }));
+    },
+  });
+}
+
 export function useFriendsProjects() {
   return useQuery({
     queryKey: ['friends-projects'],
@@ -149,6 +183,7 @@ export function useCreateProject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-projects'] });
       toast.success('Project created!');
     },
     onError: (error) => {
@@ -200,6 +235,7 @@ export function useUpdateProject() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-projects'] });
       queryClient.invalidateQueries({ queryKey: ['project', data.id] });
       toast.success('Project updated!');
     },
@@ -225,6 +261,7 @@ export function useDeleteProject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['feed-projects'] });
       toast.success('Project deleted');
     },
     onError: (error) => {

@@ -3,6 +3,8 @@ import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { useAcceptedNoteShares } from '@/hooks/useNoteShares';
+import { useFeedProjects } from '@/hooks/useProjects';
+import { useFeedGigs } from '@/hooks/usePromoPosts';
 import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
@@ -19,6 +21,7 @@ import { TimelineSearch } from '@/components/TimelineSearch';
 import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
 import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
+import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
 
@@ -31,6 +34,8 @@ const Index = () => {
   
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   const { data: acceptedSharedNotes } = useAcceptedNoteShares();
+  const { data: feedProjects } = useFeedProjects();
+  const { data: feedGigs } = useFeedGigs();
   
   // Weekly goal modal state
   const { shouldShow: shouldShowWeeklyGoal, markAsShown } = useShouldShowWeeklyGoalModal(profile?.id, isPremium);
@@ -73,6 +78,24 @@ const Index = () => {
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [notes, acceptedSharedNotes]);
+
+  // Convert projects and gigs to feed items
+  const feedItems = useMemo(() => {
+    const items: FeedItem[] = [];
+    
+    if (feedProjects) {
+      items.push(...feedProjects.map(projectToFeedItem));
+    }
+    
+    if (feedGigs) {
+      items.push(...feedGigs.map(gigToFeedItem));
+    }
+    
+    // Sort by created_at descending
+    return items.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [feedProjects, feedGigs]);
 
   // Filter notes based on search query, date, and tag
   const filteredNotes = useMemo(() => {
@@ -182,7 +205,8 @@ const Index = () => {
               
               <div className="pb-3 sm:pb-4">
                 <Timeline
-                  notes={filteredNotes} 
+                  notes={filteredNotes}
+                  feedItems={feedItems}
                   loading={notesLoading || isBootstrapping} 
                   isRefetching={notesRefetching}
                   displayCount={displayCount}
