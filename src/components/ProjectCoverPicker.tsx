@@ -8,20 +8,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SignedImage } from '@/components/SignedImage';
 
-// Preset icons with their associated colors
+// Preset icons with Noteshare brand-aligned colors (blues, purples, greys)
 const PRESET_ICONS = [
-  { id: 'disc-purple', Icon: Disc3, bgClass: 'bg-purple-500', label: 'Vinyl' },
-  { id: 'music-blue', Icon: Music, bgClass: 'bg-blue-500', label: 'Note' },
-  { id: 'guitar-orange', Icon: Guitar, bgClass: 'bg-orange-500', label: 'Guitar' },
-  { id: 'piano-emerald', Icon: Piano, bgClass: 'bg-emerald-500', label: 'Piano' },
-  { id: 'mic-pink', Icon: Mic, bgClass: 'bg-pink-500', label: 'Mic' },
-  { id: 'headphones-cyan', Icon: Headphones, bgClass: 'bg-cyan-500', label: 'Phones' },
-  { id: 'radio-amber', Icon: Radio, bgClass: 'bg-amber-500', label: 'Radio' },
-  { id: 'music2-rose', Icon: Music2, bgClass: 'bg-rose-500', label: 'Notes' },
-  { id: 'music4-indigo', Icon: Music4, bgClass: 'bg-indigo-500', label: 'Beam' },
-  { id: 'drum-red', Icon: Drum, bgClass: 'bg-red-500', label: 'Drum' },
-  { id: 'waves-teal', Icon: AudioLines, bgClass: 'bg-teal-500', label: 'Waves' },
-  { id: 'volume-violet', Icon: Volume2, bgClass: 'bg-violet-500', label: 'Sound' },
+  { id: 'disc-blue', Icon: Disc3, bgClass: 'bg-blue-500', label: 'Vinyl' },
+  { id: 'music-indigo', Icon: Music, bgClass: 'bg-indigo-500', label: 'Note' },
+  { id: 'guitar-slate', Icon: Guitar, bgClass: 'bg-slate-600', label: 'Guitar' },
+  { id: 'piano-violet', Icon: Piano, bgClass: 'bg-violet-500', label: 'Piano' },
+  { id: 'mic-purple', Icon: Mic, bgClass: 'bg-purple-500', label: 'Mic' },
+  { id: 'headphones-sky', Icon: Headphones, bgClass: 'bg-sky-500', label: 'Phones' },
+  { id: 'radio-zinc', Icon: Radio, bgClass: 'bg-zinc-600', label: 'Radio' },
+  { id: 'music2-blue', Icon: Music2, bgClass: 'bg-blue-600', label: 'Notes' },
+  { id: 'music4-cyan', Icon: Music4, bgClass: 'bg-cyan-600', label: 'Beam' },
+  { id: 'drum-slate', Icon: Drum, bgClass: 'bg-slate-500', label: 'Drum' },
+  { id: 'waves-indigo', Icon: AudioLines, bgClass: 'bg-indigo-600', label: 'Waves' },
+  { id: 'volume-purple', Icon: Volume2, bgClass: 'bg-purple-600', label: 'Sound' },
 ] as const;
 
 export type PresetIconId = typeof PRESET_ICONS[number]['id'];
