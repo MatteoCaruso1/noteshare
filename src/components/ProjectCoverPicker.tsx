@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { 
   Disc3, Music, Guitar, Piano, Mic, Headphones, Radio, 
-  Music2, Music4, Drum, AudioLines, Volume2, Upload 
+  Music2, Music3, Music4, Drum, AudioLines, Volume2, Upload,
+  Speaker, Waves, ListMusic, KeyboardMusic
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +23,12 @@ const PRESET_ICONS = [
   { id: 'drum-slate', Icon: Drum, bgClass: 'bg-slate-500', label: 'Drum' },
   { id: 'waves-indigo', Icon: AudioLines, bgClass: 'bg-indigo-600', label: 'Waves' },
   { id: 'volume-purple', Icon: Volume2, bgClass: 'bg-purple-600', label: 'Sound' },
+  // Additional icons
+  { id: 'speaker-blue', Icon: Speaker, bgClass: 'bg-blue-700', label: 'Speaker' },
+  { id: 'music3-violet', Icon: Music3, bgClass: 'bg-violet-600', label: 'Triple' },
+  { id: 'ocean-sky', Icon: Waves, bgClass: 'bg-sky-600', label: 'Ocean' },
+  { id: 'playlist-indigo', Icon: ListMusic, bgClass: 'bg-indigo-400', label: 'Playlist' },
+  { id: 'keyboard-slate', Icon: KeyboardMusic, bgClass: 'bg-slate-700', label: 'Keys' },
 ] as const;
 
 export type PresetIconId = typeof PRESET_ICONS[number]['id'];
