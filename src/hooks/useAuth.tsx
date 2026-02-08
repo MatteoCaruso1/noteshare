@@ -42,6 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isPasswordResetFlow = window.location.search.includes('reset=true') || 
                                  window.location.hash.includes('type=recovery');
     
+    // Check if this is an OAuth callback - detect tokens in URL hash or query params
+    // OAuth flows put tokens in the URL that need to be processed before any session logic
+    const isOAuthCallback = window.location.hash.includes('access_token') ||
+                            window.location.search.includes('code=') ||
+                            window.location.hash.includes('id_token');
+    
     // Wrap auth initialization in async function with error handling
     const initializeAuth = async () => {
       try {
@@ -64,8 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // If there's a session but "Remember me" was not checked and browser was closed
-        // BUT skip this check if we're in a password reset flow
-        if (session && !rememberMe && !sessionActive && !isPasswordResetFlow) {
+        // BUT skip this check if we're in a password reset flow or OAuth callback
+        if (session && !rememberMe && !sessionActive && !isPasswordResetFlow && !isOAuthCallback) {
           // Sign out the user since they didn't want to be remembered
           await supabase.auth.signOut();
           setSession(null);
@@ -73,6 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
           setLoading(false);
           return;
+        }
+        
+        // For OAuth callbacks, ensure "remember me" is set (OAuth users expect to stay logged in)
+        if (session && isOAuthCallback) {
+          localStorage.setItem('noteshare_remember_me', 'true');
         }
 
         setSession(session);
