@@ -34,8 +34,12 @@ const Index = () => {
   
   const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
   const { data: acceptedSharedNotes } = useAcceptedNoteShares();
-  const { data: feedProjects } = useFeedProjects();
-  const { data: feedGigs } = useFeedGigs();
+  const { data: feedProjects, isLoading: projectsLoading } = useFeedProjects();
+  const { data: feedGigs, isLoading: gigsLoading } = useFeedGigs();
+  
+  // Combined loading state - wait for all data sources to be ready
+  const isTimelineLoading = notesLoading || projectsLoading || gigsLoading;
+  const isTimelineRefetching = notesRefetching;
   
   // Weekly goal modal state
   const { shouldShow: shouldShowWeeklyGoal, markAsShown } = useShouldShowWeeklyGoalModal(profile?.id, isPremium);
@@ -207,8 +211,8 @@ const Index = () => {
                 <Timeline
                   notes={filteredNotes}
                   feedItems={feedItems}
-                  loading={notesLoading || isBootstrapping} 
-                  isRefetching={notesRefetching}
+                  loading={isTimelineLoading || isBootstrapping} 
+                  isRefetching={isTimelineRefetching}
                   displayCount={displayCount}
                   onLoadMore={handleLoadMore}
                 />
