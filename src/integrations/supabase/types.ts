@@ -836,6 +836,7 @@ export type Database = {
           content: string
           created_at: string
           from_user_id: string | null
+          gig_id: string | null
           id: string
           note_id: string | null
           read: boolean | null
@@ -846,6 +847,7 @@ export type Database = {
           content: string
           created_at?: string
           from_user_id?: string | null
+          gig_id?: string | null
           id?: string
           note_id?: string | null
           read?: boolean | null
@@ -856,6 +858,7 @@ export type Database = {
           content?: string
           created_at?: string
           from_user_id?: string | null
+          gig_id?: string | null
           id?: string
           note_id?: string | null
           read?: boolean | null
@@ -868,6 +871,13 @@ export type Database = {
             columns: ["from_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "promo_posts"
             referencedColumns: ["id"]
           },
           {
