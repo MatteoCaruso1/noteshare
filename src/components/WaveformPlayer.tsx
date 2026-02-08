@@ -103,32 +103,32 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     // Convert to comma-separated for hsl() function
     const hslParts = primaryHsl.split(/\s+/);
     
-    // Create distinct colors: waveColor (unplayed) is dark grey, progressColor (played) is theme-colored but faded
+    // Create distinct colors: waveColor (unplayed) is theme-colored, progressColor (played) is dark grey
     let waveColor: string;
     let progressColor: string;
     let cursorColor: string;
     
-    // Unplayed: dark grey for all themes
-    waveColor = 'hsl(220, 10%, 35%)';
+    // Played: dark grey for all themes
+    progressColor = 'hsl(220, 10%, 35%)';
     
     if (hslParts.length === 3) {
       const h = hslParts[0];
       const s = parseInt(hslParts[1]);
       const l = parseInt(hslParts[2]);
-      // Played: theme color, slightly faded
-      progressColor = `hsla(${h}, ${s * 0.6}%, ${Math.min(l + 5, 60)}%, 0.5)`;
+      // Unplayed: theme color, slightly faded
+      waveColor = `hsla(${h}, ${s * 0.6}%, ${Math.min(l + 5, 60)}%, 0.5)`;
       // Cursor: theme colored
       cursorColor = `hsl(${h}, ${s * 0.8}%, ${Math.min(l + 10, 65)}%)`;
     } else {
-      progressColor = 'rgba(147, 197, 253, 0.5)';
+      waveColor = 'rgba(147, 197, 253, 0.5)';
       cursorColor = 'hsl(200, 80%, 50%)';
     }
     
     // Sepia/amber colors for memory variant
     const isSepia = variant === 'sepia';
     if (isSepia) {
-      waveColor = 'hsl(30, 15%, 35%)';
-      progressColor = 'rgba(180, 140, 100, 0.5)';
+      waveColor = 'rgba(180, 140, 100, 0.5)';
+      progressColor = 'hsl(30, 15%, 35%)';
       cursorColor = 'rgb(200, 150, 80)';
     }
 
