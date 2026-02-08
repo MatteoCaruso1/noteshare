@@ -10,19 +10,20 @@ import { toast } from 'sonner';
 import { SignedImage } from '@/components/SignedImage';
 
 // Preset icons with Noteshare brand-aligned colors (blues, purples, greys)
+// NOTE: Icon IDs are stable for backward compatibility - only colors should change
 const PRESET_ICONS = [
-  { id: 'disc-blue', Icon: Disc3, bgClass: 'bg-blue-500', label: 'Vinyl' },
-  { id: 'music-indigo', Icon: Music, bgClass: 'bg-indigo-500', label: 'Note' },
-  { id: 'guitar-slate', Icon: Guitar, bgClass: 'bg-slate-600', label: 'Guitar' },
-  { id: 'piano-violet', Icon: Piano, bgClass: 'bg-violet-500', label: 'Piano' },
-  { id: 'mic-purple', Icon: Mic, bgClass: 'bg-purple-500', label: 'Mic' },
-  { id: 'headphones-sky', Icon: Headphones, bgClass: 'bg-sky-500', label: 'Phones' },
-  { id: 'radio-zinc', Icon: Radio, bgClass: 'bg-zinc-600', label: 'Radio' },
-  { id: 'music2-blue', Icon: Music2, bgClass: 'bg-blue-600', label: 'Notes' },
-  { id: 'music4-cyan', Icon: Music4, bgClass: 'bg-cyan-600', label: 'Beam' },
-  { id: 'drum-slate', Icon: Drum, bgClass: 'bg-slate-500', label: 'Drum' },
-  { id: 'waves-indigo', Icon: AudioLines, bgClass: 'bg-indigo-600', label: 'Waves' },
-  { id: 'volume-purple', Icon: Volume2, bgClass: 'bg-purple-600', label: 'Sound' },
+  { id: 'disc-purple', Icon: Disc3, bgClass: 'bg-blue-500', label: 'Vinyl' },
+  { id: 'music-blue', Icon: Music, bgClass: 'bg-indigo-500', label: 'Note' },
+  { id: 'guitar-orange', Icon: Guitar, bgClass: 'bg-slate-600', label: 'Guitar' },
+  { id: 'piano-emerald', Icon: Piano, bgClass: 'bg-violet-500', label: 'Piano' },
+  { id: 'mic-pink', Icon: Mic, bgClass: 'bg-purple-500', label: 'Mic' },
+  { id: 'headphones-cyan', Icon: Headphones, bgClass: 'bg-sky-500', label: 'Phones' },
+  { id: 'radio-amber', Icon: Radio, bgClass: 'bg-zinc-600', label: 'Radio' },
+  { id: 'music2-rose', Icon: Music2, bgClass: 'bg-blue-600', label: 'Notes' },
+  { id: 'music4-indigo', Icon: Music4, bgClass: 'bg-cyan-600', label: 'Beam' },
+  { id: 'drum-red', Icon: Drum, bgClass: 'bg-slate-500', label: 'Drum' },
+  { id: 'waves-teal', Icon: AudioLines, bgClass: 'bg-indigo-600', label: 'Waves' },
+  { id: 'volume-violet', Icon: Volume2, bgClass: 'bg-purple-600', label: 'Sound' },
   // Additional icons
   { id: 'speaker-blue', Icon: Speaker, bgClass: 'bg-blue-700', label: 'Speaker' },
   { id: 'music3-violet', Icon: Music3, bgClass: 'bg-violet-600', label: 'Triple' },
