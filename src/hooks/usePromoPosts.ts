@@ -10,7 +10,7 @@ export function usePromoPosts() {
       const { data, error } = await supabase
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: false });
 
       if (error) throw error;
       return data.map((post: any) => ({
@@ -30,7 +30,7 @@ export function useMyPromoPosts(authorId: string | undefined) {
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
         .eq('author_id', authorId)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: false });
 
       if (error) throw error;
       return data.map((post: any) => ({
@@ -78,7 +78,7 @@ export function useFriendsPromoPosts() {
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
         .in('author_id', friendIds)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: false });
 
       if (error) throw error;
       return data.map((post: any) => ({
@@ -97,7 +97,7 @@ export function usePaidGigs() {
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
         .eq('is_paid_opportunity', true)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: false });
 
       if (error) throw error;
       return data.map((post: any) => ({
@@ -128,7 +128,7 @@ export function useFeedGigs() {
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
         .eq('author_id', currentProfile.id)
         .eq('show_on_feed', true)
-        .order('event_date', { ascending: true });
+        .order('event_date', { ascending: false });
 
       if (error) throw error;
       return data.map((post: any) => ({
