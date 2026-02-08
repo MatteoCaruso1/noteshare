@@ -43,10 +43,25 @@ interface TrialToPaidRate {
   rate: number;
 }
 
-interface AnalyticsData {
+export interface PremiumUser {
+  name: string;
+  username: string;
+  email: string;
+  type: 'subscription' | 'lifetime' | 'trial' | 'override';
+  status: string;
+}
+
+export interface NoteActivatedUser {
+  name: string;
+  username: string;
+  noteCount: number;
+}
+
+export interface AnalyticsData {
   noteActivatedUsers: {
     dailyCounts: DailyCount[];
     rollingAverage7d: RollingAverage[];
+    users: NoteActivatedUser[];
   };
   noteActivationRate: {
     dailyRates: ActivationRate[];
@@ -57,6 +72,7 @@ interface AnalyticsData {
   };
   paidConversion: PaidConversion;
   trialToPaidRate: TrialToPaidRate;
+  premiumUsers: PremiumUser[];
   metadata: {
     daysRequested: number;
     startDate: string;

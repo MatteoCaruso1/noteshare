@@ -43,6 +43,20 @@ interface TrialToPaidRate {
   rate: number;
 }
 
+interface PremiumUser {
+  name: string;
+  username: string;
+  email: string;
+  type: 'subscription' | 'lifetime' | 'trial' | 'override';
+  status: string;
+}
+
+interface NoteActivatedUser {
+  name: string;
+  username: string;
+  noteCount: number;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -316,6 +330,33 @@ serve(async (req) => {
       rate: 0
     };
 
+    // Also get note-activated users list with profile info
+    const noteCountByUser = new Map<string, number>();
+    for (const note of allNotesData || []) {
+      const count = noteCountByUser.get(note.author_id) || 0;
+      noteCountByUser.set(note.author_id, count + 1);
+    }
+
+    // Get profile info for note-activated users
+    const noteUserIds = Array.from(noteCountByUser.keys());
+    const { data: noteUserProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name, username')
+      .in('id', noteUserIds);
+
+    const noteActivatedUsersList: NoteActivatedUser[] = (noteUserProfiles || [])
+      .map(p => ({
+        name: p.name,
+        username: p.username,
+        noteCount: noteCountByUser.get(p.id) || 0
+      }))
+      .sort((a, b) => b.noteCount - a.noteCount);
+
+    // ============================================
+    // Metrics 4 & 5: Stripe Subscription Analysis + Premium User Details
+    // ============================================
+    let premiumUsers: PremiumUser[] = [];
+
     if (stripeSecretKey) {
       try {
         const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
@@ -325,11 +366,13 @@ serve(async (req) => {
         const activeSubscriptions = await stripe.subscriptions.list({
           status: 'active',
           limit: 100,
+          expand: ['data.customer'],
         });
 
         const trialingSubscriptions = await stripe.subscriptions.list({
           status: 'trialing',
           limit: 100,
+          expand: ['data.customer'],
         });
 
         const inTrial = trialingSubscriptions.data.length;
@@ -344,8 +387,59 @@ serve(async (req) => {
 
         console.log(`Stripe: ${totalActive} active (${inTrial} trial, ${actuallyPaying} paying)`);
 
+        // Collect premium user details
+        // Active (paying) subscriptions
+        for (const sub of activeSubscriptions.data) {
+          const customer = sub.customer as Stripe.Customer;
+          const priceId = sub.items.data[0]?.price?.id || '';
+          // Check if it's a lifetime purchase or monthly subscription
+          const isLifetime = sub.items.data[0]?.price?.type === 'one_time' || 
+                            priceId.includes('lifetime') ||
+                            sub.items.data[0]?.price?.recurring === null;
+          
+          premiumUsers.push({
+            name: customer.name || 'Unknown',
+            username: '',
+            email: customer.email || '',
+            type: isLifetime ? 'lifetime' : 'subscription',
+            status: 'active'
+          });
+        }
+
+        // Trialing subscriptions
+        for (const sub of trialingSubscriptions.data) {
+          const customer = sub.customer as Stripe.Customer;
+          premiumUsers.push({
+            name: customer.name || 'Unknown',
+            username: '',
+            email: customer.email || '',
+            type: 'trial',
+            status: 'trialing'
+          });
+        }
+
+        // Get usernames from profiles based on email
+        const premiumEmails = premiumUsers.map(u => u.email).filter(Boolean);
+        if (premiumEmails.length > 0) {
+          // Get user_ids from auth.users by email
+          const { data: profilesWithEmails } = await supabaseAdmin
+            .from('profiles')
+            .select('name, username, user_id');
+          
+          // Map usernames to premium users by matching auth emails
+          for (const pu of premiumUsers) {
+            if (pu.email) {
+              // Find matching profile - we need to check auth.users for email match
+              const matchingProfile = profilesWithEmails?.find(p => p.name === pu.name);
+              if (matchingProfile) {
+                pu.username = matchingProfile.username;
+                pu.name = matchingProfile.name;
+              }
+            }
+          }
+        }
+
         // Metric 5: Trial to Paid Conversion Rate (last 7 days)
-        // Get all subscriptions to check trial_end dates
         const allSubscriptions = await stripe.subscriptions.list({
           status: 'all',
           limit: 100,
@@ -358,12 +452,10 @@ serve(async (req) => {
         let converted = 0;
 
         for (const sub of allSubscriptions.data) {
-          // Check if subscription had a trial that ended in the last 7 days
           if (sub.trial_end) {
             const trialEndDate = new Date(sub.trial_end * 1000);
             if (trialEndDate.getTime() >= sevenDaysAgoMs && trialEndDate.getTime() <= now.getTime()) {
               trialsEndedLast7Days++;
-              // Check if they converted (active status means they're now paying)
               if (sub.status === 'active') {
                 converted++;
               }
@@ -385,16 +477,41 @@ serve(async (req) => {
 
       } catch (stripeError) {
         console.error('Stripe API error:', stripeError);
-        // Continue with zero values for Stripe metrics
       }
     } else {
       console.log('STRIPE_SECRET_KEY not configured, skipping subscription metrics');
     }
 
+    // Also check for premium overrides (developer accounts)
+    const { data: overrides } = await supabaseAdmin
+      .from('premium_overrides')
+      .select('user_id, note')
+      .eq('enabled', true);
+
+    if (overrides && overrides.length > 0) {
+      const overrideUserIds = overrides.map(o => o.user_id);
+      const { data: overrideProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('user_id, name, username')
+        .in('user_id', overrideUserIds);
+
+      for (const profile of overrideProfiles || []) {
+        const override = overrides.find(o => o.user_id === profile.user_id);
+        premiumUsers.push({
+          name: profile.name,
+          username: profile.username,
+          email: '',
+          type: 'override',
+          status: override?.note || 'Developer override'
+        });
+      }
+    }
+
     const response = {
       noteActivatedUsers: {
         dailyCounts,
-        rollingAverage7d
+        rollingAverage7d,
+        users: noteActivatedUsersList
       },
       noteActivationRate: {
         dailyRates
@@ -405,6 +522,7 @@ serve(async (req) => {
       },
       paidConversion,
       trialToPaidRate,
+      premiumUsers,
       metadata: {
         daysRequested: days,
         startDate: startDateStr,
