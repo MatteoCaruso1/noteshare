@@ -9,7 +9,6 @@ import { NoteCard } from '@/components/NoteCard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CollectionDetailHeader } from '@/components/shared/CollectionDetailHeader';
-import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,8 +18,8 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
-import { Music2, Calendar, ExternalLink, DollarSign, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell } from 'lucide-react';
+import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
 import { toast } from 'sonner';
@@ -127,15 +126,109 @@ function useAddNoteToGig() {
   });
 }
 
+// Hook to check if user has a reminder set for this gig
+function useGigReminder(gigId: string | undefined, userId: string | undefined) {
+  return useQuery({
+    queryKey: ['gig-reminder', gigId, userId],
+    queryFn: async () => {
+      if (!gigId || !userId) return false;
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('note_id', gigId)
+        .eq('type', 'gig_reminder')
+        .limit(1);
+
+      if (error) throw error;
+      return data && data.length > 0;
+    },
+    enabled: !!gigId && !!userId,
+  });
+}
+
+// Hook to create gig reminder notifications
+function useCreateGigReminder() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      gigId,
+      gigTitle,
+      eventDate,
+    }: {
+      userId: string;
+      gigId: string;
+      gigTitle: string;
+      eventDate: string;
+    }) => {
+      const gigDate = new Date(eventDate);
+      const now = new Date();
+      const oneWeekBefore = addWeeks(gigDate, -1);
+      const oneDayBefore = addDays(gigDate, -1);
+      
+      const notifications = [];
+      
+      // Add week-before reminder if it's still in the future
+      if (isAfter(oneWeekBefore, now)) {
+        notifications.push({
+          user_id: userId,
+          type: 'gig_reminder',
+          content: `Your gig "${gigTitle}" is coming up in one week!`,
+          note_id: gigId,
+          from_user_id: userId,
+          read: false,
+          created_at: oneWeekBefore.toISOString(),
+        });
+      }
+      
+      // Add day-before reminder if it's still in the future
+      if (isAfter(oneDayBefore, now)) {
+        notifications.push({
+          user_id: userId,
+          type: 'gig_reminder',
+          content: `Your gig "${gigTitle}" is tomorrow!`,
+          note_id: gigId,
+          from_user_id: userId,
+          read: false,
+          created_at: oneDayBefore.toISOString(),
+        });
+      }
+      
+      if (notifications.length === 0) {
+        throw new Error('No future reminder dates available');
+      }
+      
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['gig-reminder', variables.gigId] });
+      toast.success('Reminder set! You\'ll be notified before the gig.');
+    },
+    onError: (error) => {
+      console.error('Error setting reminder:', error);
+      toast.error('Failed to set reminder');
+    },
+  });
+}
+
 const GigDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { data: gig, isLoading: gigLoading } = useGig(id);
   const { data: notes, isLoading: notesLoading } = useGigNotes(id);
+  const { data: hasReminder } = useGigReminder(id, profile?.id);
   const addNote = useAddNoteToGig();
   const updateGig = useUpdatePromoPost();
   const deleteGig = useDeletePromoPost();
+  const createReminder = useCreateGigReminder();
 
   // Scroll to top instantly on mount
   useLayoutEffect(() => {
@@ -156,6 +249,21 @@ const GigDetail = () => {
   const isOwner = profile?.id === gig?.author_id;
   const isCollaborator = gig?.collaborator_ids?.includes(profile?.id || '');
   const canAddNotes = isOwner || isCollaborator;
+  
+  // Check if gig date is in the future
+  const gigDateInFuture = gig?.event_date ? isAfter(new Date(gig.event_date), new Date()) : false;
+  const canSetReminder = gigDateInFuture && !hasReminder && profile;
+
+  const handleSetReminder = () => {
+    if (!profile || !gig || !gig.event_date || !id) return;
+    
+    createReminder.mutate({
+      userId: profile.id,
+      gigId: id,
+      gigTitle: gig.title,
+      eventDate: gig.event_date,
+    });
+  };
 
   const openSettings = () => {
     if (gig) {
@@ -284,6 +392,21 @@ const GigDetail = () => {
 
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
+          {/* Get Reminded Button - only show for future gigs without reminder set */}
+          {canSetReminder && (
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSetReminder}
+                disabled={createReminder.isPending}
+                className="gap-2"
+              >
+                <Bell className="w-4 h-4" />
+                Get Reminded
+              </Button>
+            </div>
+          )}
           {/* Gig Details Card - only show if there's content */}
           {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
             <Card className="p-4 bg-card border-border">
@@ -312,35 +435,35 @@ const GigDetail = () => {
             </Card>
           )}
 
-          {/* Notes Section */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Gig Notes</h2>
-              {canAddNotes && profile && (
-                <AddNoteDialog
-                  open={isAddNoteOpen}
-                  onOpenChange={setIsAddNoteOpen}
-                  onSubmit={handleAddNote}
-                  isSubmitting={addNote.isPending}
-                  title="Add Note to Gig"
-                  contextLabel="this gig"
-                  profileId={profile.id}
-                />
-              )}
-            </div>
-
-            {notesLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading...</div>
-            ) : notes && notes.length > 0 ? (
-              <div className="space-y-4">
-                {notes.map((note) => (
-                  <NoteCard key={note.id} note={note} fromGig={id} />
-                ))}
+          {/* Notes Section - only show if there are notes OR user can add notes */}
+          {(notes && notes.length > 0) || canAddNotes ? (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Gig Notes</h2>
+                {canAddNotes && profile && (
+                  <AddNoteDialog
+                    open={isAddNoteOpen}
+                    onOpenChange={setIsAddNoteOpen}
+                    onSubmit={handleAddNote}
+                    isSubmitting={addNote.isPending}
+                    title="Add Note to Gig"
+                    contextLabel="this gig"
+                    profileId={profile.id}
+                  />
+                )}
               </div>
-            ) : (
-              <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this gig" />
-            )}
-          </section>
+
+              {notesLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              ) : notes && notes.length > 0 ? (
+                <div className="space-y-4">
+                  {notes.map((note) => (
+                    <NoteCard key={note.id} note={note} fromGig={id} />
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
         </main>
       </PageBody>
 
