@@ -295,7 +295,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               {isPracticeSession ? 'Session Notes' : 'Notes'}
             </span>
-            <p style={{ fontSize: '11px', lineHeight: '1.4' }}>
+            <p style={{ fontSize: '11px', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
               {truncatedNotes}
             </p>
           </div>
