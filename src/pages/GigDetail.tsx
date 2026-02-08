@@ -18,8 +18,9 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
-import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell } from 'lucide-react';
+import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share2 } from 'lucide-react';
 import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
+import { ShareGigSheet } from '@/components/ShareGigSheet';
 import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
 import { toast } from 'sonner';
@@ -237,6 +238,7 @@ const GigDetail = () => {
   
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editEventDate, setEditEventDate] = useState('');
@@ -393,9 +395,21 @@ const GigDetail = () => {
 
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-          {/* Get Reminded Button - only show for future gigs without reminder set */}
-          {canSetReminder && (
-            <div className="flex justify-end">
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2">
+            {/* Share Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsShareOpen(true)}
+              className="gap-2"
+            >
+              <Share2 className="w-4 h-4" />
+              Share
+            </Button>
+            
+            {/* Get Reminded Button - only show for future gigs without reminder set */}
+            {canSetReminder && (
               <Button
                 variant="outline"
                 size="sm"
@@ -406,8 +420,8 @@ const GigDetail = () => {
                 <Bell className="w-4 h-4" />
                 Get Reminded
               </Button>
-            </div>
-          )}
+            )}
+          </div>
           {/* Gig Details Card - only show if there's content */}
           {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
             <Card className="p-4 bg-card border-border">
@@ -561,6 +575,15 @@ const GigDetail = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Share Sheet */}
+      {gig && (
+        <ShareGigSheet
+          open={isShareOpen}
+          onOpenChange={setIsShareOpen}
+          gig={gig}
+        />
+      )}
     </PageLayout>
   );
 };
