@@ -2,9 +2,53 @@ import { useState } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat } from 'lucide-react';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
 import { format, parseISO } from 'date-fns';
+
+
+// Metric definitions for tooltips
+const METRIC_DEFINITIONS = {
+  noteActivatedUsers: "Users who created at least one Note on a given day. This measures daily active engagement with the core feature.",
+  activationRate: "Percentage of users who visited the Practice page and then created a Note. Formula: (Note Creators / Practice Page Viewers) × 100",
+  day7Retention: "Of users who created their first Note on a given date, what percentage returned to create another Note exactly 7 days later.",
+  activePremium: "Total users with premium access, including those in trial period and those actively paying.",
+  trialToPaid: "Of users whose trial ended in the last 7 days, what percentage converted to a paid subscription.",
+};
+
+interface MetricCardProps {
+  icon: React.ReactNode;
+  title: string;
+  definition: string;
+  value: string | number;
+  subtitle: string;
+}
+
+const MetricCard = ({ icon, title, definition, value, subtitle }: MetricCardProps) => (
+  <Card>
+    <CardHeader className="pb-2">
+      <CardDescription className="flex items-center gap-2">
+        {icon}
+        <span>{title}</span>
+        <TooltipProvider>
+          <UITooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/60 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[280px] text-sm">
+              {definition}
+            </TooltipContent>
+          </UITooltip>
+        </TooltipProvider>
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="text-3xl font-bold">{value}</div>
+      <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+    </CardContent>
+  </Card>
+);
 
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
@@ -87,134 +131,92 @@ const AdminAnalytics = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Product Analytics</h1>
-          <p className="text-muted-foreground mt-1">
-            Core metrics for Noteshare engagement
-          </p>
+    <div className="min-h-screen bg-background pb-24 pt-16">
+      <div className="container mx-auto px-4 pt-4 max-w-6xl">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Product Analytics</h1>
+            <p className="text-muted-foreground mt-1">
+              Core metrics for Noteshare engagement
+            </p>
+          </div>
+          <Select value={days.toString()} onValueChange={(v) => setDays(parseInt(v))}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="14">Last 14 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="60">Last 60 days</SelectItem>
+              <SelectItem value="90">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={days.toString()} onValueChange={(v) => setDays(parseInt(v))}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">Last 7 days</SelectItem>
-            <SelectItem value="14">Last 14 days</SelectItem>
-            <SelectItem value="30">Last 30 days</SelectItem>
-            <SelectItem value="60">Last 60 days</SelectItem>
-            <SelectItem value="90">Last 90 days</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      {/* Engagement Metric Cards (Row 1) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Note-activated Users (Today)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{latestDailyCount?.count || 0}</div>
-            <p className="text-sm text-muted-foreground mt-1">
-              7-day avg: {latestRollingAvg?.average || 0}
-            </p>
-          </CardContent>
-        </Card>
+        {/* Engagement Metric Cards (Row 1) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <MetricCard
+            icon={<Users className="w-4 h-4" />}
+            title="Note-activated Users (Today)"
+            definition={METRIC_DEFINITIONS.noteActivatedUsers}
+            value={latestDailyCount?.count || 0}
+            subtitle={`7-day avg: ${latestRollingAvg?.average || 0}`}
+          />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Activation Rate (Today)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{latestActivationRate?.rate || 0}%</div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {latestActivationRate?.creators || 0} of {latestActivationRate?.viewers || 0} viewers
-            </p>
-          </CardContent>
-        </Card>
+          <MetricCard
+            icon={<TrendingUp className="w-4 h-4" />}
+            title="Activation Rate (Today)"
+            definition={METRIC_DEFINITIONS.activationRate}
+            value={`${latestActivationRate?.rate || 0}%`}
+            subtitle={`${latestActivationRate?.creators || 0} of ${latestActivationRate?.viewers || 0} viewers`}
+          />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4" />
-              Day 7 Retention
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {data.day7Retention.today.rate !== null 
-                ? `${data.day7Retention.today.rate}%` 
-                : 'N/A'}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {data.day7Retention.today.cohortSize > 0 
-                ? `${data.day7Retention.today.retained} of ${data.day7Retention.today.cohortSize} users returned`
-                : 'No cohort from 7 days ago'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <MetricCard
+            icon={<RefreshCw className="w-4 h-4" />}
+            title="Day 7 Retention"
+            definition={METRIC_DEFINITIONS.day7Retention}
+            value={data.day7Retention.today.rate !== null ? `${data.day7Retention.today.rate}%` : 'N/A'}
+            subtitle={data.day7Retention.today.cohortSize > 0 
+              ? `${data.day7Retention.today.retained} of ${data.day7Retention.today.cohortSize} users returned`
+              : 'No cohort from 7 days ago'}
+          />
+        </div>
 
-      {/* Subscription Metric Cards (Row 2) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
-              Active Premium
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{data.paidConversion.totalActive}</div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {data.paidConversion.inTrial} trial, {data.paidConversion.actuallyPaying} paying
-            </p>
-          </CardContent>
-        </Card>
+        {/* Subscription Metric Cards (Row 2) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <MetricCard
+            icon={<CreditCard className="w-4 h-4" />}
+            title="Active Premium"
+            definition={METRIC_DEFINITIONS.activePremium}
+            value={data.paidConversion.totalActive}
+            subtitle={`${data.paidConversion.inTrial} trial, ${data.paidConversion.actuallyPaying} paying`}
+          />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Repeat className="w-4 h-4" />
-              Trial → Paid (7 days)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {data.trialToPaidRate.trialsEndedLast7Days > 0 
-                ? `${data.trialToPaidRate.rate}%` 
-                : 'N/A'}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {data.trialToPaidRate.trialsEndedLast7Days > 0
-                ? `${data.trialToPaidRate.converted} of ${data.trialToPaidRate.trialsEndedLast7Days} converted`
-                : 'No trials ended in last 7 days'}
-            </p>
-          </CardContent>
-        </Card>
+          <MetricCard
+            icon={<Repeat className="w-4 h-4" />}
+            title="Trial → Paid (7 days)"
+            definition={METRIC_DEFINITIONS.trialToPaid}
+            value={data.trialToPaidRate.trialsEndedLast7Days > 0 ? `${data.trialToPaidRate.rate}%` : 'N/A'}
+            subtitle={data.trialToPaidRate.trialsEndedLast7Days > 0
+              ? `${data.trialToPaidRate.converted} of ${data.trialToPaidRate.trialsEndedLast7Days} converted`
+              : 'No trials ended in last 7 days'}
+          />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Data Range</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-semibold">
-              {data.metadata.startDate && formatTooltipLabel(data.metadata.startDate)}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Updated: {format(parseISO(data.metadata.generatedAt), 'h:mm a')}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Data Range</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-semibold">
+                {data.metadata.startDate && formatTooltipLabel(data.metadata.startDate)}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Updated: {format(parseISO(data.metadata.generatedAt), 'h:mm a')}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
       {/* Metric 1: Note-activated Users Chart */}
       <Card className="mb-8">
@@ -483,6 +485,7 @@ const AdminAnalytics = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
