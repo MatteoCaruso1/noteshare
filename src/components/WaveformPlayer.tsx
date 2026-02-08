@@ -96,10 +96,17 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     setError(false);
     
     // Get theme-aware colors from CSS custom properties
+    // CSS variables are in format "200 98% 39%" (space-separated)
     const computedStyle = getComputedStyle(document.documentElement);
     const primaryHsl = computedStyle.getPropertyValue('--primary').trim();
-    const themeColor = primaryHsl ? `hsl(${primaryHsl})` : 'hsl(200, 98%, 39%)';
-    const themeColorFaded = primaryHsl ? `hsla(${primaryHsl}, 0.5)` : 'rgba(147, 197, 253, 0.5)';
+    // Convert space-separated HSL to proper format: "200 98% 39%" -> "hsl(200, 98%, 39%)"
+    const hslParts = primaryHsl.split(/\s+/);
+    const themeColor = hslParts.length === 3 
+      ? `hsl(${hslParts[0]}, ${hslParts[1]}, ${hslParts[2]})` 
+      : 'hsl(200, 98%, 39%)';
+    const themeColorFaded = hslParts.length === 3 
+      ? `hsla(${hslParts[0]}, ${hslParts[1]}, ${hslParts[2]}, 0.5)` 
+      : 'rgba(147, 197, 253, 0.5)';
     
     // Sepia/amber colors for memory variant, theme-aware for default
     const isSepia = variant === 'sepia';
