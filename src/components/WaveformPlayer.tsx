@@ -103,26 +103,34 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     // Convert to comma-separated for hsl() function
     const hslParts = primaryHsl.split(/\s+/);
     
-    // Create washed-out versions by reducing saturation and adding transparency
-    let themeColor: string;
-    let themeColorFaded: string;
+    // Create distinct colors: waveColor (unplayed) is faded, progressColor (played) is more vibrant
+    let waveColor: string;
+    let progressColor: string;
+    let cursorColor: string;
     
     if (hslParts.length === 3) {
       const h = hslParts[0];
-      const s = parseInt(hslParts[1]) * 0.7; // Reduce saturation for washed-out look
-      const l = hslParts[2];
-      themeColor = `hsl(${h}, ${s}%, ${l})`;
-      themeColorFaded = `hsla(${h}, ${s * 0.6}%, ${l}, 0.4)`; // Even more washed out for wave
+      const s = parseInt(hslParts[1]);
+      const l = parseInt(hslParts[2]);
+      // Unplayed: very faded, low opacity
+      waveColor = `hsla(${h}, ${s * 0.4}%, ${l}%, 0.35)`;
+      // Played: full color, slightly washed out but clearly visible
+      progressColor = `hsl(${h}, ${s * 0.8}%, ${Math.min(l + 10, 70)}%)`;
+      // Cursor: same as progress
+      cursorColor = progressColor;
     } else {
-      themeColor = 'hsl(200, 70%, 39%)';
-      themeColorFaded = 'rgba(147, 197, 253, 0.35)';
+      waveColor = 'rgba(147, 197, 253, 0.35)';
+      progressColor = 'hsl(200, 80%, 50%)';
+      cursorColor = progressColor;
     }
     
-    // Sepia/amber colors for memory variant, theme-aware for default
+    // Sepia/amber colors for memory variant
     const isSepia = variant === 'sepia';
-    const waveColor = isSepia ? 'rgba(180, 140, 100, 0.4)' : themeColorFaded;
-    const progressColor = isSepia ? 'rgb(180, 130, 70)' : themeColor;
-    const cursorColor = isSepia ? 'rgb(200, 150, 80)' : themeColor;
+    if (isSepia) {
+      waveColor = 'rgba(180, 140, 100, 0.35)';
+      progressColor = 'rgb(180, 130, 70)';
+      cursorColor = 'rgb(200, 150, 80)';
+    }
 
     const wavesurfer = WaveSurfer.create({
       container: containerRef.current,
