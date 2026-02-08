@@ -30,6 +30,7 @@ interface ShareableNoteCardProps {
   audioToInclude: number[]; // indices of audio files to include
   instruments?: string[]; // list of instruments
   jammers?: JammerInfo[]; // list of jammers with profile pics
+  customNotes?: string; // optional custom/editable notes text
   className?: string;
 }
 
@@ -63,6 +64,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   audioToInclude,
   instruments = [],
   jammers = [],
+  customNotes,
   className,
 }: ShareableNoteCardProps) {
   const style = CARD_STYLES.find(s => s.id === styleId) || CARD_STYLES[0];
@@ -112,9 +114,12 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   const hasInstruments = instruments.length > 0;
   const hasJammers = jammers.length > 0;
 
+  // Use custom notes if provided, otherwise fall back to note content
+  const notesText = customNotes !== undefined ? customNotes : plainTextContent;
+  
   // Dynamically calculate max text length based on what else is displayed
   const truncatedNotes = useMemo(() => {
-    if (!plainTextContent) return '';
+    if (!notesText) return '';
     
     // Lower base limit to fit more sections
     let maxLength = 150;
@@ -128,14 +133,14 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
     // Ensure minimum
     maxLength = Math.max(maxLength, 60);
     
-    if (plainTextContent.length > maxLength) {
-      const trimmed = plainTextContent.slice(0, maxLength);
+    if (notesText.length > maxLength) {
+      const trimmed = notesText.slice(0, maxLength);
       const lastSpace = trimmed.lastIndexOf(' ');
       const cutPoint = lastSpace > maxLength * 0.7 ? lastSpace : maxLength;
-      return plainTextContent.slice(0, cutPoint).trim() + '...';
+      return notesText.slice(0, cutPoint).trim() + '...';
     }
-    return plainTextContent;
-  }, [plainTextContent, hasAudio, hasImages, hasInstruments, hasJammers]);
+    return notesText;
+  }, [notesText, hasAudio, hasImages, hasInstruments, hasJammers]);
 
   return (
     <div
@@ -146,9 +151,10 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
         className
       )}
       style={{
-        // Use explicit dimensions for consistent html2canvas rendering
+        // Dynamic height based on content, with max aspect ratio constraint
         width: '100%',
-        aspectRatio: '9 / 16',
+        minHeight: '280px',
+        maxHeight: 'calc(100vw * 16 / 9)', // Max height for 9:16 aspect ratio
         padding: '16px',
       }}
     >
@@ -170,30 +176,21 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
             <span className={cn('font-medium uppercase tracking-wider block', style.mutedClass)} style={{ fontSize: '9px', marginBottom: '4px' }}>
               Duration
             </span>
-            <div
-              className={cn(
-                'rounded-full font-bold',
-                style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
-              )}
-              style={{
-                padding: '6px 12px',
-                fontSize: '13px',
-                display: 'inline-block',
-                lineHeight: '12px',
-              }}
-            >
-              <span style={{ 
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                verticalAlign: 'middle',
-                lineHeight: '1',
-                fontSize: '13px',
-              }}>
-                <Clock style={{ width: '14px', height: '14px' }} />
-                {sessionDuration}
-              </span>
-            </div>
+            <span className={cn(
+              'rounded-full font-bold',
+              style.id === 'cream' || style.id === 'minimal' ? 'bg-zinc-100' : 'bg-white/10'
+            )}
+            style={{
+              padding: '5px 10px',
+              fontSize: '11px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              lineHeight: '1',
+            }}>
+              <Clock style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+              <span style={{ whiteSpace: 'nowrap' }}>{sessionDuration}</span>
+            </span>
           </div>
         )}
 
