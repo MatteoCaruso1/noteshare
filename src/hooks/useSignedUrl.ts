@@ -52,6 +52,36 @@ function isStorageRef(url: string): boolean {
 }
 
 /**
+ * Extract path from a public storage URL that needs signing
+ * Handles URLs like: /storage/v1/object/public/bucket-name/path/to/file.jpg
+ */
+function extractPathFromPublicUrl(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    // Match /storage/v1/object/public/{bucket}/{path}
+    const match = urlObj.pathname.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
+    if (match) {
+      return decodeURIComponent(match[2]);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if URL is a "public" storage URL that may need signing for private buckets
+ */
+function isPublicStorageUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.pathname.includes('/storage/v1/object/public/');
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Check if a signed URL's JWT token has expired
  */
 function isTokenExpired(url: string): boolean {
@@ -125,32 +155,43 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
       return;
     }
 
-    // Determine the URL to sign - may need to extract path from expired signed URL
+    // Determine the URL to sign - may need to extract path from expired signed URL or public URL
     let urlToSign = originalUrl;
     let needsResigning = false;
 
-    // Check if it's a signed URL (has token)
-    try {
-      const urlObj = new URL(originalUrl);
-      if (urlObj.searchParams.has('token')) {
-        if (!isTokenExpired(originalUrl)) {
-          // Token still valid, use as-is
-          setSignedUrl(originalUrl);
-          return;
-        }
-        // Token expired - extract path and re-sign
-        const extractedPath = extractPathFromSignedUrl(originalUrl);
-        if (extractedPath) {
-          urlToSign = extractedPath;
-          needsResigning = true;
-        } else {
-          // Can't extract path, try using original URL anyway
-          setSignedUrl(originalUrl);
-          return;
-        }
+    // Check if it's a "public" storage URL that may need signing (private bucket with public URL format)
+    if (isPublicStorageUrl(originalUrl)) {
+      const extractedPath = extractPathFromPublicUrl(originalUrl);
+      if (extractedPath) {
+        urlToSign = extractedPath;
+        needsResigning = true;
       }
-    } catch {
-      // Not a URL; may be a direct storage path
+    }
+
+    // Check if it's a signed URL (has token)
+    if (!needsResigning) {
+      try {
+        const urlObj = new URL(originalUrl);
+        if (urlObj.searchParams.has('token')) {
+          if (!isTokenExpired(originalUrl)) {
+            // Token still valid, use as-is
+            setSignedUrl(originalUrl);
+            return;
+          }
+          // Token expired - extract path and re-sign
+          const extractedPath = extractPathFromSignedUrl(originalUrl);
+          if (extractedPath) {
+            urlToSign = extractedPath;
+            needsResigning = true;
+          } else {
+            // Can't extract path, try using original URL anyway
+            setSignedUrl(originalUrl);
+            return;
+          }
+        }
+      } catch {
+        // Not a URL; may be a direct storage path
+      }
     }
 
     // If it doesn't look like storage and doesn't need re-signing, use as-is
@@ -250,29 +291,40 @@ export async function getSignedUrls(urls: string[]): Promise<Map<string, string>
       continue;
     }
 
-    // Check if it's a signed URL with potentially expired token
+    // Check if it's a "public" storage URL that may need signing (private bucket with public URL format)
     let urlToSign = url;
-    try {
-      const u = new URL(url);
-      if (u.searchParams.has('token')) {
-        if (!isTokenExpired(url)) {
-          // Token still valid, use as-is
-          results.set(url, url);
-          continue;
-        }
-        // Token expired - extract path and re-sign
-        const extractedPath = extractPathFromSignedUrl(url);
-        if (extractedPath) {
-          urlToSign = extractedPath;
-          originalToPath.set(url, extractedPath);
-        } else {
-          // Can't extract path, try using original URL anyway
-          results.set(url, url);
-          continue;
-        }
+    if (isPublicStorageUrl(url)) {
+      const extractedPath = extractPathFromPublicUrl(url);
+      if (extractedPath) {
+        urlToSign = extractedPath;
+        originalToPath.set(url, extractedPath);
       }
-    } catch {
-      // not a URL
+    }
+
+    // Check if it's a signed URL with potentially expired token
+    if (!originalToPath.has(url)) {
+      try {
+        const u = new URL(url);
+        if (u.searchParams.has('token')) {
+          if (!isTokenExpired(url)) {
+            // Token still valid, use as-is
+            results.set(url, url);
+            continue;
+          }
+          // Token expired - extract path and re-sign
+          const extractedPath = extractPathFromSignedUrl(url);
+          if (extractedPath) {
+            urlToSign = extractedPath;
+            originalToPath.set(url, extractedPath);
+          } else {
+            // Can't extract path, try using original URL anyway
+            results.set(url, url);
+            continue;
+          }
+        }
+      } catch {
+        // not a URL
+      }
     }
 
     // Check in-memory cache using the path we're going to sign
