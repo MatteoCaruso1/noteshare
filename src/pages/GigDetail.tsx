@@ -137,7 +137,7 @@ function useGigReminder(gigId: string | undefined, userId: string | undefined) {
         .from('notifications')
         .select('id')
         .eq('user_id', userId)
-        .eq('note_id', gigId)
+        .eq('gig_id', gigId)
         .eq('type', 'gig_reminder')
         .limit(1);
 
@@ -177,7 +177,7 @@ function useCreateGigReminder() {
           user_id: userId,
           type: 'gig_reminder',
           content: `Your gig "${gigTitle}" is coming up in one week!`,
-          note_id: gigId,
+          gig_id: gigId,
           from_user_id: userId,
           read: false,
           created_at: oneWeekBefore.toISOString(),
@@ -190,7 +190,7 @@ function useCreateGigReminder() {
           user_id: userId,
           type: 'gig_reminder',
           content: `Your gig "${gigTitle}" is tomorrow!`,
-          note_id: gigId,
+          gig_id: gigId,
           from_user_id: userId,
           read: false,
           created_at: oneDayBefore.toISOString(),
