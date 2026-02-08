@@ -30,12 +30,15 @@ export function useNotifications() {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
+      // Only show notifications where created_at is in the past (for scheduled reminders)
+      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('notifications')
         .select(`
           *,
           profiles!notifications_from_user_id_fkey (id, name, username, avatar)
         `)
+        .lte('created_at', now) // Only show notifications that should be visible now
         .order('created_at', { ascending: false })
         .limit(100); // Fetch more to group applause
 
@@ -108,10 +111,13 @@ export function useUnreadNotificationCount() {
   return useQuery({
     queryKey: ['notifications-unread-count'],
     queryFn: async () => {
+      // Only count notifications that should be visible now (not future scheduled ones)
+      const now = new Date().toISOString();
       const { count, error } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('read', false);
+        .eq('read', false)
+        .lte('created_at', now);
 
       if (error) throw error;
       return count || 0;
