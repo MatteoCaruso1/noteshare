@@ -35,6 +35,113 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn, formatLocalDateTime } from '@/lib/utils';
 
+// GigCard extracted outside to prevent recreation on parent re-renders
+const GigCard = ({ 
+  post, 
+  showAuthor = true, 
+  showDelete = false,
+  onDelete,
+  onNavigate,
+}: { 
+  post: any; 
+  showAuthor?: boolean; 
+  showDelete?: boolean;
+  onDelete?: (id: string) => void;
+  onNavigate?: (id: string) => void;
+}) => (
+  <Card 
+    className="p-4 bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
+    onClick={() => onNavigate?.(post.id)}
+  >
+    <div className="flex items-start gap-4">
+      {/* Gig image or icon - using ProjectCover for preset icon support */}
+      <ProjectCover value={post.image} className="w-16 h-16 flex-shrink-0" iconClassName="w-6 h-6" />
+      
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+            <h3 className="font-semibold truncate">{post.title}</h3>
+            {post.is_paid_opportunity && (
+              <Badge className="text-xs bg-green-600 flex-shrink-0">
+                <DollarSign className="w-3 h-3 mr-1" />
+                Paid
+              </Badge>
+            )}
+          </div>
+          {showDelete && onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete gig?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    "{post.title}" will be permanently deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(post.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+        
+        {showAuthor && post.author && (
+          <div className="flex items-center gap-2 mt-1">
+            <ClickableAvatar
+              profileId={post.author_id}
+              avatar={post.author?.avatar}
+              name={post.author?.name}
+              size="sm"
+            />
+            <span className="text-xs text-muted-foreground">{post.author?.name}</span>
+          </div>
+        )}
+        
+        {post.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{post.description}</p>
+        )}
+        
+        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+          <Calendar className="w-3 h-3" />
+          {post.event_date 
+            ? formatLocalDateTime(post.event_date)
+            : format(new Date(post.created_at), 'MMM d, yyyy')
+          }
+        </div>
+        
+        {post.links?.length > 0 && (
+          <a
+            href={post.links[0]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="w-3 h-3" />
+            View Details
+          </a>
+        )}
+      </div>
+    </div>
+  </Card>
+);
+
 const Gigs = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -121,99 +228,9 @@ const Gigs = () => {
     deletePromoPost.mutate(postId);
   };
 
-  const GigCard = ({ post, showAuthor = true, showDelete = false }: { post: any; showAuthor?: boolean; showDelete?: boolean }) => (
-    <Card 
-      className="p-4 bg-card border-border cursor-pointer hover:border-primary/50 transition-colors"
-      onClick={() => navigate(`/gigs/${post.id}`)}
-    >
-      <div className="flex items-start gap-4">
-        {/* Gig image or icon - using ProjectCover for preset icon support */}
-        <ProjectCover value={post.image} className="w-16 h-16 flex-shrink-0" iconClassName="w-6 h-6" />
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
-              <h3 className="font-semibold truncate">{post.title}</h3>
-              {post.is_paid_opportunity && (
-                <Badge className="text-xs bg-green-600 flex-shrink-0">
-                  <DollarSign className="w-3 h-3 mr-1" />
-                  Paid
-                </Badge>
-              )}
-            </div>
-            {showDelete && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive flex-shrink-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete gig?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      "{post.title}" will be permanently deleted.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDeleteGig(post.id)}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-          
-          {showAuthor && post.author && (
-            <div className="flex items-center gap-2 mt-1">
-              <ClickableAvatar
-                profileId={post.author_id}
-                avatar={post.author?.avatar}
-                name={post.author?.name}
-                size="sm"
-              />
-              <span className="text-xs text-muted-foreground">{post.author?.name}</span>
-            </div>
-          )}
-          
-          {post.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{post.description}</p>
-          )}
-          
-          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-            <Calendar className="w-3 h-3" />
-            {post.event_date 
-              ? formatLocalDateTime(post.event_date)
-              : format(new Date(post.created_at), 'MMM d, yyyy')
-            }
-          </div>
-          
-          {post.links?.length > 0 && (
-            <a
-              href={post.links[0]}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ExternalLink className="w-3 h-3" />
-              View Details
-            </a>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
+  const handleNavigateToGig = (id: string) => {
+    navigate(`/gigs/${id}`);
+  };
 
   return (
     <PageLayout>
@@ -368,7 +385,7 @@ const Gigs = () => {
               ) : myPosts && myPosts.length > 0 ? (
                 <div className="space-y-4">
                   {myPosts.map((post: any) => (
-                    <GigCard key={post.id} post={post} showAuthor={false} showDelete={true} />
+                    <GigCard key={post.id} post={post} showAuthor={false} showDelete={true} onDelete={handleDeleteGig} onNavigate={handleNavigateToGig} />
                   ))}
                 </div>
               ) : (
@@ -388,7 +405,7 @@ const Gigs = () => {
               ) : filteredFriendsPosts.length > 0 ? (
                 <div className="space-y-4">
                   {filteredFriendsPosts.map((post: any) => (
-                    <GigCard key={post.id} post={post} />
+                    <GigCard key={post.id} post={post} onNavigate={handleNavigateToGig} />
                   ))}
                 </div>
               ) : (
@@ -406,7 +423,7 @@ const Gigs = () => {
               ) : paidGigs && paidGigs.length > 0 ? (
                 <div className="space-y-4">
                   {paidGigs.map((post: any) => (
-                    <GigCard key={post.id} post={post} />
+                    <GigCard key={post.id} post={post} onNavigate={handleNavigateToGig} />
                   ))}
                 </div>
               ) : (
