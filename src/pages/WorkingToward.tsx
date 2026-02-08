@@ -31,7 +31,7 @@ import { Label } from '@/components/ui/label';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { CollectionCard } from '@/components/shared/CollectionCard';
-import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
+import { ProjectCoverPicker, ProjectCover } from '@/components/ProjectCoverPicker';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
@@ -250,16 +250,7 @@ const WorkingToward = () => {
       onClick={() => navigate(`/gigs/${post.id}`)}
     >
       <div className="flex items-start gap-4">
-        <SignedImage
-          src={post.image || ''}
-          alt=""
-          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          fallback={
-            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-              <Music2 className="w-6 h-6 text-muted-foreground" />
-            </div>
-          }
-        />
+        <ProjectCover value={post.image} className="w-16 h-16" iconClassName="w-6 h-6" />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
