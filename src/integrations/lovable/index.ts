@@ -2,7 +2,11 @@
 
 import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { supabase } from "../supabase/client";
-const lovableAuth = createLovableAuth({});
+
+// Use absolute URL for OAuth broker to support custom domains
+const lovableAuth = createLovableAuth({
+  oauthBrokerUrl: "https://jazz-scene-alive.lovable.app/~oauth/initiate",
+});
 
 type SignInOptions = {
   redirect_uri?: string;
