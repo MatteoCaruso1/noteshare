@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2, Check, X, Download, Calendar, DollarSign } from 'lucide-react';
+import { Link, MessageCircle, Music, Loader2, Check, X, Download, Calendar, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn, formatLocalDateTime } from '@/lib/utils';
 import { toPng } from 'html-to-image';
@@ -82,12 +82,6 @@ const STYLE_OPTIONS: StyleOption[] = [
   },
 ];
 
-const MUSIC_ICONS = [
-  <Mic2 key="mic" className="w-6 h-6 opacity-30" />,
-  <Piano key="piano" className="w-6 h-6 opacity-30" />,
-  <Guitar key="guitar" className="w-6 h-6 opacity-30" />,
-  <Drum key="drum" className="w-6 h-6 opacity-30" />,
-];
 
 export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
   const { profile } = useAuth();
@@ -294,13 +288,6 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
             } : undefined}
           >
             {currentStyle.icon}
-            
-            {/* Music icons decoration for music style */}
-            {currentStyle.id === 'music' && (
-              <div className="absolute bottom-12 left-4 flex gap-2">
-                {MUSIC_ICONS}
-              </div>
-            )}
             
             {/* Gig Cover Icon (when not using custom photo style) */}
             {!currentStyle.useCustomImage && gig.image && (
