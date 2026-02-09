@@ -5,7 +5,7 @@ import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { SignedImage } from '@/components/SignedImage';
 import { ProjectCover } from '@/components/ProjectCoverPicker';
 import { ArrowLeft, Settings, ImageOff } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatLocalDateTime } from '@/lib/utils';
 
 interface CollectionDetailHeaderProps {
   backPath?: string;
@@ -100,14 +100,13 @@ export const CollectionDetailHeader = ({
     return null;
   };
 
-  // Format date with optional time
+  // Format date with optional time using formatLocalDateTime to preserve local timezone
   const formatDate = () => {
     if (!date) return 'No date specified';
-    const dateObj = new Date(date);
     if (dateShowTime) {
-      return `${dateLabel}: ${format(dateObj, 'MMM d, yyyy · h:mm a')}`;
+      return `${dateLabel}: ${formatLocalDateTime(date, 'MMM d, yyyy · h:mm a')}`;
     }
-    return `${dateLabel}: ${format(dateObj, 'MMM d, yyyy')}`;
+    return `${dateLabel}: ${formatLocalDateTime(date, 'MMM d, yyyy')}`;
   };
 
   return (
