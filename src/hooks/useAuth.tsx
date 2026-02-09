@@ -2,10 +2,10 @@ import { createContext, useContext, useEffect, useState, useRef, ReactNode } fro
 import { User, Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
 import { Profile } from '@/types';
 import { clearSignedUrlCache, clearAllSignedUrlCaches } from '@/hooks/useSignedUrl';
+import { isOAuthCallback } from '@/lib/oauth';
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +15,6 @@ interface AuthContextType {
   isNewUser: boolean; // True if this is a brand new user (profile just created)
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -43,11 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isPasswordResetFlow = window.location.search.includes('reset=true') || 
                                  window.location.hash.includes('type=recovery');
     
-    // Check if this is an OAuth callback - detect tokens in URL hash or query params
-    // OAuth flows put tokens in the URL that need to be processed before any session logic
-    const isOAuthCallback = window.location.hash.includes('access_token') ||
-                            window.location.search.includes('code=') ||
-                            window.location.hash.includes('id_token');
+    // Check if this is an OAuth callback using the centralized helper
+    const oauthCallbackDetected = isOAuthCallback();
     
     // Wrap auth initialization in async function with error handling
     const initializeAuth = async () => {
@@ -72,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // If there's a session but "Remember me" was not checked and browser was closed
         // BUT skip this check if we're in a password reset flow or OAuth callback
-        if (session && !rememberMe && !sessionActive && !isPasswordResetFlow && !isOAuthCallback) {
+        if (session && !rememberMe && !sessionActive && !isPasswordResetFlow && !oauthCallbackDetected) {
           // Sign out the user since they didn't want to be remembered
           await supabase.auth.signOut();
           setSession(null);
@@ -83,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         // For OAuth callbacks, ensure "remember me" is set (OAuth users expect to stay logged in)
-        if (session && isOAuthCallback) {
+        if (session && oauthCallbackDetected) {
           localStorage.setItem('noteshare_remember_me', 'true');
         }
 
@@ -241,16 +237,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success('Welcome back!');
   };
 
-  const signInWithGoogle = async () => {
-    const { error } = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
-    });
-
-    if (error) {
-      toast.error(error.message);
-      throw error;
-    }
-  };
 
   const signOut = async () => {
     // Clear remember me flags first
@@ -310,7 +296,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, session, loading, isNewUser, signUp, signIn, signInWithGoogle, signOut, resetPassword, refreshProfile, clearNewUserFlag }}>
+    <AuthContext.Provider value={{ user, profile, session, loading, isNewUser, signUp, signIn, signOut, resetPassword, refreshProfile, clearNewUserFlag }}>
       {children}
     </AuthContext.Provider>
   );
