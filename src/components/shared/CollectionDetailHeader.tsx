@@ -14,6 +14,8 @@ interface CollectionDetailHeaderProps {
   title: string;
   date: string;
   dateLabel?: string;
+  /** When true, date will include time (e.g., "Feb 21, 2026 · 3:00 PM") */
+  dateShowTime?: boolean;
   authorId?: string;
   authorName?: string;
   authorUsername?: string;
@@ -25,6 +27,8 @@ interface CollectionDetailHeaderProps {
   badges?: ReactNode;
   /** When true, uses ProjectCover which handles icon: prefixed values */
   useProjectCover?: boolean;
+  /** Custom actions to render next to the settings button */
+  headerActions?: ReactNode;
 }
 
 export const CollectionDetailHeader = ({
@@ -34,6 +38,7 @@ export const CollectionDetailHeader = ({
   title,
   date,
   dateLabel = 'Created',
+  dateShowTime = false,
   authorId,
   authorName,
   authorUsername,
@@ -44,6 +49,7 @@ export const CollectionDetailHeader = ({
   onSettingsClick,
   badges,
   useProjectCover = false,
+  headerActions,
 }: CollectionDetailHeaderProps) => {
   const navigate = useNavigate();
 
@@ -94,6 +100,16 @@ export const CollectionDetailHeader = ({
     return null;
   };
 
+  // Format date with optional time
+  const formatDate = () => {
+    if (!date) return 'No date specified';
+    const dateObj = new Date(date);
+    if (dateShowTime) {
+      return `${dateLabel}: ${format(dateObj, 'MMM d, yyyy · h:mm a')}`;
+    }
+    return `${dateLabel}: ${format(dateObj, 'MMM d, yyyy')}`;
+  };
+
   return (
     <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
       <div className="flex items-center gap-3 mb-4">
@@ -105,6 +121,7 @@ export const CollectionDetailHeader = ({
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1" />
+        {headerActions}
         {showSettings && onSettingsClick && (
           <Button variant="ghost" size="icon" onClick={onSettingsClick}>
             <Settings className="w-5 h-5" />
@@ -130,13 +147,13 @@ export const CollectionDetailHeader = ({
             </div>
           )}
 
-          {/* Title */}
-          <h1 className="text-xl font-semibold truncate">{title}</h1>
+          {/* Title - allow up to 2 lines */}
+          <h1 className="text-xl font-semibold line-clamp-2">{title}</h1>
 
           {/* Date and badges */}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <p className="text-xs text-muted-foreground">
-              {date ? `${dateLabel}: ${format(new Date(date), 'MMM d, yyyy')}` : 'No date specified'}
+              {formatDate()}
             </p>
             {badges}
           </div>
