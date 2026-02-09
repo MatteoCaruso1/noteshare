@@ -2,7 +2,7 @@ import { Progress } from '@/components/ui/progress';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
 import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
-import { Target, Trophy } from 'lucide-react';
+import { Target, Trophy, PartyPopper } from 'lucide-react';
 
 export function WeeklyGoalCard() {
   const { profile } = useAuth();
@@ -31,7 +31,7 @@ export function WeeklyGoalCard() {
   return (
     <div className={`p-3 rounded-lg border transition-colors ${
       isComplete 
-        ? 'border-green-500/30 bg-green-500/5' 
+        ? 'border-primary/30 bg-primary/5' 
         : 'border-border bg-muted/30'
     }`}>
       <div className="space-y-2">
@@ -39,7 +39,7 @@ export function WeeklyGoalCard() {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {isComplete ? (
-              <Trophy className="w-4 h-4 text-green-500 shrink-0" />
+              <Trophy className="w-4 h-4 text-primary shrink-0" />
             ) : (
               <Target className="w-4 h-4 text-primary shrink-0" />
             )}
@@ -48,7 +48,7 @@ export function WeeklyGoalCard() {
           
           {/* Progress display */}
           <div className="flex items-center gap-1.5">
-            <span className={`text-sm font-bold ${isComplete ? 'text-green-500' : ''}`}>
+            <span className={`text-sm font-bold ${isComplete ? 'text-primary' : ''}`}>
               {formatMinutes(currentMinutes)}
             </span>
             <span className="text-xs text-muted-foreground">
@@ -60,12 +60,13 @@ export function WeeklyGoalCard() {
         {/* Progress bar */}
         <Progress 
           value={progressPercent} 
-          className={`h-1.5 ${isComplete ? '[&>div]:bg-green-500' : ''}`}
+          className="h-1.5"
         />
         
         {isComplete && (
-          <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-            🎉 Goal achieved!
+          <p className="text-xs text-primary font-medium flex items-center gap-1">
+            <PartyPopper className="w-3.5 h-3.5" />
+            Goal achieved!
           </p>
         )}
       </div>
