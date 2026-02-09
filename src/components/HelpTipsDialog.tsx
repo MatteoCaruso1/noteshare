@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, Mic, Target, Timer, ClipboardList, Save, FileText, Share2, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload, Disc } from 'lucide-react';
+import { HelpCircle, Mic, Target, Timer, ClipboardList, Save, FileText, Share, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload, Disc } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -73,7 +73,7 @@ const helpSections: HelpSection[] = [
     featureIcon: <FileText className="w-4 h-4 text-foreground" />,
     definition: 'Your personal practice journal entries, either from Practice Sessions or Quick Notes',
     items: [
-      { icon: <Share2 className="w-4 h-4" />, label: 'Share Your Practice', description: 'Send a note to selected friends, either within or outside Noteshare' },
+      { icon: <Share className="w-4 h-4" />, label: 'Share Your Practice', description: 'Send a note to selected friends, either within or outside Noteshare' },
       { icon: <ClappingHandsIcon className="w-4 h-4" />, label: 'Applause (on friend\'s notes)', description: 'Show appreciation for a friend\'s practice' },
     ],
   },
