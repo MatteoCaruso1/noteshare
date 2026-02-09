@@ -131,8 +131,12 @@ export function BottomNav() {
   // Check if we're on a user profile page (part of friends flow)
   const isUserProfilePage = location.pathname.startsWith('/user/') || location.pathname.startsWith('/profile/');
   
-  // Check if we're on a note detail page (still part of My Notes flow)
+  // Check if we're on a note detail page (still part of My Practice flow)
   const isNoteDetailPage = location.pathname.startsWith('/notes/');
+  
+  // Check if we're on a gig or project detail page (still part of My Practice flow)
+  const isGigDetailPage = location.pathname.startsWith('/gigs/');
+  const isProjectDetailPage = location.pathname.startsWith('/projects/');
   
   // Determine current path - allow override for nested routes
   const currentPath = overrideActiveRoute || location.pathname;
@@ -198,10 +202,10 @@ export function BottomNav() {
               isActive = to === overrideActiveRoute;
             } else {
               // Friends tab stays active when viewing user profiles
-              // My Notes tab stays active when viewing note details
+              // Practice tab stays active when viewing note/gig/project details
               isActive = currentPath === to || 
                 (to === '/friends' && isUserProfilePage) ||
-                (to === '/' && isNoteDetailPage);
+                (to === '/' && (isNoteDetailPage || isGigDetailPage || isProjectDetailPage));
             }
             return (
               <NavLink
