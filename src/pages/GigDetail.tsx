@@ -373,6 +373,7 @@ const GigDetail = () => {
           title={gig.title}
           date={gig.event_date || ''}
           dateLabel="Gig date"
+          dateShowTime={true}
           authorId={gig.author_id}
           authorName={gig.author?.name}
           authorUsername={gig.author?.username}
@@ -390,26 +391,24 @@ const GigDetail = () => {
               </Badge>
             ) : undefined
           }
+          headerActions={
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsShareOpen(true)}
+              aria-label="Share gig"
+            >
+              <Share2 className="w-5 h-5" />
+            </Button>
+          }
         />
       </PageHeader>
 
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2">
-            {/* Share Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsShareOpen(true)}
-              className="gap-2"
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </Button>
-            
-            {/* Get Reminded Button - only show for future gigs without reminder set */}
-            {canSetReminder && (
+          {/* Get Reminded Button - only show for future gigs without reminder set */}
+          {canSetReminder && (
+            <div className="flex justify-end">
               <Button
                 variant="outline"
                 size="sm"
@@ -420,8 +419,8 @@ const GigDetail = () => {
                 <Bell className="w-4 h-4" />
                 Get Reminded
               </Button>
-            )}
-          </div>
+            </div>
+          )}
           {/* Gig Details Card - only show if there's content */}
           {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
             <Card className="p-4 bg-card border-border">
