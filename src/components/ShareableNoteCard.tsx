@@ -144,6 +144,9 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
     return notesText;
   }, [notesText, hasAudio, hasImages, hasInstruments, hasJammers]);
 
+  // Compute if card has minimal content (only audio, no text/images/instruments/jammers)
+  const isMinimalContent = hasAudio && !truncatedNotes && !hasImages && !hasInstruments && !hasJammers && !(isPracticeSession && sessionDuration && showDuration);
+  
   return (
     <div
       className={cn(
@@ -153,9 +156,9 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
         className
       )}
       style={{
-        // Dynamic height based on content, with max aspect ratio constraint
+        // Dynamic height based on content - lower min for minimal cards
         width: '100%',
-        minHeight: '280px',
+        minHeight: isMinimalContent ? '140px' : '200px',
         maxHeight: 'calc(100vw * 16 / 9)', // Max height for 9:16 aspect ratio
         padding: '16px',
       }}
