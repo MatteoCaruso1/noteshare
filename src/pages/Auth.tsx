@@ -5,14 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOnboarding } from '@/contexts/OnboardingContext';
-
-// OAuth broker URL - single source of truth for Google OAuth initiation
-const OAUTH_BROKER_URL = "https://jazz-scene-alive.lovable.app/~oauth/initiate";
+import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
 
 // Google icon component
 const GoogleIcon = () => (
@@ -36,9 +33,8 @@ const GoogleIcon = () => (
   </svg>
 );
 
-
 const Auth = () => {
-  const { signIn, signUp, resetPassword, user, profile } = useAuth();
+  const { signIn, signUp, resetPassword, user } = useAuth();
   const { startOnboarding } = useOnboarding();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -50,90 +46,120 @@ const Auth = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [oauthProcessing, setOauthProcessing] = useState(false);
 
-  // Listen for password recovery event and handle URL hash tokens (including OAuth callbacks)
+  // Handle OAuth callback and password recovery tokens
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Auth] Auth state changed:', event);
-      if (event === 'PASSWORD_RECOVERY') {
-        console.log('[Auth] Password recovery event detected');
-        setMode('update-password');
-      }
-      // If we got a SIGNED_IN event from OAuth callback, redirect to home
-      if (event === 'SIGNED_IN' && session) {
-        console.log('[Auth] User signed in, redirecting to home');
-        navigate('/');
-      }
-    });
-
-    // Parse URL hash for tokens (password recovery or OAuth callback)
-    const hashFragment = window.location.hash;
-    if (hashFragment) {
-      const hashParams = new URLSearchParams(hashFragment.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const tokenType = hashParams.get('type');
-      const refreshToken = hashParams.get('refresh_token');
+    const handleAuthCallback = async () => {
+      // First, check for OAuth callback tokens
+      const oauthTokens = parseOAuthCallback();
       
-      console.log('[Auth] Hash params detected - type:', tokenType, 'has access_token:', !!accessToken);
-      
-      if (accessToken && tokenType === 'recovery') {
-        console.log('[Auth] Recovery token found in URL hash, setting session');
-        // Set the session from the recovery tokens
-        supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || '',
-        }).then(({ error }) => {
+      if (oauthTokens) {
+        console.log('[Auth] OAuth callback detected, processing tokens');
+        setOauthProcessing(true);
+        
+        try {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: oauthTokens.accessToken,
+            refresh_token: oauthTokens.refreshToken,
+          });
+          
           if (error) {
-            console.error('[Auth] Error setting session from recovery token:', error);
-            toast.error('Password reset link has expired. Please request a new one.');
-          } else {
-            console.log('[Auth] Session set successfully, switching to update-password mode');
-            setMode('update-password');
-            // Clear the hash from the URL for cleaner appearance
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-        });
-      } else if (accessToken) {
-        // This is likely an OAuth callback - the lovable auth library should handle this
-        // but we'll set the session as a fallback
-        console.log('[Auth] OAuth access token found in URL hash, setting session');
-        supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken || '',
-        }).then(({ data, error }) => {
-          if (error) {
-            console.error('[Auth] Error setting session from OAuth token:', error);
+            console.error('[Auth] Error setting OAuth session:', error);
             toast.error('Failed to complete sign in. Please try again.');
-          } else if (data.session) {
-            console.log('[Auth] OAuth session set successfully, redirecting');
-            // Clear the hash from the URL
-            window.history.replaceState(null, '', window.location.pathname);
-            navigate('/');
+            setOauthProcessing(false);
+            return;
           }
-        });
+          
+          if (data.session) {
+            console.log('[Auth] OAuth session established successfully');
+            // Set remember-me for OAuth users (they expect persistent login)
+            localStorage.setItem('noteshare_remember_me', 'true');
+            // Clear the hash from URL
+            clearOAuthHash();
+            // Navigate to home
+            navigate('/');
+            return;
+          }
+        } catch (err) {
+          console.error('[Auth] Unexpected OAuth error:', err);
+          toast.error('An error occurred during sign in.');
+          setOauthProcessing(false);
+        }
+        return;
       }
-    }
-
-    // Also check for reset=true search param (fallback)
-    if (searchParams.get('reset') === 'true') {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      
+      // Check for password recovery tokens
+      const hash = window.location.hash;
+      if (hash) {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const tokenType = hashParams.get('type');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        if (accessToken && tokenType === 'recovery') {
+          console.log('[Auth] Password recovery token detected');
+          
+          try {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            });
+            
+            if (error) {
+              console.error('[Auth] Error setting recovery session:', error);
+              toast.error('Password reset link has expired. Please request a new one.');
+            } else {
+              console.log('[Auth] Recovery session set, switching to update-password mode');
+              setMode('update-password');
+              clearOAuthHash();
+            }
+          } catch (err) {
+            console.error('[Auth] Recovery session error:', err);
+            toast.error('Failed to process reset link.');
+          }
+          return;
+        }
+      }
+      
+      // Check for reset=true search param (fallback)
+      if (searchParams.get('reset') === 'true') {
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           console.log('[Auth] Session found with reset param, switching to update-password');
           setMode('update-password');
         }
-      });
-    }
+      }
+    };
+
+    handleAuthCallback();
+  }, [searchParams, navigate]);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] Auth state changed:', event);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        setMode('update-password');
+      }
+      
+      // If signed in and not processing OAuth or updating password, redirect
+      if (event === 'SIGNED_IN' && session && !oauthProcessing && mode !== 'update-password') {
+        navigate('/');
+      }
+    });
 
     return () => subscription.unsubscribe();
-  }, [searchParams, navigate]);
+  }, [navigate, oauthProcessing, mode]);
 
   // Reset password touched state when mode changes
   useEffect(() => {
     setPasswordTouched(false);
   }, [mode]);
 
-  // Only redirect if user is logged in AND not in password update mode
-  if (user && mode !== 'update-password') {
+  // Redirect if already logged in (but not in password update mode)
+  if (user && mode !== 'update-password' && !oauthProcessing) {
     navigate('/');
     return null;
   }
@@ -173,7 +199,6 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Custom validation for password
     if (mode !== 'forgot' && password.length < 6) {
       toast.error('Password must be at least 6 characters');
       setPasswordTouched(true);
@@ -188,7 +213,6 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
-        // Start onboarding immediately - the welcome modal doesn't need profile data
         startOnboarding();
         navigate('/');
       } else {
@@ -204,19 +228,8 @@ const Auth = () => {
 
   const handleGoogleAuth = () => {
     setLoading(true);
-    
-    // Compute redirect URI - always return to /auth to handle the callback
-    const redirectUri = `${window.location.origin}/auth`;
-    
-    // Build the broker initiation URL with provider and redirect_uri
-    const initUrl = `${OAUTH_BROKER_URL}?provider=google&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    
-    console.log('[Auth] Starting Google OAuth');
-    console.log('[Auth] redirect_uri:', redirectUri);
-    console.log('[Auth] Broker URL:', initUrl);
-    
-    // Navigate directly to the broker - bypasses any library pathing issues
-    window.location.assign(initUrl);
+    // Use the centralized OAuth helper - direct browser navigation
+    startGoogleOAuth();
   };
 
   const getTitle = () => {
@@ -229,6 +242,20 @@ const Auth = () => {
   };
 
   const title = getTitle();
+
+  // Show loading state while processing OAuth
+  if (oauthProcessing) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-primary mb-3">
+            <Music className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <p className="text-muted-foreground">Completing sign in...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-auth-enter">
