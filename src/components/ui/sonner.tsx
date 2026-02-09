@@ -21,8 +21,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       offset={24}
       mobileOffset={{ bottom: bottomOffset }}
       style={{
-        // z-index well above nav (z-50) so toasts are always visible
-        zIndex: 9999,
+        // Max z-index to guarantee visibility above all dialogs and modals
+        zIndex: 2147483647,
         // Apply bottom offset for non-mobile viewports as well (BottomNav is always present)
         bottom: !isMobile ? bottomOffset : undefined,
         // Smooth GPU-accelerated transitions for enter/exit
