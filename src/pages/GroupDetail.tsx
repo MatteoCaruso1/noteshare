@@ -11,7 +11,7 @@ import {
   ChevronLeft, 
   UserPlus, 
   Pencil, 
-  Share2, 
+  Share, 
   CalendarPlus,
   Music,
   Users,
@@ -282,7 +282,7 @@ export default function GroupDetail() {
             {/* Share button - only admins can share private groups, anyone can share public groups */}
             {(group.privacy === 'public' || canManage) && (
               <ActionButton 
-                icon={<Share2 className="w-5 h-5" />} 
+                icon={<Share className="w-5 h-5" />} 
                 label="Share" 
                 onClick={handleShare}
               />
@@ -616,7 +616,7 @@ function EventDetailSheet({
                   setTimeout(() => setShowShare(true), 100); // Open share sheet after animation
                 }}
               >
-                <Share2 className="w-4 h-4 mr-2" />
+                <Share className="w-4 h-4 mr-2" />
                 Share Event
               </Button>
             </div>

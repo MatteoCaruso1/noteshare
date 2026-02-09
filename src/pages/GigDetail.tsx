@@ -18,7 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
-import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share2 } from 'lucide-react';
+import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share } from 'lucide-react';
 import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { ShareGigSheet } from '@/components/ShareGigSheet';
 import { formatLocalDateTime } from '@/lib/utils';
@@ -398,7 +398,7 @@ const GigDetail = () => {
               onClick={() => setIsShareOpen(true)}
               aria-label="Share gig"
             >
-              <Share2 className="w-5 h-5" />
+              <Share className="w-5 h-5" />
             </Button>
           }
         />
