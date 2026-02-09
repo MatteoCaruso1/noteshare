@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Disc3, Calendar, ArrowRight } from 'lucide-react';
+import { Disc3, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ProjectCover, PRESET_ICONS } from '@/components/ProjectCoverPicker';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
@@ -124,11 +124,6 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
                 Created by <span className="font-medium text-foreground">{item.owner.name}</span>
               </span>
             </div>
-          </div>
-          
-          {/* Arrow indicator */}
-          <div className="flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </div>
         </div>
       </CardContent>
