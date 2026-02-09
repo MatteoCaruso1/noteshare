@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link, MessageCircle, Music, Mic2, Piano, Guitar, Drum, Loader2, Check, X, Download, Calendar, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, formatLocalDateTime } from '@/lib/utils';
 import { toPng } from 'html-to-image';
 import { useFriends } from '@/hooks/useFriendships';
 import { supabase } from '@/integrations/supabase/client';
@@ -107,8 +107,9 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
   // Friends list for in-app sharing
   const { data: friends = [] } = useFriends();
   
-  // Memoize computed values
-  const eventDate = useMemo(() => gig?.event_date ? new Date(gig.event_date) : null, [gig]);
+  // Memoize computed values - use formatLocalDateTime to preserve local timezone
+  const formattedDate = useMemo(() => gig?.event_date ? formatLocalDateTime(gig.event_date, 'MMMM d, yyyy') : null, [gig]);
+  const formattedTime = useMemo(() => gig?.event_date ? formatLocalDateTime(gig.event_date, 'h:mm a') : null, [gig]);
   const shareUrl = useMemo(() => gig ? `${window.location.origin}/gigs/${gig.id}` : '', [gig]);
   
   // Check if gig has a custom uploaded image (not a preset icon)
@@ -259,7 +260,12 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
           {availableStyles.map((style) => (
             <button
               key={style.id}
-              onClick={() => setSelectedStyle(style.id)}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedStyle(style.id);
+              }}
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
                 selectedStyle === style.id
@@ -308,13 +314,13 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
             <h3 className="text-2xl font-bold">{gig.title}</h3>
             
             <div className="space-y-1 text-sm opacity-90">
-              {eventDate && (
+              {formattedDate && (
                 <>
                   <p className="flex items-center justify-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    {format(eventDate, "MMMM d, yyyy")}
+                    {formattedDate}
                   </p>
-                  <p>{format(eventDate, "h:mm a")}</p>
+                  {formattedTime && <p>{formattedTime}</p>}
                 </>
               )}
               {gig.is_paid_opportunity && (
