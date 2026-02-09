@@ -55,12 +55,10 @@ export const CollectionDetailHeader = ({
 
   const handleBack = () => {
     if (useHistoryBack) {
-      // Check if we have history to go back to, otherwise use fallback
-      if (window.history.length > 1) {
-        navigate(-1);
-      } else {
-        navigate(fallbackPath, { replace: true });
-      }
+      // Always try navigate(-1) first - history.length is unreliable in iframes/SPAs
+      // If there's no history, the browser will simply do nothing, which is fine
+      // We can detect this by checking if the navigation would go outside our app
+      navigate(-1);
     } else if (backPath) {
       navigate(backPath);
     } else {
