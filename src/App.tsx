@@ -56,6 +56,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const ShortNoteRedirect = lazy(() => import("./pages/ShortNoteRedirect"));
+const OAuthCatchRedirect = lazy(() => import("./pages/OAuthCatchRedirect"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -174,6 +175,8 @@ function AppInner() {
                       <Route path="/pursuits" element={<Suspense fallback={null}><Pursuits /></Suspense>} />
                       <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
                       <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
+                      {/* Catch OAuth routes that might hit the app on custom domains - redirect to auth */}
+                      <Route path="/~oauth/*" element={<Suspense fallback={null}><OAuthCatchRedirect /></Suspense>} />
                       <Route path="/admin/analytics" element={
                         <AdminGuard>
                           <Suspense fallback={null}><AdminAnalytics /></Suspense>
