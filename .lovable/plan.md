@@ -1,128 +1,143 @@
 
-# Fix: Practice Board Backlog Toast Visibility & Paste Formatting Issues
+## Goal
+Make “Log in with Google / Sign up with Google” work reliably across:
+- Preview domain (`*.lovableproject.com`)
+- Published domain (`*.lovable.app`)
+- Custom domain (`notesharemusic.com`)
+- Browsers with stricter storage/cookie behavior (Safari/iOS)
 
-## Problem Summary
-
-When in a practice session on mobile, using the Practice Board Backlog feature has two issues:
-
-1. **Toast notification hidden**: When copying text from the backlog, the "Copied to clipboard" toast doesn't appear because it's rendered behind the dialog modal
-2. **URL-encoded text after paste**: When pasting copied backlog content into the Practice Board, the text appears URL-encoded (e.g., `%0A%E2%80%A2%20` instead of newlines and bullet points)
-
----
-
-## Root Cause Analysis
-
-### Issue 1: Toast Hidden Behind Dialog
-The `FocusBacklogDialog` uses Radix Dialog which creates a portal with `z-50` on the overlay. While Sonner toasts have `z-index: 9999`, the Dialog's stacking context can still visually layer above the toast in certain mobile browser rendering scenarios. The Sonner toaster needs to be rendered in a way that guarantees it appears above all dialogs.
-
-### Issue 2: URL-Encoded Paste
-After investigation, the database stores properly formatted text with real newlines (\\n) and bullet characters (•). The `navigator.clipboard.writeText()` function copies plain text correctly.
-
-The issue appears to be a **mobile Safari quirk** where calling `navigator.clipboard.writeText()` from within a button click handler inside a dialog may not work reliably, especially when the dialog has focus traps or specific touch handling. Some iOS versions return an encoded representation when the clipboard API is called in certain stacking contexts.
-
-The fix is to ensure the clipboard write operation completes successfully and to add proper async/await handling with error recovery.
+The screenshot indicates users are landing on:
+`https://notesharemusic.com/~oauth/initiate?...` and getting a 404.
+That URL should never be a dead-end. If it’s hit, we must successfully forward to the OAuth broker and then back to `/auth` to finish login.
 
 ---
 
-## Implementation Plan
+## What’s likely happening (based on code + screenshot)
+You currently have:
+- A redirect page at `src/pages/OAuthInitiateRedirect.tsx` that forwards `/<~oauth/initiate>` to the broker:
+  `https://jazz-scene-alive.lovable.app/~oauth/initiate`
+- A route registered: `Route path="/~oauth/initiate" ...`
 
-### File: `src/components/FocusBacklogDialog.tsx`
+Yet the user is still seeing a 404 at `/~oauth/initiate`.
 
-**Change 1: Add explicit CSS for toast visibility inside dialog**
-Wrap the toast call to ensure it appears above the dialog by using Sonner's built-in position override.
+The two most probable causes:
+1) **Route mismatch edge case**  
+   React Router may not be matching `"/~oauth/initiate"` in some situations (trailing slash, extra segments, encoded path, etc.). If the path is `"/~oauth/initiate/"` or `"/~oauth/initiate/something"`, it will fall through to `*` and show NotFound.
 
-**Change 2: Improve clipboard copy reliability**
-- Add a small delay before copying to ensure the button's touch event completes
-- Use a fallback method for iOS if the modern clipboard API fails
-- Add explicit text sanitization before copy to remove any potential hidden characters
-
-```typescript
-// Before
-const handleCopy = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
-  } catch {
-    toast.error('Failed to copy');
-  }
-};
-
-// After - with iOS fallback and improved reliability
-const handleCopy = async (text: string) => {
-  try {
-    // Normalize text to ensure clean copy (remove any potential encoding artifacts)
-    const cleanText = text.normalize('NFC');
-    
-    // Try modern clipboard API first
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(cleanText);
-    } else {
-      // Fallback for older browsers / iOS edge cases
-      const textarea = document.createElement('textarea');
-      textarea.value = cleanText;
-      textarea.style.position = 'fixed';
-      textarea.style.left = '-9999px';
-      textarea.style.top = '0';
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
-    
-    // Use Sonner toast with explicit high z-index positioning
-    toast.success('Copied to clipboard', {
-      position: 'top-center', // Ensures visibility above dialog
-    });
-  } catch (err) {
-    console.error('Copy failed:', err);
-    toast.error('Failed to copy');
-  }
-};
-```
-
-### File: `src/components/ui/sonner.tsx`
-
-**Change: Increase z-index for modal scenarios**
-Update the Sonner configuration to use an even higher z-index that's guaranteed to layer above Radix Dialog portals.
-
-```typescript
-// Update zIndex from 9999 to a value that exceeds Radix Dialog portal stacking
-style={{
-  zIndex: 2147483647, // Max z-index value, guaranteed above all portals
-  // ... other styles
-}}
-```
+2) **The OAuth library path is still being used in some builds/contexts**  
+   Even though `createLovableAuth` is configured with an absolute broker URL, the screenshot shows the app still navigating to a same-origin `"/~oauth/initiate"` URL. We should treat that as an unreliable link and make the app resilient by:
+   - Ensuring `"/~oauth/initiate"` always redirects (route wildcard)
+   - Ensuring the Google button itself always starts OAuth via the broker (manual start)
 
 ---
 
-## Technical Details
+## Implementation plan (robust + “rewrite” approach)
 
-### Why the URL Encoding Might Occur
-iOS Safari's clipboard API can sometimes encode text when:
-1. The copy operation is triggered within a focus-trapped modal
-2. Touch events haven't fully propagated before clipboard access
-3. The text contains unicode characters (like • bullet points)
+### Phase 1 — Make `"/~oauth/initiate"` unbreakable (routing hardening)
+1. Update routing in `src/App.tsx`:
+   - Change the route from:
+     - `path="/~oauth/initiate"`
+   - To:
+     - `path="/~oauth/initiate/*"`
+   This catches any trailing slash or unexpected extra path segments and still loads the redirect component.
 
-By normalizing the text with `normalize('NFC')` and providing a fallback copy method using a temporary textarea (which bypasses some clipboard API quirks), we ensure reliable copying.
+2. Optionally add a broader catch-all for `~oauth` (only if needed after testing):
+   - `path="/~oauth/*"` → also renders `OAuthInitiateRedirect`
+   This is a belt-and-suspenders approach if we discover other broker-related subpaths appear.
 
-### Toast Positioning
-By specifying `position: 'top-center'` on toasts triggered from within dialogs, we ensure they render in a position that's clearly visible above the modal content.
+3. Improve `OAuthInitiateRedirect.tsx` UX + resiliency:
+   - Render a simple “Redirecting to Google…” loading state (instead of blank).
+   - Preserve *both* `search` and `hash` just in case:
+     - Forward `window.location.search` and `window.location.hash` to the broker.
+   - Use `window.location.assign` (or `replace`, whichever you prefer). `replace` prevents polluting back history; `assign` is sometimes easier for debugging. We’ll pick based on your preference.
+
+**Expected result:** any visit to `https://<any-domain>/~oauth/initiate...` immediately forwards to the broker and no longer shows a 404.
 
 ---
 
-## Files to Modify
+### Phase 2 — Fully rewrite the “Google login” button to start OAuth directly via the broker (no library dependency)
+In `src/pages/Auth.tsx`, replace the current `handleGoogleAuth` flow with a deterministic redirect:
+1. Define a single source-of-truth broker URL (same value you used in `OAuthInitiateRedirect.tsx`):
+   - `const OAUTH_BROKER_URL = "https://jazz-scene-alive.lovable.app/~oauth/initiate";`
 
-1. **`src/components/FocusBacklogDialog.tsx`** - Improve handleCopy function with normalization and fallback
-2. **`src/components/ui/sonner.tsx`** - Increase z-index for guaranteed visibility above dialogs
+2. On click:
+   - Compute `redirect_uri = ${window.location.origin}/auth`
+   - Build the broker initiation URL:
+     - `${OAUTH_BROKER_URL}?provider=google&redirect_uri=${encodeURIComponent(redirect_uri)}`
+   - Then do: `window.location.assign(initUrl)`
+
+3. Keep the existing `/auth` callback handler:
+   - You already parse tokens from the URL hash and call `supabase.auth.setSession(...)` as a fallback.
+   - That’s good; we’ll keep it, but we’ll tighten it so it:
+     - Clears the URL hash after successful session set
+     - Shows a better error if tokens are present but session fails
+     - Avoids interfering with password recovery (you already handle that)
+
+**Expected result:** clicking “Log in with Google” never hits `notesharemusic.com/~oauth/initiate` in the first place; it goes straight to the broker every time.
 
 ---
 
-## Testing Checklist
+### Phase 3 — Add lightweight diagnostics (so we don’t guess next time)
+Add structured console logging in `Auth.tsx` and `OAuthInitiateRedirect.tsx` (temporary but very helpful):
+- When starting OAuth:
+  - log the computed `redirect_uri`
+  - log the final broker URL (without leaking secrets; this URL doesn’t contain secrets)
+- When arriving at `/auth`:
+  - log whether `access_token` exists, whether `error` exists, and which `type` it is
+- In `OAuthInitiateRedirect`:
+  - log `window.location.href` before redirecting
 
-1. Open the Practice Board Backlog dialog during a practice session on iOS
-2. Tap the copy button on a backlog entry
-3. Verify the "Copied to clipboard" toast appears visibly
-4. Close the dialog and paste into the Practice Board textarea
-5. Verify the pasted text shows proper formatting (newlines, bullets, etc.)
-6. Test the same flow on desktop browsers for regression
+This will let us confirm:
+- Are users starting OAuth on the right URL?
+- Are we returning to `/auth` with tokens?
+- Are we failing at session set, or never receiving tokens?
+
+(If you prefer, we can hide these logs behind a query param like `?debugAuth=1`.)
+
+---
+
+### Phase 4 — End-to-end verification matrix (critical)
+We’ll verify on each environment:
+1. Preview URL (`*.lovableproject.com`)
+2. Published URL (`*.lovable.app`)
+3. Custom domain (`notesharemusic.com`)
+
+Test cases:
+- Existing user: Google login → lands at `/` authenticated
+- New user: Google signup → lands at `/` authenticated and onboarding triggers once
+- “Direct hit” regression test:
+  - Manually paste: `/<custom-domain>/~oauth/initiate?provider=google&redirect_uri=<...>`
+  - Confirm it redirects away (no 404)
+- Safari/iOS (if you have access):
+  - Ensure no login loop, and that “Stay logged in” expectations are met
+
+---
+
+## Files we’ll modify (no backend schema changes)
+- `src/App.tsx`
+  - Harden route matching with `"/~oauth/initiate/*"` (and optionally `"/~oauth/*"` if needed)
+- `src/pages/Auth.tsx`
+  - Rewrite Google auth initiation to use a direct broker redirect
+  - Keep/improve callback token parsing and error handling
+- `src/pages/OAuthInitiateRedirect.tsx`
+  - Preserve query/hash and show a small redirecting UI
+  - (Optional) add debug logging
+
+---
+
+## Risk / tradeoffs
+- This approach intentionally bypasses the OAuth helper library for initiation. That’s acceptable here because:
+  - The broker URL is known and stable
+  - We only need Google
+  - It removes uncertainty about which domain/path the library chooses in edge cases
+- If the broker URL ever changes, we’ll update it in one place (we can also centralize it into a tiny `src/lib/auth/oauth.ts` helper after this is stable).
+
+---
+
+## Clarifying questions (only if needed to finalize the implementation)
+If you can confirm these, it will help choose the safest routing strategy:
+1) When you reproduced the issue, were you on the custom domain (`notesharemusic.com`) or in the Preview environment?
+2) After clicking Google login, does it open in the same tab or a popup/new tab?
+3) Do you want the browser Back button to return to `/auth` after a failed attempt (favor `assign`) or avoid adding a history entry (favor `replace`)?
+
+(We can proceed without answers, but these influence polish and edge-case behavior.)
