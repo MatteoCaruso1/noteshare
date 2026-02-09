@@ -8,9 +8,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+
+// OAuth broker URL - single source of truth for Google OAuth initiation
+const OAUTH_BROKER_URL = "https://jazz-scene-alive.lovable.app/~oauth/initiate";
 
 // Google icon component
 const GoogleIcon = () => (
@@ -200,37 +202,21 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleAuth = async () => {
+  const handleGoogleAuth = () => {
     setLoading(true);
-    try {
-      // Use /auth as the redirect URI to ensure we return to a valid route
-      // that can properly handle the OAuth callback
-      const redirectUri = `${window.location.origin}/auth`;
-      console.log('[Auth] Starting Google OAuth with redirect_uri:', redirectUri);
-      
-      const { error, redirected } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: redirectUri,
-      });
-      
-      if (error) {
-        console.error('[Auth] Google auth error:', error);
-        toast.error('Failed to sign in with Google');
-        setLoading(false);
-        return;
-      }
-      
-      // If redirected, the page will navigate away, so we don't need to do anything
-      if (!redirected && !error) {
-        // After OAuth redirect, the session will be set and user will be redirected
-        // The actual onboarding check happens in useAuth's onAuthStateChange
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('[Auth] Google auth error:', error);
-      toast.error('Failed to sign in with Google');
-    } finally {
-      setLoading(false);
-    }
+    
+    // Compute redirect URI - always return to /auth to handle the callback
+    const redirectUri = `${window.location.origin}/auth`;
+    
+    // Build the broker initiation URL with provider and redirect_uri
+    const initUrl = `${OAUTH_BROKER_URL}?provider=google&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    
+    console.log('[Auth] Starting Google OAuth');
+    console.log('[Auth] redirect_uri:', redirectUri);
+    console.log('[Auth] Broker URL:', initUrl);
+    
+    // Navigate directly to the broker - bypasses any library pathing issues
+    window.location.assign(initUrl);
   };
 
   const getTitle = () => {

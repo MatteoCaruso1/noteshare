@@ -175,7 +175,8 @@ function AppInner() {
                       <Route path="/pursuits" element={<Suspense fallback={null}><Pursuits /></Suspense>} />
                       <Route path="/n/:shortId" element={<Suspense fallback={null}><ShortNoteRedirect /></Suspense>} />
                       <Route path="/auth" element={<Suspense fallback={null}><Auth /></Suspense>} />
-                      <Route path="/~oauth/initiate" element={<Suspense fallback={null}><OAuthInitiateRedirect /></Suspense>} />
+                      <Route path="/~oauth/initiate/*" element={<Suspense fallback={null}><OAuthInitiateRedirect /></Suspense>} />
+                      <Route path="/~oauth/*" element={<Suspense fallback={null}><OAuthInitiateRedirect /></Suspense>} />
                       <Route path="/admin/analytics" element={
                         <AdminGuard>
                           <Suspense fallback={null}><AdminAnalytics /></Suspense>
