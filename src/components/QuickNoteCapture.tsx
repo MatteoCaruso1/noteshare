@@ -278,11 +278,16 @@ export function QuickNoteCapture() {
               {currentFocus?.focus_text && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-2 ml-auto cursor-pointer">
+                    <div
+                      className="flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none"
+                      data-no-hover-reset
+                      onTouchEnd={(e) => { e.currentTarget.blur(); }}
+                    >
                       <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
                       <Switch
                         id="attach-focus"
                         checked={attachFocus}
+                        data-no-hover-reset
                         onCheckedChange={(checked) => {
                           setAttachFocus(checked);
                           if (checked) {
