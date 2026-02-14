@@ -67,7 +67,7 @@ export function usePracticeStats(profileId: string | undefined) {
           .order('started_at', { ascending: true }),
         supabase
           .from('notes')
-          .select('text_content, tags, created_at')
+          .select('text_content, tags, created_at, session_id')
           .eq('author_id', profileId)
           .gte('created_at', threeMonthsAgo.toISOString()),
         supabase
@@ -184,9 +184,13 @@ export function usePracticeStats(profileId: string | undefined) {
         activityDates.add(format(s.startDate, 'yyyy-MM-dd'));
       });
       
-      // Add note dates (quick notes count towards streak too)
+      // Add note dates (only standalone notes — notes tied to sessions are already
+      // covered by the session's started_at date, and their created_at can differ
+      // from the actual practice date when logging past sessions)
       notes.forEach(note => {
-        activityDates.add(format(parseISO(note.created_at), 'yyyy-MM-dd'));
+        if (!note.session_id) {
+          activityDates.add(format(parseISO(note.created_at), 'yyyy-MM-dd'));
+        }
       });
       
       let bestDailyStreak = 0;
