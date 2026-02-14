@@ -57,6 +57,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -149,12 +150,16 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect]);
 
   const handleClick = () => {
-    if (isFinalStep) {
-      // Already on My Practice page, just complete
-      onComplete();
-    } else {
-      onNext();
-    }
+    if (isFadingOut) return; // Prevent double-tap during transition
+    setIsFadingOut(true);
+    setTimeout(() => {
+      setIsFadingOut(false);
+      if (isFinalStep) {
+        onComplete();
+      } else {
+        onNext();
+      }
+    }, 250);
   };
 
   // Calculate tooltip position
@@ -235,8 +240,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             width: targetRect.width + 16,
             height: targetRect.height + 16,
             transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: isAnimating ? 0 : 1,
-            transform: isAnimating ? 'scale(0.95)' : 'scale(1)',
+            opacity: (isAnimating || isFadingOut) ? 0 : 1,
+            transform: (isAnimating || isFadingOut) ? 'scale(0.95)' : 'scale(1)',
           }}
         />
       )}
@@ -244,7 +249,13 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       {/* Tooltip / Message */}
       {isFinalStep ? (
         // Final centered message
-        <div className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center">
+        <div 
+          className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center"
+          style={{
+            transition: 'opacity 250ms ease-in-out',
+            opacity: isFadingOut ? 0 : 1,
+          }}
+        >
           <div className="animate-scale-in">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-6">
               <Music className="w-8 h-8 text-primary-foreground" />
@@ -266,7 +277,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           style={{
             ...getTooltipStyle(),
             transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: isAnimating ? 0 : 1,
+            opacity: (isAnimating || isFadingOut) ? 0 : 1,
             transform: `translateX(-50%) ${isAnimating ? 'translateY(8px)' : 'translateY(0)'}`,
           }}
         >
