@@ -98,8 +98,33 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
   
-  // Check if we have any content (notes or feed items)
-  const hasContent = notes.length > 0 || feedItems.length > 0;
+  // Build a single unified list of all items sorted by date FIRST, then paginate
+  type TimelineItem = 
+    | { type: 'note'; data: NoteWithAuthor; sortDate: number }
+    | { type: 'feedItem'; data: FeedItem; sortDate: number };
+
+  const allItemsSorted = useMemo(() => {
+    const items: TimelineItem[] = [];
+    
+    notes.forEach(note => {
+      items.push({ type: 'note', data: note, sortDate: new Date(note.created_at).getTime() });
+    });
+    
+    feedItems.forEach(feedItem => {
+      items.push({ type: 'feedItem', data: feedItem, sortDate: new Date(feedItem.createdAt).getTime() });
+    });
+    
+    // Sort by date descending
+    return items.sort((a, b) => b.sortDate - a.sortDate);
+  }, [notes, feedItems]);
+
+  // Paginate the unified list
+  const displayedItems = useMemo(() => {
+    return allItemsSorted.slice(0, displayCount);
+  }, [allItemsSorted, displayCount]);
+  
+  // Check if we have any content
+  const hasContent = allItemsSorted.length > 0;
   
   // UI Mode state machine to prevent flickering
   const [uiMode, setUiMode] = useState<UIMode>(() => {
@@ -120,13 +145,11 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   
   // State machine effect - handles transitions with debouncing
   useEffect(() => {
-    // Clear any pending empty transition when state changes
     if (emptyDebounceRef.current) {
       clearTimeout(emptyDebounceRef.current);
       emptyDebounceRef.current = null;
     }
     
-    // If we have any content (notes or feed items), immediately switch to list mode
     if (hasContent) {
       setUiMode('list');
       setShowSkeleton(false);
@@ -135,17 +158,12 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
       return;
     }
     
-    // No notes - determine if loading or empty
     if (isLoading) {
       setUiMode('loading');
-      // Don't reset skeleton timers here - they're managed separately
     } else {
-      // Loading finished with no notes - debounce transition to empty
-      // This prevents brief "empty" flashes during refetch cycles
-      const minSkeletonTime = 400; // ms
-      const emptyDebounceTime = 200; // ms
+      const minSkeletonTime = 400;
+      const emptyDebounceTime = 200;
       
-      // If skeleton was shown, ensure it stays for minimum time
       if (skeletonShownAtRef.current && showSkeleton) {
         const elapsed = Date.now() - skeletonShownAtRef.current;
         const remaining = Math.max(0, minSkeletonTime - elapsed);
@@ -157,7 +175,6 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
           skeletonShownAtRef.current = null;
         }, remaining + emptyDebounceTime);
       } else {
-        // No skeleton was shown, just debounce the empty transition
         emptyDebounceRef.current = setTimeout(() => {
           setUiMode('empty');
         }, emptyDebounceTime);
@@ -171,7 +188,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
     };
   }, [hasContent, isLoading, showSkeleton]);
   
-  // Skeleton display timer - show after delay to prevent flash
+  // Skeleton display timer
   useEffect(() => {
     if (uiMode === 'loading' && !showSkeleton) {
       const skeletonDelayTimer = setTimeout(() => {
@@ -198,57 +215,20 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
     };
   }, []);
   
-  // Separate notes into recent (last 14 days) and older
-  // DISABLED: Free users now have full history access
-  const { olderNotesCount, displayedNotes } = useMemo(() => {
-    const allDisplayed = notes.slice(0, displayCount);
-    
-    // All users now have access to full history
-    return {
-      olderNotesCount: 0,
-      displayedNotes: allDisplayed,
-    };
-  }, [notes, displayCount]);
-
-  // Merge notes and feed items into a unified timeline
-  type TimelineItem = 
-    | { type: 'note'; data: NoteWithAuthor }
-    | { type: 'feedItem'; data: FeedItem };
-
-  const mergedTimeline = useMemo(() => {
-    const items: TimelineItem[] = [];
-    
-    // Add notes
-    displayedNotes.forEach(note => {
-      items.push({ type: 'note', data: note });
-    });
-    
-    // Add feed items
-    feedItems.forEach(feedItem => {
-      items.push({ type: 'feedItem', data: feedItem });
-    });
-    
-    // Sort by date descending
-    return items.sort((a, b) => {
-      const dateA = a.type === 'note' ? new Date(a.data.created_at) : new Date(a.data.createdAt);
-      const dateB = b.type === 'note' ? new Date(b.data.created_at) : new Date(b.data.createdAt);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [displayedNotes, feedItems]);
-
-  // Count total notes within free limit for comparison
-  const totalRecentNotesCount = useMemo(() => {
-    return notes.length;
-  }, [notes]);
+  // Extract displayed notes for URL prefetch
+  const displayedNotes = useMemo(() => {
+    return displayedItems
+      .filter((item): item is TimelineItem & { type: 'note' } => item.type === 'note')
+      .map(item => item.data);
+  }, [displayedItems]);
 
   // Prefetch signed URLs for all displayed notes in a single batch
   useSignedUrlPrefetch(displayedNotes);
 
   // ========================================
-  // RENDER - Single stable structure
+  // RENDER
   // ========================================
 
-  // Render empty/loading shell when no notes
   if (uiMode === 'loading' || uiMode === 'empty') {
     return (
       <EmptyStateShell 
@@ -259,18 +239,11 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
     );
   }
 
-  // List mode - render notes
-  const hasMoreRecentToLoad = isPremium 
-    ? displayCount < notes.length
-    : displayedNotes.length < totalRecentNotesCount;
-
-  const showOlderNotesGate = !isPremium && !isPremiumLoading && 
-    olderNotesCount > 0 && 
-    displayedNotes.length >= totalRecentNotesCount;
+  const hasMoreToLoad = displayCount < allItemsSorted.length;
 
   return (
     <div className="space-y-4">
-      {mergedTimeline.map((item) => (
+      {displayedItems.map((item) => (
         item.type === 'note' ? (
           <NoteCard key={`note-${item.data.id}`} note={item.data} />
         ) : (
@@ -278,8 +251,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
         )
       ))}
       
-      {/* Load more button - show if there are more recent notes to load */}
-      {hasMoreRecentToLoad && (
+      {hasMoreToLoad && (
         <Button 
           variant="outline" 
           className="w-full" 
@@ -287,11 +259,6 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
         >
           Load more
         </Button>
-      )}
-      
-      {/* Show upgrade prompt for older notes after all recent notes are loaded */}
-      {showOlderNotesGate && (
-        <OlderNotesGate onUpgrade={openPremiumDialog} />
       )}
     </div>
   );
