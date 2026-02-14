@@ -570,7 +570,7 @@ export function PracticeControls() {
         <CollapsibleTrigger asChild>
           {/* Glint effect disabled but kept for potential future use: add `glint ${isPaused ? 'glint-paused' : ''}` to className and style={glintStyle} */}
           <button 
-            className="w-full p-4 flex items-center justify-between transition-colors rounded-lg group"
+            className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
           >
             <div className="flex items-center gap-2">
               <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
@@ -604,7 +604,7 @@ export function PracticeControls() {
         <CollapsibleContent>
           {/* Session Choice Step - shown when no active session OR while starting */}
           {!activeSession && (showSessionChoice || isStartingSession) && (
-            <div className="px-4 pb-4 space-y-3 min-h-[100px]">
+            <div className="px-3 sm:px-4 pb-4 space-y-3 min-h-[100px]">
               <Button
                 className="w-full bg-gradient-primary text-primary-foreground"
                 onClick={handleStartLiveSession}
@@ -619,7 +619,7 @@ export function PracticeControls() {
 
           {/* Active Session Content */}
           {activeSession && (
-          <div className="px-4 pb-4 space-y-4">
+          <div className="px-3 sm:px-4 pb-4 space-y-4">
           {/* Recovery banner for orphaned recordings */}
           <RecordingRecoveryBanner />
 
