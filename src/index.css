@@ -762,7 +762,7 @@ html {
 .toaster,
 [data-radix-toast-viewport] {
   position: fixed !important;
-  z-index: 9999 !important;
+  z-index: 2147483647 !important;
 }
 
 /* Belt-and-suspenders: ensure toast viewport clears BottomNav via CSS variable */

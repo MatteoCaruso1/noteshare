@@ -101,17 +101,17 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
         document.body.removeChild(textarea);
       }
       
-      toast.success('Copied to clipboard', { position: 'top-center' });
+      toast.success('Copied to clipboard');
     } catch (err) {
       console.error('Copy failed:', err);
-      toast.error('Failed to copy', { position: 'top-center' });
+      toast.error('Failed to copy');
     }
   };
 
   const handleDelete = (id: string) => {
     deleteFromBacklog(id, {
-      onSuccess: () => toast.success('Entry deleted', { position: 'top-center' }),
-      onError: () => toast.error('Failed to delete', { position: 'top-center' }),
+      onSuccess: () => toast.success('Entry deleted'),
+      onError: () => toast.error('Failed to delete'),
     });
   };
 
