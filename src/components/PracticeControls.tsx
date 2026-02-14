@@ -457,6 +457,7 @@ export function PracticeControls() {
               clearState();
               clearSessionSettings();
               setShowEndSessionDialog(false);
+              setManuallyCollapsed(true);
               toast.error('Session ended but note not saved - daily limit reached. Get Pro for unlimited notes.');
             },
           }
@@ -508,6 +509,7 @@ export function PracticeControls() {
                   clearState();
                   clearSessionSettings();
                   setShowEndSessionDialog(false);
+                  setManuallyCollapsed(true);
                 },
               }
             );
