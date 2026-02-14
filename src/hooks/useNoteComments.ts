@@ -103,6 +103,7 @@ export function useCreateNoteComment() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['note-comments', variables.noteId] });
+      queryClient.refetchQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
       toast.success('Comment added');
@@ -129,6 +130,7 @@ export function useDeleteNoteComment() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['note-comments', data.noteId] });
+      queryClient.refetchQueries({ queryKey: ['notes'] });
       toast.success('Comment deleted');
     },
     onError: (error) => {
