@@ -696,8 +696,11 @@ export function PracticeControls() {
                           <AlertDialogFooter className="mt-2">
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
+                              data-no-hover-reset
                               onClick={handleDeleteSession}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onTouchEnd={(e) => { e.currentTarget.blur(); }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 touch-manipulation [-webkit-tap-highlight-color:transparent]"
+                              style={{ backgroundColor: 'hsl(var(--destructive))' }}
                             >
                               Delete
                             </AlertDialogAction>
