@@ -60,7 +60,7 @@ export function PremiumDialog() {
   return (
     <Dialog open={isPremiumDialogOpen} onOpenChange={closePremiumDialog}>
       <DialogContent 
-        className="sm:max-w-md p-0 gap-0 flex flex-col max-h-[90vh]"
+        className="sm:max-w-md p-0 gap-0 flex flex-col max-h-[90vh] overflow-hidden"
         hideCloseButton={false}
         closeButtonClassName="h-6 w-6 top-3 right-3 z-10"
       >
