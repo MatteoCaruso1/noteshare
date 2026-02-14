@@ -435,10 +435,10 @@ export function useLogOfflineSession() {
       return session as PracticeSession;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-      // Force immediate refetch of practice-stats (powers weekly goal progress)
+      // Use refetchQueries for immediate UI update on the home page
+      queryClient.refetchQueries({ queryKey: ['notes'] });
       queryClient.refetchQueries({ queryKey: ['practice-stats'] });
+      queryClient.refetchQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['weekly-goal'] });
       toast.success('Practice session logged!');
     },
