@@ -168,8 +168,8 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
     );
   };
 
-  const showSuggestions = isFocused && query.length < 2 && suggestedMusicians && suggestedMusicians.length > 0;
   const showSearchResults = query.length >= 2;
+  const showSuggestions = !showSearchResults && suggestedMusicians && suggestedMusicians.length > 0;
 
   return (
     <div className="relative">
@@ -262,7 +262,7 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
       )}
 
       {/* Loading suggestions - skeleton with stable height */}
-      {isFocused && query.length < 2 && suggestionsLoading && (
+      {!showSearchResults && suggestionsLoading && (
         <div className="mt-3 p-3 bg-secondary/20 rounded-lg border border-border animate-fade-in">
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
             <Skeleton className="w-4 h-4 rounded" />
