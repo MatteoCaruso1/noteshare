@@ -817,7 +817,7 @@ export function TodaysFocus() {
   if (isLoading) {
     return (
       <Card className="bg-card border-border min-h-[60px]">
-        <div className="p-4 flex items-center gap-2">
+        <div className="px-3 py-4 sm:px-4 flex items-center gap-2">
           <ClipboardList className="w-5 h-5 text-muted-foreground" />
           <h2 className="font-semibold">Practice Board</h2>
         </div>
@@ -875,7 +875,7 @@ export function TodaysFocus() {
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           {/* Header row - trigger spans full width with chevron on the right */}
           <CollapsibleTrigger asChild>
-            <div className="p-4 flex items-center justify-between cursor-pointer group touch-manipulation">
+            <div className="px-3 py-4 sm:px-4 flex items-center justify-between cursor-pointer group touch-manipulation">
               <div className="flex items-center gap-2">
                 <ClipboardList className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
                 <h2 className="font-semibold">Practice Board</h2>
@@ -932,7 +932,7 @@ export function TodaysFocus() {
               </div>
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-4 pb-4" style={{ overflow: 'visible' }}>
+          <CollapsibleContent className="px-3 sm:px-4 pb-4" style={{ overflow: 'visible' }}>
             <div ref={collapsibleContentRef}>
               <div 
                 className={`transition-opacity duration-75 ${isRestoring ? 'opacity-0' : 'opacity-100'}`}
