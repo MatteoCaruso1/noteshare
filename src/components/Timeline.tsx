@@ -128,7 +128,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   
   // UI Mode state machine to prevent flickering
   const [uiMode, setUiMode] = useState<UIMode>(() => {
-    if (hasContent) return 'list';
+    if (hasContent && !loading && !isRefetching) return 'list';
     return loading || isRefetching ? 'loading' : 'empty';
   });
   
@@ -150,7 +150,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
       emptyDebounceRef.current = null;
     }
     
-    if (hasContent) {
+    if (hasContent && !isLoading) {
       setUiMode('list');
       setShowSkeleton(false);
       setShowSlowMessage(false);
