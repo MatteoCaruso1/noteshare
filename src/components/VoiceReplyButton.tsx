@@ -225,17 +225,8 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
 
     setIsUploading(true);
     try {
-      // Get the user's profile ID for the correct upload path
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', authorId)
-        .single();
-
-      if (profileError || !profile) {
-        console.error('[VoiceReplyButton] Could not fetch profile:', profileError);
-        throw new Error('Could not find user profile');
-      }
+      // authorId is already the profile ID, use it directly for the upload path
+      const profileId = authorId;
 
       // Determine file extension from mime type
       const mimeType = audioBlob.type;
@@ -246,7 +237,7 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
       
       // Upload audio to storage with correct path structure: {profileId}/voice-replies/{filename}
       const fileName = `voice-reply-${Date.now()}.${ext}`;
-      const uploadPath = `${profile.id}/voice-replies/${fileName}`;
+      const uploadPath = `${profileId}/voice-replies/${fileName}`;
       
       console.log('[VoiceReplyButton] Uploading to path:', uploadPath);
       
