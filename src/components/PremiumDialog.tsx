@@ -65,7 +65,7 @@ export function PremiumDialog() {
         closeButtonClassName="h-6 w-6 top-3 right-3 z-10"
       >
         {/* Body - scrollable */}
-        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 pb-32 space-y-5">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 py-6 pb-4 space-y-5">
           {/* Header */}
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-jazz-amber">Noteshare Pro</h2>
@@ -119,12 +119,9 @@ export function PremiumDialog() {
           </div>
         </div>
 
-        {/* Fixed CTA Buttons with fade */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          {/* Fade gradient - smoother transition */}
-          <div className="h-16 bg-gradient-to-t from-background via-background/80 to-transparent" />
-          {/* Buttons container */}
-          <div className="flex gap-3 px-6 pb-6 pt-2 bg-background pointer-events-auto">
+        {/* CTA Buttons - non-overlapping */}
+        <div className="shrink-0">
+          <div className="flex gap-3 px-6 pb-6 pt-3">
             <button
               type="button"
               onClick={handleStartTrial}
