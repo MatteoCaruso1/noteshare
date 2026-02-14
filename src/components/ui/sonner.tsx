@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,7 +14,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   // This ensures toasts always clear the nav regardless of viewport size or safe-area insets
   const bottomOffset = "calc(var(--bottom-nav-height, 0px) + 16px)";
 
-  return (
+  const toasterContent = (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group session-focus-exempt"
@@ -42,6 +43,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
       {...props}
     />
   );
+
+  // Portal to body to escape any stacking contexts from the app tree
+  if (typeof document !== "undefined") {
+    return createPortal(toasterContent, document.body);
+  }
+
+  return toasterContent;
 };
 
 export { Toaster, toast };
