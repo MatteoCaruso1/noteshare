@@ -215,24 +215,26 @@ export function RichTextarea({
       const lineEnd = pos + line.length;
       pos = lineEnd + 1; // +1 for the newline
       
-      // Check if cursor is on this line and just after a list prefix
+      // Check if cursor is on this line
       if (cursorPos >= lineStart && cursorPos <= lineEnd) {
-        // Match bullet, number, or checkbox followed by a single lowercase letter (with optional content after)
+        // The cursor position relative to line start
+        const relativeCursor = cursorPos - lineStart;
+        
+        // Match bullet, number, or checkbox followed by text starting with a lowercase letter
         const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])(.*)$/);
         const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])(.*)$/);
         const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])(.*)$/);
         
-        if (bulletCapMatch) {
-          modified = true;
-          return bulletCapMatch[1] + bulletCapMatch[2].toUpperCase() + bulletCapMatch[3];
-        }
-        if (numberCapMatch) {
-          modified = true;
-          return numberCapMatch[1] + numberCapMatch[2].toUpperCase() + numberCapMatch[3];
-        }
-        if (checkboxCapMatch) {
-          modified = true;
-          return checkboxCapMatch[1] + checkboxCapMatch[2].toUpperCase() + checkboxCapMatch[3];
+        const match = bulletCapMatch || numberCapMatch || checkboxCapMatch;
+        
+        if (match) {
+          const prefixLen = match[1].length;
+          // Only capitalize if the cursor is right after the first letter (just typed it)
+          // OR if the line has exactly prefix + 1 char (first letter scenario)
+          if (relativeCursor === prefixLen + 1 || line.length === prefixLen + 1) {
+            modified = true;
+            return match[1] + match[2].toUpperCase() + match[3];
+          }
         }
       }
       return line;
