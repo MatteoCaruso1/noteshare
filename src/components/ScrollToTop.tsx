@@ -17,7 +17,6 @@ export function ScrollToTop() {
   const { pathname } = useLocation();
   const prevPathname = useRef(pathname);
   const clearTimeoutRef = useRef<number | null>(null);
-  const watchdogRef = useRef<number | null>(null);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -26,34 +25,38 @@ export function ScrollToTop() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Startup watchdog: for ~3 seconds after mount, periodically clear stuck
-  // scroll locks if no overlay is actually open.
+  // Continuous watchdog: periodically clear stuck scroll locks.
+  // Catches edge cases the MutationObserver might miss (e.g., Radix removing
+  // dialog DOM before removing scroll-lock attributes, or race conditions).
   // ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
+    // Aggressive initial sweep for first 3 seconds
     let elapsed = 0;
-    const WATCHDOG_INTERVAL = 250;
-    const WATCHDOG_DURATION = 3000;
+    const FAST_INTERVAL = 250;
+    const FAST_DURATION = 3000;
 
-    watchdogRef.current = window.setInterval(() => {
-      elapsed += WATCHDOG_INTERVAL;
-      if (elapsed >= WATCHDOG_DURATION) {
-        if (watchdogRef.current) {
-          window.clearInterval(watchdogRef.current);
-          watchdogRef.current = null;
-        }
+    const fastWatchdog = window.setInterval(() => {
+      elapsed += FAST_INTERVAL;
+      if (elapsed >= FAST_DURATION) {
+        window.clearInterval(fastWatchdog);
         return;
       }
-      // Clear locks only when no overlay is open
       if (!isAnyOverlayOpen() && hasDocumentScrollLock()) {
         clearDocumentScrollLocks();
       }
-    }, WATCHDOG_INTERVAL);
+    }, FAST_INTERVAL);
+
+    // Long-running periodic watchdog (every 2s) to catch any stuck state
+    const slowWatchdog = window.setInterval(() => {
+      if (!isAnyOverlayOpen() && hasDocumentScrollLock()) {
+        console.warn('[ScrollToTop] Watchdog cleared stuck scroll lock');
+        clearDocumentScrollLocks();
+      }
+    }, 2000);
 
     return () => {
-      if (watchdogRef.current) {
-        window.clearInterval(watchdogRef.current);
-        watchdogRef.current = null;
-      }
+      window.clearInterval(fastWatchdog);
+      window.clearInterval(slowWatchdog);
     };
   }, []);
 
@@ -89,8 +92,22 @@ export function ScrollToTop() {
       attributeFilter: ['data-scroll-locked', 'class', 'style'],
     });
 
+    // Desktop recovery: if user clicks/interacts with the page while scroll is locked
+    // and no overlay is open, immediately unlock
+    const handleInteraction = () => {
+      if (!isAnyOverlayOpen() && hasDocumentScrollLock()) {
+        console.warn('[ScrollToTop] User interaction cleared stuck scroll lock');
+        clearDocumentScrollLocks();
+      }
+    };
+
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('wheel', handleInteraction, { passive: true });
+
     return () => {
       observer.disconnect();
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('wheel', handleInteraction);
       if (clearTimeoutRef.current) {
         window.clearTimeout(clearTimeoutRef.current);
       }
