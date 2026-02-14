@@ -451,7 +451,7 @@ export function PracticeControls() {
       // Check daily limit before creating note (session can still be ended)
       if (hasReachedLimit) {
         endSession.mutate(
-          { sessionId: activeSession.id, userId: profile.id, collaboratorIds: playingWithIds },
+          { sessionId: activeSession.id, userId: profile.id, collaboratorIds: playingWithIds, customDurationMinutes },
           {
             onSuccess: () => {
               clearState();
@@ -469,7 +469,7 @@ export function PracticeControls() {
       const notesSummary = sessionTitle || undefined;
 
       endSession.mutate(
-        { sessionId: activeSession.id, userId: profile.id, notesSummary, collaboratorIds: playingWithIds },
+        { sessionId: activeSession.id, userId: profile.id, notesSummary, collaboratorIds: playingWithIds, customDurationMinutes },
         {
           onSuccess: () => {
             // Determine projectId, goalId, and gigId based on selectedLink
