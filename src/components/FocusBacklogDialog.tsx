@@ -75,8 +75,14 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
 
   const handleCopy = async (text: string) => {
     try {
-      // Normalize text to ensure clean copy (remove any potential encoding artifacts)
-      const cleanText = text.normalize('NFC');
+      // Decode any URI-encoded text, then normalize to prevent encoding artifacts
+      let cleanText = text;
+      try {
+        cleanText = decodeURIComponent(text);
+      } catch {
+        // If decodeURIComponent fails, the text wasn't encoded — use as-is
+      }
+      cleanText = cleanText.normalize('NFC');
       
       // Try modern clipboard API first
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -95,10 +101,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
         document.body.removeChild(textarea);
       }
       
-      // Use Sonner toast with explicit positioning above dialog
-      toast.success('Copied to clipboard', {
-        position: 'top-center',
-      });
+      toast.success('Copied to clipboard');
     } catch (err) {
       console.error('Copy failed:', err);
       toast.error('Failed to copy');
@@ -242,7 +245,9 @@ function BacklogEntryCard({ entry, onCopy, onDelete }: BacklogEntryCardProps) {
         </div>
       </div>
       <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed">
-        {entry.focus_text}
+        {(() => {
+          try { return decodeURIComponent(entry.focus_text); } catch { return entry.focus_text; }
+        })()}
       </pre>
     </Card>
   );
