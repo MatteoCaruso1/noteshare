@@ -192,7 +192,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
   if (isLoading || !memory?.note || isDismissed) return null;
 
   return (
-    <Card className="p-4 border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 relative">
+    <Card className="p-4 border-primary/25 bg-primary/5 dark:bg-primary/8 relative">
       <button
         onClick={handleDismiss}
         className="absolute top-2 right-2 p-1 rounded-full hover:bg-background/50 transition-colors text-muted-foreground hover:text-foreground"
@@ -201,8 +201,8 @@ export const MemoryReminder = memo(function MemoryReminder() {
         <X className="w-4 h-4" />
       </button>
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-500" />
-        <span className="text-sm text-amber-700 dark:text-amber-400 font-medium">Musical Memory</span>
+        <Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+        <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">Musical Memory</span>
         <Badge variant="secondary" className="text-xs select-none cursor-default ml-auto mr-6">
           <Clock className="w-3 h-3 mr-1" />
           {memory.label}
@@ -212,7 +212,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
         <RichTextContent content={memory.note.text_content} className="text-sm pr-6" />
       )}
       {memory.note.audio_files && memory.note.audio_files.length > 0 && (
-        <div className="mt-2 [&_button]:text-amber-600 dark:[&_button]:text-amber-500 [&_button:hover]:bg-amber-500/20">
+        <div className="mt-2 [&_button]:text-purple-500 dark:[&_button]:text-purple-400 [&_button:hover]:bg-purple-500/20">
           <WaveformPlayer src={memory.note.audio_files[0]} variant="sepia" />
         </div>
       )}
