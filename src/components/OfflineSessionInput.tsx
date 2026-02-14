@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLogOfflineSession } from '@/hooks/useSessions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Clock, Calendar, Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -95,10 +95,10 @@ export function OfflineSessionInput() {
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 What did you practice?
               </label>
-              <Textarea
+              <RichTextarea
                 placeholder=""
                 value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
+                onChange={setNoteText}
                 rows={3}
               />
             </div>
