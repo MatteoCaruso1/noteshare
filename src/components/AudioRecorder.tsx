@@ -339,7 +339,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
           <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
             <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             <span className="tabular-nums">{formatTime(elapsedTime)}</span>
-            {sizeDisplay && (
+            {sizeDisplay && recordingSize > 50 * 1024 * 1024 && (
               <span className="text-xs text-muted-foreground">({sizeDisplay})</span>
             )}
           </div>
