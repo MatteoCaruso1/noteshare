@@ -102,7 +102,7 @@ export function WeeklyGoalModal({ open, onOpenChange, onComplete }: WeeklyGoalMo
               {lastWeekGoal && !lastWeekGoal.skipped && (
                 <div className={`flex items-center gap-2 text-sm px-3 py-2 rounded-md ${
                   metLastWeekGoal 
-                    ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
+                    ? 'bg-primary/10 text-primary' 
                     : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
                 }`}>
                   {metLastWeekGoal ? (
