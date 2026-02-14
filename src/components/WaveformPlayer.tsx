@@ -124,12 +124,12 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       cursorColor = 'hsl(200, 80%, 50%)';
     }
     
-    // Sepia/amber colors for memory variant
+    // Purple colors for memory variant
     const isSepia = variant === 'sepia';
     if (isSepia) {
-      waveColor = 'rgba(180, 140, 100, 0.5)';
-      progressColor = 'hsl(30, 15%, 35%)';
-      cursorColor = 'rgb(200, 150, 80)';
+      waveColor = 'rgba(168, 130, 220, 0.5)';
+      progressColor = 'hsl(270, 15%, 35%)';
+      cursorColor = 'rgb(168, 130, 220)';
     }
 
     const wavesurfer = WaveSurfer.create({
@@ -251,8 +251,8 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   
   if (error && signedUrl) {
     return (
-      <div className={`flex items-center gap-2 p-3 rounded-lg ${isSepia ? 'bg-amber-900/20 border border-amber-700/30' : 'bg-secondary/50'}`}>
-        <Mic className={`w-4 h-4 flex-shrink-0 ${isSepia ? 'text-amber-500' : 'text-primary'}`} />
+      <div className={`flex items-center gap-2 p-3 rounded-lg ${isSepia ? 'bg-purple-900/20 border border-purple-700/30' : 'bg-secondary/50'}`}>
+        <Mic className={`w-4 h-4 flex-shrink-0 ${isSepia ? 'text-purple-500' : 'text-primary'}`} />
         <audio
           src={signedUrl}
           controls

@@ -192,7 +192,7 @@ export const MemoryReminder = memo(function MemoryReminder() {
   if (isLoading || !memory?.note || isDismissed) return null;
 
   return (
-    <Card className="p-4 border-primary/25 bg-primary/5 dark:bg-primary/8 relative">
+    <Card className="p-4 border-purple-500/30 bg-purple-500/10 dark:bg-purple-500/10 relative">
       <button
         onClick={handleDismiss}
         className="absolute top-2 right-2 p-1 rounded-full hover:bg-background/50 transition-colors text-muted-foreground hover:text-foreground"
