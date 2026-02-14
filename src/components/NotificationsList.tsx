@@ -1,13 +1,13 @@
+import { useEffect, useRef } from 'react';
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '@/hooks/useNotifications';
 import { usePendingNoteShares } from '@/hooks/useNoteShares';
 import { useMyGroupInvites } from '@/hooks/useGroupInvites';
 import { PendingNoteShareCard } from '@/components/PendingNoteShareCard';
 import { PendingGroupInviteCard } from '@/components/PendingGroupInviteCard';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Bell, AtSign, Check, CheckCheck, Users, Waypoints } from 'lucide-react';
+import { Bell, AtSign, Users, Waypoints } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +22,18 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const navigate = useNavigate();
+  const hasMarkedRef = useRef(false);
+
+  // Auto-mark all notifications as read when opened (embedded = dialog mode)
+  useEffect(() => {
+    if (embedded && notifications && !hasMarkedRef.current) {
+      const hasUnread = notifications.some(n => !n.read);
+      if (hasUnread) {
+        hasMarkedRef.current = true;
+        markAllRead.mutate();
+      }
+    }
+  }, [embedded, notifications]);
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
@@ -70,20 +82,7 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
   if (embedded) {
     return (
       <div className="bg-card border border-border rounded-lg p-4">
-        {totalUnread > 0 && unreadCount > 0 && (
-          <div className="flex justify-end mb-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => markAllRead.mutate()}
-              className="text-xs h-7"
-            >
-              <CheckCheck className="w-3 h-3 mr-1" />
-              Mark all read
-            </Button>
-          </div>
-        )}
-        
+
         {/* Pending group invites */}
         {pendingGroupInvites && pendingGroupInvites.length > 0 && (
           <div className="space-y-2 mb-3">
@@ -171,17 +170,6 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
             </Badge>
           )}
         </h2>
-        {unreadCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => markAllRead.mutate()}
-            className="text-xs"
-          >
-            <CheckCheck className="w-4 h-4 mr-1" />
-            Mark all read
-          </Button>
-        )}
       </div>
 
       {/* Pending group invites section */}
