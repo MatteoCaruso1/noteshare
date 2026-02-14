@@ -28,7 +28,7 @@ export function TodaysFocus() {
   const [isFocused, setIsFocused] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false); // Hide content during bfcache restoration
+  // isRestoring removed — CSS grid mirror approach makes it unnecessary
   const [isOpen, setIsOpen] = useState(() => {
     // Initialize from localStorage, default to expanded (true)
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
@@ -48,35 +48,13 @@ export function TodaysFocus() {
     setFocusFocused(isFocused);
   }, [isFocused, setFocusFocused]);
 
-  // Stable autosize function - sets height to content without timeouts
-  // Returns the new height for sanity checking
-  // Enhanced for bfcache restoration scenarios (Safari iOS/macOS)
+  // No-op kept for compatibility with existing call sites.
+  // Height is now driven entirely by the CSS grid mirror div.
   const autosizeTextarea = useCallback(() => {
+    // Force a reflow on the textarea just in case (e.g. font loading)
     const textarea = textareaRef.current;
-    if (!textarea) return 0;
-    
-    // Force layout reflow by reading multiple layout properties
-    // This is more aggressive than just offsetHeight for bfcache scenarios
-    void textarea.getBoundingClientRect();
-    void textarea.offsetHeight;
-    void textarea.scrollHeight;
-    
-    // Temporarily remove overflow:hidden to get accurate scrollHeight
-    const originalOverflow = textarea.style.overflow;
-    textarea.style.overflow = 'visible';
-    
-    textarea.style.height = 'auto';
-    
-    // Force another reflow after height reset
-    void textarea.scrollHeight;
-    
-    const newHeight = Math.max(36, textarea.scrollHeight);
-    textarea.style.height = `${newHeight}px`;
-    
-    // Restore overflow
-    textarea.style.overflow = originalOverflow || 'hidden';
-    
-    return newHeight;
+    if (textarea) void textarea.offsetHeight;
+    return 0;
   }, []);
 
   // Initialize text from focus data - only once on initial load
@@ -164,105 +142,7 @@ export function TodaysFocus() {
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
-  // Handle visibility change, window focus, and bfcache restoration (app resume from background)
-  // When user leaves the app and comes back, the textarea may have collapsed
-  // Uses a multi-attempt strategy with increasing delays to catch browser restoration timing
-  // Safari uses bfcache aggressively - the pageshow event is the canonical signal for restoration
-  // 
-  // IMPORTANT: We track "wasHidden" to distinguish between:
-  // 1. Genuine page restoration (tab switch, bfcache) - needs isRestoring animation
-  // 2. Simple window focus from clicking within the app - should NOT trigger isRestoring
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const timeoutIds: NodeJS.Timeout[] = [];
-    let wasDocumentHidden = false; // Track if document was actually hidden
-
-    const scheduleAutosize = (triggerRestoringAnimation: boolean) => {
-      // Clear any pending timeouts from previous calls
-      timeoutIds.forEach(clearTimeout);
-      timeoutIds.length = 0;
-
-      // Only hide content briefly if this is a genuine restoration AND we have text content
-      // This prevents the "flash" of collapsed textarea during bfcache restoration
-      if (triggerRestoringAnimation && text.trim()) {
-        setIsRestoring(true);
-      }
-
-      // Immediate attempt
-      autosizeTextarea();
-
-      // Extended timings - Safari bfcache can be slow to fully restore
-      const timings = [50, 150, 300, 500, 1000, 1500];
-      timings.forEach((delay, index) => {
-        const id = setTimeout(() => {
-          const height = autosizeTextarea();
-          // More aggressive sanity check: if we have text but height is still minimum
-          if (text.trim() && height <= 40) {
-            // Double-try with RAF for painting cycle - ensures DOM is fully rendered
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                autosizeTextarea();
-              });
-            });
-          } else if (text.trim() && height > 40) {
-            // Height is correct - we can reveal the content
-            setIsRestoring(false);
-          }
-          
-          // On the last timing, always reveal (even if height is still wrong)
-          if (index === timings.length - 1) {
-            setIsRestoring(false);
-          }
-        }, delay);
-        timeoutIds.push(id);
-      });
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // Mark that we went hidden - next focus should trigger restoration
-        wasDocumentHidden = true;
-      } else if (document.visibilityState === 'visible') {
-        // Only trigger restoration animation if we were genuinely hidden
-        if (wasDocumentHidden) {
-          wasDocumentHidden = false; // Reset the flag
-          scheduleAutosize(true);
-        }
-      }
-    };
-
-    const handleWindowFocus = () => {
-      // Only trigger full restoration if the document was previously hidden
-      // This prevents the textarea from disappearing when simply clicking within the app
-      if (wasDocumentHidden) {
-        wasDocumentHidden = false;
-        scheduleAutosize(true);
-      } else {
-        // Just do a quick autosize without the restoration animation
-        autosizeTextarea();
-      }
-    };
-
-    // bfcache restoration - the most reliable Safari event for page restoration
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
-        // Page was restored from bfcache - trigger aggressive autosize with animation
-        scheduleAutosize(true);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleWindowFocus);
-    window.addEventListener('pageshow', handlePageShow);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleWindowFocus);
-      window.removeEventListener('pageshow', handlePageShow);
-      timeoutIds.forEach(clearTimeout);
-    };
-  }, [isOpen, autosizeTextarea, text]);
+  // bfcache / visibility — no special handling needed since CSS grid drives height
 
   // MutationObserver for Radix CollapsibleContent hidden attribute changes
   // When Radix removes the hidden attribute during transitions, we need to re-measure
@@ -935,9 +815,20 @@ export function TodaysFocus() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-3 sm:px-4 pb-4" style={{ overflow: 'visible' }}>
             <div ref={collapsibleContentRef}>
-              <div 
-                className={`transition-opacity duration-75 ${isRestoring ? 'opacity-0' : 'opacity-100'}`}
-              >
+              {/* CSS grid mirror approach: a hidden div renders the same text to drive
+                  the container height. The textarea overlays it. This is immune to
+                  bfcache / tab-switch measurement failures. */}
+              <div className="grid" style={{ gridTemplateColumns: '1fr' }}>
+                {/* Mirror div — invisible, drives height */}
+                {/* Mirror div — must match textarea's padding, border, font exactly */}
+                <div
+                  aria-hidden
+                  className="practice-board-textarea pointer-events-none invisible min-h-[36px] whitespace-pre-wrap break-words text-sm px-3 py-2 border border-transparent rounded-md"
+                  style={{ gridArea: '1 / 1', overflow: 'hidden' }}
+                >
+                  {/* Trailing zero-width space ensures trailing newlines get height */}
+                  {(text || ' ') + '\u200b'}
+                </div>
                 <Textarea
                   ref={textareaRef}
                   value={text}
@@ -958,7 +849,7 @@ export function TodaysFocus() {
                   }}
                   placeholder="What is your practice to-do list?"
                   className={`practice-board-textarea min-h-[36px] resize-none text-sm caret-foreground ${isFocused ? '' : 'cursor-text'}`}
-                  style={{ overscrollBehavior: 'contain', overflow: 'hidden' }}
+                  style={{ gridArea: '1 / 1', overscrollBehavior: 'contain', overflow: 'hidden', height: '100%' }}
                   rows={1}
                 />
               </div>
