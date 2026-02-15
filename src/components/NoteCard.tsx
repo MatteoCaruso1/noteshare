@@ -17,7 +17,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { ApplauseFooter } from '@/components/ApplauseFooter';
-import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share } from 'lucide-react';
+import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share, Play } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -446,7 +446,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                       }
                     }}
                   >
-                    <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
+                    <Play className="w-3 h-3 mr-1 shrink-0" />
                     <span>Practice Session</span>
                     {displayDuration && <span className="ml-1 opacity-80">{displayDuration}</span>}
                   </Badge>
@@ -494,14 +494,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               </Popover>
             ) : (
               <Badge variant="secondary" className="inline-flex items-center text-xs">
-                <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
+                <Play className="w-3 h-3 mr-1 shrink-0" />
                 <span>Practice Session</span>
                 {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
               </Badge>
             )
           ) : (
             <Badge variant="secondary" className="inline-flex items-center text-xs">
-              <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
+              <Music className="w-3 h-3 mr-1 shrink-0" />
               <span>Quick Note</span>
             </Badge>
           )}
