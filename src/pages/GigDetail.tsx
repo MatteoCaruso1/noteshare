@@ -309,8 +309,8 @@ const GigDetail = () => {
 
     deleteGig.mutate(gig.id, {
       onSuccess: () => {
-        // Navigate back after deleting
-        navigate(-1);
+        // Navigate to pursuits page after deleting
+        navigate('/working-toward', { replace: true });
       },
     });
   };
