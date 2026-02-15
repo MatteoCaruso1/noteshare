@@ -153,15 +153,24 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   const isLoading = loading || isRefetching;
   
   // State machine effect - handles transitions with debouncing
-  // CRITICAL: If we already have content, NEVER go back to loading state.
-  // Background refetches should not cause the timeline to flicker.
+  // CRITICAL: Distinguish between initial load and background refetch.
+  // During initial load (loading=true), stay in loading state even if partial content arrived.
+  // During background refetch (only isRefetching), keep showing existing content.
   useEffect(() => {
     if (emptyDebounceRef.current) {
       clearTimeout(emptyDebounceRef.current);
       emptyDebounceRef.current = null;
     }
     
-    // If we have content, always stay in list mode regardless of refetch state
+    // During initial load, keep showing loading state until ALL sources are ready
+    // This prevents folders/gigs from popping in after notes render
+    if (loading) {
+      setUiMode('loading');
+      return;
+    }
+    
+    // If we have content and we're not in initial loading, stay in list mode
+    // (background refetches should not cause timeline to flicker)
     if (hasContent) {
       setUiMode('list');
       setShowSkeleton(false);
@@ -199,7 +208,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
         clearTimeout(emptyDebounceRef.current);
       }
     };
-  }, [hasContent, isLoading, showSkeleton]);
+  }, [hasContent, isLoading, loading, showSkeleton]);
   
   // Skeleton display timer
   useEffect(() => {
