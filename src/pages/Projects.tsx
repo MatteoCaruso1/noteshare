@@ -122,7 +122,7 @@ const Projects = () => {
                     placeholder="Describe your project..."
                     value={newDescription}
                     onChange={setNewDescription}
-                    rows={3}
+                    rows={8}
                   />
 
                   {/* Release Date */}
