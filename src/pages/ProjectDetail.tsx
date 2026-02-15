@@ -246,9 +246,7 @@ const ProjectDetail = () => {
                   <NoteCard key={note.id} note={note} fromProject={id} />
                 ))}
               </div>
-            ) : (
-              <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this folder" />
-            )}
+            ) : null}
           </section>
         </main>
       </PageBody>
