@@ -205,7 +205,7 @@ export function BottomNav() {
               // Practice tab stays active when viewing note/gig/project details
               isActive = currentPath === to || 
                 (to === '/friends' && isUserProfilePage) ||
-                (to === '/' && (isNoteDetailPage || isGigDetailPage || isProjectDetailPage));
+                (to === '/' && (isNoteDetailPage || isGigDetailPage));
             }
             return (
               <NavLink
