@@ -153,13 +153,16 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   const isLoading = loading || isRefetching;
   
   // State machine effect - handles transitions with debouncing
+  // CRITICAL: If we already have content, NEVER go back to loading state.
+  // Background refetches should not cause the timeline to flicker.
   useEffect(() => {
     if (emptyDebounceRef.current) {
       clearTimeout(emptyDebounceRef.current);
       emptyDebounceRef.current = null;
     }
     
-    if (hasContent && !isLoading) {
+    // If we have content, always stay in list mode regardless of refetch state
+    if (hasContent) {
       setUiMode('list');
       setShowSkeleton(false);
       setShowSlowMessage(false);
@@ -167,6 +170,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
       return;
     }
     
+    // No content scenarios
     if (isLoading) {
       setUiMode('loading');
     } else {
