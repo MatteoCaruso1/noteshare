@@ -33,9 +33,18 @@ function EmptyStateShell({
 }) {
   return (
     <div className="min-h-[180px] flex flex-col items-center justify-center">
+      {/* Initial loading text - shows immediately before skeletons */}
+      <div
+        className={`transition-opacity duration-300 ease-in-out ${
+          uiMode === 'loading' && !showSkeleton ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+        }`}
+      >
+        <div className="animate-pulse text-muted-foreground text-center py-8">Loading...</div>
+      </div>
+
       {/* Loading state with skeleton */}
       <div 
-        className={`w-full transition-opacity duration-200 ${
+        className={`w-full transition-opacity duration-300 ease-in-out ${
           uiMode === 'loading' && showSkeleton ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
         }`}
       >
