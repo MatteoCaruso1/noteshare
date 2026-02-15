@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FolderOpen, Calendar, Compass } from 'lucide-react';
+import { FolderOpen, Calendar, Compass, ClipboardList } from 'lucide-react';
 import { Project, PromoPostWithAuthor, Goal } from '@/types';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
@@ -142,7 +142,7 @@ export function LinkToPicker({
                 className
               )}
             >
-              <FolderOpen className="w-4 h-4" />
+              <ClipboardList className="w-4 h-4" />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
