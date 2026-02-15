@@ -16,7 +16,7 @@ import { CollectionDetailHeader } from '@/components/shared/CollectionDetailHead
 import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
-import { Disc3, Trash2 } from 'lucide-react';
+import { FolderOpen, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -61,7 +61,7 @@ function useAddNoteToProject() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['notes', variables.projectId] });
-      toast.success('Note added to project!');
+      toast.success('Note added to folder!');
     },
     onError: (error) => {
       console.error('Error adding note:', error);
@@ -179,9 +179,9 @@ const ProjectDetail = () => {
   if (!project) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <p className="text-muted-foreground mb-4">Project not found</p>
+        <p className="text-muted-foreground mb-4">Folder not found</p>
         <Button variant="outline" onClick={() => navigate('/projects')}>
-          Back to Projects
+          Back to Folders
         </Button>
       </div>
     );
@@ -201,7 +201,7 @@ const ProjectDetail = () => {
           authorUsername={project.owner?.username}
           authorAvatar={project.owner?.avatar}
           coverImage={project.cover_image}
-          coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+          coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
           showSettings={isOwner}
           onSettingsClick={openSettings}
           useProjectCover
@@ -220,15 +220,15 @@ const ProjectDetail = () => {
           {/* Notes Section */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Project Notes</h2>
+              <h2 className="text-lg font-semibold">Folder Notes</h2>
               {canAddNotes && profile && (
                 <AddNoteDialog
                   open={isAddNoteOpen}
                   onOpenChange={setIsAddNoteOpen}
                   onSubmit={handleAddNote}
                   isSubmitting={addNote.isPending}
-                  title="Add Note to Project"
-                  contextLabel="this project"
+                   title="Add Note to Folder"
+                   contextLabel="this folder"
                   profileId={profile.id}
                 />
               )}
@@ -243,7 +243,7 @@ const ProjectDetail = () => {
                 ))}
               </div>
             ) : (
-              <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this project" />
+              <NotesEmptyState canAddNotes={canAddNotes} contextLabel="this folder" />
             )}
           </section>
         </main>
@@ -253,8 +253,8 @@ const ProjectDetail = () => {
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border">
           <DialogHeader>
-            <DialogTitle>Project Settings</DialogTitle>
-            <DialogDescription>Update your project details or delete the project.</DialogDescription>
+             <DialogTitle>Folder Settings</DialogTitle>
+             <DialogDescription>Update your folder details or delete the folder.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {/* Album Art / Icon Picker */}
@@ -312,12 +312,12 @@ const ProjectDetail = () => {
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Project
+                   Delete Folder
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete project?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete folder?</AlertDialogTitle>
                   <AlertDialogDescription>
                     "{project.title}" will be deleted. Attached notes will remain.
                   </AlertDialogDescription>

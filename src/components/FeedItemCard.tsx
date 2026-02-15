@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Disc3, Calendar } from 'lucide-react';
+import { FolderOpen, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ProjectCover, PRESET_ICONS } from '@/components/ProjectCoverPicker';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
@@ -53,8 +53,8 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
   };
 
   const isGig = item.type === 'gig';
-  const Icon = isGig ? Calendar : Disc3;
-  const label = isGig ? 'Gig' : 'Project';
+  const Icon = isGig ? Calendar : FolderOpen;
+  const label = isGig ? 'Gig' : 'Folder';
   
   // Determine badge color based on cover image
   const getGigBadgeColor = (): string => {

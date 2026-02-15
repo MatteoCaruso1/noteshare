@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { 
   Disc3, Music, Guitar, Piano, Mic, Headphones, Radio, 
   Music2, Music3, Music4, Drum, AudioLines, Volume2, Upload,
-  Speaker, Waves, ListMusic, KeyboardMusic
+  Speaker, Waves, ListMusic, KeyboardMusic, FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -214,7 +214,7 @@ export function ProjectCover({
   if (!value) {
     return (
       <div className={cn("rounded-lg bg-secondary flex items-center justify-center", className)}>
-        <Disc3 className={cn(iconClassName, "text-muted-foreground")} />
+        <FolderOpen className={cn(iconClassName, "text-muted-foreground")} />
       </div>
     );
   }
