@@ -255,13 +255,15 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
             <button
               key={style.id}
               type="button"
+              data-no-hover-reset
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setSelectedStyle(style.id);
               }}
+              onTouchEnd={(e) => { e.currentTarget.blur(); }}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all touch-manipulation",
                 selectedStyle === style.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -355,7 +357,9 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
               {/* Copy Link */}
               <button
                 onClick={handleCopyLink}
-                className="flex flex-col items-center gap-2"
+                data-no-hover-reset
+                onTouchEnd={(e) => { e.currentTarget.blur(); }}
+                className="flex flex-col items-center gap-2 touch-manipulation"
               >
                 <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
                   <Link className="w-5 h-5" />
@@ -368,7 +372,9 @@ export function ShareGigSheet({ open, onOpenChange, gig }: ShareGigSheetProps) {
                 <button
                   onClick={handleShareOrSave}
                   disabled={isExporting}
-                  className="flex flex-col items-center gap-2"
+                  data-no-hover-reset
+                  onTouchEnd={(e) => { e.currentTarget.blur(); }}
+                  className="flex flex-col items-center gap-2 touch-manipulation"
                 >
                   <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
                     {isExporting && activeButton === 'imessage' ? (
