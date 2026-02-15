@@ -122,7 +122,7 @@ interface GateOverlayProps {
 
 function GateOverlay({ featureName, compact, onUpgrade, standalone, icon, description }: GateOverlayProps) {
   const Icon = icon || Target;
-  const descriptionText = description || "Upgrade to Pro to organize\nnotes around goals, projects, and gigs";
+  const descriptionText = description || "Upgrade to Pro to organize\nnotes around goals, folders, and gigs";
   
   if (compact) {
     return (

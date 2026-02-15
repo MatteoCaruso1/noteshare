@@ -17,7 +17,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { ApplauseFooter } from '@/components/ApplauseFooter';
-import { Disc3, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share } from 'lucide-react';
+import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -528,7 +528,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               className="inline-flex items-center text-xs border-primary/30 text-primary cursor-pointer hover:bg-primary/10 transition-colors"
               onClick={handleNavigateToProject}
             >
-              <Disc3 className="w-3 h-3 mr-1 shrink-0" />
+              <FolderOpen className="w-3 h-3 mr-1 shrink-0" />
               <span className="truncate max-w-[150px]">{projectName}</span>
             </Badge>
           )}

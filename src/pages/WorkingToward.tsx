@@ -36,7 +36,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { SignedImage } from '@/components/SignedImage';
-import { Plus, Disc3, Upload, Trash2, CalendarIcon, ChevronDown, ChevronRight, Calendar, Music2, ExternalLink, Clock } from 'lucide-react';
+import { Plus, FolderOpen, Upload, Trash2, CalendarIcon, ChevronDown, ChevronRight, Calendar, Music2, ExternalLink, Clock } from 'lucide-react';
 import { cn, formatLocalDateTime } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -323,8 +323,8 @@ const WorkingToward = () => {
               <CollapsibleTrigger asChild>
                 <div className="flex items-center justify-between p-4 cursor-pointer group">
                   <div className="flex items-center gap-3">
-                    <Disc3 className={cn("w-5 h-5 transition-colors", projectsOpen ? "text-primary" : "text-foreground")} />
-                    <span className="font-semibold">Projects</span>
+                    <FolderOpen className={cn("w-5 h-5 transition-colors", projectsOpen ? "text-primary" : "text-foreground")} />
+                    <span className="font-semibold">Folders</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
@@ -340,7 +340,7 @@ const WorkingToward = () => {
                       </DialogTrigger>
                       <DialogContent onClick={(e) => e.stopPropagation()} onOpenAutoFocus={(e) => e.preventDefault()}>
                         <DialogHeader>
-                          <DialogTitle>Create New Project</DialogTitle>
+                          <DialogTitle>Create New Folder</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
                           {/* Album Art / Icon Picker */}
@@ -355,13 +355,13 @@ const WorkingToward = () => {
                           )}
 
                           <Input
-                            placeholder="Project title (e.g., Jazz Standards Album)"
+                            placeholder="Folder title (e.g., Jazz Standards Album)"
                             value={newProjectTitle}
                             onChange={(e) => setNewProjectTitle(e.target.value)}
                             autoFocus={false}
                           />
                           <Textarea
-                            placeholder="Describe your project..."
+                            placeholder="Describe your folder..."
                             value={newProjectDescription}
                             onChange={(e) => setNewProjectDescription(e.target.value)}
                             rows={3}
@@ -400,7 +400,7 @@ const WorkingToward = () => {
                             onClick={handleCreateProject}
                             disabled={createProject.isPending || !newProjectTitle.trim()}
                           >
-                            Create Project
+                            Create Folder
                           </Button>
                         </div>
                       </DialogContent>
@@ -418,8 +418,8 @@ const WorkingToward = () => {
                 <div className="px-4 pb-4">
                   <Tabs value={projectsTab} onValueChange={setProjectsTab} className="w-full">
                     <TabsList className="w-full mb-4">
-                      <TabsTrigger value="mine" className="flex-1">My Projects</TabsTrigger>
-                      <TabsTrigger value="friends" className="flex-1">Friends' Projects</TabsTrigger>
+                      <TabsTrigger value="mine" className="flex-1">My Folders</TabsTrigger>
+                      <TabsTrigger value="friends" className="flex-1">Friends' Folders</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="mine" className="space-y-4">
@@ -435,7 +435,7 @@ const WorkingToward = () => {
                               title={project.title}
                               description={project.description}
                               coverImage={project.cover_image}
-                              coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+                              coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
                               date={project.created_at}
                               releaseDate={project.release_date}
                               useProjectCover
@@ -452,7 +452,7 @@ const WorkingToward = () => {
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete project?</AlertDialogTitle>
+                                      <AlertDialogTitle>Delete folder?</AlertDialogTitle>
                                       <AlertDialogDescription>
                                         "{project.title}" will be permanently deleted.
                                       </AlertDialogDescription>
@@ -474,8 +474,8 @@ const WorkingToward = () => {
                         </div>
                       ) : (
                         <CollectionEmptyState
-                          subtitle={"Create a project to organize your\nnotes around a goal"}
-                          actionLabel="Create First Project"
+                          subtitle={"Create a folder to organize your\nnotes around a goal"}
+                          actionLabel="Create First Folder"
                           onAction={() => setIsProjectDialogOpen(true)}
                           showIcon={false}
                           showPlusInButton={false}
@@ -497,7 +497,7 @@ const WorkingToward = () => {
                               title={project.title}
                               description={project.description}
                               coverImage={project.cover_image}
-                              coverIcon={<Disc3 className="w-6 h-6 text-muted-foreground" />}
+                              coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
                               date={project.created_at}
                               releaseDate={project.release_date}
                               useProjectCover
@@ -510,9 +510,9 @@ const WorkingToward = () => {
                         </div>
                       ) : (
                         <CollectionEmptyState
-                          icon={Disc3}
-                          title="No friend's projects"
-                          subtitle="Connect with friends to see their projects"
+                          icon={FolderOpen}
+                          title="No friend's folders"
+                          subtitle="Connect with friends to see their folders"
                         />
                       )}
                     </TabsContent>
