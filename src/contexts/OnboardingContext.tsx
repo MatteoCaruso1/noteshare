@@ -50,6 +50,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setCurrentStep(0);
     // Clear the new user flag so it doesn't re-trigger
     clearNewUserFlag();
+    
+    // Check for profile redirect (from shared profile link signup flow)
+    const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
+    if (profileRedirect) {
+      localStorage.removeItem('noteshare_profile_redirect');
+      // Use window.location since OnboardingProvider is outside BrowserRouter
+      window.location.href = `/profile/${profileRedirect}`;
+    }
   };
 
   const nextStep = () => {

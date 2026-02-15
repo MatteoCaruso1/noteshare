@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePublicNotes } from '@/hooks/usePublicNotes';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
-import { useFriends, useRemoveFriend, useIsFriendMuted, useMuteFriend, useUnmuteFriend } from '@/hooks/useFriendships';
+import { useFriends, useRemoveFriend, useIsFriendMuted, useMuteFriend, useUnmuteFriend, useFriendships, useSendFriendRequest } from '@/hooks/useFriendships';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,14 +15,17 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DirectMessages } from '@/components/DirectMessages';
-import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volume2, Paintbrush } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Flame, MessageCircle, UserMinus, VolumeX, Volume2, Paintbrush, Share2, UserPlus, Clock, Lock } from 'lucide-react';
 import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { getStreakTier } from '@/lib/streakUtils';
+import { toast } from 'sonner';
 
 // Noteshare Team profile ID (Matteo)
 const NOTESHARE_TEAM_PROFILE_ID = '9d8991fb-b065-415c-90f1-96b418ae23a2';
+
+const PROFILE_REDIRECT_KEY = 'noteshare_profile_redirect';
 
 // Helper functions to get best achieved milestone from profile
 function getBestAchievedMilestone(profile: Profile): number {
@@ -92,19 +95,37 @@ const PublicProfile = () => {
   const { id, username } = useParams<{ id?: string; username?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile: myProfile } = useAuth();
+  const { profile: myProfile, user } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
   const { data: friends } = useFriends();
+  const { data: friendships } = useFriendships();
   const removeFriend = useRemoveFriend();
+  const sendFriendRequest = useSendFriendRequest();
   const isMuted = useIsFriendMuted(profile?.id);
   const muteFriend = useMuteFriend();
   const unmuteFriend = useUnmuteFriend();
   const [displayCount, setDisplayCount] = useState(10);
   const [messagesOpen, setMessagesOpen] = useState(false);
   
+  const isLoggedIn = !!user;
+  
   // Check if the profile user is a friend
   const isFriend = friends?.some(f => f.id === profile?.id);
+  
+  // Check friendship status for Add Friend button
+  const getFriendshipStatus = () => {
+    if (!profile?.id || !myProfile?.id || !friendships) return 'none';
+    const friendship = friendships.find(
+      f => (f.requester_id === myProfile.id && f.addressee_id === profile.id) ||
+           (f.addressee_id === myProfile.id && f.requester_id === profile.id)
+    );
+    if (!friendship) return 'none';
+    if (friendship.status === 'accepted') return 'friends';
+    if (friendship.status === 'pending') return 'pending';
+    return 'none';
+  };
+  const friendshipStatus = getFriendshipStatus();
   
   const handleRemoveFriend = () => {
     if (profile?.id) {
@@ -121,6 +142,30 @@ const PublicProfile = () => {
     } else {
       muteFriend.mutate(profile.id);
     }
+  };
+  
+  const handleShareProfile = async () => {
+    if (!profile) return;
+    const cleanUrl = `https://notesharemusic.com/${profile.username}`;
+    try {
+      await navigator.clipboard.writeText(cleanUrl);
+      toast.success('Profile link copied');
+    } catch {
+      toast.success('Profile link copied');
+    }
+  };
+
+  const handleAddFriend = () => {
+    if (!profile?.id) return;
+    sendFriendRequest.mutate(profile.id);
+  };
+
+  const handleCreateAccount = () => {
+    // Store the profile handle for redirect after auth + FTUE
+    if (profile?.username) {
+      localStorage.setItem(PROFILE_REDIRECT_KEY, profile.username);
+    }
+    navigate('/auth');
   };
   
   // Get signed URL for avatar
@@ -140,6 +185,10 @@ const PublicProfile = () => {
   const fromNote = location.state?.fromNote;
   
   const handleBack = () => {
+    if (!isLoggedIn) {
+      navigate('/welcome');
+      return;
+    }
     if (fromFriendsList) {
       // Navigate back to friends page and tell it to open the friends list
       navigate('/friends', { state: { openFriendsList: true } });
@@ -180,7 +229,9 @@ const PublicProfile = () => {
             <Card className="p-6 bg-card border-border text-center">
               <h2 className="text-xl font-semibold mb-2">Profile Not Found</h2>
               <p className="text-muted-foreground mb-4">This user doesn't exist or the profile couldn't be loaded.</p>
-              <Button onClick={() => navigate('/friends')}>Go to Friends</Button>
+              <Button onClick={() => navigate(isLoggedIn ? '/friends' : '/welcome')}>
+                {isLoggedIn ? 'Go to Friends' : 'Go Home'}
+              </Button>
             </Card>
           </div>
         </PageBody>
@@ -201,6 +252,31 @@ const PublicProfile = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
+
+            {/* Right side actions */}
+            <div className="flex items-center gap-2">
+              {/* Share Profile Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={handleShareProfile}
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Share Profile
+              </Button>
+
+              {/* Create Account CTA for logged-out visitors */}
+              {!isLoggedIn && (
+                <Button
+                  size="sm"
+                  className="bg-gradient-primary text-white hover:opacity-90 text-xs"
+                  onClick={handleCreateAccount}
+                >
+                  Create an Account
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </PageHeader>
@@ -343,7 +419,7 @@ const PublicProfile = () => {
 
             {/* Combined Instruments & Genres */}
             {((profile.instruments && profile.instruments.length > 0) || (profile.genres && profile.genres.length > 0)) && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {profile.instruments?.map((instrument) => (
                   <Badge key={instrument} variant="secondary" className="text-xs">
                     {instrument}
@@ -357,6 +433,41 @@ const PublicProfile = () => {
               </div>
             )}
 
+            {/* Add Friend Button - show for logged-in non-friends */}
+            {isLoggedIn && !isFriend && myProfile?.id !== profile.id && (
+              <div className="pt-2">
+                {friendshipStatus === 'pending' ? (
+                  <Button variant="outline" size="sm" disabled className="gap-1.5 w-full">
+                    <Clock className="w-4 h-4" />
+                    Request Sent
+                  </Button>
+                ) : friendshipStatus === 'none' ? (
+                  <Button 
+                    size="sm" 
+                    className="gap-1.5 w-full bg-gradient-primary text-white hover:opacity-90"
+                    onClick={handleAddFriend}
+                    disabled={sendFriendRequest.isPending}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Add Friend
+                  </Button>
+                ) : null}
+              </div>
+            )}
+
+            {/* Add Friend CTA for logged-out users */}
+            {!isLoggedIn && (
+              <div className="pt-2">
+                <Button 
+                  size="sm" 
+                  className="gap-1.5 w-full bg-gradient-primary text-white hover:opacity-90"
+                  onClick={handleCreateAccount}
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Add Friend
+                </Button>
+              </div>
+            )}
           </Card>
 
           {/* Messages Dialog - opens direct chat with this profile */}
@@ -373,12 +484,69 @@ const PublicProfile = () => {
           {/* Notes Section */}
           <div className="space-y-4">
             <h3 className="font-semibold px-1">Recent Notes</h3>
-            <Timeline 
-              notes={notes || []} 
-              loading={notesLoading}
-              displayCount={displayCount}
-              onLoadMore={handleLoadMore}
-            />
+            
+            {/* Logged-out or non-friend: show blurred placeholder */}
+            {!isLoggedIn || (!isFriend && myProfile?.id !== profile.id) ? (
+              <div className="relative">
+                {/* Fake blurred note cards */}
+                <div className="space-y-3 filter blur-sm pointer-events-none select-none" aria-hidden="true">
+                  {[1, 2, 3].map(i => (
+                    <Card key={i} className="p-4 bg-card border-border">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded w-3/4" />
+                        <div className="h-3 bg-muted rounded w-1/2" />
+                        <div className="h-16 bg-muted rounded" />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                {/* Overlay message */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Card className="p-6 bg-card/95 backdrop-blur-sm border-border text-center max-w-xs">
+                    <Lock className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+                    <p className="font-medium mb-1">
+                      {!isLoggedIn ? 'Sign in to view notes' : 'Add as friend to view notes'}
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {!isLoggedIn 
+                        ? "Create an account to see what this musician is working on."
+                        : "Send a friend request to see their practice notes."}
+                    </p>
+                    {!isLoggedIn ? (
+                      <Button 
+                        size="sm"
+                        className="bg-gradient-primary text-white hover:opacity-90"
+                        onClick={handleCreateAccount}
+                      >
+                        Create an Account
+                      </Button>
+                    ) : friendshipStatus === 'none' ? (
+                      <Button 
+                        size="sm"
+                        className="gap-1.5 bg-gradient-primary text-white hover:opacity-90"
+                        onClick={handleAddFriend}
+                        disabled={sendFriendRequest.isPending}
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Add Friend
+                      </Button>
+                    ) : friendshipStatus === 'pending' ? (
+                      <Button variant="outline" size="sm" disabled className="gap-1.5">
+                        <Clock className="w-4 h-4" />
+                        Request Sent
+                      </Button>
+                    ) : null}
+                  </Card>
+                </div>
+              </div>
+            ) : (
+              <Timeline 
+                notes={notes || []} 
+                loading={notesLoading}
+                displayCount={displayCount}
+                onLoadMore={handleLoadMore}
+              />
+            )}
           </div>
         </div>
       </PageBody>
@@ -387,3 +555,6 @@ const PublicProfile = () => {
 };
 
 export default PublicProfile;
+
+// Export constant for use in other files
+export { PROFILE_REDIRECT_KEY };
