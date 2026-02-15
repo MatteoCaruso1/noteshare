@@ -17,8 +17,8 @@ const BENEFITS = [
   },
   {
     icon: FolderKanban,
-    title: 'Musical Pursuits',
-    description: 'Organize your notes around goals, projects, gigs, and archived practice boards',
+    title: 'Improved Organization',
+    description: 'Organize your notes around goals, folders, gigs, and archived practice boards',
   },
   {
     icon: Palette,
