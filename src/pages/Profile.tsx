@@ -14,7 +14,7 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette, Share } from 'lucide-react';
 import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -253,6 +253,20 @@ const Profile = () => {
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">Profile</h1>
             <div className="flex items-center gap-1">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => {
+                  const handle = profile?.username;
+                  if (handle) {
+                    const url = `https://notesharemusic.com/${handle}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success('Profile link copied to clipboard!');
+                  }
+                }}
+              >
+                <Share className="w-5 h-5" />
+              </Button>
               <HelpTipsDialog />
               <Button variant="ghost" size="icon" onClick={() => setEditing(true)}>
                 <Settings className="w-5 h-5" />
