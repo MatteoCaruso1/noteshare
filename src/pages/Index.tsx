@@ -32,7 +32,7 @@ const Index = () => {
   // Track page views for analytics
   usePageViewTracking('practice');
   
-  const { data: notes, isLoading: notesLoading, isFetching: notesRefetching } = useNotes();
+  const { data: notes, isPending: notesLoading, isFetching: notesRefetching } = useNotes();
   const { data: acceptedSharedNotes } = useAcceptedNoteShares();
   const { data: feedProjects, isLoading: projectsLoading } = useFeedProjects();
   const { data: feedGigs, isLoading: gigsLoading } = useFeedGigs();
