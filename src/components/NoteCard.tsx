@@ -446,7 +446,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                       }
                     }}
                   >
-                    <Clock className="w-3 h-3 mr-1 shrink-0" />
+                    <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
                     <span>Practice Session</span>
                     {displayDuration && <span className="ml-1 opacity-80">{displayDuration}</span>}
                   </Badge>
@@ -494,14 +494,14 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               </Popover>
             ) : (
               <Badge variant="secondary" className="inline-flex items-center text-xs">
-                <Clock className="w-3 h-3 mr-1 shrink-0" />
+                <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
                 <span>Practice Session</span>
                 {sessionDuration && <span className="ml-1 opacity-80">{sessionDuration}</span>}
               </Badge>
             )
           ) : (
             <Badge variant="secondary" className="inline-flex items-center text-xs">
-              <Music className="w-3 h-3 mr-1 shrink-0" />
+              <ClipboardList className="w-3 h-3 mr-1 shrink-0" />
               <span>Quick Note</span>
             </Badge>
           )}
