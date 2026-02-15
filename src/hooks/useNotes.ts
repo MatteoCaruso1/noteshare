@@ -1,9 +1,39 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { NoteWithAuthor, Profile } from '@/types';
 import { useAuth } from './useAuth';
+import { ApplauseWithProfile } from './useApplause';
+
+// Batch-fetch applause for multiple notes and seed the query cache
+async function batchFetchApplause(noteIds: string[]): Promise<Map<string, ApplauseWithProfile[]>> {
+  if (noteIds.length === 0) return new Map();
+  
+  const { data, error } = await supabase
+    .from('applause')
+    .select(`
+      id,
+      note_id,
+      user_id,
+      created_at,
+      profile:profiles!applause_user_id_fkey(id, name, avatar)
+    `)
+    .in('note_id', noteIds)
+    .order('created_at', { ascending: true });
+
+  if (error || !data) return new Map();
+
+  const map = new Map<string, ApplauseWithProfile[]>();
+  // Initialize all noteIds with empty arrays so we cache "no applause" too
+  noteIds.forEach(id => map.set(id, []));
+  (data as unknown as ApplauseWithProfile[]).forEach(a => {
+    const list = map.get(a.note_id) || [];
+    list.push(a);
+    map.set(a.note_id, list);
+  });
+  return map;
+}
 
 // Helper to fetch collaborator profiles for sessions
 async function fetchCollaboratorProfiles(notes: any[]): Promise<Map<string, Profile[]>> {
@@ -54,8 +84,10 @@ async function fetchCollaboratorProfiles(notes: any[]): Promise<Map<string, Prof
 
 export function useNotes(projectId?: string) {
   const { profile, session } = useAuth();
+  const queryClient = useQueryClient();
+  const seededNoteIdsRef = useRef(new Set<string>());
   
-  return useQuery({
+  const query = useQuery({
     queryKey: ['notes', projectId, profile?.id],
     queryFn: async () => {
       // If viewing a project, get all notes for that project the user can see
@@ -133,6 +165,27 @@ export function useNotes(projectId?: string) {
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
+
+  // Batch-prefetch applause for all loaded notes to prevent layout shift
+  useEffect(() => {
+    if (!query.data?.length) return;
+    
+    // Only seed notes we haven't seeded yet
+    const unseededIds = query.data
+      .map(n => n.id)
+      .filter(id => !seededNoteIdsRef.current.has(id));
+    
+    if (unseededIds.length === 0) return;
+    
+    batchFetchApplause(unseededIds).then(applauseMap => {
+      applauseMap.forEach((applauseList, noteId) => {
+        queryClient.setQueryData(['applause', noteId], applauseList);
+        seededNoteIdsRef.current.add(noteId);
+      });
+    });
+  }, [query.data, queryClient]);
+
+  return query;
 }
 
 // Shared query function for note fetching - reusable for prefetch
