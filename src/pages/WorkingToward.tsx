@@ -10,6 +10,7 @@ import { PremiumGate } from '@/components/PremiumGate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -362,10 +363,10 @@ const WorkingToward = () => {
                             onChange={(e) => setNewProjectTitle(e.target.value)}
                             autoFocus={false}
                           />
-                          <Textarea
+                          <RichTextarea
                             placeholder="Describe your folder..."
                             value={newProjectDescription}
-                            onChange={(e) => setNewProjectDescription(e.target.value)}
+                            onChange={setNewProjectDescription}
                             rows={3}
                           />
 
