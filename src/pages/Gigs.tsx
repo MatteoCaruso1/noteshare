@@ -5,7 +5,7 @@ import { useMyPromoPosts, useFriendsPromoPosts, usePaidGigs, useCreatePromoPost,
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -267,11 +267,11 @@ const Gigs = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
-                  <Textarea
+                  <RichTextarea
                     placeholder="Describe your gig..."
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
+                    onChange={setDescription}
+                    rows={8}
                   />
                   <div className="space-y-3">
                     <Label className="text-sm text-muted-foreground block">
