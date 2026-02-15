@@ -113,6 +113,7 @@ const WorkingToward = () => {
   const [projectCoverValue, setProjectCoverValue] = useState<string | null>(null);
   const [projectCoverPreview, setProjectCoverPreview] = useState<string | null>(null);
   const [projectReleaseDate, setProjectReleaseDate] = useState<Date | undefined>(undefined);
+  const [projectShowOnFeed, setProjectShowOnFeed] = useState(true);
   
   // Gig dialog state
   const [isGigDialogOpen, setIsGigDialogOpen] = useState(false);
@@ -142,7 +143,7 @@ const WorkingToward = () => {
         title: newProjectTitle,
         description: newProjectDescription,
         coverImage: projectCoverValue || undefined,
-        showOnFeed: true,
+        showOnFeed: projectShowOnFeed,
         collaboratorIds: [],
         releaseDate: projectReleaseDate ? format(projectReleaseDate, 'yyyy-MM-dd') : undefined,
       },
@@ -153,6 +154,7 @@ const WorkingToward = () => {
           setProjectCoverValue(null);
           setProjectCoverPreview(null);
           setProjectReleaseDate(undefined);
+          setProjectShowOnFeed(true);
           setIsProjectDialogOpen(false);
         },
       }
@@ -393,7 +395,16 @@ const WorkingToward = () => {
                               </PopoverContent>
                             </Popover>
                           </div>
-                          
+
+                          {/* Show on Home Feed Toggle */}
+                          <div className="flex items-center justify-between py-2">
+                            <Label htmlFor="project-show-feed" className="text-sm">Show on home feed</Label>
+                            <Switch
+                              id="project-show-feed"
+                              checked={projectShowOnFeed}
+                              onCheckedChange={setProjectShowOnFeed}
+                            />
+                          </div>
 
                           <Button
                             className="w-full bg-gradient-primary text-primary-foreground"
