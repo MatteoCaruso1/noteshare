@@ -17,6 +17,7 @@ import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
 import { FolderOpen, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -92,6 +93,7 @@ const ProjectDetail = () => {
   const [editCoverImage, setEditCoverImage] = useState<string | null>(null);
   const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
   const [editReleaseDate, setEditReleaseDate] = useState('');
+  const [editShowOnFeed, setEditShowOnFeed] = useState(true);
 
   const isOwner = profile?.id === project?.owner_id;
   const isCollaborator = project?.collaborator_ids?.includes(profile?.id || '');
@@ -104,6 +106,7 @@ const ProjectDetail = () => {
       setEditCoverImage(project.cover_image || null);
       setEditCoverPreview(null); // Will use ProjectCover component for display
       setEditReleaseDate(project.release_date || '');
+      setEditShowOnFeed(project.show_on_feed ?? true);
       setIsSettingsOpen(true);
     }
   };
@@ -145,6 +148,7 @@ const ProjectDetail = () => {
         description: editDescription,
         coverImage: editCoverImage || undefined,
         releaseDate: editReleaseDate || undefined,
+        showOnFeed: editShowOnFeed,
       },
       {
         onSuccess: () => {
@@ -297,7 +301,17 @@ const ProjectDetail = () => {
                 className="w-full max-w-full min-w-0 box-border [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:text-left"
               />
             </div>
-            
+
+            {/* Show on Home Feed Toggle */}
+            <div className="flex items-center justify-between py-2">
+              <Label htmlFor="edit-show-feed" className="text-sm">Show on home feed</Label>
+              <Switch
+                id="edit-show-feed"
+                checked={editShowOnFeed}
+                onCheckedChange={setEditShowOnFeed}
+              />
+            </div>
+
 
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
