@@ -251,7 +251,7 @@ const ProjectDetail = () => {
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border">
           <DialogHeader>
             <DialogTitle>Project Settings</DialogTitle>
             <DialogDescription>Update your project details or delete the project.</DialogDescription>
@@ -294,6 +294,7 @@ const ProjectDetail = () => {
                 type="date"
                 value={editReleaseDate}
                 onChange={(e) => setEditReleaseDate(e.target.value)}
+                className="w-full max-w-full min-w-0 box-border [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:text-left"
               />
             </div>
             
