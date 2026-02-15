@@ -415,6 +415,7 @@ const Auth = () => {
                   className="w-full"
                   style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
                   onClick={() => setMode('signup')}
+                  disabled={loading}
                 >
                   Sign up with Email
                 </Button>
