@@ -5,7 +5,8 @@ import { useProjects, useFriendsProjects, useCreateProject, useDeleteProject } f
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { RichTextarea } from '@/components/RichTextarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -42,6 +43,7 @@ const Projects = () => {
   const [coverImageValue, setCoverImageValue] = useState<string | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [releaseDate, setReleaseDate] = useState<Date | undefined>(undefined);
+  const [showOnFeed, setShowOnFeed] = useState(true);
 
   if (!user) {
     navigate('/auth');
@@ -57,7 +59,7 @@ const Projects = () => {
         title: newTitle,
         description: newDescription,
         coverImage: coverImageValue || undefined,
-        showOnFeed: true,
+        showOnFeed,
         collaboratorIds: [],
         releaseDate: releaseDate ? format(releaseDate, 'yyyy-MM-dd') : undefined,
       },
@@ -68,6 +70,7 @@ const Projects = () => {
           setCoverImageValue(null);
           setCoverImagePreview(null);
           setReleaseDate(undefined);
+          setShowOnFeed(true);
           setIsDialogOpen(false);
         },
       }
@@ -115,10 +118,10 @@ const Projects = () => {
                     onChange={(e) => setNewTitle(e.target.value)}
                     autoFocus={false}
                   />
-                  <Textarea
+                  <RichTextarea
                     placeholder="Describe your project..."
                     value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
+                    onChange={setNewDescription}
                     rows={3}
                   />
 
@@ -149,7 +152,16 @@ const Projects = () => {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  
+
+                  {/* Show on Feed Toggle */}
+                  <div className="flex items-center justify-between py-2">
+                    <Label htmlFor="show-feed-project" className="text-sm">Show on home feed</Label>
+                    <Switch
+                      id="show-feed-project"
+                      checked={showOnFeed}
+                      onCheckedChange={setShowOnFeed}
+                    />
+                  </div>
 
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"
