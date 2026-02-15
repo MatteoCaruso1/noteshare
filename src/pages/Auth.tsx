@@ -77,8 +77,14 @@ const Auth = () => {
             localStorage.setItem('noteshare_remember_me', 'true');
             // Clear the hash from URL
             clearOAuthHash();
-            // Navigate to home
-            navigate('/');
+            // Check for profile redirect (from shared profile link)
+            const profileRedirectOAuth = localStorage.getItem('noteshare_profile_redirect');
+            if (profileRedirectOAuth) {
+              localStorage.removeItem('noteshare_profile_redirect');
+              navigate(`/profile/${profileRedirectOAuth}`);
+            } else {
+              navigate('/');
+            }
             return;
           }
         } catch (err) {
@@ -214,10 +220,24 @@ const Auth = () => {
       } else if (mode === 'signup') {
         await signUp(email, password, name);
         startOnboarding();
-        navigate('/');
+        // Check for profile redirect (from shared profile link)
+        const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
+        if (profileRedirect) {
+          // Don't navigate yet - onboarding will handle redirect after FTUE
+          navigate('/');
+        } else {
+          navigate('/');
+        }
       } else {
         await signIn(email, password, rememberMe);
-        navigate('/');
+        // Check for profile redirect (from shared profile link)
+        const profileRedirectLogin = localStorage.getItem('noteshare_profile_redirect');
+        if (profileRedirectLogin) {
+          localStorage.removeItem('noteshare_profile_redirect');
+          navigate(`/profile/${profileRedirectLogin}`);
+        } else {
+          navigate('/');
+        }
       }
     } catch (error) {
       // Error is handled in useAuth
