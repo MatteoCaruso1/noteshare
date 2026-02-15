@@ -12,7 +12,6 @@ interface ApplauseFooterProps {
   commentCount?: number;
   onCommentClick?: () => void;
   className?: string;
-  reserveSpace?: boolean;
 }
 
 export const ApplauseFooter = memo(function ApplauseFooter({ 
@@ -20,8 +19,7 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   noteAuthorId,
   commentCount = 0,
   onCommentClick,
-  className,
-  reserveSpace = false,
+  className 
 }: ApplauseFooterProps) {
   const { profile } = useAuth();
   const { data: applauseList = [], isLoading } = useNoteApplause(noteId);
@@ -61,12 +59,12 @@ export const ApplauseFooter = memo(function ApplauseFooter({
       <div 
         className={cn(
           "flex items-center justify-between pt-2 mt-2 border-t border-border/50 min-h-[28px]",
-          reserveSpace && "opacity-0",
           className
         )}
       >
         <div className="flex items-center gap-2 text-xs text-muted-foreground/50">
           <ClappingHandsIcon className="opacity-50" />
+          <span className="opacity-50">Loading...</span>
         </div>
         {commentCount > 0 && (
           <span className="text-xs text-muted-foreground">
@@ -78,30 +76,19 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   }
 
   // For owner's posts: hide entire footer if no applause AND no comments
-  if (isOwner && applauseCount === 0 && commentCount === 0) {
-    if (reserveSpace) {
-      return <div className={cn("pt-2 mt-2 border-t border-border/50 min-h-[28px]", className)} />;
-    }
-    return null;
-  }
+  if (isOwner && applauseCount === 0 && commentCount === 0) return null;
 
   // Check if we should show anything
   const showApplause = applauseCount > 0 || !isOwner;
   const showComments = commentCount > 0;
 
-  // If nothing to show, hide footer (or reserve space)
-  if (!showApplause && !showComments) {
-    if (reserveSpace) {
-      return <div className={cn("pt-2 mt-2 border-t border-border/50 min-h-[28px]", className)} />;
-    }
-    return null;
-  }
+  // If nothing to show, hide footer
+  if (!showApplause && !showComments) return null;
 
   return (
     <div 
       className={cn(
-        "flex items-center justify-between pt-2 mt-2 border-t border-border/50 transition-opacity duration-300",
-        reserveSpace && "animate-in fade-in duration-300",
+        "flex items-center justify-between pt-2 mt-2 border-t border-border/50",
         className
       )}
     >
