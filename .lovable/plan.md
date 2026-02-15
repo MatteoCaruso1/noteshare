@@ -1,32 +1,53 @@
 
 
-## Fix: Date Input Overflowing on Mobile
+## Fix FTUE Spotlight Tour on Safari Mobile
 
-Two places where the date input field overflows on mobile screens:
-
-1. **Project Settings dialog** (`src/pages/ProjectDetail.tsx`) -- the "Expected Release Date" input
-2. **Log Past Session dialog** (`src/components/OfflineSessionInput.tsx`) -- the date picker input
+### Problem
+Two bugs on Safari mobile (non-PWA):
+1. Step 5 ("help-tips") highlights the wrong spot because the Profile page is scrolled down when the tour navigates to it -- the element's `getBoundingClientRect()` returns incorrect coordinates
+2. After the tour completes and returns to the Practice page, the user is scrolled partway down instead of at the top
 
 ### Root Cause
+- When navigating to `/profile` for step 5, no `scrollTo(0)` call is made before measuring the target element
+- The final step's `scrollTo(0)` uses a single 100ms timeout which is unreliable on Safari mobile -- the page may not have finished rendering yet
 
-The native `<Input type="date">` element can render wider than its container on mobile Safari/iOS due to the browser's built-in date formatting and picker chrome. The dialog content doesn't constrain it enough.
+### Changes
 
-### Fix Approach
+**File: `src/components/onboarding/SpotlightTour.tsx`**
 
-For both files, apply explicit width constraints directly on the date `<Input>` elements:
+1. **Add scroll-to-top when navigating for step 5**: After `navigate(currentTourStep.navigateTo)`, add a `window.scrollTo({ top: 0, behavior: 'auto' })` call before attempting to find the element. Also add it inside the `findElement` retry loop so each attempt re-scrolls to top first (Safari can restore scroll position asynchronously).
 
-- Add `w-full max-w-full min-w-0` classes to force the input to stay within its container
-- Add `box-border` to ensure padding is included in the width calculation
+2. **Make final step scroll-to-top more robust**: Replace the single 100ms timeout with multiple attempts (e.g., scroll at 0ms, 100ms, and 300ms) to ensure Safari has time to finish its navigation and layout. This ensures the user lands at the very top of the Practice page.
 
-Additionally, ensure the **ProjectDetail dialog** has the same overflow-safe wrapper classes already present on the OfflineSessionInput dialog (`max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border`).
+3. **Add scroll-to-top inside `findElement` for navigated steps**: Before calling `updateTargetRect()`, force a `window.scrollTo({ top: 0 })` so the measured `getBoundingClientRect()` values are correct relative to the viewport at scroll position 0.
 
-### Technical Details
+### Technical Detail
 
-**File 1: `src/pages/ProjectDetail.tsx` (line ~254)**
-- Add responsive `max-w` and `overflow-x-hidden` classes to the `<DialogContent>` wrapper
-- Add `w-full max-w-full min-w-0 box-border` to the date `<Input>` at line ~292
+The key fix in the `findElement` function:
+```typescript
+const findElement = () => {
+  // Ensure we're at the top before measuring
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  
+  const found = updateTargetRect();
+  if (found) {
+    setIsNavigating(false);
+    setTimeout(() => setIsAnimating(false), 350);
+  } else {
+    setTimeout(findElement, 100);
+  }
+};
+```
 
-**File 2: `src/components/OfflineSessionInput.tsx` (line ~68)**
-- Add `w-full max-w-full min-w-0 box-border` to the existing date `<Input>` className
+And for the final step, use repeated scroll attempts:
+```typescript
+if (isFinalStep) {
+  const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  navigate('/');
+  scrollToTop();
+  setTimeout(scrollToTop, 100);
+  setTimeout(scrollToTop, 300);
+  // ...
+}
+```
 
-Both changes ensure the native date input can never exceed its parent container width on any viewport.
