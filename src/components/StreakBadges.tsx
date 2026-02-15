@@ -15,9 +15,12 @@ function getBadgeDescription(tier: StreakTierInfo, count?: number): string {
 }
 
 export function StreakBadges({ bestStreak, achievementCounts }: StreakBadgesProps) {
-  // Get achieved tiers based on best streak (permanent badges)
+  // Show badge if best streak qualifies OR if the milestone was ever claimed/celebrated
   const achievedTiers = STREAK_TIERS.filter(
-    tier => tier.tier !== 'none' && bestStreak >= tier.minDays
+    tier => tier.tier !== 'none' && (
+      bestStreak >= tier.minDays || 
+      (achievementCounts?.[tier.minDays.toString()] || 0) > 0
+    )
   );
 
   if (achievedTiers.length === 0) {
