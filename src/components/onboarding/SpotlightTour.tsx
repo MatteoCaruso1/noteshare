@@ -96,18 +96,19 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   useEffect(() => {
     // For final step, navigate to My Practice first and scroll to top
     if (isFinalStep) {
+      const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       if (location.pathname !== '/') {
         setIsNavigating(true);
         navigate('/');
-        // Wait for navigation, then scroll to top
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: 'auto' });
-          setIsNavigating(false);
-        }, 100);
-      } else {
-        // Already on My Practice, just scroll to top
-        window.scrollTo({ top: 0, behavior: 'auto' });
       }
+      // Multiple scroll attempts to overcome Safari's async scroll restoration
+      scrollToTop();
+      setTimeout(scrollToTop, 100);
+      setTimeout(scrollToTop, 300);
+      setTimeout(() => {
+        scrollToTop();
+        setIsNavigating(false);
+      }, 500);
       setTargetRect(null);
       return;
     }
@@ -117,6 +118,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       setIsNavigating(true);
       setIsAnimating(true);
       navigate(currentTourStep.navigateTo);
+      // Scroll to top immediately after navigation to prevent Safari from restoring scroll
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       return;
     }
 
@@ -124,6 +127,9 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     
     // Wait for navigation/DOM to settle, then find the element
     const findElement = () => {
+      // Ensure we're at the top before measuring (Safari can restore scroll asynchronously)
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      
       const found = updateTargetRect();
       if (found) {
         setIsNavigating(false);
