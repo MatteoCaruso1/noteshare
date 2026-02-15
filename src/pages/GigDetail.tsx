@@ -223,7 +223,7 @@ const GigDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { data: gig, isLoading: gigLoading } = useGig(id);
+  const { data: gig, isLoading: gigLoading, isError: gigError } = useGig(id);
   const { data: notes, isLoading: notesLoading } = useGigNotes(id);
   const { data: hasReminder } = useGigReminder(id, profile?.id);
   const addNote = useAddNoteToGig();
@@ -353,15 +353,10 @@ const GigDetail = () => {
     );
   }
 
-  if (!gig) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <p className="text-muted-foreground mb-4">Gig not found</p>
-        <Button variant="outline" onClick={() => navigate('/gigs')}>
-          Back to Gigs
-        </Button>
-      </div>
-    );
+  if (gigError || !gig) {
+    // Redirect to pursuits page if gig not found or deleted
+    navigate('/working-toward', { replace: true });
+    return null;
   }
 
   return (
