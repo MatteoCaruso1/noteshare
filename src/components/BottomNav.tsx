@@ -122,9 +122,9 @@ export function BottomNav() {
 
   const links = [
     { to: '/', icon: Music, label: 'Practice', mobileLabel: 'Practice' },
+    { to: '/pursuits', icon: Target, label: 'Organize', mobileLabel: 'Organize' },
     { to: '/friends', icon: Users, label: 'Friends', mobileLabel: 'Friends', showBadge: true },
     { to: '/groups', icon: Waypoints, label: 'Groups', mobileLabel: 'Groups' },
-    { to: '/pursuits', icon: Target, label: 'Pursuits', mobileLabel: 'Pursuits' },
     { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
   ];
 
