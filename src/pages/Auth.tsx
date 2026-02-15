@@ -263,7 +263,7 @@ const Auth = () => {
         {/* Back to landing button */}
         <button
           type="button"
-          onClick={() => navigate('/welcome')}
+          onClick={() => mode === 'signin' ? navigate('/welcome') : setMode('signin')}
           className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
