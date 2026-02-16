@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Lock, Users, Settings, ClipboardList, Pause, ChevronDown, ChevronRight, Trash2, LockOpen } from 'lucide-react';
+import { Play, Square, Clock, X, Lock, Users, Settings, StickyNote, Pause, ChevronDown, ChevronRight, Trash2, LockOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -765,7 +765,7 @@ export function PracticeControls() {
                       data-no-hover-reset
                       onTouchEnd={(e) => { e.currentTarget.blur(); }}
                     >
-                      <ClipboardList className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <StickyNote className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
                       <Switch
                         id="attach-focus-session"
                         checked={attachFocus}

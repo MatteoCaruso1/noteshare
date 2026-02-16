@@ -17,7 +17,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { ApplauseFooter } from '@/components/ApplauseFooter';
-import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ClipboardList, Settings, X, Flame, Pencil, Check, Calendar, Share, Play } from 'lucide-react';
+import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, StickyNote, Settings, X, Flame, Pencil, Check, Calendar, Share, Play } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -72,7 +72,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
         {focusTextSnapshot && (
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <ClipboardList className="w-3 h-3" />
+              <StickyNote className="w-3 h-3" />
               Practice Board
             </p>
             <RichTextContent 
@@ -119,7 +119,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
         {focusTextSnapshot && (
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <ClipboardList className="w-3 h-3" />
+              <StickyNote className="w-3 h-3" />
               Practice Board
             </p>
             <RichTextContent 
@@ -707,7 +707,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             <div className="pl-3 border-l-2 border-primary/30">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <ClipboardList className="w-3 h-3" />
+                  <StickyNote className="w-3 h-3" />
                   Practice Board
                 </p>
                 <Button
