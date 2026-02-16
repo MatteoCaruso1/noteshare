@@ -115,6 +115,7 @@ const WorkingToward = () => {
   const [projectCoverPreview, setProjectCoverPreview] = useState<string | null>(null);
   const [projectReleaseDate, setProjectReleaseDate] = useState<Date | undefined>(undefined);
   const [projectShowOnFeed, setProjectShowOnFeed] = useState(true);
+  const [projectCollaboratorIds, setProjectCollaboratorIds] = useState<string[]>([]);
   
   // Gig dialog state
   const [isGigDialogOpen, setIsGigDialogOpen] = useState(false);
@@ -146,7 +147,7 @@ const WorkingToward = () => {
         description: newProjectDescription,
         coverImage: projectCoverValue || undefined,
         showOnFeed: projectShowOnFeed,
-        collaboratorIds: [],
+        collaboratorIds: projectCollaboratorIds,
         releaseDate: projectReleaseDate ? format(projectReleaseDate, 'yyyy-MM-dd') : undefined,
       },
       {
@@ -157,6 +158,7 @@ const WorkingToward = () => {
           setProjectCoverPreview(null);
           setProjectReleaseDate(undefined);
           setProjectShowOnFeed(true);
+          setProjectCollaboratorIds([]);
           setIsProjectDialogOpen(false);
         },
       }
@@ -399,6 +401,13 @@ const WorkingToward = () => {
                               </PopoverContent>
                             </Popover>
                           </div>
+
+                          {/* Collaborators */}
+                          <CollaboratorPicker
+                            selectedIds={projectCollaboratorIds}
+                            onSelect={setProjectCollaboratorIds}
+                            label="Collaborators"
+                          />
 
                           {/* Show on Home Feed Toggle */}
                           <div className="flex items-center justify-between py-2">
