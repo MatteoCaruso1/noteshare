@@ -55,29 +55,30 @@ export function RichTextarea({
       const textarea = textareaRef.current;
       const minHeight = rows * 24; // Approximate line height
       
-      // Save scroll position before measuring
-      const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') || window;
-      const savedScrollTop = scrollParent === window 
-        ? window.scrollY 
-        : (scrollParent as HTMLElement).scrollTop;
+      // Save scroll positions before measuring
+      const savedWindowScroll = window.scrollY;
+      const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+      const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
       
-      // Temporarily set to auto to measure, then restore
+      // Temporarily hide overflow to prevent browser from auto-scrolling during measurement
+      const prevOverflow = textarea.style.overflow;
+      textarea.style.overflow = 'hidden';
+      
+      // Measure
       textarea.style.height = 'auto';
       const newHeight = Math.max(minHeight, textarea.scrollHeight);
       textarea.style.height = `${newHeight}px`;
       
-      // Restore scroll position if it changed
-      requestAnimationFrame(() => {
-        if (scrollParent === window) {
-          if (window.scrollY !== savedScrollTop) {
-            window.scrollTo({ top: savedScrollTop, behavior: 'auto' });
-          }
-        } else {
-          if ((scrollParent as HTMLElement).scrollTop !== savedScrollTop) {
-            (scrollParent as HTMLElement).scrollTop = savedScrollTop;
-          }
-        }
-      });
+      // Restore overflow
+      textarea.style.overflow = prevOverflow;
+      
+      // Immediately restore scroll positions (synchronously, no rAF delay)
+      if (window.scrollY !== savedWindowScroll) {
+        window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
+      }
+      if (scrollParent && scrollParent.scrollTop !== savedParentScroll) {
+        scrollParent.scrollTop = savedParentScroll;
+      }
     }
   }, [value, autoExpand, rows]);
 
