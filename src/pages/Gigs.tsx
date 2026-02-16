@@ -163,6 +163,7 @@ const Gigs = () => {
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
   const [gigImage, setGigImage] = useState<string | null>(null);
   const [gigImagePreviewUrl, setGigImagePreviewUrl] = useState<string | null>(null);
+  const [repostReminderDays, setRepostReminderDays] = useState<string>('');
 
   if (!user) {
     navigate('/auth');
@@ -200,6 +201,7 @@ const Gigs = () => {
         showOnFeed,
         isPaidOpportunity,
         collaboratorIds,
+        repostReminderDays: repostReminderDays ? parseInt(repostReminderDays, 10) : null,
       },
       {
         onSuccess: () => {
@@ -213,6 +215,7 @@ const Gigs = () => {
           setCollaboratorIds([]);
           setGigImage(null);
           setGigImagePreviewUrl(null);
+          setRepostReminderDays('');
           setIsDialogOpen(false);
         },
       }
@@ -329,6 +332,27 @@ const Gigs = () => {
                     />
                   </div>
 
+                  {/* Repost Reminder */}
+                  <div>
+                    <Label htmlFor="create-repost-reminder" className="text-sm">Repost reminder (optional)</Label>
+                    <p className="text-xs text-muted-foreground mb-1.5">
+                      Repost this gig on your timeline to remind followers before the event
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="create-repost-reminder"
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={repostReminderDays}
+                        onChange={(e) => setRepostReminderDays(e.target.value)}
+                        placeholder="e.g. 3"
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">days before event</span>
+                    </div>
+                  </div>
+
                   {/* Paid Opportunity Toggle */}
                   <div className="flex items-center justify-between py-2 border-t border-border pt-4">
                     <div>
@@ -348,7 +372,7 @@ const Gigs = () => {
                   </div>
 
                   {/* Collaborator Picker */}
-                  <div className="border-t border-border pt-4">
+                  <div className="pt-2">
                     <CollaboratorPicker
                       selectedIds={collaboratorIds}
                       onSelect={setCollaboratorIds}
