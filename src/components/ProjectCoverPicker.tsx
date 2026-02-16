@@ -3,7 +3,7 @@ import {
   Disc3, Music, Guitar, Piano, Mic, Headphones, Radio, 
   Music2, Music3, Music4, Drum, AudioLines, Volume2, Upload,
   Speaker, Waves, ListMusic, KeyboardMusic, FolderOpen,
-  MicVocal, AudioWaveform, Podcast, Megaphone, Airplay,
+  MicVocal, AudioWaveform, Landmark, Building2,
   Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,9 +32,9 @@ const ICON_OPTIONS = [
   { id: 'keyboard', Icon: KeyboardMusic, label: 'Keys' },
   { id: 'micvocal', Icon: MicVocal, label: 'Vocal' },
   { id: 'waveform', Icon: AudioWaveform, label: 'Waveform' },
-  { id: 'podcast', Icon: Podcast, label: 'Podcast' },
-  { id: 'megaphone', Icon: Megaphone, label: 'Announce' },
-  { id: 'airplay', Icon: Airplay, label: 'Stream' },
+  { id: 'venue', Icon: Landmark, label: 'Venue' },
+  { id: 'building', Icon: Building2, label: 'Building' },
+  { id: 'micvocal2', Icon: MicVocal, label: 'Vocal 2' },
   { id: 'disc2', Icon: Disc3, label: 'Record' },
   { id: 'mic2', Icon: Mic, label: 'Mic 2' },
 ] as const;
