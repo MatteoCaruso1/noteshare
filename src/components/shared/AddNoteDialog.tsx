@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { ImagePreviewDialog } from '@/components/ImagePreviewDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -45,6 +46,7 @@ export const AddNoteDialog = ({
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [showRecorder, setShowRecorder] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   const audioInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -267,7 +269,12 @@ export const AddNoteDialog = ({
             <div className="flex flex-wrap gap-2">
               {imageFiles.map((url, i) => (
                 <div key={i} className="relative">
-                  <img src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                  <img
+                    src={url}
+                    alt=""
+                    className="w-20 h-20 object-cover rounded-lg cursor-pointer"
+                    onClick={() => setPreviewImage(url)}
+                  />
                   <Button
                     variant="ghost"
                     size="icon"
@@ -280,6 +287,12 @@ export const AddNoteDialog = ({
               ))}
             </div>
           )}
+          <ImagePreviewDialog
+            src={previewImage}
+            open={!!previewImage}
+            onOpenChange={(open) => !open && setPreviewImage(null)}
+            signed={false}
+          />
 
           <Button
             className="w-full"
