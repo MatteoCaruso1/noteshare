@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
+import { InlineEditableDescription } from '@/components/shared/InlineEditableDescription';
 import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share, Plus } from 'lucide-react';
 import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { ShareGigSheet } from '@/components/ShareGigSheet';
@@ -419,8 +420,8 @@ const GigDetail = () => {
               </Button>
             </div>
           )}
-          {/* Gig Details Card - only show if there's content */}
-          {(gig.event_date || gig.description || (gig.links && gig.links.length > 0)) && (
+          {/* Gig Details Card - show if there's content or owner can edit */}
+          {(gig.event_date || gig.description || (gig.links && gig.links.length > 0) || isOwner) && (
             <Card className="p-4 bg-card border-border">
               {gig.event_date && (
                 <p className="text-sm text-primary flex items-center gap-2 mb-3">
@@ -429,9 +430,19 @@ const GigDetail = () => {
                 </p>
               )}
 
-              {gig.description && (
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{gig.description}</p>
-              )}
+              <InlineEditableDescription
+                value={gig.description || ''}
+                canEdit={isOwner}
+                placeholder="Add a description..."
+                className="p-0 bg-transparent border-0 hover:border-0 rounded-none"
+                onSave={(newDescription) => {
+                  updateGig.mutate({
+                    postId: gig.id,
+                    title: gig.title,
+                    description: newDescription,
+                  });
+                }}
+              />
 
               {gig.links && gig.links.length > 0 && (
                 <a
