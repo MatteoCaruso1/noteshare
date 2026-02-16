@@ -25,18 +25,20 @@ type UIMode = 'loading' | 'empty' | 'list';
 function EmptyStateShell({ 
   uiMode, 
   showSkeleton,
-  showSlowMessage 
+  showSlowMessage,
+  showLoadingText
 }: { 
   uiMode: 'loading' | 'empty';
   showSkeleton: boolean;
   showSlowMessage: boolean;
+  showLoadingText: boolean;
 }) {
   return (
     <div className="min-h-[180px] flex flex-col">
-      {/* Initial loading text - positioned where first note would be */}
+      {/* Loading text - only shows after 1.5s delay */}
       <div
         className={`transition-opacity duration-100 ease-in-out ${
-          uiMode === 'loading' && !showSkeleton ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+          uiMode === 'loading' && !showSkeleton && showLoadingText ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
         }`}
       >
         <div className="animate-pulse text-muted-foreground text-center pt-16 pb-8">Loading...</div>
@@ -144,6 +146,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   // Track if skeleton should be visible (delay to prevent flash on quick loads)
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [showSlowMessage, setShowSlowMessage] = useState(false);
+  const [showLoadingText, setShowLoadingText] = useState(false);
   
   // Refs for debounce timers
   const emptyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -175,6 +178,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
       setUiMode('list');
       setShowSkeleton(false);
       setShowSlowMessage(false);
+      setShowLoadingText(false);
       skeletonShownAtRef.current = null;
       return;
     }
@@ -213,6 +217,10 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   // Skeleton display timer
   useEffect(() => {
     if (uiMode === 'loading' && !showSkeleton) {
+      const loadingTextTimer = setTimeout(() => {
+        setShowLoadingText(true);
+      }, 1500);
+
       const skeletonDelayTimer = setTimeout(() => {
         setShowSkeleton(true);
         skeletonShownAtRef.current = Date.now();
@@ -223,6 +231,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
       }, 5000);
       
       return () => {
+        clearTimeout(loadingTextTimer);
         clearTimeout(skeletonDelayTimer);
         clearTimeout(slowMessageTimer);
       };
@@ -257,6 +266,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
         uiMode={uiMode} 
         showSkeleton={showSkeleton}
         showSlowMessage={showSlowMessage}
+        showLoadingText={showLoadingText}
       />
     );
   }
