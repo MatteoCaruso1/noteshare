@@ -168,8 +168,9 @@ const PublicProfile = () => {
     navigate('/auth');
   };
   
-  // Get signed URL for avatar
-  const { signedUrl: signedAvatar } = useSignedUrl(profile?.avatar);
+  // Get signed URL for avatar - for logged-out users, use avatar directly if it's a public URL
+  const { signedUrl: signedAvatar } = useSignedUrl(isLoggedIn ? profile?.avatar : null);
+  const avatarUrl = isLoggedIn ? signedAvatar : profile?.avatar;
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
@@ -357,9 +358,9 @@ const PublicProfile = () => {
             )}
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="w-20 h-20 border-2 border-primary/20">
-                {signedAvatar ? (
+                {avatarUrl ? (
                   <img 
-                    src={signedAvatar} 
+                    src={avatarUrl} 
                     alt={profile.name || 'Profile picture'} 
                     className="h-full w-full object-cover"
                   />
