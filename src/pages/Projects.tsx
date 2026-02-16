@@ -168,6 +168,13 @@ const Projects = () => {
                     </Popover>
                   </div>
 
+                  {/* Collaborators */}
+                  <CollaboratorPicker
+                    selectedIds={collaboratorIds}
+                    onSelect={setCollaboratorIds}
+                    label="Collaborators"
+                  />
+
                   {/* Show on Feed Toggle */}
                   <div className="flex items-center justify-between py-2">
                     <Label htmlFor="show-feed-project" className="text-sm">Show on home feed</Label>
@@ -177,13 +184,6 @@ const Projects = () => {
                       onCheckedChange={setShowOnFeed}
                     />
                   </div>
-
-                  {/* Collaborators */}
-                  <CollaboratorPicker
-                    selectedIds={collaboratorIds}
-                    onSelect={setCollaboratorIds}
-                    label="Collaborators"
-                  />
 
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"
