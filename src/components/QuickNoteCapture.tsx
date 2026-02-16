@@ -23,6 +23,7 @@ import { PracticeTimer } from '@/components/PracticeTimer';
 import { RecordingRecoveryBanner } from '@/components/RecordingRecoveryBanner';
 
 import { SignedImage } from '@/components/SignedImage';
+import { ImagePreviewDialog } from '@/components/ImagePreviewDialog';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -100,6 +101,7 @@ export function QuickNoteCapture() {
     setVisibility,
     clearState,
   } = usePersistentNoteState('quick_note', profile?.id);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   if (!profile) return null;
   
@@ -363,11 +365,16 @@ export function QuickNoteCapture() {
 
 
           {/* Uploaded Images */}
-          {imageFiles.length > 0 && (
+           {imageFiles.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {imageFiles.map((url, i) => (
                 <div key={i} className="relative">
-                  <SignedImage src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                  <SignedImage
+                    src={url}
+                    alt=""
+                    className="w-20 h-20 object-cover rounded-lg cursor-pointer"
+                    onClick={() => setPreviewImage(url)}
+                  />
                   <Button
                     variant="destructive"
                     size="icon"
@@ -380,6 +387,11 @@ export function QuickNoteCapture() {
               ))}
             </div>
           )}
+          <ImagePreviewDialog
+            src={previewImage}
+            open={!!previewImage}
+            onOpenChange={(open) => !open && setPreviewImage(null)}
+          />
         </CollapsibleContent>
       </Collapsible>
     </Card>

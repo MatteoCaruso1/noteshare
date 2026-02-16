@@ -26,6 +26,7 @@ import { Metronome } from '@/components/Metronome';
 import { PracticeTimer } from '@/components/PracticeTimer';
 
 import { SignedImage } from '@/components/SignedImage';
+import { ImagePreviewDialog } from '@/components/ImagePreviewDialog';
 import { DailyLimitBanner } from '@/components/DailyLimitBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -134,6 +135,7 @@ export function PracticeControls() {
     completePendingUpload,
     failPendingUpload,
   } = usePersistentNoteState('practice_session', profile?.id);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Initialize from session storage if we have the same active session
   const storedSettings = getSessionSettings();
@@ -826,7 +828,12 @@ export function PracticeControls() {
             <div className="mb-4 flex flex-wrap gap-2">
               {imageFiles.map((url, i) => (
                 <div key={i} className="relative">
-                  <SignedImage src={url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+                  <SignedImage
+                    src={url}
+                    alt=""
+                    className="w-20 h-20 object-cover rounded-lg cursor-pointer"
+                    onClick={() => setPreviewImage(url)}
+                  />
                   <Button
                     variant="destructive"
                     size="icon"
@@ -839,6 +846,11 @@ export function PracticeControls() {
               ))}
             </div>
           )}
+          <ImagePreviewDialog
+            src={previewImage}
+            open={!!previewImage}
+            onOpenChange={(open) => !open && setPreviewImage(null)}
+          />
 
           {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
