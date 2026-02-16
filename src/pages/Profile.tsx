@@ -259,7 +259,7 @@ const Profile = () => {
                 onClick={() => {
                   const handle = profile?.username;
                   if (handle) {
-                    const url = `https://notesharemusic.com/${handle}`;
+                    const url = `https://notesharemusic.com/profile/${handle}`;
                     navigator.clipboard.writeText(url);
                     toast.success('Profile link copied to clipboard!');
                   }
