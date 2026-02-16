@@ -55,7 +55,7 @@ const GigCard = ({
   >
     <div className="flex items-start gap-4">
       {/* Gig image or icon - using ProjectCover for preset icon support */}
-      <ProjectCover value={post.image} className="w-16 h-16 flex-shrink-0" iconClassName="w-6 h-6" />
+      <ProjectCover value={post.image} className="w-16 h-16 flex-shrink-0" iconClassName="w-9 h-9" />
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">

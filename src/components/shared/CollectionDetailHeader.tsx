@@ -69,7 +69,7 @@ export const CollectionDetailHeader = ({
   // Render cover based on whether we're using project covers (with icon support)
   const renderCover = () => {
     if (useProjectCover) {
-      return <ProjectCover value={coverImage} className="w-16 h-16" iconClassName="w-6 h-6" />;
+      return <ProjectCover value={coverImage} className="w-16 h-16" iconClassName="w-9 h-9" />;
     }
     
     if (coverImage) {
