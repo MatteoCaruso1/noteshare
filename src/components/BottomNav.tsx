@@ -75,7 +75,8 @@ export function BottomNav() {
 
   // Hide on auth/welcome routes, or on root when not authenticated (landing page)
   const shouldHide = hiddenRoutes.includes(location.pathname) || 
-    (location.pathname === '/' && !user);
+    (location.pathname === '/' && !user) ||
+    (location.pathname.startsWith('/profile/') && !user);
 
   // Measure and expose BottomNav height as a CSS variable for toasts/overlays
   useBottomNavHeightVariable(navRef, shouldHide);
