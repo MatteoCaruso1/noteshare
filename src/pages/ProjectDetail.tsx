@@ -16,7 +16,7 @@ import { CollectionDetailHeader } from '@/components/shared/CollectionDetailHead
 import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
-import { FolderOpen, Trash2 } from 'lucide-react';
+import { FolderOpen, Trash2, Plus } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -226,15 +226,21 @@ const ProjectDetail = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Folder Notes</h2>
               {canAddNotes && profile && (
-                <AddNoteDialog
-                  open={isAddNoteOpen}
-                  onOpenChange={setIsAddNoteOpen}
-                  onSubmit={handleAddNote}
-                  isSubmitting={addNote.isPending}
-                   title="Add Note to Folder"
-                   contextLabel="this folder"
-                  profileId={profile.id}
-                />
+                <>
+                  <Button size="sm" onClick={() => setIsAddNoteOpen(true)}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Note
+                  </Button>
+                  <AddNoteDialog
+                    open={isAddNoteOpen}
+                    onOpenChange={setIsAddNoteOpen}
+                    onSubmit={handleAddNote}
+                    isSubmitting={addNote.isPending}
+                    title="Add Note to Folder"
+                    contextLabel="this folder"
+                    profileId={profile.id}
+                  />
+                </>
               )}
             </div>
 

@@ -18,7 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
-import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share } from 'lucide-react';
+import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share, Plus } from 'lucide-react';
 import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { ShareGigSheet } from '@/components/ShareGigSheet';
 import { formatLocalDateTime } from '@/lib/utils';
@@ -450,15 +450,21 @@ const GigDetail = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Gig Notes</h2>
                 {canAddNotes && profile && (
-                  <AddNoteDialog
-                    open={isAddNoteOpen}
-                    onOpenChange={setIsAddNoteOpen}
-                    onSubmit={handleAddNote}
-                    isSubmitting={addNote.isPending}
-                    title="Add Note to Gig"
-                    contextLabel="this gig"
-                    profileId={profile.id}
-                  />
+                  <>
+                    <Button size="sm" onClick={() => setIsAddNoteOpen(true)}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Note
+                    </Button>
+                    <AddNoteDialog
+                      open={isAddNoteOpen}
+                      onOpenChange={setIsAddNoteOpen}
+                      onSubmit={handleAddNote}
+                      isSubmitting={addNote.isPending}
+                      title="Add Note to Gig"
+                      contextLabel="this gig"
+                      profileId={profile.id}
+                    />
+                  </>
                 )}
               </div>
 
