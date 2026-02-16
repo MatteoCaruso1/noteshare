@@ -19,15 +19,27 @@ export function useProjects() {
 
       if (!currentProfile) return [];
 
-      // Only fetch projects owned by the current user
-      const { data, error } = await supabase
+      // Fetch projects owned by user OR where user is a collaborator
+      const { data: ownedData, error: ownedError } = await supabase
         .from('projects')
-        .select('*')
+        .select('*, profiles!projects_owner_id_fkey (*)')
         .eq('owner_id', currentProfile.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Project[];
+      if (ownedError) throw ownedError;
+
+      // Fetch projects where user is a collaborator (RLS handles visibility)
+      const { data: collabData, error: collabError } = await supabase
+        .from('projects')
+        .select('*, profiles!projects_owner_id_fkey (*)')
+        .contains('collaborator_ids', [currentProfile.id])
+        .neq('owner_id', currentProfile.id)
+        .order('created_at', { ascending: false });
+
+      if (collabError) throw collabError;
+
+      const all = [...(ownedData || []), ...(collabData || [])];
+      return all.map((p: any) => ({ ...p, owner: p.profiles })) as Project[];
     },
   });
 }
@@ -147,7 +159,7 @@ export function useFriendsProjects() {
 
       if (friendIds.length === 0) return [];
 
-      // Get projects from friends only
+      // Get projects from friends only, excluding projects where user is a collaborator
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -158,10 +170,13 @@ export function useFriendsProjects() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data.map((project: any) => ({
-        ...project,
-        owner: project.profiles,
-      }));
+      // Filter out projects where the current user is a collaborator (those show in My Folders)
+      return data
+        .filter((p: any) => !(p.collaborator_ids || []).includes(currentProfile.id))
+        .map((project: any) => ({
+          ...project,
+          owner: project.profiles,
+        }));
     },
   });
 }
@@ -255,6 +270,7 @@ export function useUpdateProject() {
       tags,
       showOnFeed,
       releaseDate,
+      collaboratorIds,
     }: {
       projectId: string;
       title?: string;
@@ -263,6 +279,7 @@ export function useUpdateProject() {
       tags?: string[];
       showOnFeed?: boolean;
       releaseDate?: string;
+      collaboratorIds?: string[];
     }) => {
       const updates: any = { updated_at: new Date().toISOString() };
       if (title !== undefined) updates.title = title;
@@ -271,6 +288,7 @@ export function useUpdateProject() {
       if (tags !== undefined) updates.tags = tags;
       if (showOnFeed !== undefined) updates.show_on_feed = showOnFeed;
       if (releaseDate !== undefined) updates.release_date = releaseDate || null;
+      if (collaboratorIds !== undefined) updates.collaborator_ids = collaboratorIds;
 
       const { data, error } = await supabase
         .from('projects')
