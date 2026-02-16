@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -285,28 +285,40 @@ const GigDetail = () => {
     }
   };
 
-  const handleSaveSettings = () => {
-    if (!gig) return;
+  // Auto-save settings with debounce
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstSettingsRender = useRef(true);
 
-    updateGig.mutate(
-      {
-        postId: gig.id,
-        title: editTitle,
-        description: editDescription,
-        eventDate: editEventDate || null,
-        image: editImage,
-        links: editLink ? [editLink] : [],
-        showOnFeed: editShowOnFeed,
-        isPaidOpportunity: editIsPaidOpportunity,
-        repostReminderDays: editRepostReminderDays ? parseInt(editRepostReminderDays, 10) : null,
-      },
-      {
-        onSuccess: () => {
-          setIsSettingsOpen(false);
-        },
-      }
-    );
-  };
+  const autoSaveSettings = useCallback(() => {
+    if (!gig || !editTitle.trim()) return;
+    updateGig.mutate({
+      postId: gig.id,
+      title: editTitle,
+      description: editDescription,
+      eventDate: editEventDate || null,
+      image: editImage,
+      links: editLink ? [editLink] : [],
+      showOnFeed: editShowOnFeed,
+      isPaidOpportunity: editIsPaidOpportunity,
+      repostReminderDays: editRepostReminderDays ? parseInt(editRepostReminderDays, 10) : null,
+    });
+  }, [gig, editTitle, editDescription, editEventDate, editImage, editLink, editShowOnFeed, editIsPaidOpportunity, editRepostReminderDays, updateGig]);
+
+  useEffect(() => {
+    if (!isSettingsOpen) {
+      isFirstSettingsRender.current = true;
+      return;
+    }
+    if (isFirstSettingsRender.current) {
+      isFirstSettingsRender.current = false;
+      return;
+    }
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(autoSaveSettings, 800);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [editTitle, editDescription, editEventDate, editImage, editLink, editShowOnFeed, editIsPaidOpportunity, editRepostReminderDays, isSettingsOpen, autoSaveSettings]);
 
   const handleDeleteGig = () => {
     if (!gig) return;
@@ -497,7 +509,13 @@ const GigDetail = () => {
       </PageBody>
 
       {/* Settings Dialog */}
-      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+      <Dialog open={isSettingsOpen} onOpenChange={(open) => {
+        if (!open && autoSaveTimerRef.current) {
+          clearTimeout(autoSaveTimerRef.current);
+          autoSaveSettings();
+        }
+        setIsSettingsOpen(open);
+      }}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Gig Settings</DialogTitle>
@@ -572,13 +590,8 @@ const GigDetail = () => {
               </div>
             </div>
 
-            <Button
-              className="w-full bg-gradient-primary text-primary-foreground"
-              onClick={handleSaveSettings}
-              disabled={updateGig.isPending || !editTitle.trim()}
-            >
-              Save Changes
-            </Button>
+
+
 
             {/* Delete Gig */}
             <AlertDialog>

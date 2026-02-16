@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects';
@@ -139,25 +139,38 @@ const ProjectDetail = () => {
     );
   };
 
-  const handleSaveSettings = () => {
-    if (!project) return;
+  // Auto-save settings with debounce
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstSettingsRender = useRef(true);
 
-    updateProject.mutate(
-      {
-        projectId: project.id,
-        title: editTitle,
-        description: editDescription,
-        coverImage: editCoverImage || undefined,
-        releaseDate: editReleaseDate || undefined,
-        showOnFeed: editShowOnFeed,
-      },
-      {
-        onSuccess: () => {
-          setIsSettingsOpen(false);
-        },
-      }
-    );
-  };
+  const autoSaveSettings = useCallback(() => {
+    if (!project || !editTitle.trim()) return;
+    updateProject.mutate({
+      projectId: project.id,
+      title: editTitle,
+      description: editDescription,
+      coverImage: editCoverImage || undefined,
+      releaseDate: editReleaseDate || undefined,
+      showOnFeed: editShowOnFeed,
+    });
+  }, [project, editTitle, editDescription, editCoverImage, editReleaseDate, editShowOnFeed, updateProject]);
+
+  useEffect(() => {
+    if (!isSettingsOpen) {
+      isFirstSettingsRender.current = true;
+      return;
+    }
+    // Skip the first render when dialog opens (values are just being initialized)
+    if (isFirstSettingsRender.current) {
+      isFirstSettingsRender.current = false;
+      return;
+    }
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(autoSaveSettings, 800);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [editTitle, editDescription, editCoverImage, editReleaseDate, editShowOnFeed, isSettingsOpen, autoSaveSettings]);
 
   const handleDeleteProject = () => {
     if (!project) return;
@@ -266,7 +279,13 @@ const ProjectDetail = () => {
       </PageBody>
 
       {/* Settings Dialog */}
-      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+      <Dialog open={isSettingsOpen} onOpenChange={(open) => {
+        if (!open && autoSaveTimerRef.current) {
+          clearTimeout(autoSaveTimerRef.current);
+          autoSaveSettings();
+        }
+        setIsSettingsOpen(open);
+      }}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border">
           <DialogHeader>
              <DialogTitle>Folder Settings</DialogTitle>
@@ -325,13 +344,8 @@ const ProjectDetail = () => {
             </div>
 
 
-            <Button
-              className="w-full bg-gradient-primary text-primary-foreground"
-              onClick={handleSaveSettings}
-              disabled={updateProject.isPending || !editTitle.trim()}
-            >
-              Save Changes
-            </Button>
+
+
 
             {/* Delete Project */}
             <AlertDialog>
