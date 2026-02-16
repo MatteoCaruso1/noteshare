@@ -331,7 +331,7 @@ export function ProjectCoverPicker({
 export function ProjectCover({ 
   value, 
   className = "w-16 h-16",
-  iconClassName = "w-6 h-6"
+  iconClassName = "w-9 h-9"
 }: { 
   value: string | null | undefined; 
   className?: string;
