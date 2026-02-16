@@ -202,10 +202,12 @@ export function BottomNav() {
               isActive = to === overrideActiveRoute;
             } else {
               // Friends tab stays active when viewing user profiles
-              // Practice tab stays active when viewing note/gig/project details
+              // Practice tab stays active when viewing note details
+              // Organize tab stays active when viewing folder/gig details
               isActive = currentPath === to || 
                 (to === '/friends' && isUserProfilePage) ||
-                (to === '/' && (isNoteDetailPage || isGigDetailPage));
+                (to === '/' && isNoteDetailPage) ||
+                (to === '/pursuits' && (isProjectDetailPage || isGigDetailPage));
             }
             return (
               <NavLink
