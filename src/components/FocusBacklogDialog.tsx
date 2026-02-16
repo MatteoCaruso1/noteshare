@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Copy, Search, Trash2, Calendar, ClipboardList } from 'lucide-react';
+import { Copy, Search, Trash2, Calendar, StickyNote } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -126,7 +126,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
           featureName="Practice Board Backlog" 
           blur={false}
           showPreview={false}
-          icon={ClipboardList}
+          icon={StickyNote}
           description="Upgrade to Pro to view archived Practice Boards"
         >
           {/* Search and Filter */}
