@@ -705,10 +705,25 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           {/* Focus Text editing */}
           {note.focus_text_snapshot && (
             <div className="pl-3 border-l-2 border-primary/30">
-              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <ClipboardList className="w-3 h-3" />
-                Practice Board
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <ClipboardList className="w-3 h-3" />
+                  Practice Board
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveFocus();
+                    setIsEditing(false);
+                  }}
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Unlink
+                </Button>
+              </div>
               <RichTextarea
                 value={editedFocusText}
                 onChange={setEditedFocusText}
