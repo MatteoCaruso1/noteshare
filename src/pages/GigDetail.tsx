@@ -477,7 +477,12 @@ const GigDetail = () => {
                 <h2 className="text-lg font-semibold">Gig Notes</h2>
                 {canAddNotes && profile && (
                   <>
-                    <Button size="sm" onClick={() => setIsAddNoteOpen(true)}>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsAddNoteOpen(true)}
+                      data-no-hover-reset
+                      onTouchEnd={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+                    >
                       <Plus className="w-4 h-4 mr-1" />
                       Add Note
                     </Button>
