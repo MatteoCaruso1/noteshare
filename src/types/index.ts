@@ -117,6 +117,7 @@ export interface PromoPost {
   collaborator_ids: string[];
   show_on_feed: boolean;
   is_paid_opportunity: boolean;
+  repost_reminder_days: number | null;
   created_at: string;
 }
 
