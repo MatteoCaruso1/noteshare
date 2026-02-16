@@ -127,6 +127,7 @@ const WorkingToward = () => {
   const [gigCollaboratorIds, setGigCollaboratorIds] = useState<string[]>([]);
   const [gigCoverValue, setGigCoverValue] = useState<string | null>(null);
   const [gigCoverPreview, setGigCoverPreview] = useState<string | null>(null);
+  const [gigRepostReminderDays, setGigRepostReminderDays] = useState<string>('');
 
   if (!user) {
     navigate('/auth');
@@ -190,6 +191,7 @@ const WorkingToward = () => {
         showOnFeed: gigShowOnFeed,
         isPaidOpportunity: false,
         collaboratorIds: gigCollaboratorIds,
+        repostReminderDays: gigRepostReminderDays ? parseInt(gigRepostReminderDays, 10) : null,
       },
       {
         onSuccess: () => {
@@ -202,6 +204,7 @@ const WorkingToward = () => {
           setGigCollaboratorIds([]);
           setGigCoverValue(null);
           setGigCoverPreview(null);
+          setGigRepostReminderDays('');
           setIsGigDialogOpen(false);
         },
       }
@@ -634,7 +637,28 @@ const WorkingToward = () => {
                             />
                           </div>
 
-                          <div className="border-t border-border pt-4">
+                          {/* Repost Reminder */}
+                          <div>
+                            <Label htmlFor="wt-repost-reminder" className="text-sm">Repost reminder (optional)</Label>
+                            <p className="text-xs text-muted-foreground mb-1.5">
+                              Repost this gig on your timeline to remind followers before the event
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id="wt-repost-reminder"
+                                type="number"
+                                min="1"
+                                max="30"
+                                value={gigRepostReminderDays}
+                                onChange={(e) => setGigRepostReminderDays(e.target.value)}
+                                placeholder="e.g. 3"
+                                className="w-24"
+                              />
+                              <span className="text-sm text-muted-foreground">days before event</span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2">
                             <CollaboratorPicker
                               selectedIds={gigCollaboratorIds}
                               onSelect={setGigCollaboratorIds}
