@@ -146,7 +146,7 @@ const PublicProfile = () => {
   
   const handleShareProfile = async () => {
     if (!profile) return;
-    const cleanUrl = `https://notesharemusic.com/${profile.username}`;
+    const cleanUrl = `https://notesharemusic.com/profile/${profile.username}`;
     try {
       await navigator.clipboard.writeText(cleanUrl);
       toast.success('Profile link copied');
