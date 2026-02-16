@@ -203,7 +203,7 @@ export function ProjectCoverPicker({
   };
 
   const sizeClasses = size === 'sm' ? 'w-16 h-16' : 'w-24 h-24';
-  const iconSizeClasses = size === 'sm' ? 'w-6 h-6' : 'w-8 h-8';
+  const iconSizeClasses = size === 'sm' ? 'w-9 h-9' : 'w-12 h-12';
   const smallIconClasses = size === 'sm' ? 'w-4 h-4' : 'w-6 h-6';
 
   return (
