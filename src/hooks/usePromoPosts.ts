@@ -289,6 +289,7 @@ export function useUpdatePromoPost() {
       showOnFeed,
       isPaidOpportunity,
       collaboratorIds,
+      repostReminderDays,
     }: {
       postId: string;
       title?: string;
@@ -299,6 +300,7 @@ export function useUpdatePromoPost() {
       showOnFeed?: boolean;
       isPaidOpportunity?: boolean;
       collaboratorIds?: string[];
+      repostReminderDays?: number | null;
     }) => {
       const updates: Record<string, any> = {};
       if (title !== undefined) updates.title = title;
@@ -309,6 +311,7 @@ export function useUpdatePromoPost() {
       if (showOnFeed !== undefined) updates.show_on_feed = showOnFeed;
       if (isPaidOpportunity !== undefined) updates.is_paid_opportunity = isPaidOpportunity;
       if (collaboratorIds !== undefined) updates.collaborator_ids = collaboratorIds;
+      if (repostReminderDays !== undefined) updates.repost_reminder_days = repostReminderDays;
 
       const { data, error } = await supabase
         .from('promo_posts')

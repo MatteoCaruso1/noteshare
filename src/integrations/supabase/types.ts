@@ -1152,6 +1152,7 @@ export type Database = {
           is_paid_opportunity: boolean
           links: string[] | null
           promo_type: Database["public"]["Enums"]["promo_type"]
+          repost_reminder_days: number | null
           show_on_feed: boolean
           title: string
         }
@@ -1166,6 +1167,7 @@ export type Database = {
           is_paid_opportunity?: boolean
           links?: string[] | null
           promo_type: Database["public"]["Enums"]["promo_type"]
+          repost_reminder_days?: number | null
           show_on_feed?: boolean
           title: string
         }
@@ -1180,6 +1182,7 @@ export type Database = {
           is_paid_opportunity?: boolean
           links?: string[] | null
           promo_type?: Database["public"]["Enums"]["promo_type"]
+          repost_reminder_days?: number | null
           show_on_feed?: boolean
           title?: string
         }

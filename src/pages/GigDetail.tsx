@@ -247,6 +247,7 @@ const GigDetail = () => {
   const [editIsPaidOpportunity, setEditIsPaidOpportunity] = useState(false);
   const [editImage, setEditImage] = useState<string | null>(null);
   const [editImagePreviewUrl, setEditImagePreviewUrl] = useState<string | null>(null);
+  const [editRepostReminderDays, setEditRepostReminderDays] = useState<string>('');
 
   const isOwner = profile?.id === gig?.author_id;
   const isCollaborator = gig?.collaborator_ids?.includes(profile?.id || '');
@@ -278,6 +279,7 @@ const GigDetail = () => {
       setEditIsPaidOpportunity(gig.is_paid_opportunity || false);
       setEditImage(gig.image || null);
       setEditImagePreviewUrl(null);
+      setEditRepostReminderDays(gig.repost_reminder_days != null ? String(gig.repost_reminder_days) : '');
       setIsSettingsOpen(true);
     }
   };
@@ -295,6 +297,7 @@ const GigDetail = () => {
         links: editLink ? [editLink] : [],
         showOnFeed: editShowOnFeed,
         isPaidOpportunity: editIsPaidOpportunity,
+        repostReminderDays: editRepostReminderDays ? parseInt(editRepostReminderDays, 10) : null,
       },
       {
         onSuccess: () => {
@@ -536,7 +539,27 @@ const GigDetail = () => {
                 placeholder="https://..."
               />
             </div>
-            
+
+            {/* Repost Reminder */}
+            <div>
+              <Label htmlFor="repost-reminder">Repost reminder (optional)</Label>
+              <p className="text-xs text-muted-foreground mb-1.5">
+                Repost this gig on your timeline to remind followers before the event
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="repost-reminder"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={editRepostReminderDays}
+                  onChange={(e) => setEditRepostReminderDays(e.target.value)}
+                  placeholder="e.g. 3"
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">days before event</span>
+              </div>
+            </div>
 
             <Button
               className="w-full bg-gradient-primary text-primary-foreground"
