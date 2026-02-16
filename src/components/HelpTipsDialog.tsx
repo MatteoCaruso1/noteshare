@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, Mic, Target, Timer, StickyNote, Save, FileText, Share, Users, Calendar, UserPlus, Compass, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
+import { HelpCircle, Mic, Target, Timer, StickyNote, Save, FileText, Share, Waypoints, Calendar, UserPlus, ClipboardList, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -79,7 +79,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Groups',
-    featureIcon: <Users className="w-4 h-4 text-foreground" />,
+    featureIcon: <Waypoints className="w-4 h-4 text-foreground" />,
     definition: 'Spaces to find and bring together your musical community',
     items: [
       { icon: <Calendar className="w-4 h-4" />, label: 'Events', description: 'Create and share group events like jam sessions, rehearsals, or shows' },
@@ -88,7 +88,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Organize',
-    featureIcon: <Compass className="w-4 h-4 text-foreground" />,
+    featureIcon: <ClipboardList className="w-4 h-4 text-foreground" />,
     definition: 'Long-term musical efforts you\'re working toward',
     items: [
       { icon: <Target className="w-4 h-4" />, label: 'Musical Goals', description: 'Set your musical goals for consistent reference' },
