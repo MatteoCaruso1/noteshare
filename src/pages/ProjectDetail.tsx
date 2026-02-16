@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { CollectionDetailHeader } from '@/components/shared/CollectionDetailHeader';
 import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
+import { InlineEditableDescription } from '@/components/shared/InlineEditableDescription';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
 import { FolderOpen, Trash2, Plus } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -214,12 +215,19 @@ const ProjectDetail = () => {
 
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-          {/* Project Description */}
-          {project.description && (
-            <div className="p-4 bg-card rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground whitespace-pre-line">{project.description}</p>
-            </div>
-          )}
+          {/* Project Description - inline editable */}
+          <InlineEditableDescription
+            value={project.description || ''}
+            canEdit={isOwner}
+            placeholder="Add a description..."
+            onSave={(newDescription) => {
+              updateProject.mutate({
+                projectId: project.id,
+                title: project.title,
+                description: newDescription,
+              });
+            }}
+          />
 
           {/* Notes Section */}
           <section>
