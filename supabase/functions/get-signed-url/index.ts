@@ -9,8 +9,8 @@ const corsHeaders = {
 type StorageRef = { bucket: string; path: string };
 
 type Body =
-  | { url: string; expiresInSeconds?: number }
-  | { urls: string[]; expiresInSeconds?: number };
+  | { url: string; expiresInSeconds?: number; public?: boolean }
+  | { urls: string[]; expiresInSeconds?: number; public?: boolean };
 
 function parseStorageRef(input: string): StorageRef | null {
   if (!input) return null;
@@ -60,11 +60,16 @@ const handler = async (req: Request): Promise<Response> => {
     const toSign: string[] = "urls" in body ? body.urls : [body.url];
     const expiresInSeconds =
       ("expiresInSeconds" in body && body.expiresInSeconds) || 60 * 60 * 24; // 24h
+    const isPublicRequest = !!body.public;
 
     const authHeader = req.headers.get("Authorization");
     
-    // If no auth, return original URLs so the app doesn't break
-    if (!authHeader) {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+
+    // If no auth and not a public request, return original URLs so the app doesn't break
+    if (!authHeader && !isPublicRequest) {
       console.log("[get-signed-url] No auth header, returning original URLs");
       const results: Record<string, string> = {};
       for (const url of toSign) {
@@ -75,31 +80,27 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // If auth header present, verify it
+    if (authHeader && !isPublicRequest) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: userError } = await admin.auth.getUser(token);
 
-    // Extract JWT token from Authorization header
-    const token = authHeader.replace("Bearer ", "");
-    
-    // Use service role client to verify the JWT
-    const admin = createClient(supabaseUrl, serviceRoleKey);
-    
-    // Verify the JWT is valid by getting the user
-    const { data: { user }, error: userError } = await admin.auth.getUser(token);
-
-    // If auth fails, return original URLs gracefully
-    if (userError || !user) {
-      console.log("[get-signed-url] Auth failed:", userError?.message || "No user", "Token prefix:", token.substring(0, 20));
-      const results: Record<string, string> = {};
-      for (const url of toSign) {
-        if (url) results[url] = url;
+      if (userError || !user) {
+        console.log("[get-signed-url] Auth failed:", userError?.message || "No user");
+        const results: Record<string, string> = {};
+        for (const url of toSign) {
+          if (url) results[url] = url;
+        }
+        return new Response(JSON.stringify({ results }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-      return new Response(JSON.stringify({ results }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.log("[get-signed-url] Auth verified for user:", user.id);
     }
-    
-    console.log("[get-signed-url] Auth verified for user:", user.id);
+
+    if (isPublicRequest) {
+      console.log("[get-signed-url] Public request for", toSign.length, "URLs");
+    }
 
     const results: Record<string, string> = {};
 

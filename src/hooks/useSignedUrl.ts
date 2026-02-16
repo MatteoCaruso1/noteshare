@@ -126,7 +126,7 @@ function extractPathFromSignedUrl(url: string): string | null {
   }
 }
 
-export function useSignedUrl(originalUrl: string | null | undefined) {
+export function useSignedUrl(originalUrl: string | null | undefined, isPublic: boolean = false) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -227,7 +227,7 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
         }
 
         const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
-          body: { url: urlToSign, expiresInSeconds: 60 * 60 * 24 },
+          body: { url: urlToSign, expiresInSeconds: 60 * 60 * 24, ...(isPublic ? { public: true } : {}) },
         });
 
         if (fnError) {
@@ -268,7 +268,7 @@ export function useSignedUrl(originalUrl: string | null | undefined) {
     };
 
     run();
-  }, [originalUrl, retryCount]);
+  }, [originalUrl, retryCount, isPublic]);
 
   return { signedUrl, loading, error };
 }

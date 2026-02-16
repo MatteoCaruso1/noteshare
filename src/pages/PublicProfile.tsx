@@ -168,9 +168,8 @@ const PublicProfile = () => {
     navigate('/auth');
   };
   
-  // Get signed URL for avatar - for logged-out users, use avatar directly if it's a public URL
-  const { signedUrl: signedAvatar } = useSignedUrl(isLoggedIn ? profile?.avatar : null);
-  const avatarUrl = isLoggedIn ? signedAvatar : profile?.avatar;
+  // Always use signed URL for avatar (works for both logged-in and logged-out via public flag)
+  const { signedUrl: avatarUrl } = useSignedUrl(profile?.avatar, !isLoggedIn);
   
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + LOAD_MORE_COUNT);
