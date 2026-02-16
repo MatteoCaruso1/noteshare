@@ -32,14 +32,14 @@ function EmptyStateShell({
   showSlowMessage: boolean;
 }) {
   return (
-    <div className="min-h-[180px] flex flex-col items-center justify-center">
-      {/* Initial loading text - shows immediately before skeletons */}
+    <div className="min-h-[180px] flex flex-col">
+      {/* Initial loading text - positioned where first note would be */}
       <div
-        className={`transition-opacity duration-300 ease-in-out ${
+        className={`transition-opacity duration-100 ease-in-out ${
           uiMode === 'loading' && !showSkeleton ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
         }`}
       >
-        <div className="animate-pulse text-muted-foreground text-center py-8">Loading...</div>
+        <div className="animate-pulse text-muted-foreground text-center pt-16 pb-8">Loading...</div>
       </div>
 
       {/* Loading state with skeleton */}
