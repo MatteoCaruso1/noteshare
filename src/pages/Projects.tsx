@@ -24,11 +24,13 @@ import { Label } from '@/components/ui/label';
 import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { CollectionCard } from '@/components/shared/CollectionCard';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
+import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { Plus, FolderOpen, Trash2, CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 const Projects = () => {
   const { user, profile } = useAuth();
@@ -44,6 +46,7 @@ const Projects = () => {
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [releaseDate, setReleaseDate] = useState<Date | undefined>(undefined);
   const [showOnFeed, setShowOnFeed] = useState(true);
+  const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
 
   if (!user) {
     navigate('/auth');
@@ -60,17 +63,29 @@ const Projects = () => {
         description: newDescription,
         coverImage: coverImageValue || undefined,
         showOnFeed,
-        collaboratorIds: [],
+        collaboratorIds,
         releaseDate: releaseDate ? format(releaseDate, 'yyyy-MM-dd') : undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: async (data) => {
+          // Send notifications to collaborators
+          if (collaboratorIds.length > 0 && profile) {
+            for (const collabId of collaboratorIds) {
+              await supabase.from('notifications').insert({
+                user_id: collabId,
+                from_user_id: profile.id,
+                type: 'folder_collaborator',
+                content: `${profile.name} added you to the folder "${newTitle}"`,
+              });
+            }
+          }
           setNewTitle('');
           setNewDescription('');
           setCoverImageValue(null);
           setCoverImagePreview(null);
           setReleaseDate(undefined);
           setShowOnFeed(true);
+          setCollaboratorIds([]);
           setIsDialogOpen(false);
         },
       }
@@ -162,6 +177,13 @@ const Projects = () => {
                       onCheckedChange={setShowOnFeed}
                     />
                   </div>
+
+                  {/* Collaborators */}
+                  <CollaboratorPicker
+                    selectedIds={collaboratorIds}
+                    onSelect={setCollaboratorIds}
+                    label="Collaborators"
+                  />
 
                   <Button
                     className="w-full bg-gradient-primary text-primary-foreground"

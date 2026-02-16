@@ -17,6 +17,7 @@ import { NotesEmptyState } from '@/components/shared/NotesEmptyState';
 import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
 import { InlineEditableDescription } from '@/components/shared/InlineEditableDescription';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
+import { CollaboratorPicker } from '@/components/CollaboratorPicker';
 import { FolderOpen, Trash2, Plus } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -95,19 +96,24 @@ const ProjectDetail = () => {
   const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
   const [editReleaseDate, setEditReleaseDate] = useState('');
   const [editShowOnFeed, setEditShowOnFeed] = useState(true);
+  const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
 
   const isOwner = profile?.id === project?.owner_id;
   const isCollaborator = project?.collaborator_ids?.includes(profile?.id || '');
   const canAddNotes = isOwner || isCollaborator;
+  const canEditSettings = isOwner || isCollaborator;
 
   const openSettings = () => {
     if (project) {
       setEditTitle(project.title);
       setEditDescription(project.description || '');
       setEditCoverImage(project.cover_image || null);
-      setEditCoverPreview(null); // Will use ProjectCover component for display
+      setEditCoverPreview(null);
       setEditReleaseDate(project.release_date || '');
       setEditShowOnFeed(project.show_on_feed ?? true);
+      const collabIds = project.collaborator_ids || [];
+      setEditCollaboratorIds(collabIds);
+      prevCollaboratorIdsRef.current = collabIds;
       setIsSettingsOpen(true);
     }
   };
@@ -142,9 +148,30 @@ const ProjectDetail = () => {
   // Auto-save settings with debounce
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstSettingsRender = useRef(true);
+  const prevCollaboratorIdsRef = useRef<string[]>([]);
+
+  const sendCollaboratorNotifications = useCallback(async (newCollabIds: string[], projectTitle: string) => {
+    if (!profile) return;
+    const prevIds = prevCollaboratorIdsRef.current;
+    const addedIds = newCollabIds.filter(id => !prevIds.includes(id));
+    if (addedIds.length === 0) return;
+
+    // Send notification to each newly added collaborator
+    for (const collabId of addedIds) {
+      await supabase.from('notifications').insert({
+        user_id: collabId,
+        from_user_id: profile.id,
+        type: 'folder_collaborator',
+        content: `${profile.name} added you to the folder "${projectTitle}"`,
+      });
+    }
+    prevCollaboratorIdsRef.current = newCollabIds;
+  }, [profile]);
 
   const autoSaveSettings = useCallback(() => {
     if (!project || !editTitle.trim()) return;
+    // Send notifications for newly added collaborators
+    sendCollaboratorNotifications(editCollaboratorIds, editTitle);
     updateProject.mutate({
       projectId: project.id,
       title: editTitle,
@@ -152,8 +179,9 @@ const ProjectDetail = () => {
       coverImage: editCoverImage || undefined,
       releaseDate: editReleaseDate || undefined,
       showOnFeed: editShowOnFeed,
+      collaboratorIds: editCollaboratorIds,
     });
-  }, [project, editTitle, editDescription, editCoverImage, editReleaseDate, editShowOnFeed, updateProject]);
+  }, [project, editTitle, editDescription, editCoverImage, editReleaseDate, editShowOnFeed, editCollaboratorIds, updateProject, sendCollaboratorNotifications]);
 
   useEffect(() => {
     if (!isSettingsOpen) {
@@ -170,7 +198,7 @@ const ProjectDetail = () => {
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [editTitle, editDescription, editCoverImage, editReleaseDate, editShowOnFeed, isSettingsOpen, autoSaveSettings]);
+  }, [editTitle, editDescription, editCoverImage, editReleaseDate, editShowOnFeed, editCollaboratorIds, isSettingsOpen, autoSaveSettings]);
 
   const handleDeleteProject = () => {
     if (!project) return;
@@ -220,7 +248,7 @@ const ProjectDetail = () => {
           authorAvatar={project.owner?.avatar}
           coverImage={project.cover_image}
           coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
-          showSettings={isOwner}
+          showSettings={canEditSettings}
           onSettingsClick={openSettings}
           useProjectCover
         />
@@ -231,7 +259,7 @@ const ProjectDetail = () => {
           {/* Project Description - inline editable */}
           <InlineEditableDescription
             value={project.description || ''}
-            canEdit={isOwner}
+            canEdit={canEditSettings}
             placeholder="Add a description..."
             onSave={(newDescription) => {
               updateProject.mutate({
@@ -348,36 +376,44 @@ const ProjectDetail = () => {
               />
             </div>
 
+            {/* Collaborators */}
+            {isOwner && (
+              <CollaboratorPicker
+                selectedIds={editCollaboratorIds}
+                onSelect={setEditCollaboratorIds}
+                label="Collaborators"
+              />
+            )}
 
 
-
-
-            {/* Delete Project */}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                   Delete Folder
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete folder?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    "{project.title}" will be deleted. Attached notes will remain.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteProject}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Delete Project - only owner */}
+            {isOwner && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                     Delete Folder
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete folder?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      "{project.title}" will be deleted. Attached notes will remain.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteProject}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </DialogContent>
       </Dialog>
