@@ -1,53 +1,73 @@
 
 
-## Fix FTUE Spotlight Tour on Safari Mobile
+# Setting Up Capacitor for iOS App Store Distribution
 
-### Problem
-Two bugs on Safari mobile (non-PWA):
-1. Step 5 ("help-tips") highlights the wrong spot because the Profile page is scrolled down when the tour navigates to it -- the element's `getBoundingClientRect()` returns incorrect coordinates
-2. After the tour completes and returns to the Practice page, the user is scrolled partway down instead of at the top
+This plan adds Capacitor to your project so you can publish a native iOS app alongside your existing web/PWA version. Nothing about the current web app changes.
 
-### Root Cause
-- When navigating to `/profile` for step 5, no `scrollTo(0)` call is made before measuring the target element
-- The final step's `scrollTo(0)` uses a single 100ms timeout which is unreliable on Safari mobile -- the page may not have finished rendering yet
+## What Lovable Will Do
 
-### Changes
+1. **Install Capacitor dependencies** (`@capacitor/core`, `@capacitor/cli`, `@capacitor/ios`)
+2. **Create `capacitor.config.ts`** in the project root with your app ID and live preview URL for development
+3. **Add a `build` script** to `package.json` if not already present
 
-**File: `src/components/onboarding/SpotlightTour.tsx`**
+That's it on Lovable's side -- the rest happens on your Mac.
 
-1. **Add scroll-to-top when navigating for step 5**: After `navigate(currentTourStep.navigateTo)`, add a `window.scrollTo({ top: 0, behavior: 'auto' })` call before attempting to find the element. Also add it inside the `findElement` retry loop so each attempt re-scrolls to top first (Safari can restore scroll position asynchronously).
+## What You Do After (Step-by-Step)
 
-2. **Make final step scroll-to-top more robust**: Replace the single 100ms timeout with multiple attempts (e.g., scroll at 0ms, 100ms, and 300ms) to ensure Safari has time to finish its navigation and layout. This ensures the user lands at the very top of the Practice page.
+1. **Export to GitHub** -- Use the "Export to GitHub" button in Lovable project settings to push your code to your own GitHub repo
 
-3. **Add scroll-to-top inside `findElement` for navigated steps**: Before calling `updateTargetRect()`, force a `window.scrollTo({ top: 0 })` so the measured `getBoundingClientRect()` values are correct relative to the viewport at scroll position 0.
+2. **Clone and install** on your Mac:
+   ```
+   git clone <your-repo-url>
+   cd <your-project>
+   npm install
+   ```
 
-### Technical Detail
+3. **Add the iOS platform**:
+   ```
+   npx cap add ios
+   ```
 
-The key fix in the `findElement` function:
-```typescript
-const findElement = () => {
-  // Ensure we're at the top before measuring
-  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  
-  const found = updateTargetRect();
-  if (found) {
-    setIsNavigating(false);
-    setTimeout(() => setIsAnimating(false), 350);
-  } else {
-    setTimeout(findElement, 100);
-  }
-};
-```
+4. **Build the web app and sync it to the native project**:
+   ```
+   npm run build
+   npx cap sync ios
+   ```
 
-And for the final step, use repeated scroll attempts:
-```typescript
-if (isFinalStep) {
-  const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  navigate('/');
-  scrollToTop();
-  setTimeout(scrollToTop, 100);
-  setTimeout(scrollToTop, 300);
-  // ...
-}
-```
+5. **Open in Xcode**:
+   ```
+   npx cap open ios
+   ```
+
+6. **In Xcode**:
+   - Sign in with your Apple Developer account (Xcode > Settings > Accounts)
+   - Select your Team under Signing and Capabilities
+   - Set a Display Name and Bundle Identifier
+   - Choose a connected iPhone or simulator, then hit Run to test
+
+7. **Submit to App Store**:
+   - In Xcode, select "Any iOS Device" as the target
+   - Go to Product > Archive
+   - Once archived, click "Distribute App" > "App Store Connect"
+   - Follow the prompts to upload
+   - Go to [App Store Connect](https://appstoreconnect.apple.com), fill in your app listing (screenshots, description, etc.), and submit for review
+
+## Requirements
+
+- A Mac with Xcode installed (free from the Mac App Store)
+- An Apple Developer account ($99/year) -- needed to publish to the App Store
+- An iPhone or simulator for testing
+
+## What This Does NOT Change
+
+- Your existing web app at jazz-scene-alive.lovable.app stays exactly the same
+- The PWA install flow continues to work
+- No changes to any existing components, routing, or service worker logic
+
+## Technical Details
+
+- **App ID**: `app.lovable.b0e3704a3b8b44b8b0820d726401d97a`
+- **App Name**: `Noteshare`
+- **Capacitor config** includes a dev server URL pointing to your Lovable preview so you can hot-reload during development on a physical device
+- When you're ready to publish, you'll remove the `server.url` from the config so the app uses the bundled build instead
 
