@@ -321,15 +321,7 @@ const Profile = () => {
                         achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
                       />
                     )}
-                    {/* Noteshare Creator badge - always rightmost */}
-                    {profile?.id === NOTESHARE_TEAM_PROFILE_ID && (
-                      <TapTooltip 
-                        content={<p>Noteshare Creator</p>}
-                        className="w-8 h-8 bg-primary/10 border-primary/30 ring-primary/20 border ring-1 hover:opacity-80 transition-opacity"
-                      >
-                        <Music className="w-4 h-4 text-primary" />
-                      </TapTooltip>
-                    )}
+                    {/* Noteshare Creator badge - temporarily hidden */}
                   </div>
                 </div>
               )}
