@@ -222,30 +222,15 @@ export function UserSearch({ compact }: UserSearchProps = {}) {
                   <p className="font-medium text-sm truncate">{user.name}</p>
                   <p className="text-xs text-muted-foreground truncate mb-1">@{user.username}</p>
                   <div className="flex flex-wrap items-center gap-1">
-                    {/* Noteshare Team badge - show first for Matteo */}
-                    {user.id === NOTESHARE_TEAM_PROFILE_ID && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge className="text-xs py-0 px-1.5 gap-0.5 bg-primary/15 text-primary border-primary/30 cursor-default">
-                              <Shield className="w-3 h-3" />
-                              Noteshare Team
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Noteshare Creator</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
+                    {/* Noteshare Team badge - temporarily hidden */}
                     {user.mutualCount > 0 && (
                       <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-0.5">
                         <Users className="w-3 h-3" />
                         {user.mutualCount} mutual
                       </Badge>
                     )}
-                    {/* Don't show other badges for Noteshare Team member */}
-                    {user.id !== NOTESHARE_TEAM_PROFILE_ID && user.reasons.filter(r => r !== 'mutual').map((reason) => (
+                    {/* Show all badges for everyone now that Team badge is hidden */}
+                    {user.reasons.filter(r => r !== 'mutual').map((reason) => (
                       <ReasonBadge 
                         key={reason} 
                         reason={reason} 
