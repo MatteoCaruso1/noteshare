@@ -375,21 +375,7 @@ const PublicProfile = () => {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
-                {profile.id === NOTESHARE_TEAM_PROFILE_ID && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge className="text-xs py-0.5 px-2 gap-1 bg-primary/15 text-primary border-primary/30 w-fit cursor-default">
-                          <Paintbrush className="w-3 h-3" />
-                          Noteshare Creator
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Noteshare Creator</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                {/* Noteshare Creator badge - temporarily hidden */}
                 {profile.location && (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {profile.location}
