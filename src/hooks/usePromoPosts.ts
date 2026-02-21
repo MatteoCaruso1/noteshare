@@ -41,41 +41,18 @@ export function useMyPromoPosts(authorId: string | undefined) {
       }));
     },
     enabled: !!authorId,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
 export function useFriendsPromoPosts() {
+  const { data: friendIds } = useFriendIds();
+
   return useQuery({
-    queryKey: ['friends-promo-posts'],
+    queryKey: ['friends-promo-posts', friendIds],
     queryFn: async () => {
-      // First get the current user's profile ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!friendIds || friendIds.length === 0) return [];
 
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!currentProfile) return [];
-
-      // Get friend IDs from accepted friendships
-      const { data: friendships, error: friendshipsError } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${currentProfile.id},addressee_id.eq.${currentProfile.id}`);
-
-      if (friendshipsError) throw friendshipsError;
-
-      const friendIds = friendships.map(f => 
-        f.requester_id === currentProfile.id ? f.addressee_id : f.requester_id
-      );
-
-      if (friendIds.length === 0) return [];
-
-      // Get promo posts from friends only
       const { data, error } = await supabase
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
@@ -88,6 +65,8 @@ export function useFriendsPromoPosts() {
         author: post.profiles,
       }));
     },
+    enabled: !!friendIds && friendIds.length > 0,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

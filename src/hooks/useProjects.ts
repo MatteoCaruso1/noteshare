@@ -6,43 +6,36 @@ import { useFriendIds } from './useFriendIds';
 import { useAuth } from './useAuth';
 
 export function useProjects() {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', profile?.id],
     queryFn: async () => {
-      // Get current user's profile ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!profile?.id) return [];
 
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // Fetch owned + collab projects in parallel
+      const [ownedResult, collabResult] = await Promise.all([
+        supabase
+          .from('projects')
+          .select('*, profiles!projects_owner_id_fkey (*)')
+          .eq('owner_id', profile.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('projects')
+          .select('*, profiles!projects_owner_id_fkey (*)')
+          .contains('collaborator_ids', [profile.id])
+          .neq('owner_id', profile.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-      if (!currentProfile) return [];
+      if (ownedResult.error) throw ownedResult.error;
+      if (collabResult.error) throw collabResult.error;
 
-      // Fetch projects owned by user OR where user is a collaborator
-      const { data: ownedData, error: ownedError } = await supabase
-        .from('projects')
-        .select('*, profiles!projects_owner_id_fkey (*)')
-        .eq('owner_id', currentProfile.id)
-        .order('created_at', { ascending: false });
-
-      if (ownedError) throw ownedError;
-
-      // Fetch projects where user is a collaborator (RLS handles visibility)
-      const { data: collabData, error: collabError } = await supabase
-        .from('projects')
-        .select('*, profiles!projects_owner_id_fkey (*)')
-        .contains('collaborator_ids', [currentProfile.id])
-        .neq('owner_id', currentProfile.id)
-        .order('created_at', { ascending: false });
-
-      if (collabError) throw collabError;
-
-      const all = [...(ownedData || []), ...(collabData || [])];
+      const all = [...(ownedResult.data || []), ...(collabResult.data || [])];
       return all.map((p: any) => ({ ...p, owner: p.profiles })) as Project[];
     },
+    enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -104,37 +97,14 @@ export function useFriendsFeedProjects() {
 }
 
 export function useFriendsProjects() {
+  const { profile } = useAuth();
+  const { data: friendIds } = useFriendIds();
+
   return useQuery({
-    queryKey: ['friends-projects'],
+    queryKey: ['friends-projects', profile?.id, friendIds],
     queryFn: async () => {
-      // First get the current user's profile ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!profile?.id || !friendIds || friendIds.length === 0) return [];
 
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!currentProfile) return [];
-
-      // Get friend IDs from accepted friendships
-      const { data: friendships, error: friendshipsError } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${currentProfile.id},addressee_id.eq.${currentProfile.id}`);
-
-      if (friendshipsError) throw friendshipsError;
-
-      const friendIds = friendships.map(f => 
-        f.requester_id === currentProfile.id ? f.addressee_id : f.requester_id
-      );
-
-      if (friendIds.length === 0) return [];
-
-      // Get projects from friends only, excluding projects where user is a collaborator
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -147,12 +117,14 @@ export function useFriendsProjects() {
       if (error) throw error;
       // Filter out projects where the current user is a collaborator (those show in My Folders)
       return data
-        .filter((p: any) => !(p.collaborator_ids || []).includes(currentProfile.id))
+        .filter((p: any) => !(p.collaborator_ids || []).includes(profile.id))
         .map((project: any) => ({
           ...project,
           owner: project.profiles,
         }));
     },
+    enabled: !!profile?.id && !!friendIds && friendIds.length > 0,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

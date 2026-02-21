@@ -46,6 +46,7 @@ export function useWeeklyGoal(profileId: string | undefined) {
       return data as WeeklyGoal | null;
     },
     enabled: !!profileId,
+    staleTime: 2 * 60 * 1000,
   });
 
   // Fetch last week's goal for recap
@@ -65,6 +66,7 @@ export function useWeeklyGoal(profileId: string | undefined) {
       return data as WeeklyGoal | null;
     },
     enabled: !!profileId,
+    staleTime: 2 * 60 * 1000,
   });
 
   // Set weekly goal mutation
