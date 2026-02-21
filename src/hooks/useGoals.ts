@@ -17,7 +17,6 @@ export function useGoals(userId?: string) {
 
       if (error) throw error;
       
-      // Sort by priority then created_at
       const goals = (data as unknown as Goal[]).sort((a, b) => {
         if (a.priority !== b.priority) return a.priority - b.priority;
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
@@ -26,6 +25,7 @@ export function useGoals(userId?: string) {
       return goals;
     },
     enabled: !!userId,
+    staleTime: 60 * 1000,
   });
 }
 
