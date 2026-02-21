@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useTodaysFocus } from '@/hooks/useDailyFocus';
+import { useTodaysFocus, FOCUS_CACHE_KEY } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
 import { usePremium } from '@/contexts/PremiumContext';
@@ -23,10 +23,20 @@ export function TodaysFocus() {
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   const { toast: structuredToast } = useToast();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(() => {
+    try {
+      const raw = localStorage.getItem(FOCUS_CACHE_KEY);
+      if (raw) return (JSON.parse(raw) as { focus_text: string }).focus_text || '';
+    } catch {}
+    return '';
+  });
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(() => {
+    try {
+      return !!localStorage.getItem(FOCUS_CACHE_KEY);
+    } catch { return false; }
+  });
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   // isRestoring removed — CSS grid mirror approach makes it unnecessary
   const [isOpen, setIsOpen] = useState(() => {
@@ -694,8 +704,8 @@ export function TodaysFocus() {
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
   const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
 
-  // Loading state with stable min-height to prevent layout shifts
-  if (isLoading) {
+  // Loading state — only show skeleton if no cached data available
+  if (isLoading && !focus) {
     return (
       <Card className="bg-card border-border min-h-[60px]">
         <div className="px-3 py-4 sm:px-4 flex items-center gap-2">
