@@ -139,35 +139,27 @@ export function useStartSession() {
 
   return useMutation({
     mutationFn: async ({ userId, goals }: { userId: string; goals?: string }) => {
-      const result = await Promise.race([
-        (async () => {
-          // First, end any existing active sessions
-          await supabase
-            .from('practice_sessions')
-            .update({ is_active: false, ended_at: new Date().toISOString() })
-            .eq('user_id', userId)
-            .eq('is_active', true);
+      // First, end any existing active sessions
+      await supabase
+        .from('practice_sessions')
+        .update({ is_active: false, ended_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('is_active', true);
 
-          // Create new session
-          const { data, error } = await supabase
-            .from('practice_sessions')
-            .insert({
-              user_id: userId,
-              goals,
-              is_active: true,
-              started_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
+      // Create new session
+      const { data, error } = await supabase
+        .from('practice_sessions')
+        .insert({
+          user_id: userId,
+          goals,
+          is_active: true,
+          started_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
-          if (error) throw error;
-          return data as PracticeSession;
-        })(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Start session timed out')), 10000)
-        ),
-      ]);
-      return result;
+      if (error) throw error;
+      return data as PracticeSession;
     },
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * (attempt + 1), 3000),
