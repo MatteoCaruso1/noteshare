@@ -237,15 +237,19 @@ export function useSignedUrl(originalUrl: string | null | undefined, isPublic: b
                              fnError.message?.toLowerCase().includes('unauthorized') ||
                              fnError.message?.toLowerCase().includes('jwt');
           
-          if (isAuthError && retryCount < 3) {
-            console.log('[useSignedUrl] Auth error, retrying in 500ms... (attempt', retryCount + 1, ')');
-            setTimeout(() => setRetryCount(c => c + 1), 500);
+          if (isAuthError && retryCount < 5) {
+            console.log('[useSignedUrl] Auth error, retrying in 1000ms... (attempt', retryCount + 1, ')');
+            setTimeout(() => setRetryCount(c => c + 1), 1000);
             return;
           }
           
           console.error('[useSignedUrl] get-signed-url error:', fnError);
           setError(new Error(fnError.message));
-          setSignedUrl(originalUrl);
+          // For auth errors, keep signedUrl null so components can retry when auth stabilizes
+          // For non-auth errors, fall back to original URL
+          if (!isAuthError) {
+            setSignedUrl(originalUrl);
+          }
           return;
         }
 

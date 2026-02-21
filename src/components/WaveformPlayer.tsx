@@ -49,6 +49,13 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   // Get signed URL for private bucket access
   const { signedUrl, loading: urlLoading } = useSignedUrl(src);
 
+  // Reset error state when signedUrl changes so waveform gets another chance to load
+  useEffect(() => {
+    if (signedUrl) {
+      setError(false);
+    }
+  }, [signedUrl]);
+
   const formatTime = (seconds: number): string => {
     if (!isFinite(seconds) || isNaN(seconds)) return '--:--';
     const mins = Math.floor(seconds / 60);
