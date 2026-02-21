@@ -60,12 +60,14 @@ export function RichTextarea({
       const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
       const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
       
-      // Temporarily hide overflow to prevent browser from auto-scrolling during measurement
+      // Temporarily hide overflow and collapse to 0 to measure true scrollHeight.
+      // Using '0px' instead of 'auto' avoids iOS Safari's scroll-to-caret behavior
+      // that fires when the textarea momentarily resizes to its natural height.
       const prevOverflow = textarea.style.overflow;
       textarea.style.overflow = 'hidden';
+      textarea.style.height = '0px';
       
-      // Measure
-      textarea.style.height = 'auto';
+      // Measure and apply final height synchronously (single layout pass)
       const newHeight = Math.max(minHeight, textarea.scrollHeight);
       textarea.style.height = `${newHeight}px`;
       
