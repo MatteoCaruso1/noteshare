@@ -74,9 +74,17 @@ export function AppHeader() {
     if (!activeSession || !profile) return;
 
     // Navigate to home page and signal PracticeControls to open EndSessionDialog
-    navigate('/');
-    // Use a custom event so PracticeControls can pick it up
-    window.dispatchEvent(new CustomEvent('open-end-session-dialog'));
+    // Use setTimeout to ensure PracticeControls is mounted after navigation
+    if (location.pathname === '/') {
+      // Already on home page, just dispatch immediately
+      window.dispatchEvent(new CustomEvent('open-end-session-dialog'));
+    } else {
+      navigate('/');
+      // Wait for navigation + mount before dispatching
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('open-end-session-dialog'));
+      }, 300);
+    }
   };
 
   const isSessionActive = user && profile && activeSession;
