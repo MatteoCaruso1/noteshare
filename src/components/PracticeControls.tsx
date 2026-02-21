@@ -340,6 +340,18 @@ export function PracticeControls() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [profile?.id, queryClient]);
 
+  // Listen for "open-end-session-dialog" event from AppHeader
+  useEffect(() => {
+    const handler = () => {
+      if (activeSession) {
+        setManuallyCollapsed(false); // expand the card
+        setShowEndSessionDialog(true);
+      }
+    };
+    window.addEventListener('open-end-session-dialog', handler);
+    return () => window.removeEventListener('open-end-session-dialog', handler);
+  }, [activeSession]);
+
   // Live-updating timer - must be before early return
   const [, setTick] = useState(0);
   const isSessionPaused = !!activeSession?.paused_at;
