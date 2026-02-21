@@ -1,7 +1,6 @@
 import { Music, Clock, Square, Pause } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useActiveSession, useEndSession } from '@/hooks/useSessions';
-import { useCreateNote } from '@/hooks/useNotes';
+import { useActiveSession } from '@/hooks/useSessions';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,8 +14,6 @@ export function AppHeader() {
   const { user, profile } = useAuth();
   const { isPremium, isLoading: isPremiumLoading } = usePremium();
   const { data: activeSession } = useActiveSession(profile?.id);
-  const endSession = useEndSession();
-  const createNote = useCreateNote();
   const [elapsed, setElapsed] = useState('0:00');
 
   const isPaused = !!activeSession?.paused_at;
@@ -73,15 +70,13 @@ export function AppHeader() {
     return null;
   }
 
-  const handleEndSession = async () => {
+  const handleEndSession = () => {
     if (!activeSession || !profile) return;
 
-    await endSession.mutateAsync({ sessionId: activeSession.id, userId: profile.id });
-    createNote.mutate({
-      authorId: profile.id,
-      sessionId: activeSession.id,
-      visibility: 'friends',
-    });
+    // Navigate to home page and signal PracticeControls to open EndSessionDialog
+    navigate('/');
+    // Use a custom event so PracticeControls can pick it up
+    window.dispatchEvent(new CustomEvent('open-end-session-dialog'));
   };
 
   const isSessionActive = user && profile && activeSession;
@@ -162,7 +157,6 @@ export function AppHeader() {
                         variant="destructive"
                         className="flex-1 text-xs gap-1"
                         onClick={handleEndSession}
-                        disabled={endSession.isPending || createNote.isPending}
                       >
                         <Square className="w-3 h-3" />
                         End
