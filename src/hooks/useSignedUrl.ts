@@ -254,12 +254,27 @@ export function useSignedUrl(originalUrl: string | null | undefined, isPublic: b
         }
 
         const urlFromFn: string | undefined = data?.results?.[urlToSign];
-        const finalUrl = urlFromFn || originalUrl;
+        
+        // Validate that the returned URL is actually a usable signed URL, not just
+        // the input path echoed back (which happens when edge function auth fails gracefully)
+        const isUsableUrl = urlFromFn && (urlFromFn.startsWith('http') || urlFromFn.startsWith('blob:'));
+        const isActuallySigned = isUsableUrl && urlFromFn !== originalUrl;
+        
+        if (!isUsableUrl) {
+          // Edge function returned unusable path - don't cache, don't use
+          console.warn('[useSignedUrl] Edge function returned unusable URL, not caching:', urlFromFn);
+          setSignedUrl(null);
+          return;
+        }
+        
+        const finalUrl = urlFromFn;
         const expiresAt = Date.now() + 23 * 60 * 60 * 1000;
 
-        // Save to both caches
-        signedUrlCache.set(cacheKey, { url: finalUrl, expiresAt });
-        setCachedUrl(cacheKey, finalUrl, expiresAt);
+        // Only cache if we got a real signed URL (not the original echoed back)
+        if (isActuallySigned) {
+          signedUrlCache.set(cacheKey, { url: finalUrl, expiresAt });
+          setCachedUrl(cacheKey, finalUrl, expiresAt);
+        }
 
         setSignedUrl(finalUrl);
       } catch (err) {
@@ -395,17 +410,18 @@ export async function getSignedUrls(urls: string[]): Promise<Map<string, string>
     for (let i = 0; i < stillNeedSigning.length; i++) {
       const originalUrl = stillNeedSigning[i];
       const pathSigned = pathsToSignNow[i];
-      const finalUrl = returned[pathSigned] || originalUrl;
+      const returnedUrl = returned[pathSigned];
       
-      // Add to in-memory cache
-      signedUrlCache.set(pathSigned, { url: finalUrl, expiresAt });
+      // Validate that the returned URL is actually usable (not just the path echoed back)
+      const isUsable = returnedUrl && (returnedUrl.startsWith('http') || returnedUrl.startsWith('blob:'));
       
-      // Collect for persistent cache batch write
-      if (returned[pathSigned]) {
-        entriesToCache.push({ path: pathSigned, signedUrl: finalUrl, expiresAt });
+      if (isUsable) {
+        // Add to in-memory cache
+        signedUrlCache.set(pathSigned, { url: returnedUrl, expiresAt });
+        entriesToCache.push({ path: pathSigned, signedUrl: returnedUrl, expiresAt });
+        results.set(originalUrl, returnedUrl);
       }
-      
-      results.set(originalUrl, finalUrl);
+      // If not usable, don't set any result for this URL (don't cache bad data)
     }
 
     // Batch write to persistent cache

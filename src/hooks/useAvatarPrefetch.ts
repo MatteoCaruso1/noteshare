@@ -72,6 +72,8 @@ export function useAvatarPrefetch() {
         if (error || !data?.results?.[avatarPath]) return;
 
         const signedUrl = data.results[avatarPath];
+        // Validate the returned URL is actually signed, not the path echoed back
+        if (!signedUrl.startsWith('http')) return;
         await setCachedUrls([{
           path: avatarPath,
           signedUrl,
@@ -127,7 +129,7 @@ export function useAvatarPrefetch() {
         if (error || !data?.results) return;
 
         const entries = avatarsToFetch
-          .filter(path => data.results[path])
+          .filter(path => data.results[path] && data.results[path].startsWith('http'))
           .map(path => ({
             path,
             signedUrl: data.results[path],
