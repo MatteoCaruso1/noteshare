@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -9,6 +10,31 @@ interface DailyFocus {
   focus_text: string;
   created_at: string;
   updated_at: string;
+}
+
+export const FOCUS_CACHE_KEY = 'noteshare_focus_cache';
+
+function readFocusCache(): DailyFocus | null {
+  try {
+    const raw = localStorage.getItem(FOCUS_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as DailyFocus;
+  } catch {
+    return null;
+  }
+}
+
+function writeFocusCache(focus: DailyFocus) {
+  try {
+    localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify({
+      id: focus.id,
+      user_id: focus.user_id,
+      focus_date: focus.focus_date,
+      focus_text: focus.focus_text,
+      created_at: focus.created_at,
+      updated_at: focus.updated_at,
+    }));
+  } catch { /* quota exceeded — ignore */ }
 }
 
 // Get the user's local date as YYYY-MM-DD (timezone-safe)
@@ -69,7 +95,17 @@ export function useTodaysFocus() {
     },
     enabled: !!profile?.id,
     staleTime: 2 * 60 * 1000,
+    placeholderData: () => readFocusCache(),
   });
+
+  // Persist to localStorage whenever fresh data arrives
+  const freshData = query.data;
+  const isPlaceholder = query.isPlaceholderData;
+  useEffect(() => {
+    if (freshData && !isPlaceholder && freshData.focus_text !== undefined) {
+      writeFocusCache(freshData as DailyFocus);
+    }
+  }, [freshData, isPlaceholder]);
 
   // Upsert today's focus
   const updateFocus = useMutation({
