@@ -344,7 +344,7 @@ const PublicProfile = () => {
                 </AlertDialog>
               </div>
             )}
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4 mb-4 mt-2">
               <Avatar className="w-20 h-20 border-2 border-primary/20">
                 {avatarUrl ? (
                   <img 
