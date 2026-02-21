@@ -68,6 +68,7 @@ export function useTodaysFocus() {
       return null;
     },
     enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
   });
 
   // Upsert today's focus

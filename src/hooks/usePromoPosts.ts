@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PromoPost } from '@/types';
 import { useFriendIds } from './useFriendIds';
+import { useAuth } from './useAuth';
 
 export function usePromoPosts() {
   return useQuery({
@@ -110,24 +111,17 @@ export function usePaidGigs() {
 }
 
 export function useFeedGigs() {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: ['feed-gigs'],
+    queryKey: ['feed-gigs', profile?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!currentProfile) return [];
+      if (!profile?.id) return [];
 
       const { data, error } = await supabase
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
-        .eq('author_id', currentProfile.id)
+        .eq('author_id', profile.id)
         .eq('show_on_feed', true)
         .order('event_date', { ascending: false });
 
@@ -137,6 +131,8 @@ export function useFeedGigs() {
         author: post.profiles,
       }));
     },
+    enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

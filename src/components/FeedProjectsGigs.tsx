@@ -34,6 +34,7 @@ function useFeedProjects() {
       return data as Project[];
     },
     enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
