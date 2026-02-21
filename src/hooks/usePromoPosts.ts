@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PromoPost } from '@/types';
+import { useFriendIds } from './useFriendIds';
 
 export function usePromoPosts() {
   return useQuery({
@@ -140,36 +141,13 @@ export function useFeedGigs() {
 }
 
 export function useFriendsFeedGigs() {
+  const { data: friendIds } = useFriendIds();
+
   return useQuery({
     queryKey: ['friends-feed-gigs'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
+      if (!friendIds || friendIds.length === 0) return [];
 
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!currentProfile) return [];
-
-      // Get friend IDs from accepted friendships
-      const { data: friendships, error: friendshipsError } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${currentProfile.id},addressee_id.eq.${currentProfile.id}`);
-
-      if (friendshipsError) throw friendshipsError;
-
-      const friendIds = friendships.map(f => 
-        f.requester_id === currentProfile.id ? f.addressee_id : f.requester_id
-      );
-
-      if (friendIds.length === 0) return [];
-
-      // Get gigs from friends with show_on_feed enabled
       const { data, error } = await supabase
         .from('promo_posts')
         .select(`*, profiles!promo_posts_author_id_fkey (*)`)
@@ -183,6 +161,7 @@ export function useFriendsFeedGigs() {
         author: post.profiles,
       }));
     },
+    enabled: !!friendIds && friendIds.length > 0,
   });
 }
 

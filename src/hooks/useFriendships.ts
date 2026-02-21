@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
+import { useFriendIds } from './useFriendIds';
 import { Profile, FriendshipWithProfile, NoteWithAuthor } from '@/types';
 
 export function useFriendships() {
@@ -255,37 +256,14 @@ export function useSearchUsers(query: string) {
 }
 
 export function useFriendsNotes() {
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
+  const { data: friendIds } = useFriendIds();
 
   return useQuery({
     queryKey: ['friends-notes', profile?.id],
     queryFn: async () => {
-      if (!profile?.id || !user?.id) return [];
+      if (!friendIds || friendIds.length === 0) return [];
 
-      // First, get all friend IDs and muted friends in parallel
-      const [friendshipsResult, mutedResult] = await Promise.all([
-        supabase
-          .from('friendships')
-          .select('requester_id, addressee_id')
-          .eq('status', 'accepted')
-          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
-        supabase
-          .from('muted_friends')
-          .select('muted_friend_id')
-          .eq('user_id', user.id),
-      ]);
-
-      if (friendshipsResult.error) throw friendshipsResult.error;
-
-      const mutedIds = new Set((mutedResult.data || []).map(m => m.muted_friend_id));
-
-      const friendIds = friendshipsResult.data
-        .map(f => f.requester_id === profile.id ? f.addressee_id : f.requester_id)
-        .filter(id => !mutedIds.has(id)); // Filter out muted friends
-
-      if (friendIds.length === 0) return [];
-
-      // Fetch notes AND author profiles in parallel using a join
       const { data: notes, error: notesError } = await supabase
         .from('notes')
         .select(`
@@ -311,9 +289,9 @@ export function useFriendsNotes() {
         session: note.practice_sessions,
       })) as NoteWithAuthor[];
     },
-    enabled: !!profile?.id && !!user?.id,
-    staleTime: 60 * 1000, // Consider data fresh for 1 minute
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    enabled: !!profile?.id && !!friendIds && friendIds.length > 0,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
