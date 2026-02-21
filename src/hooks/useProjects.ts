@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Project } from '@/types';
 import { useFriendIds } from './useFriendIds';
+import { useAuth } from './useAuth';
 
 export function useProjects() {
   return useQuery({
@@ -46,19 +47,12 @@ export function useProjects() {
 }
 
 export function useFeedProjects() {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: ['feed-projects'],
+    queryKey: ['feed-projects', profile?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!currentProfile) return [];
+      if (!profile?.id) return [];
 
       const { data, error } = await supabase
         .from('projects')
@@ -66,7 +60,7 @@ export function useFeedProjects() {
           *,
           profiles!projects_owner_id_fkey (*)
         `)
-        .eq('owner_id', currentProfile.id)
+        .eq('owner_id', profile.id)
         .eq('show_on_feed', true)
         .order('created_at', { ascending: false });
 
@@ -76,6 +70,8 @@ export function useFeedProjects() {
         owner: project.profiles,
       }));
     },
+    enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

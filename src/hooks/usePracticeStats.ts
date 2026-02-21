@@ -357,9 +357,29 @@ export function usePracticeStats(profileId: string | undefined) {
         .then(() => {
           // Refresh the auth context profile to update streak display
           refreshProfile();
-          // Invalidate notes queries to refresh the nested profile data (for trophy badges)
-          queryClient.invalidateQueries({ queryKey: ['notes'] });
-          queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+          // Patch streak in cached notes data in-place (avoids full refetch cascade)
+          queryClient.setQueriesData<any[]>(
+            { queryKey: ['notes'] },
+            (oldData) => {
+              if (!oldData) return oldData;
+              return oldData.map((note: any) =>
+                note.author?.id === profileId
+                  ? { ...note, author: { ...note.author, current_streak: currentStreak } }
+                  : note
+              );
+            }
+          );
+          queryClient.setQueriesData<any[]>(
+            { queryKey: ['friends-notes'] },
+            (oldData) => {
+              if (!oldData) return oldData;
+              return oldData.map((note: any) =>
+                note.author?.id === profileId
+                  ? { ...note, author: { ...note.author, current_streak: currentStreak } }
+                  : note
+              );
+            }
+          );
         });
 
       return {

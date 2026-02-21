@@ -134,8 +134,9 @@ export function useNotes(projectId?: string) {
           goals!notes_goal_id_fkey (id, title, content),
           promo_posts!notes_gig_id_fkey (id, title)
         `)
-        .eq('author_id', profile.id)
-        .order('created_at', { ascending: false });
+      .eq('author_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
 
