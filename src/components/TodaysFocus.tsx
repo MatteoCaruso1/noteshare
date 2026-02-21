@@ -545,10 +545,17 @@ export function TodaysFocus() {
     }
     
     // Auto-convert "-" at line start to bullet (no space required)
-    if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
-      const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
+    const dashMatch = lineBeforeCursor.match(/^(\s*)-$/);
+    if (dashMatch) {
+      const indent = dashMatch[1];
       value = value.substring(0, lineStart) + indent + '• ' + value.substring(cursorPos);
       cursorPos = lineStart + indent.length + 2;
+      
+      // Check if there's already a character after the cursor to auto-capitalize
+      const charAfter = value[cursorPos];
+      if (charAfter && /[a-z]/.test(charAfter)) {
+        value = value.substring(0, cursorPos) + charAfter.toUpperCase() + value.substring(cursorPos + 1);
+      }
       
       handleTextChange(value);
       setTimeout(() => {
