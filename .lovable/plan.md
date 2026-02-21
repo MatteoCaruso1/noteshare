@@ -1,63 +1,29 @@
 
 
-# Fix iOS Lock/Unlock Pause Bug + Session Resiliency
+# Fix "Failed to Start Session" on First Attempt
 
 ## Problem
-When you lock your phone during a practice session and unlock it, the Pause button appears greyed out and eventually shows "Failed to pause session." This happens because:
+When opening the app on mobile and immediately starting a practice session, the first attempt fails with "Failed to start session." The second attempt works fine. This is a transient network issue — the first request hits a cold connection (DNS lookup, TLS handshake, or database cold start), and the mutation has no retry mechanism.
 
-1. The pause/resume mutations have no optimistic updates -- they wait for the server response before updating the UI
-2. After iOS backgrounds the app, network requests can stall or fail silently
-3. There's no retry mechanism, so a single network hiccup kills the action
-4. The session data cache can become stale after backgrounding
+## Root Cause
+`useStartSession` already has optimistic updates but lacks retry logic. The pause/resume mutations were just given `retry: 2` in the previous fix, but `useStartSession` was left without it.
 
-## Solution
-
-### 1. Add Optimistic Updates to Pause/Resume (useSessions.ts)
-Currently `usePauseSession` and `useResumeSession` only update the UI after the server responds. We'll add `onMutate` handlers that immediately update the cached session data (like `useStartSession` and `useEndSession` already do), with rollback on error.
-
-- `usePauseSession`: Optimistically set `paused_at` to now in the cache
-- `useResumeSession`: Optimistically clear `paused_at` and update `paused_duration_ms` in the cache
-- Both: Cancel in-flight refetches, snapshot previous data, rollback on error
-
-### 2. Add Retry Logic to Pause/Resume Mutations (useSessions.ts)
-Add `retry: 2` with a short delay so transient network failures after iOS resume are handled automatically.
-
-### 3. Force Session Refresh on App Resume (PracticeControls.tsx)
-Add a `visibilitychange` listener that, when the app returns to foreground, forces a refetch of the active session query. This ensures stale cached data is replaced with fresh server state.
-
-### 4. Add Mutation Timeout Safety Net (useSessions.ts)
-Wrap the pause/resume mutation functions with an AbortController timeout (10 seconds) so they don't hang indefinitely if the network is in a bad state after backgrounding.
-
-## Technical Details
+## Fix
 
 ### File: `src/hooks/useSessions.ts`
 
-**usePauseSession changes:**
-- Add `onMutate` that cancels queries, snapshots previous session, and optimistically sets `paused_at` on the cached active session
-- Add rollback in `onError`
-- Add `retry: 2` to the mutation config
-- Persist optimistic update to localStorage
+Add retry and timeout to `useStartSession`, matching the pattern already used for pause/resume:
 
-**useResumeSession changes:**
-- Add `onMutate` that cancels queries, snapshots previous session, and optimistically clears `paused_at` and computes `paused_duration_ms`
-- Add rollback in `onError`
-- Add `retry: 2` to the mutation config
-- Persist optimistic update to localStorage
+1. **Add `retry: 2`** with increasing delay (1s, 2s) so transient failures auto-recover without the user seeing an error
+2. **Add AbortController timeout (10s)** to prevent the mutation from hanging indefinitely on a stalled connection
+3. The optimistic update and rollback logic already exists and will continue working correctly with retries
 
-Both mutations will need to accept `userId` as a parameter (in addition to `sessionId`) so they can target the correct query cache key.
+### Technical Details
 
-### File: `src/components/PracticeControls.tsx`
+Changes to `useStartSession` mutation config:
+- Wrap `mutationFn` body with a 10-second `AbortController` timeout (same pattern as pause/resume)
+- Add `retry: 2` and `retryDelay` to the mutation options
+- No changes to `onMutate`, `onSuccess`, or `onError` — those are already correct
 
-**Visibility change handler:**
-- Add a `useEffect` that listens to `document.visibilitychange`
-- When the app becomes visible, invalidate the `active-session` query to force a fresh fetch
-- This ensures the UI syncs with reality after iOS lock/unlock
+This is a small, surgical change to one mutation. No other files need modification.
 
-**Update pause/resume calls:**
-- Pass `userId` (from `profile.id`) alongside `sessionId` to the updated mutation hooks
-
-## What This Does NOT Change
-- No database or schema changes
-- No changes to session start/end flow (those already have optimistic updates)
-- No changes to the UI layout or design
-- PWA and web behavior unaffected
