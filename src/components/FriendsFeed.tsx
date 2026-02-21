@@ -1,7 +1,8 @@
-import { memo, useMemo, useEffect } from 'react';
+import { memo, useMemo, useEffect, useRef } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { useFriendsFeedProjects } from '@/hooks/useProjects';
 import { useFriendsFeedGigs } from '@/hooks/usePromoPosts';
+import { batchFetchApplause } from '@/hooks/useNotes';
 import { NoteCard } from './NoteCard';
 import { FeedItemCard, FeedItem } from './FeedItemCard';
 import { FriendsFeedSkeleton } from './FriendsFeedSkeleton';
@@ -151,37 +152,23 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     prefetchAvatars();
   }, [notes, displayCount]);
 
-  // Prefetch applause data for visible notes to prevent footer loading jank
+  // Batch-prefetch applause for all visible notes in a single query
+  const seededNoteIdsRef = useRef(new Set<string>());
   useEffect(() => {
     if (!notes || notes.length === 0) return;
 
-    // Prefetch applause for the first batch of notes
-    const notesToPrefetch = notes.slice(0, displayCount);
-    notesToPrefetch.forEach(note => {
-      // Only prefetch if not already in cache
-      const existing = queryClient.getQueryData(['applause', note.id]);
-      if (!existing) {
-        queryClient.prefetchQuery({
-          queryKey: ['applause', note.id],
-          queryFn: async () => {
-            const { data, error } = await supabase
-              .from('applause')
-              .select(`
-                id,
-                note_id,
-                user_id,
-                created_at,
-                profile:profiles!applause_user_id_fkey(id, name, avatar)
-              `)
-              .eq('note_id', note.id)
-              .order('created_at', { ascending: true });
+    const unseededIds = notes
+      .slice(0, displayCount)
+      .map(n => n.id)
+      .filter(id => !seededNoteIdsRef.current.has(id));
 
-            if (error) throw error;
-            return data || [];
-          },
-          staleTime: 30000,
-        });
-      }
+    if (unseededIds.length === 0) return;
+
+    batchFetchApplause(unseededIds).then(applauseMap => {
+      applauseMap.forEach((applauseList, noteId) => {
+        queryClient.setQueryData(['applause', noteId], applauseList);
+        seededNoteIdsRef.current.add(noteId);
+      });
     });
   }, [notes, displayCount, queryClient]);
 

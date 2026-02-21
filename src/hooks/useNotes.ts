@@ -7,7 +7,7 @@ import { useAuth } from './useAuth';
 import { ApplauseWithProfile } from './useApplause';
 
 // Batch-fetch applause for multiple notes and seed the query cache
-async function batchFetchApplause(noteIds: string[]): Promise<Map<string, ApplauseWithProfile[]>> {
+export async function batchFetchApplause(noteIds: string[]): Promise<Map<string, ApplauseWithProfile[]>> {
   if (noteIds.length === 0) return new Map();
   
   const { data, error } = await supabase
