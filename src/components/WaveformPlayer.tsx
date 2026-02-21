@@ -37,6 +37,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const playStartTimeoutRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -174,11 +175,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    wavesurfer.on('audioprocess', () => {
-      if (isMounted) {
-        setCurrentTime(wavesurfer.getCurrentTime());
-      }
-    });
+    // audioprocess removed — replaced by rAF polling loop below
 
     wavesurfer.on('seeking', () => {
       if (isMounted) {
@@ -252,6 +249,35 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     };
   }, [signedUrl, urlLoading, onError, instanceId]);
+
+  // rAF polling loop for reliable currentTime updates (replaces audioprocess)
+  useEffect(() => {
+    if (!isPlaying || !isReady) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      return;
+    }
+
+    const tick = () => {
+      const ws = wavesurferRef.current;
+      if (ws) {
+        try {
+          setCurrentTime(ws.getCurrentTime());
+        } catch { /* wavesurfer destroyed */ }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [isPlaying, isReady]);
 
   // Fallback to native audio if waveform fails
   const isSepia = variant === 'sepia';
