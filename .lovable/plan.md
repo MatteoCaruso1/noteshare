@@ -1,58 +1,44 @@
 
 
-# Speed Up Practice Board Load on App Return
+## Problem Analysis
 
-## Problem
+There are two related issues happening:
 
-When returning to the app during a session, the Practice Board takes 7-8 seconds to appear because of this waterfall:
+1. **Unexpected page reload**: The service worker (SW) auto-update strategy in `main.tsx` forces a `window.location.reload()` whenever a new SW version takes control. This can happen at any time, including while the user is actively on the practice page.
 
-```text
-1. [Auth] getSession -> fetchProfile (2-4s on cold mobile connection)
-2. [useTodaysFocus] enabled: !!profile?.id -> fires query
-3. [daily_focus query 1] try today's focus -> maybe empty
-4. [daily_focus query 2] fallback to recent focus -> return data
-5. [TodaysFocus] isInitialized -> setText -> render
-```
+2. **Waveform shows "error" after reload**: After the SW-triggered reload, the auth state takes a moment to initialize. The `useSignedUrl` hook calls the backend to sign the audio URL, but the auth token isn't ready yet. On auth failure, the hook **falls back to the unsigned original URL** (`setSignedUrl(originalUrl)` on line 248 of `useSignedUrl.ts`). WaveSurfer then tries to load this unsigned URL, gets a 403, and enters the error state permanently -- there is no recovery path.
 
-Each step is sequential -- nothing can start until the previous step finishes. On a cold mobile connection, steps 1-4 alone take 5-7 seconds.
+## Root Cause
 
-## Solution
+In `useSignedUrl.ts`, when the edge function call fails with an auth error after 3 retries (1.5s total), the hook gives up and sets `signedUrl` to the raw, unsigned storage path. This path is not loadable, so WaveSurfer fails and shows the error UI. Post-SW-reload, auth can take longer than 1.5s to propagate, so the retry window is too short.
 
-Cache the focus text in localStorage so it renders immediately on mount, before auth or any database query completes.
+## Fix Plan
 
-### File: `src/hooks/useDailyFocus.ts`
+### 1. Fix `useSignedUrl.ts` -- Don't fall back to unusable URLs on auth errors
 
-- After a successful fetch in `useTodaysFocus`, persist the result to `localStorage` (key: `noteshare_focus_cache`)
-- Use the cached value as React Query's `placeholderData` so the component gets data instantly on mount, even before `profile?.id` is available
-- The background fetch will silently replace the cached data once it arrives
+- When an auth error occurs and retries are exhausted, do NOT set `signedUrl` to the original unsigned URL (which will always fail to load).
+- Instead, keep `signedUrl` as `null` and increase the retry window: bump max retries from 3 to 5 and delay from 500ms to 1000ms. This gives ~5 seconds for auth to stabilize after a reload.
+- Only fall back to `originalUrl` for non-auth errors (e.g., the URL is genuinely broken).
 
-### File: `src/components/TodaysFocus.tsx`
+### 2. Fix `WaveformPlayer.tsx` -- Add error recovery on signedUrl change
 
-- Read the cached focus text from localStorage during initial state setup for `text`, so the textarea has content immediately
-- Skip the loading skeleton when cached data is available -- show the real UI with cached content instead
-- The existing `isInitialized` guard will update text once the fresh fetch completes (if different)
+- When `signedUrl` changes (e.g., auth eventually succeeds and a valid URL arrives), the existing `useEffect` already re-initializes WaveSurfer. But if `error` was set to `true`, the component renders the fallback `<audio>` element and never re-tries the waveform.
+- Add: when `signedUrl` changes, reset the `error` state to `false` so the waveform gets another chance to load.
 
-### After the fix:
+### 3. Suppress disruptive SW reloads in `main.tsx`
 
-```text
-Mount -> read localStorage cache -> render Practice Board immediately (0ms)
-Background: [Auth] -> [useTodaysFocus] -> silently updates if data changed
-```
+- Prevent `window.location.reload()` from firing while the user is actively on the page (i.e., `document.visibilityState === 'visible'`).
+- Instead, defer the reload until the next time the page becomes hidden (user switches tabs or locks phone) and then visible again. This avoids jarring mid-use reloads while still ensuring users get updates promptly.
 
 ## Technical Details
 
-### `src/hooks/useDailyFocus.ts` changes:
-- Add a `FOCUS_CACHE_KEY` constant
-- In `useTodaysFocus`, after the query returns data, write `{ focus_text, focus_date, id }` to localStorage
-- Add `placeholderData` to the query options that reads from localStorage, so React Query returns data immediately before the network fetch
+### `src/hooks/useSignedUrl.ts`
+- Change retry count from 3 to 5 and delay from 500ms to 1000ms
+- On auth error after all retries exhausted: set `signedUrl(null)` instead of `signedUrl(originalUrl)`
 
-### `src/components/TodaysFocus.tsx` changes:
-- Initialize `text` state from the localStorage cache (same key) instead of empty string
-- Set `isInitialized` to `true` if cache was found (so the component doesn't flash empty then filled)
-- Change the loading condition: only show skeleton if `isLoading && !focus` (i.e., no cached placeholder data available)
+### `src/components/WaveformPlayer.tsx`
+- Add a `useEffect` that resets `error` to `false` when `signedUrl` changes, giving the waveform a fresh chance to load
 
-### No changes to:
-- Database schema or queries
-- Any other components or hooks
-- The save/upsert logic
+### `src/main.tsx`
+- In the `controllerchange` listener, check `document.visibilityState`. If `'visible'`, defer reload to next `visibilitychange` event (hidden then visible) rather than reloading immediately mid-session
 
