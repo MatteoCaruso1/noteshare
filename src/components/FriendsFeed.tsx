@@ -53,6 +53,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
   const queryClient = useQueryClient();
 
   const isLoading = notesLoading || projectsLoading || gigsLoading;
+  const hasLoadedOnce = notes !== undefined && feedProjects !== undefined && feedGigs !== undefined;
 
   // Convert projects and gigs to FeedItem format
   const feedItems: FeedItem[] = useMemo(() => {
@@ -246,7 +247,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     return <FriendsFeedSkeleton count={skeletonCount} />;
   }
 
-  if (mergedTimeline.length === 0) {
+  if (mergedTimeline.length === 0 && hasLoadedOnce) {
     return (
       <Card className="p-8 bg-card border-border text-center">
         <div className="flex justify-center mb-4">
