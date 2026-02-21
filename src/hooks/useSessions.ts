@@ -312,27 +312,61 @@ export function usePauseSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (sessionId: string) => {
-      const { data, error } = await supabase
-        .from('practice_sessions')
-        .update({
-          paused_at: new Date().toISOString(),
-        })
-        .eq('id', sessionId)
-        .select()
-        .single();
+    mutationFn: async ({ sessionId }: { sessionId: string; userId: string }) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
-      if (error) throw error;
-      return data as PracticeSession;
+      try {
+        const { data, error } = await supabase
+          .from('practice_sessions')
+          .update({
+            paused_at: new Date().toISOString(),
+          })
+          .eq('id', sessionId)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data as PracticeSession;
+      } finally {
+        clearTimeout(timeout);
+      }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+    onMutate: async ({ sessionId, userId }) => {
+      const key = ['active-session', userId] as const;
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: key });
+
+      // Snapshot the previous value
+      const previousSession = queryClient.getQueryData<PracticeSession | null>(key);
+
+      // Optimistically set paused_at
+      if (previousSession) {
+        const optimistic = { ...previousSession, paused_at: new Date().toISOString() };
+        queryClient.setQueryData(key, optimistic);
+        persistActiveSession(optimistic, userId);
+      }
+
+      return { previousSession, key, userId };
+    },
+    onSuccess: (data, { userId }) => {
+      const key = ['active-session', userId] as const;
+      queryClient.setQueryData(key, data);
+      persistActiveSession(data, userId);
       toast.success('Session paused');
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.key && context?.previousSession !== undefined) {
+        queryClient.setQueryData(context.key, context.previousSession);
+        persistActiveSession(context.previousSession as PracticeSession | null, context.userId);
+      }
       console.error('Error pausing session:', error);
       toast.error('Failed to pause session');
     },
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * (attemptIndex + 1), 3000),
   });
 }
 
@@ -340,42 +374,84 @@ export function useResumeSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (sessionId: string) => {
-      // First get the current session to calculate paused duration
-      const { data: session, error: fetchError } = await supabase
-        .from('practice_sessions')
-        .select('paused_at, paused_duration_ms')
-        .eq('id', sessionId)
-        .single();
+    mutationFn: async ({ sessionId, userId }: { sessionId: string; userId: string }) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
-      if (fetchError) throw fetchError;
+      try {
+        // First get the current session to calculate paused duration
+        const { data: session, error: fetchError } = await supabase
+          .from('practice_sessions')
+          .select('paused_at, paused_duration_ms')
+          .eq('id', sessionId)
+          .single();
 
-      // Calculate additional paused time
-      const pausedAt = session?.paused_at ? new Date(session.paused_at) : null;
-      const additionalPausedMs = pausedAt ? Date.now() - pausedAt.getTime() : 0;
-      const newPausedDurationMs = (session?.paused_duration_ms || 0) + additionalPausedMs;
+        if (fetchError) throw fetchError;
 
-      const { data, error } = await supabase
-        .from('practice_sessions')
-        .update({
+        // Calculate additional paused time
+        const pausedAt = session?.paused_at ? new Date(session.paused_at) : null;
+        const additionalPausedMs = pausedAt ? Date.now() - pausedAt.getTime() : 0;
+        const newPausedDurationMs = (session?.paused_duration_ms || 0) + additionalPausedMs;
+
+        const { data, error } = await supabase
+          .from('practice_sessions')
+          .update({
+            paused_at: null,
+            paused_duration_ms: newPausedDurationMs,
+          })
+          .eq('id', sessionId)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data as PracticeSession;
+      } finally {
+        clearTimeout(timeout);
+      }
+    },
+    onMutate: async ({ sessionId, userId }) => {
+      const key = ['active-session', userId] as const;
+
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: key });
+
+      // Snapshot the previous value
+      const previousSession = queryClient.getQueryData<PracticeSession | null>(key);
+
+      // Optimistically clear paused_at and compute paused_duration_ms
+      if (previousSession && previousSession.paused_at) {
+        const pausedAt = new Date(previousSession.paused_at);
+        const additionalPausedMs = Date.now() - pausedAt.getTime();
+        const newPausedDurationMs = (previousSession.paused_duration_ms || 0) + additionalPausedMs;
+
+        const optimistic = {
+          ...previousSession,
           paused_at: null,
           paused_duration_ms: newPausedDurationMs,
-        })
-        .eq('id', sessionId)
-        .select()
-        .single();
+        };
+        queryClient.setQueryData(key, optimistic);
+        persistActiveSession(optimistic, userId);
+      }
 
-      if (error) throw error;
-      return data as PracticeSession;
+      return { previousSession, key, userId };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['active-session'] });
+    onSuccess: (data, { userId }) => {
+      const key = ['active-session', userId] as const;
+      queryClient.setQueryData(key, data);
+      persistActiveSession(data, userId);
       toast.success('Session resumed');
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.key && context?.previousSession !== undefined) {
+        queryClient.setQueryData(context.key, context.previousSession);
+        persistActiveSession(context.previousSession as PracticeSession | null, context.userId);
+      }
       console.error('Error resuming session:', error);
       toast.error('Failed to resume session');
     },
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * (attemptIndex + 1), 3000),
   });
 }
 
