@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession, useDeleteSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
@@ -90,6 +91,7 @@ function getTodayLocalDate(): string {
 
 export function PracticeControls() {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const { data: activeSession } = useActiveSession(profile?.id);
   const { data: projects } = useProjects();
   const { data: goals } = useGoals(profile?.id);
@@ -327,6 +329,17 @@ export function PracticeControls() {
     };
   }, [activeSession]);
 
+  // Force session refresh when app returns to foreground (iOS lock/unlock fix)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && profile?.id) {
+        queryClient.invalidateQueries({ queryKey: ['active-session', profile.id] });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [profile?.id, queryClient]);
+
   // Live-updating timer - must be before early return
   const [, setTick] = useState(0);
   const isSessionPaused = !!activeSession?.paused_at;
@@ -345,13 +358,13 @@ export function PracticeControls() {
 
   const handlePauseSession = () => {
     if (activeSession) {
-      pauseSession.mutate(activeSession.id);
+      pauseSession.mutate({ sessionId: activeSession.id, userId: profile.id });
     }
   };
 
   const handleResumeSession = () => {
     if (activeSession) {
-      resumeSession.mutate(activeSession.id);
+      resumeSession.mutate({ sessionId: activeSession.id, userId: profile.id });
     }
   };
 
