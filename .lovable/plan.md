@@ -1,55 +1,63 @@
 
 
-# SEO Improvements for Noteshare
+# Fix iOS Lock/Unlock Pause Bug + Session Resiliency
 
 ## Problem
-1. Google shows the Lovable logo as favicon instead of the Noteshare icon
-2. "noteshare music" search doesn't surface the site well
-3. Several SEO fundamentals are missing
+When you lock your phone during a practice session and unlock it, the Pause button appears greyed out and eventually shows "Failed to pause session." This happens because:
 
-## Changes
+1. The pause/resume mutations have no optimistic updates -- they wait for the server response before updating the UI
+2. After iOS backgrounds the app, network requests can stall or fail silently
+3. There's no retry mechanism, so a single network hiccup kills the action
+4. The session data cache can become stale after backgrounding
 
-### 1. Replace Favicon with Noteshare Icon
-The current `favicon.png` and `favicon.ico` are Lovable defaults. We'll replace them with your actual Noteshare icon (the same one used for PWA icons) so Google and browsers show the correct brand.
+## Solution
 
-- Replace `public/favicon.png` with the Noteshare logo
-- Replace `public/favicon.ico` with the Noteshare logo
-- This will also fix the browser tab icon
+### 1. Add Optimistic Updates to Pause/Resume (useSessions.ts)
+Currently `usePauseSession` and `useResumeSession` only update the UI after the server responds. We'll add `onMutate` handlers that immediately update the cached session data (like `useStartSession` and `useEndSession` already do), with rollback on error.
 
-### 2. Add a Sitemap
-Create a `public/sitemap.xml` that tells Google about your pages. This helps with discovery and indexing.
+- `usePauseSession`: Optimistically set `paused_at` to now in the cache
+- `useResumeSession`: Optimistically clear `paused_at` and update `paused_duration_ms` in the cache
+- Both: Cancel in-flight refetches, snapshot previous data, rollback on error
 
-### 3. Update robots.txt
-Add a reference to the sitemap so crawlers can find it automatically.
+### 2. Add Retry Logic to Pause/Resume Mutations (useSessions.ts)
+Add `retry: 2` with a short delay so transient network failures after iOS resume are handled automatically.
 
-### 4. Add Structured Data (JSON-LD)
-Add a `WebApplication` schema to `index.html` so Google understands what Noteshare is — a music practice tool. This can improve how your site appears in search results.
+### 3. Force Session Refresh on App Resume (PracticeControls.tsx)
+Add a `visibilitychange` listener that, when the app returns to foreground, forces a refetch of the active session query. This ensures stale cached data is replaced with fresh server state.
 
-### 5. Fix Canonical URL
-The canonical URL currently points to `https://noteshare.app`. If that domain isn't set up yet, this actually hurts SEO because Google sees a mismatch. We should either:
-- Point it to `https://jazz-scene-alive.lovable.app` (current live URL), or
-- Keep it as `noteshare.app` if you plan to connect that custom domain soon
-
-### 6. Improve Meta Description
-Rework the meta description to be more keyword-rich for "noteshare music" searches while staying natural.
-
-## What This Won't Fix
-- **Google indexing takes time** — even after these changes, it can take days to weeks for Google to re-crawl and update results
-- **SPA rendering** — since this is a client-side React app, Google's crawler may not fully render all content. For deeper SEO (like per-page meta tags), a server-side rendering solution would be needed, which is outside Lovable's scope
-- **Domain authority** — a new site needs backlinks and time to rank well
+### 4. Add Mutation Timeout Safety Net (useSessions.ts)
+Wrap the pause/resume mutation functions with an AbortController timeout (10 seconds) so they don't hang indefinitely if the network is in a bad state after backgrounding.
 
 ## Technical Details
 
-### Files to create
-- `public/sitemap.xml` — lists main routes (/, /auth, /welcome)
+### File: `src/hooks/useSessions.ts`
 
-### Files to modify
-- `public/favicon.png` — replace with Noteshare icon (we'll use the existing `pwa-icon-512.png` resized, or you can upload a dedicated favicon)
-- `public/robots.txt` — add `Sitemap:` directive
-- `index.html` — add JSON-LD structured data, update meta description with better keywords, fix OG image URLs
+**usePauseSession changes:**
+- Add `onMutate` that cancels queries, snapshots previous session, and optimistically sets `paused_at` on the cached active session
+- Add rollback in `onError`
+- Add `retry: 2` to the mutation config
+- Persist optimistic update to localStorage
 
-### No impact on
-- Existing app functionality
-- PWA behavior
-- Any components or routing
+**useResumeSession changes:**
+- Add `onMutate` that cancels queries, snapshots previous session, and optimistically clears `paused_at` and computes `paused_duration_ms`
+- Add rollback in `onError`
+- Add `retry: 2` to the mutation config
+- Persist optimistic update to localStorage
 
+Both mutations will need to accept `userId` as a parameter (in addition to `sessionId`) so they can target the correct query cache key.
+
+### File: `src/components/PracticeControls.tsx`
+
+**Visibility change handler:**
+- Add a `useEffect` that listens to `document.visibilitychange`
+- When the app becomes visible, invalidate the `active-session` query to force a fresh fetch
+- This ensures the UI syncs with reality after iOS lock/unlock
+
+**Update pause/resume calls:**
+- Pass `userId` (from `profile.id`) alongside `sessionId` to the updated mutation hooks
+
+## What This Does NOT Change
+- No database or schema changes
+- No changes to session start/end flow (those already have optimistic updates)
+- No changes to the UI layout or design
+- PWA and web behavior unaffected
