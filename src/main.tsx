@@ -39,11 +39,24 @@ if ("serviceWorker" in navigator) {
       });
 
     // Reload the page once the new SW takes control.
+    // Defer reload if user is actively viewing the page to avoid jarring mid-use reloads.
     let refreshing = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
+      if (document.visibilityState === "visible") {
+        // Page is active — wait until user leaves and returns
+        const onVisChange = () => {
+          if (document.visibilityState === "visible") {
+            refreshing = true;
+            document.removeEventListener("visibilitychange", onVisChange);
+            window.location.reload();
+          }
+        };
+        document.addEventListener("visibilitychange", onVisChange);
+      } else {
+        refreshing = true;
+        window.location.reload();
+      }
     });
   });
 }
