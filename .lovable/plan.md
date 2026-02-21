@@ -1,27 +1,73 @@
 
-
-## Fix: Waveform scrubber and time not updating during playback on mobile
+## Speed Up Organize Page Loading
 
 ### Problem
 
-When seeking partway through a waveform on mobile and pressing play, the audio plays but the time display stays frozen and the scrubber (progress bar) doesn't move. This happens intermittently -- only on "some" waveforms.
+When navigating to the Organize page after returning to the app, it takes 10-15 seconds to show weekly goal progress and folder information. This is caused by a cascade of slow, sequential, and redundant network calls:
 
-### Root Cause
+1. **`useProjects` makes 4 sequential Supabase calls**: `auth.getUser()` -> fetch profile -> fetch owned projects -> fetch collab projects. The first two are redundant since the auth context already has the profile.
 
-The time/scrubber updates rely entirely on WaveSurfer's `audioprocess` event. With the `MediaElement` backend (used for iOS compatibility), this event depends on the underlying HTML5 `<audio>` element's `timeupdate` event. On mobile Safari, `timeupdate` can stop firing or fire very infrequently after a seek, especially when the audio element's internal state gets out of sync. Since the React state for `currentTime` only updates inside that callback, the UI freezes.
+2. **`useFriendsProjects` makes 4 sequential calls too**: `auth.getUser()` -> fetch profile -> fetch friendships -> fetch projects. Again redundant -- the `useFriendIds` shared hook already caches friend IDs.
+
+3. **`useFriendsPromoPosts` has the same problem**: 4 sequential calls instead of using `useFriendIds`.
+
+4. **No `staleTime` on key queries**: `useProjects`, `useFriendsProjects`, `useMyPromoPosts`, `useFriendsPromoPosts`, and `useWeeklyGoal` all have `staleTime: 0` (default). This means every navigation triggers a full refetch, even if data was fetched seconds ago.
+
+5. **`useCurrentWeekPracticeMinutes` depends on `usePracticeStats`**: This is the heaviest query (fetches 3 months of sessions, notes, focus, and backlog), but it already has a 5-minute staleTime. However, it still needs to complete before weekly goal progress appears.
 
 ### Solution
 
-Replace the passive `audioprocess` event listener with an active `requestAnimationFrame` polling loop that runs while playback is active. This reads `getCurrentTime()` directly from the WaveSurfer instance on every animation frame, guaranteeing smooth, consistent updates regardless of whether the browser fires `timeupdate` events.
+#### 1. Refactor `useProjects` to use auth context (eliminate 2 redundant calls)
+- Replace `supabase.auth.getUser()` + profile fetch with `useAuth()` profile from context
+- This removes 2 sequential network calls, cutting the query to just 2 parallel project fetches
 
-### Technical Changes
+#### 2. Refactor `useFriendsProjects` to use `useFriendIds` hook
+- Replace 3 sequential calls (getUser + profile + friendships) with the shared `useFriendIds` hook
+- This leverages cached friend IDs and eliminates redundant fetches
 
-**`src/components/WaveformPlayer.tsx`**:
+#### 3. Refactor `useFriendsPromoPosts` to use `useFriendIds` hook
+- Same pattern: replace manual friend ID fetching with the shared hook
 
-1. Add a `rafRef` (requestAnimationFrame ID ref) for cleanup
-2. Remove the `audioprocess` event listener
-3. Add a `useEffect` that starts a `requestAnimationFrame` loop when `isPlaying` is `true` and `isReady` is `true`, calling `wavesurferRef.current.getCurrentTime()` each frame to update `currentTime` state
-4. The loop self-cancels when `isPlaying` becomes `false`
+#### 4. Add `staleTime` to all Organize page queries
+- `useProjects`: add `staleTime: 2 * 60 * 1000` (2 minutes)
+- `useFriendsProjects`: add `staleTime: 2 * 60 * 1000`
+- `useMyPromoPosts`: add `staleTime: 2 * 60 * 1000`
+- `useFriendsPromoPosts`: add `staleTime: 2 * 60 * 1000`
+- `useWeeklyGoal` (both queries): add `staleTime: 2 * 60 * 1000`
 
-This is a minimal, targeted change -- no visual or behavioral differences except that the scrubber and time now reliably update on mobile.
+#### 5. Add `staleTime` to `useGoals`
+- Goals rarely change between page views; add `staleTime: 60 * 1000` (1 minute)
 
+### Technical Details
+
+**`src/hooks/useProjects.ts`** -- `useProjects()`:
+- Add `useAuth()` to get `profile` from context
+- Replace the `getUser()` + profile fetch with `profile.id`
+- Run owned + collab project queries in parallel with `Promise.all`
+- Add `enabled: !!profile?.id` and `staleTime: 2 * 60 * 1000`
+
+**`src/hooks/useProjects.ts`** -- `useFriendsProjects()`:
+- Add `useFriendIds()` hook
+- Remove manual `getUser()` + profile + friendships fetching
+- Use `friendIds` from the shared hook directly
+- Add `enabled` and `staleTime: 2 * 60 * 1000`
+
+**`src/hooks/usePromoPosts.ts`** -- `useFriendsPromoPosts()`:
+- Add `useFriendIds()` hook
+- Remove manual `getUser()` + profile + friendships fetching
+- Add `staleTime: 2 * 60 * 1000`
+
+**`src/hooks/usePromoPosts.ts`** -- `useMyPromoPosts()`:
+- Add `staleTime: 2 * 60 * 1000`
+
+**`src/hooks/useWeeklyGoal.ts`**:
+- Add `staleTime: 2 * 60 * 1000` to both `currentWeekQuery` and `lastWeekQuery`
+
+**`src/hooks/useGoals.ts`**:
+- Add `staleTime: 60 * 1000` to the goals query
+
+### Expected Impact
+
+- Eliminates ~8 redundant sequential network calls on page load
+- On re-navigation within 2 minutes, data loads instantly from cache (0ms)
+- First load drops from 10-15 seconds to ~2-3 seconds (parallel queries only)
