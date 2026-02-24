@@ -158,8 +158,13 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
     
     // During initial load, keep showing loading state until ALL sources are ready
     // This prevents folders/gigs from popping in after notes render
-    if (loading) {
+    if (loading && !hasContent) {
       setUiMode('loading');
+      return;
+    }
+
+    if (loading && hasContent) {
+      // Background reload - keep showing existing content to prevent flicker
       return;
     }
     
