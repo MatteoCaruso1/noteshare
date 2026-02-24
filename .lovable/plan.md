@@ -1,43 +1,69 @@
 
 
-## Fix: Loading Skeletons and Cache Fragility
+## Fix: Skeleton Visibility and Cache Fragility on Practice and Friends Pages
 
-### Issue 1: No loading skeleton in the Notes area (Practice page)
+### Root Cause Analysis
 
-**Root cause**: The `Timeline` component does render skeletons, but there's a timing gap. When the page first mounts (or remounts after tab switch), the `showSkeleton` state initializes as `false`. Although it gets set to `true` in a `useEffect`, there's one render frame where `uiMode === 'loading'` but the skeleton content hasn't been triggered yet. More importantly, when cached data exists but is stale, `isPending` (`notesLoading`) is `false` -- so the Timeline enters `'list'` mode with zero items while the refetch is in progress, causing the blank area.
+The previous fix only changed `useFriendsNotes` and `useFriendIds`, but the same problems exist across **multiple hooks** feeding both pages. Here is what's actually happening:
 
-**Fix**: Initialize `showSkeleton` to `true` when `uiMode` starts as `'loading'`, eliminating the one-frame blank flash. This is a one-line change in the `useState` initializer.
+**Practice page (Index.tsx):**
+- Line 37-38: `useFeedProjects` and `useFeedGigs` destructure `isLoading` (NOT `isPending`)
+- `isLoading` is `true` when data is stale and a background refetch is running -- this means the entire timeline gets gated behind a skeleton even though cached notes exist
+- `isTimelineLoading = notesLoading || projectsLoading || gigsLoading` -- if ANY sub-query is "loading" (even just refetching stale data), the whole timeline shows the loading skeleton
+- `useFeedProjects` and `useFeedGigs` have NO `placeholderData` and NO `gcTime`, so their caches evict after the default 5 minutes and data is lost entirely on tab switch
 
-**File**: `src/components/Timeline.tsx`
+**Friends page (FriendsFeed.tsx):**
+- `useFriendsFeedProjects` and `useFriendsFeedGigs` have NO `staleTime`, NO `gcTime`, and NO `placeholderData`
+- This means their caches are immediately stale on remount and evict quickly
+- Even though `useFriendsNotes` was fixed, the projects/gigs hooks can still trigger the loading state and block the whole feed
 
----
-
-### Issue 2: Notes disappear when switching between app tabs
-
-**Root cause**: Two problems compound:
-
-1. **`useFriendsNotes`** has `staleTime: 60s` and `gcTime: 5min` but **no `placeholderData`**. When the FriendsJournals page remounts (React Router unmounts/remounts on tab switch), if data is stale (>60s old), React Query re-fetches and `isLoading` becomes `true`, wiping the screen to show skeletons. This is because `FriendsFeed` uses `isLoading` (which includes refetching from stale state) to gate the entire UI.
-
-2. **`useNotes`** has better config (`placeholderData`, `staleTime: 2min`) but shares the same problem: the `enabled` condition requires `!!session`, and during app resume the session object may briefly be `null` while Supabase refreshes the auth token. When `enabled` flips to `false`, React Query clears the query observer's data reference.
-
-**Fix (4 changes)**:
-
-a. **`src/hooks/useFriendships.ts` -- `useFriendsNotes`**: Add `placeholderData: (prev) => prev` and increase `staleTime` to 2 minutes to match `useNotes`. This keeps previous data visible during background refetches.
-
-b. **`src/components/FriendsFeed.tsx`**: Change from using `isLoading` (which is true during stale refetch) to `isPending` (which is only true when there's no cached data at all). This prevents the skeleton from replacing already-loaded content during a background refetch. Also add `isFetching` awareness to show a subtle indicator if needed.
-
-c. **`src/hooks/useNotes.ts`**: The `enabled` guard requiring `!!session` can cause data to disappear during brief auth token refreshes. Keep the guard but the existing `placeholderData: (prev) => prev` should handle this. Verify and ensure `gcTime` is sufficient.
-
-d. **`src/hooks/useFriendships.ts` -- `useFriendIds`**: Check caching -- if this hook loses its data, `useFriendsNotes` becomes disabled (`enabled: friendIds.length > 0`), cascading into data loss. Add `placeholderData` and increase `staleTime` if needed.
+**The cascade problem:**
+When ANY of the 3 data sources (notes, projects, gigs) loses its cache or enters `isLoading=true`, the entire timeline/feed shows a blank skeleton instead of displaying the cached notes that ARE available.
 
 ---
 
-### Technical Summary
+### Changes
 
-| File | Change |
-|------|--------|
-| `src/components/Timeline.tsx` | Initialize `showSkeleton` to `true` when `uiMode` starts as `'loading'` |
-| `src/hooks/useFriendships.ts` | Add `placeholderData` + increase `staleTime` on `useFriendsNotes` and `useFriendIds` |
-| `src/components/FriendsFeed.tsx` | Use `isPending` instead of `isLoading` for skeleton gating |
+#### 1. `src/pages/Index.tsx` -- Use `isPending` for all queries (2 lines)
 
-These are minimal, targeted changes that follow existing patterns already used in `useNotes`.
+Change `useFeedProjects` and `useFeedGigs` from `isLoading` to `isPending`. This ensures the timeline only shows a skeleton when there is truly NO cached data, not during background refetches of stale data.
+
+```
+Before: const { data: feedProjects, isLoading: projectsLoading } = useFeedProjects();
+After:  const { data: feedProjects, isPending: projectsLoading } = useFeedProjects();
+
+Before: const { data: feedGigs, isLoading: gigsLoading } = useFeedGigs();
+After:  const { data: feedGigs, isPending: gigsLoading } = useFeedGigs();
+```
+
+#### 2. `src/hooks/useProjects.ts` -- Add cache resilience to `useFeedProjects` and `useFriendsFeedProjects`
+
+Add `placeholderData` and `gcTime` to both hooks so cached data persists across tab switches:
+
+- `useFeedProjects`: add `gcTime: 10 * 60 * 1000` and `placeholderData: (prev) => prev`
+- `useFriendsFeedProjects`: add `staleTime: 2 * 60 * 1000`, `gcTime: 10 * 60 * 1000`, and `placeholderData: (prev) => prev`
+
+#### 3. `src/hooks/usePromoPosts.ts` -- Add cache resilience to `useFeedGigs` and `useFriendsFeedGigs`
+
+Same pattern:
+
+- `useFeedGigs`: add `gcTime: 10 * 60 * 1000` and `placeholderData: (prev) => prev`
+- `useFriendsFeedGigs`: add `staleTime: 2 * 60 * 1000`, `gcTime: 10 * 60 * 1000`, and `placeholderData: (prev) => prev`
+
+---
+
+### Why this is different from the previous fix
+
+The previous fix only addressed `useFriendsNotes` and `useFriendIds`. But the loading gate on both pages combines THREE data sources (notes + projects + gigs), and the projects/gigs hooks were still using fragile defaults. This fix ensures ALL data sources feeding the timeline have consistent, resilient caching -- so switching tabs or briefly losing focus never wipes visible content.
+
+### Summary table
+
+| File | Hook | Change |
+|------|------|--------|
+| `src/pages/Index.tsx` | `useFeedProjects` | `isLoading` to `isPending` |
+| `src/pages/Index.tsx` | `useFeedGigs` | `isLoading` to `isPending` |
+| `src/hooks/useProjects.ts` | `useFeedProjects` | Add `gcTime`, `placeholderData` |
+| `src/hooks/useProjects.ts` | `useFriendsFeedProjects` | Add `staleTime`, `gcTime`, `placeholderData` |
+| `src/hooks/usePromoPosts.ts` | `useFeedGigs` | Add `gcTime`, `placeholderData` |
+| `src/hooks/usePromoPosts.ts` | `useFriendsFeedGigs` | Add `staleTime`, `gcTime`, `placeholderData` |
+
