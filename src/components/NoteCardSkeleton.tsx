@@ -12,7 +12,7 @@ export function NoteCardSkeleton({ index = 0 }: NoteCardSkeletonProps) {
   
   return (
     <Card 
-      className="p-3 sm:p-4 bg-note border border-note-border/50 rounded-lg border-l-[3px] border-l-primary/40 animate-fade-in opacity-0"
+      className="p-3 sm:p-4 bg-background border border-border rounded-lg animate-fade-in opacity-0"
       style={{ 
         animationDelay: `${staggerDelay}ms`,
         animationFillMode: 'forwards'
