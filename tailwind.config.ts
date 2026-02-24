@@ -248,6 +248,10 @@ export default {
 					filter: 'drop-shadow(0 0 14px hsl(var(--primary) / 1))'
 				}
 			},
+			'fade-in': {
+				'0%': { opacity: '0' },
+				'100%': { opacity: '1' }
+			},
 			'fade-in-slow': {
 				'0%': {
 					opacity: '0'
@@ -271,7 +275,8 @@ export default {
   			'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
   			'pulse-glow-medium': 'pulse-glow-medium 1.8s ease-in-out infinite',
   			'pulse-glow-intense': 'pulse-glow-intense 1.5s ease-in-out infinite',
-  			'fade-in-slow': 'fade-in-slow 0.6s ease-out forwards'
+			'fade-in': 'fade-in 0.3s ease-out forwards',
+			'fade-in-slow': 'fade-in-slow 0.6s ease-out forwards'
   		},
 		backgroundImage: {
 			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
