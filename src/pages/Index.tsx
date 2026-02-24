@@ -42,7 +42,7 @@ const Index = () => {
   const isTimelineRefetching = notesRefetching;
   
   // Weekly goal modal state
-  const { shouldShow: shouldShowWeeklyGoal, markAsShown } = useShouldShowWeeklyGoalModal(profile?.id, isPremium);
+  const { shouldShow: shouldShowWeeklyGoal, markAsShown } = useShouldShowWeeklyGoalModal(profile?.id);
   const [weeklyGoalModalOpen, setWeeklyGoalModalOpen] = useState(false);
   
   // Show weekly goal modal on Monday for premium users

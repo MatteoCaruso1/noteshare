@@ -1,17 +1,15 @@
 import { Progress } from '@/components/ui/progress';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
 import { useAuth } from '@/hooks/useAuth';
-import { usePremium } from '@/contexts/PremiumContext';
 import { Target, Trophy, PartyPopper } from 'lucide-react';
 
 export function WeeklyGoalCard() {
   const { profile } = useAuth();
-  const { isPremium } = usePremium();
   const { currentWeekGoal, isLoading } = useWeeklyGoal(profile?.id);
   const currentMinutes = useCurrentWeekPracticeMinutes(profile?.id);
   
-  // Don't render if not premium, loading, no goal, or goal was skipped
-  if (!isPremium || isLoading || !currentWeekGoal || currentWeekGoal.skipped) {
+  // Don't render if loading, no goal, or goal was skipped
+  if (isLoading || !currentWeekGoal || currentWeekGoal.skipped) {
     return null;
   }
   

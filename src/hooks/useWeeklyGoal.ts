@@ -110,8 +110,9 @@ export function useWeeklyGoal(profileId: string | undefined) {
 export const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
 // Hook to determine if we should show the modal
-export function useShouldShowWeeklyGoalModal(profileId: string | undefined, isPremium: boolean) {
+export function useShouldShowWeeklyGoalModal(profileId: string | undefined) {
   const { currentWeekGoal, isLoading } = useWeeklyGoal(profileId);
+  const { data: stats, isLoading: statsLoading } = usePracticeStats(profileId);
   
   // Check if today is Monday
   const today = new Date();
@@ -125,18 +126,25 @@ export function useShouldShowWeeklyGoalModal(profileId: string | undefined, isPr
   // Check if user has disabled the feature
   const isDisabled = localStorage.getItem(WEEKLY_GOAL_DISABLED_KEY) === 'true';
   
+  // Check if user has ever completed at least one practice session
+  const hasCompletedSession = !statsLoading && stats != null && (
+    stats.sessionsThisMonth > 0 || 
+    stats.weeklyMinutesOverTime.some(w => w.minutes > 0)
+  );
+  
   // Should show modal if:
-  // 1. User is premium
-  // 2. It's Monday
-  // 3. No goal set for this week yet
-  // 4. Haven't shown the modal already this week
-  // 5. Feature is not disabled
-  const shouldShow = isPremium && 
-    isToday && 
+  // 1. It's Monday
+  // 2. No goal set for this week yet
+  // 3. Haven't shown the modal already this week
+  // 4. Feature is not disabled
+  // 5. User has completed at least one practice session (avoid FTUE noise)
+  const shouldShow = isToday && 
     !isLoading && 
+    !statsLoading &&
     !currentWeekGoal && 
     !hasShownThisWeek &&
-    !isDisabled;
+    !isDisabled &&
+    hasCompletedSession;
   
   const markAsShown = () => {
     localStorage.setItem(WEEKLY_GOAL_MODAL_KEY, currentWeekStart);

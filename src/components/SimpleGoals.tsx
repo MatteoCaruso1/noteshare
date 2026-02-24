@@ -59,7 +59,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const [pendingGoal, setPendingGoal] = useState<string | null>(null);
   
   // Check if weekly goal should be shown
-  const showWeeklyGoal = isPremium && !weeklyLoading && currentWeekGoal && !currentWeekGoal.skipped;
+  const showWeeklyGoal = !weeklyLoading && currentWeekGoal && !currentWeekGoal.skipped;
   const weeklyTargetMinutes = currentWeekGoal?.target_minutes || 0;
   const weeklyProgressPercent = weeklyTargetMinutes > 0 ? Math.min(100, (currentMinutes / weeklyTargetMinutes) * 100) : 0;
   const isWeeklyComplete = currentMinutes >= weeklyTargetMinutes;

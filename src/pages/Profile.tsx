@@ -445,12 +445,12 @@ const Profile = () => {
           {/* Manage Plans Section - only in edit mode */}
           {editing && <ManagePlansSection />}
 
-          {/* Premium Feature Preferences - only in edit mode for premium users */}
-          {editing && isPremium && (
+          {/* Practice Preferences - only in edit mode */}
+          {editing && (
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Target className="w-5 h-5 text-primary" />
-                <h3 className="font-medium">Pro Features</h3>
+                <h3 className="font-medium">Practice Preferences</h3>
               </div>
               <div className="space-y-4">
                 {/* Weekly Goal Toggle */}
