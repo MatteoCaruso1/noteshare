@@ -825,6 +825,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         noteAuthorId={note.author_id}
         commentCount={note.comment_count}
         onCommentClick={handleNavigateToNote}
+        skipAnimation={fromFriends}
       />
 
       {/* Voice Reply Button - hidden on homepage for cleaner UI */}
