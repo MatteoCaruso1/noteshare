@@ -135,7 +135,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   });
   
   // Track if skeleton should be visible (delay to prevent flash on quick loads)
-  const [showSkeleton, setShowSkeleton] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(() => uiMode === 'loading');
   const [showSlowMessage, setShowSlowMessage] = useState(false);
   const [showLoadingText, setShowLoadingText] = useState(false);
   

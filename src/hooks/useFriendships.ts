@@ -290,8 +290,9 @@ export function useFriendsNotes() {
       })) as NoteWithAuthor[];
     },
     enabled: !!profile?.id && !!friendIds && friendIds.length > 0,
-    staleTime: 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 }
 
