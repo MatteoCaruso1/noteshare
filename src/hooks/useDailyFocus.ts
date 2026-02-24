@@ -95,6 +95,7 @@ export function useTodaysFocus() {
     },
     enabled: !!profile?.id,
     staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     placeholderData: () => readFocusCache(),
   });
 
@@ -192,6 +193,7 @@ export function useCurrentFocusEntry() {
     },
     enabled: !!profile?.id,
     staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     placeholderData: () => readFocusCache(),
   });
 }
