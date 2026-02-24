@@ -154,7 +154,7 @@ export function useNotes(projectId?: string) {
       })) as NoteWithAuthor[];
     },
     // Require both profile AND a valid session to ensure auth token is propagated
-    enabled: projectId ? !!session : (!!profile?.id && !!session),
+    enabled: !!profile?.id,
     // Keep data visible during refetch - prevents "no notes" flash
     staleTime: 2 * 60 * 1000, // Consider fresh for 2 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
