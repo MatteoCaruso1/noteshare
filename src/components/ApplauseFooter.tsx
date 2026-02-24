@@ -12,6 +12,8 @@ interface ApplauseFooterProps {
   commentCount?: number;
   onCommentClick?: () => void;
   className?: string;
+  /** When true, skip the expand animation and show immediately */
+  skipAnimation?: boolean;
 }
 
 export const ApplauseFooter = memo(function ApplauseFooter({ 
@@ -19,7 +21,8 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   noteAuthorId,
   commentCount = 0,
   onCommentClick,
-  className 
+  className,
+  skipAnimation = false
 }: ApplauseFooterProps) {
   const { profile } = useAuth();
   const { data: applauseList = [], isLoading } = useNoteApplause(noteId);
@@ -57,6 +60,7 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   const showApplause = applauseCount > 0 || !isOwner;
   const showComments = commentCount > 0;
   const shouldExpand = !isLoading && (showApplause || showComments);
+  const useAnimation = !skipAnimation;
 
   // For owner's posts with no applause and no comments, render nothing
   if (!isLoading && isOwner && applauseCount === 0 && commentCount === 0) return null;
@@ -65,8 +69,12 @@ export const ApplauseFooter = memo(function ApplauseFooter({
 
   return (
     <div
-      className={cn("grid transition-[grid-template-rows] duration-300 ease-out", className)}
-      style={{ gridTemplateRows: shouldExpand ? '1fr' : '0fr' }}
+      className={cn(
+        "grid",
+        useAnimation && "transition-[grid-template-rows] duration-300 ease-out",
+        className
+      )}
+      style={{ gridTemplateRows: (skipAnimation || shouldExpand) ? '1fr' : '0fr' }}
     >
       <div className="overflow-hidden">
         <div className="flex items-center justify-between pt-2 mt-2 border-t border-border/50">
