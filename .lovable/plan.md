@@ -1,49 +1,56 @@
 
 
-## Fix: Applause Footer Layout Shift on My Practice Page
+## Fix: Notes Disappearing When Starting a Practice Session
 
-### Problem
+### Root Cause
 
-When notes load on the My Practice page, the `ApplauseFooter` immediately shows a "Loading..." placeholder with a fixed height. Once the applause query resolves and finds zero applause (the common case for your own notes), the footer disappears, causing the note card to visibly shrink. This creates a jarring "bounce" effect across every note in the timeline.
+The Timeline uses `isPending` from three data sources (notes, projects, gigs) to determine the `loading` prop. When a practice session starts, a brief auth/profile state change can cause `profile?.id` to momentarily become undefined, which changes the React Query keys (e.g., `['notes', undefined, undefined]`). Since there's no cached data for the new key, `isPending` flips to `true`, and the Timeline's state machine forces `uiMode = 'loading'`, hiding all existing content.
 
-### Solution
+The sequence you see:
+1. Notes visible (cached data for old key)
+2. Profile flickers -> notes query gets new key -> `isPending = true` -> notes vanish, but gigs/folders still cached
+3. Gigs/folders query also gets new key -> everything vanishes
+4. Profile stabilizes -> queries refetch -> content reappears
 
-Flip the default assumption: start with the footer hidden (zero height), then if applause data comes back with actual results, smoothly animate the footer open.
+### Fix
 
-### Changes
+**File: `src/components/Timeline.tsx`** (lines 160-164)
 
-**File: `src/components/ApplauseFooter.tsx`**
+The state machine currently forces loading mode whenever `loading` is `true`, even if we already have content. The fix: once content has been displayed, never go back to loading/skeleton state. Only show loading on the true cold start (first ever load with no data).
 
-1. **Remove the loading placeholder entirely** -- instead of showing "Loading..." with reserved height, return `null` while `isLoading` is true (same as "no applause" state). This means notes start at their compact size.
+Change the logic at line 160-164 from:
 
-2. **Add a smooth expand animation** when applause data arrives. Wrap the footer content in a container that uses CSS `grid-template-rows` transition (the modern way to animate height from 0 to auto):
-   - When applause count is 0 and it's the owner's note: `grid-template-rows: 0fr` (collapsed, hidden)
-   - When applause exists: `grid-template-rows: 1fr` (expanded, visible)
-   - Transition: ~300ms ease-out for a smooth, unhurried reveal
-
-3. The inner content div gets `overflow: hidden` so it clips during the height transition.
-
-### How It Works
-
-```text
-Note loads -> Footer hidden (no space taken)
-                 |
-         Applause query runs in background
-                 |
-        +--------+--------+
-        |                 |
-  No applause        Has applause
-  (stay hidden)    (animate open ~300ms)
+```
+if (loading) {
+  setUiMode('loading');
+  return;
+}
 ```
 
-### Result
+To:
 
-- **Common case (own notes, no applause)**: Note renders at final size immediately. No shrink.
-- **Has applause**: Footer smoothly slides down to reveal applause info.
-- Comments still show immediately if `comment_count > 0` (this is available from the note data, no async needed).
+```
+if (loading && !hasContent) {
+  setUiMode('loading');
+  return;
+}
+
+if (loading && hasContent) {
+  // Background reload - keep showing existing content
+  return;
+}
+```
+
+This ensures that once notes/gigs/folders are on screen, they stay visible even if a query key change triggers `isPending = true` momentarily. The user will never see their timeline disappear during a session start.
+
+### Why This Is Safe
+
+- Cold start (no cached data): Still shows loading skeletons as before
+- Background refetch with existing data: Keeps content visible (no flicker)
+- The `isRefetching` prop already handles showing a subtle loading indicator if needed
 
 ### Summary
 
 | File | Change |
 |------|--------|
-| `src/components/ApplauseFooter.tsx` | Remove loading placeholder, add CSS grid height animation for smooth reveal |
+| `src/components/Timeline.tsx` | Guard loading state: only show skeletons when `loading` is true AND there is no existing content |
