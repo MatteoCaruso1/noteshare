@@ -1,34 +1,49 @@
 
 
-## Fix: Invisible Loading Skeletons on Both Timelines
+## Fix: Applause Footer Layout Shift on My Practice Page
 
-### Root Cause
+### Problem
 
-Both `NoteCardSkeleton` and `FriendNoteCardSkeleton` (in `FriendsFeedSkeleton.tsx`) use `animate-fade-in opacity-0` with `animationFillMode: 'forwards'`. However, **the `animate-fade-in` animation class does not exist** in the Tailwind config (`tailwind.config.ts`). The config only defines `fade-in-slow`, not `fade-in`.
+When notes load on the My Practice page, the `ApplauseFooter` immediately shows a "Loading..." placeholder with a fixed height. Once the applause query resolves and finds zero applause (the common case for your own notes), the footer disappears, causing the note card to visibly shrink. This creates a jarring "bounce" effect across every note in the timeline.
 
-Since the skeletons start at `opacity-0` and the animation that should fade them to `opacity-1` never runs, the skeleton cards are permanently invisible on both pages. They are in the DOM and taking up space, but you can't see them.
+### Solution
 
-### Fix
+Flip the default assumption: start with the footer hidden (zero height), then if applause data comes back with actual results, smoothly animate the footer open.
 
-Add a `fade-in` keyframe and `animate-fade-in` animation to `tailwind.config.ts`:
+### Changes
 
-**File: `tailwind.config.ts`**
+**File: `src/components/ApplauseFooter.tsx`**
 
-1. Add a new `fade-in` keyframe (alongside the existing `fade-in-slow`):
-   - `'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } }`
+1. **Remove the loading placeholder entirely** -- instead of showing "Loading..." with reserved height, return `null` while `isLoading` is true (same as "no applause" state). This means notes start at their compact size.
 
-2. Add the corresponding animation utility:
-   - `'fade-in': 'fade-in 0.3s ease-out forwards'`
+2. **Add a smooth expand animation** when applause data arrives. Wrap the footer content in a container that uses CSS `grid-template-rows` transition (the modern way to animate height from 0 to auto):
+   - When applause count is 0 and it's the owner's note: `grid-template-rows: 0fr` (collapsed, hidden)
+   - When applause exists: `grid-template-rows: 1fr` (expanded, visible)
+   - Transition: ~300ms ease-out for a smooth, unhurried reveal
 
-This is a faster variant of the existing `fade-in-slow` (0.3s vs 0.6s), which is appropriate for skeleton stagger animations that use 60-80ms delays between cards.
+3. The inner content div gets `overflow: hidden` so it clips during the height transition.
+
+### How It Works
+
+```text
+Note loads -> Footer hidden (no space taken)
+                 |
+         Applause query runs in background
+                 |
+        +--------+--------+
+        |                 |
+  No applause        Has applause
+  (stay hidden)    (animate open ~300ms)
+```
 
 ### Result
 
-After this one change, both the Practice page and Friends page timelines will show visible pulsing skeleton cards during loading, with the staggered cascade animation working as originally intended.
+- **Common case (own notes, no applause)**: Note renders at final size immediately. No shrink.
+- **Has applause**: Footer smoothly slides down to reveal applause info.
+- Comments still show immediately if `comment_count > 0` (this is available from the note data, no async needed).
 
 ### Summary
 
 | File | Change |
 |------|--------|
-| `tailwind.config.ts` | Add `fade-in` keyframe + `animate-fade-in` animation (2 lines) |
-
+| `src/components/ApplauseFooter.tsx` | Remove loading placeholder, add CSS grid height animation for smooth reveal |
