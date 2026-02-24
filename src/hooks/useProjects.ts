@@ -65,6 +65,8 @@ export function useFeedProjects() {
     },
     enabled: !!profile?.id,
     staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev: any) => prev,
   });
 }
 
@@ -93,6 +95,9 @@ export function useFriendsFeedProjects() {
       }));
     },
     enabled: !!friendIds && friendIds.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev: any) => prev,
   });
 }
 

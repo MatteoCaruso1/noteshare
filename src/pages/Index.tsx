@@ -34,8 +34,8 @@ const Index = () => {
   
   const { data: notes, isPending: notesLoading, isFetching: notesRefetching } = useNotes();
   const { data: acceptedSharedNotes } = useAcceptedNoteShares();
-  const { data: feedProjects, isLoading: projectsLoading } = useFeedProjects();
-  const { data: feedGigs, isLoading: gigsLoading } = useFeedGigs();
+  const { data: feedProjects, isPending: projectsLoading } = useFeedProjects();
+  const { data: feedGigs, isPending: gigsLoading } = useFeedGigs();
   
   // Combined loading state - wait for all data sources to be ready
   const isTimelineLoading = notesLoading || projectsLoading || gigsLoading;
