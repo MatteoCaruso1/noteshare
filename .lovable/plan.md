@@ -1,31 +1,43 @@
 
 
-## Fix: "Failed to create session" after ~15 seconds on mobile
+## Fix: Loading Skeletons and Cache Fragility
 
-### Problem
+### Issue 1: No loading skeleton in the Notes area (Practice page)
 
-Starting a practice session on mobile consistently fails with a "Failed to start session" toast after ~15 seconds. The session is never actually created in the database.
+**Root cause**: The `Timeline` component does render skeletons, but there's a timing gap. When the page first mounts (or remounts after tab switch), the `showSkeleton` state initializes as `false`. Although it gets set to `true` in a `useEffect`, there's one render frame where `uiMode === 'loading'` but the skeleton content hasn't been triggered yet. More importantly, when cached data exists but is stale, `isPending` (`notesLoading`) is `false` -- so the Timeline enters `'list'` mode with zero items while the refetch is in progress, causing the blank area.
 
-### Root Cause
+**Fix**: Initialize `showSkeleton` to `true` when `uiMode` starts as `'loading'`, eliminating the one-frame blank flash. This is a one-line change in the `useState` initializer.
 
-The `useStartSession` mutation wraps its database calls in a `Promise.race` with a **10-second timeout**. On mobile (especially after the app has been backgrounded or on slower networks), establishing fresh connections to the backend can take several seconds due to DNS resolution, TLS handshake, and auth token refresh. The mutation makes two sequential calls:
+**File**: `src/components/Timeline.tsx`
 
-1. Deactivate any existing active sessions (UPDATE)
-2. Insert the new session (INSERT + SELECT)
+---
 
-Both calls must complete within 10 seconds total. On mobile, this frequently fails. With `retry: 2` and delays of 1s + 2s, the total time before the final error is ~13-15 seconds -- matching the reported behavior exactly.
+### Issue 2: Notes disappear when switching between app tabs
 
-### Solution
+**Root cause**: Two problems compound:
 
-**`src/hooks/useSessions.ts`** -- `useStartSession()`:
+1. **`useFriendsNotes`** has `staleTime: 60s` and `gcTime: 5min` but **no `placeholderData`**. When the FriendsJournals page remounts (React Router unmounts/remounts on tab switch), if data is stale (>60s old), React Query re-fetches and `isLoading` becomes `true`, wiping the screen to show skeletons. This is because `FriendsFeed` uses `isLoading` (which includes refetching from stale state) to gate the entire UI.
 
-1. **Remove the `Promise.race` timeout entirely** -- The mutation already has `retry: 2` with exponential backoff, which handles transient failures. A hard timeout is counterproductive: it kills requests that are actually in-flight and about to succeed.
+2. **`useNotes`** has better config (`placeholderData`, `staleTime: 2min`) but shares the same problem: the `enabled` condition requires `!!session`, and during app resume the session object may briefly be `null` while Supabase refreshes the auth token. When `enabled` flips to `false`, React Query clears the query observer's data reference.
 
-2. **Use an `AbortController` with a generous 30-second timeout instead** -- This provides a safety net against truly stuck requests without killing normal mobile latency.
+**Fix (4 changes)**:
 
-3. **Keep the existing retry and optimistic update logic unchanged** -- These are working correctly.
+a. **`src/hooks/useFriendships.ts` -- `useFriendsNotes`**: Add `placeholderData: (prev) => prev` and increase `staleTime` to 2 minutes to match `useNotes`. This keeps previous data visible during background refetches.
 
-### Technical Details
+b. **`src/components/FriendsFeed.tsx`**: Change from using `isLoading` (which is true during stale refetch) to `isPending` (which is only true when there's no cached data at all). This prevents the skeleton from replacing already-loaded content during a background refetch. Also add `isFetching` awareness to show a subtle indicator if needed.
 
-The change is minimal -- just replacing the `Promise.race` pattern (lines 142-170) with a straightforward async function that uses an AbortController for a 30-second safety timeout, matching the pattern already used in `usePauseSession` and `useResumeSession`.
+c. **`src/hooks/useNotes.ts`**: The `enabled` guard requiring `!!session` can cause data to disappear during brief auth token refreshes. Keep the guard but the existing `placeholderData: (prev) => prev` should handle this. Verify and ensure `gcTime` is sufficient.
 
+d. **`src/hooks/useFriendships.ts` -- `useFriendIds`**: Check caching -- if this hook loses its data, `useFriendsNotes` becomes disabled (`enabled: friendIds.length > 0`), cascading into data loss. Add `placeholderData` and increase `staleTime` if needed.
+
+---
+
+### Technical Summary
+
+| File | Change |
+|------|--------|
+| `src/components/Timeline.tsx` | Initialize `showSkeleton` to `true` when `uiMode` starts as `'loading'` |
+| `src/hooks/useFriendships.ts` | Add `placeholderData` + increase `staleTime` on `useFriendsNotes` and `useFriendIds` |
+| `src/components/FriendsFeed.tsx` | Use `isPending` instead of `isLoading` for skeleton gating |
+
+These are minimal, targeted changes that follow existing patterns already used in `useNotes`.
