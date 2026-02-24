@@ -52,7 +52,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
   const queryClient = useQueryClient();
 
-  const isLoading = notesPending || projectsPending || gigsPending;
+  const isFirstLoad = notes === undefined || feedProjects === undefined || feedGigs === undefined;
   const hasLoadedOnce = notes !== undefined && feedProjects !== undefined && feedGigs !== undefined;
 
   // Convert projects and gigs to FeedItem format
@@ -243,7 +243,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
   };
 
   // Only show skeleton while data is loading - don't wait for avatars
-  if (isLoading) {
+  if (isFirstLoad) {
     return <FriendsFeedSkeleton count={skeletonCount} />;
   }
 
