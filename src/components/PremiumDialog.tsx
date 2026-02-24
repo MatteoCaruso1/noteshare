@@ -13,7 +13,7 @@ const BENEFITS = [
   {
     icon: BarChart3,
     title: 'Pro Statistics',
-    description: 'Unlock detailed stats and dynamic goals that measure your progress',
+    description: 'Unlock detailed stats that measure your progress',
   },
   {
     icon: FolderKanban,
