@@ -46,13 +46,13 @@ function extractStoragePath(url: string): string | null {
 }
 
 export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
-  const { data: notes, isLoading: notesLoading } = useFriendsNotes();
-  const { data: feedProjects, isLoading: projectsLoading } = useFriendsFeedProjects();
-  const { data: feedGigs, isLoading: gigsLoading } = useFriendsFeedGigs();
+  const { data: notes, isPending: notesPending } = useFriendsNotes();
+  const { data: feedProjects, isPending: projectsPending } = useFriendsFeedProjects();
+  const { data: feedGigs, isPending: gigsPending } = useFriendsFeedGigs();
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
   const queryClient = useQueryClient();
 
-  const isLoading = notesLoading || projectsLoading || gigsLoading;
+  const isLoading = notesPending || projectsPending || gigsPending;
   const hasLoadedOnce = notes !== undefined && feedProjects !== undefined && feedGigs !== undefined;
 
   // Convert projects and gigs to FeedItem format
