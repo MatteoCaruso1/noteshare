@@ -35,19 +35,10 @@ function EmptyStateShell({
 }) {
   return (
     <div className="min-h-[180px] flex flex-col">
-      {/* Loading text - only shows after 1.5s delay */}
-      <div
-        className={`transition-opacity duration-100 ease-in-out ${
-          uiMode === 'loading' && !showSkeleton && showLoadingText ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
-        }`}
-      >
-        <div className="animate-pulse text-muted-foreground text-center pt-16 pb-8">Loading...</div>
-      </div>
-
-      {/* Loading state with skeleton */}
+      {/* Loading state with skeleton - show immediately */}
       <div 
-        className={`w-full transition-opacity duration-300 ease-in-out ${
-          uiMode === 'loading' && showSkeleton ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
+        className={`w-full transition-opacity duration-200 ease-in-out ${
+          uiMode === 'loading' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'
         }`}
       >
         <div className="space-y-4">
@@ -214,25 +205,18 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
     };
   }, [hasContent, isLoading, loading, showSkeleton]);
   
-  // Skeleton display timer
+  // Skeleton display timer - show immediately, slow message after delay
   useEffect(() => {
     if (uiMode === 'loading' && !showSkeleton) {
-      const loadingTextTimer = setTimeout(() => {
-        setShowLoadingText(true);
-      }, 1500);
+      // Show skeleton immediately to avoid blank space
+      setShowSkeleton(true);
+      skeletonShownAtRef.current = Date.now();
 
-      const skeletonDelayTimer = setTimeout(() => {
-        setShowSkeleton(true);
-        skeletonShownAtRef.current = Date.now();
-      }, 300);
-      
       const slowMessageTimer = setTimeout(() => {
         setShowSlowMessage(true);
       }, 5000);
       
       return () => {
-        clearTimeout(loadingTextTimer);
-        clearTimeout(skeletonDelayTimer);
         clearTimeout(slowMessageTimer);
       };
     }
