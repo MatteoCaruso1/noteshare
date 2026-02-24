@@ -191,6 +191,8 @@ export function useCurrentFocusEntry() {
       return null;
     },
     enabled: !!profile?.id,
+    staleTime: 2 * 60 * 1000,
+    placeholderData: () => readFocusCache(),
   });
 }
 
