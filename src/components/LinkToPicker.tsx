@@ -41,9 +41,10 @@ export function LinkToPicker({
 
   const hasItems = projects.length > 0 || gigs.length > 0 || goals.length > 0;
 
-  // For free users, always show the button (amber colored) to indicate it's a Pro feature
-  // For premium users, only show if there are items to link to
-  if (!hasItems && isPremium) return null;
+  // Always show button during loading (data not yet fetched) to prevent pop-in.
+  // Only hide when premium user has confirmed zero items (all data loaded, nothing there).
+  const isDataLoading = projects === undefined || gigs === undefined || goals === undefined;
+  if (!hasItems && !isDataLoading && isPremium) return null;
 
   const handleOpenChange = (newOpen: boolean) => {
     // If lite user tries to open, show toast and block
