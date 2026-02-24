@@ -61,7 +61,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const [sessionsResult, notesResult, focusResult, backlogResult] = await Promise.all([
         supabase
           .from('practice_sessions')
-          .select('started_at, ended_at, paused_duration_ms')
+          .select('id, started_at, ended_at, paused_duration_ms')
           .eq('user_id', profileId)
           .gte('started_at', threeMonthsAgo.toISOString())
           .order('started_at', { ascending: true }),
@@ -91,10 +91,17 @@ export function usePracticeStats(profileId: string | undefined) {
       const focusEntries = focusResult.data || [];
       const backlogEntries = backlogResult.data || [];
 
+      // Build set of session IDs that have at least one note linked
+      // This filters out orphaned sessions (e.g. force-ended by starting a new session,
+      // or sessions whose notes were deleted)
+      const sessionIdsWithNotes = new Set(
+        notes.filter(n => n.session_id).map(n => n.session_id!)
+      );
+
       // Calculate session durations (accounting for paused time)
-      // Only include completed sessions (with ended_at) to avoid counting abandoned/orphaned sessions
+      // Only include completed sessions that have associated notes
       const sessionsWithDuration = sessions
-        .filter(session => session.ended_at !== null)
+        .filter(session => session.ended_at !== null && sessionIdsWithNotes.has(session.id))
         .map(session => {
           const start = parseISO(session.started_at);
           const end = parseISO(session.ended_at!);
