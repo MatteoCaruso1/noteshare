@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
@@ -23,6 +23,8 @@ import { ReportButton } from '@/components/ReportButton';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { getSignedUrls } from '@/hooks/useSignedUrl';
+import { useNoteApplause } from '@/hooks/useApplause';
 
 const NoteDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +59,30 @@ const NoteDetail = () => {
 
   // Scroll to top instantly on mount
   useInstantScrollToTop([id]);
+
+  // P4: Batch-prefetch all media signed URLs for this note in one call
+  useEffect(() => {
+    if (!note) return;
+    const urls: string[] = [];
+    if (note.author?.avatar) urls.push(note.author.avatar);
+    if (note.audio_files?.length) urls.push(...note.audio_files);
+    if (note.image_files?.length) urls.push(...note.image_files);
+    if (note.video_files?.length) urls.push(...note.video_files);
+    // Also prefetch comment avatars and audio
+    if (comments?.length) {
+      comments.forEach(c => {
+        if (c.author?.avatar) urls.push(c.author.avatar);
+        if (c.audio_url) urls.push(c.audio_url);
+      });
+    }
+    const unique = Array.from(new Set(urls.filter(Boolean)));
+    if (unique.length > 0) {
+      getSignedUrls(unique);
+    }
+  }, [note, comments]);
+
+  // Pre-seed applause cache for this note
+  useNoteApplause(id || '');
 
   const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
