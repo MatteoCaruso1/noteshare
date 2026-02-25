@@ -4,6 +4,9 @@ import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RichTextarea } from '@/components/RichTextarea';
+import { MediaUploadButton } from '@/components/MediaUploadButton';
+import { AudioFileItem } from '@/components/AudioFileItem';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -171,6 +174,10 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const [isEditing, setIsEditing] = useState(false);
   const [editedTextContent, setEditedTextContent] = useState('');
   const [editedFocusText, setEditedFocusText] = useState('');
+  const [editAudioFiles, setEditAudioFiles] = useState<{ url: string; name: string }[]>([]);
+  const [editImageFiles, setEditImageFiles] = useState<string[]>([]);
+  const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null);
+  const { uploadAudio, uploadImage, uploadFile, uploading: editUploading } = useMediaUpload();
   const [sessionDurationOpen, setSessionDurationOpen] = useState(false);
   const [editedDuration, setEditedDuration] = useState('');
   const [isInlineExpanded, setIsInlineExpanded] = useState(false);
@@ -388,7 +395,6 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
 
   // Edit mode handlers
   const handleStartEdit = useCallback(() => {
-    // Strip HTML tags for plain text editing
     const stripHtml = (html: string) => {
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
@@ -396,13 +402,22 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     };
     setEditedTextContent(stripHtml(note.text_content || ''));
     setEditedFocusText(stripHtml(note.focus_text_snapshot || ''));
+    setEditAudioFiles(
+      (note.audio_files || []).map((url, i) => ({
+        url,
+        name: note.audio_file_names?.[i] || '',
+      }))
+    );
+    setEditImageFiles([...(note.image_files || [])]);
     setIsEditing(true);
-  }, [note.text_content, note.focus_text_snapshot]);
+  }, [note.text_content, note.focus_text_snapshot, note.audio_files, note.audio_file_names, note.image_files]);
 
   const handleCancelEdit = useCallback(() => {
     setIsEditing(false);
     setEditedTextContent('');
     setEditedFocusText('');
+    setEditAudioFiles([]);
+    setEditImageFiles([]);
   }, []);
 
   const handleSaveEdit = useCallback(() => {
@@ -410,12 +425,32 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       noteId: note.id,
       textContent: editedTextContent || null,
       focusTextSnapshot: note.focus_text_snapshot ? editedFocusText || null : undefined,
+      audioFiles: editAudioFiles.map(a => a.url),
+      audioFileNames: editAudioFiles.map(a => a.name),
+      imageFiles: editImageFiles,
     }, {
       onSuccess: () => {
         setIsEditing(false);
       }
     });
-  }, [note.id, note.focus_text_snapshot, editedTextContent, editedFocusText, updateContent]);
+  }, [note.id, note.focus_text_snapshot, editedTextContent, editedFocusText, editAudioFiles, editImageFiles, updateContent]);
+
+  const handleEditAudioFileUpload = useCallback(async (file: File) => {
+    if (!profile) return;
+    const url = await uploadFile(file, profile.id, 'audio');
+    if (url) {
+      const name = file.name.replace(/\.[^/.]+$/, '') || '';
+      setEditAudioFiles(prev => [...prev, { url, name }]);
+    }
+  }, [profile, uploadFile]);
+
+  const handleEditImageUpload = useCallback(async (file: File) => {
+    if (!profile) return;
+    const url = await uploadImage(file, profile.id);
+    if (url) {
+      setEditImageFiles(prev => [...prev, url]);
+    }
+  }, [profile, uploadImage]);
 
   return (
     <Card
@@ -698,6 +733,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             value={editedTextContent}
             onChange={setEditedTextContent}
             placeholder="Note content..."
+            className="text-sm"
             autoExpand={true}
             rows={2}
           />
@@ -728,13 +764,51 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                 value={editedFocusText}
                 onChange={setEditedFocusText}
                 placeholder="Practice board text..."
+                className="text-sm"
                 autoExpand={true}
                 rows={3}
               />
             </div>
           )}
 
-          {/* Save/Cancel buttons */}
+          {/* Existing + new audio files */}
+          {editAudioFiles.length > 0 && (
+            <div className="space-y-2">
+              {editAudioFiles.map((audio, i) => (
+                <AudioFileItem
+                  key={`${audio.url}-${i}`}
+                  audio={audio}
+                  onRemove={() => setEditAudioFiles(prev => prev.filter((_, idx) => idx !== i))}
+                  onRename={(newName) => setEditAudioFiles(prev => prev.map((a, idx) => idx === i ? { ...a, name: newName } : a))}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Existing + new image files */}
+          {editImageFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {editImageFiles.map((url, i) => (
+                <div key={`${url}-${i}`} className="relative">
+                  <SignedImage
+                    src={url}
+                    alt=""
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 w-6 h-6"
+                    onClick={() => setEditImageFiles(prev => prev.filter((_, idx) => idx !== i))}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Save/Cancel/Upload buttons */}
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -755,11 +829,19 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                 e.stopPropagation();
                 handleSaveEdit();
               }}
-              disabled={updateContent.isPending}
+              disabled={updateContent.isPending || editUploading}
             >
               <Check className="w-3 h-3 mr-1" />
               Save
             </Button>
+            <div className="ml-auto">
+              <MediaUploadButton
+                onAudioUpload={handleEditAudioFileUpload}
+                onImageUpload={handleEditImageUpload}
+                uploading={editUploading}
+                iconOnly
+              />
+            </div>
           </div>
         </div>
       ) : (
