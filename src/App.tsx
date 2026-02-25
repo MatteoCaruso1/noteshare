@@ -58,6 +58,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
 const ShortNoteRedirect = lazy(() => import("./pages/ShortNoteRedirect"));
 const OAuthCatchRedirect = lazy(() => import("./pages/OAuthCatchRedirect"));
+const QRCodePage = lazy(() => import("./pages/QRCode"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -184,6 +185,7 @@ function AppInner() {
                           <Suspense fallback={null}><AdminAnalytics /></Suspense>
                         </AdminGuard>
                       } />
+                      <Route path="/qr" element={<Suspense fallback={null}><QRCodePage /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
