@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePublicNotes } from '@/hooks/usePublicNotes';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { useFriends, useRemoveFriend, useIsFriendMuted, useMuteFriend, useUnmuteFriend, useFriendships, useSendFriendRequest } from '@/hooks/useFriendships';
+import { ReportButton } from '@/components/ReportButton';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -275,73 +276,87 @@ const PublicProfile = () => {
           {/* Profile Header */}
           <Card className="p-6 bg-card border-border relative">
             {/* Friend Actions - only show if friend */}
-            {isFriend && (
+            {isLoggedIn && myProfile?.id !== profile.id && (
               <div className="absolute top-4 right-4 flex items-center gap-1">
-                {/* Message Button */}
-                <button 
-                  onClick={() => setMessagesOpen(true)}
-                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-                  aria-label="Send message"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                </button>
+                {/* Message Button - only for friends */}
+                {isFriend && (
+                  <button 
+                    onClick={() => setMessagesOpen(true)}
+                    className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+                    aria-label="Send message"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </button>
+                )}
 
-                {/* Mute/Unmute Button */}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button 
-                      className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
-                      aria-label={isMuted ? "Unmute friend" : "Mute friend"}
-                    >
-                      {isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{isMuted ? 'Unmute' : 'Mute'} {profile?.name}?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {isMuted 
-                          ? "Their posts will appear in your feed again."
-                          : "Their posts won't show in your feed. You'll stay friends."}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleToggleMute}>
-                        {isMuted ? 'Unmute' : 'Mute'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
-                {/* Remove Friend Button */}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button 
-                      className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
-                      aria-label="Remove friend"
-                    >
-                      <UserMinus className="w-4 h-4" />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Remove {profile?.name}?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        You'll no longer see each other's posts.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={handleRemoveFriend}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                {/* Mute/Unmute Button - only for friends */}
+                {isFriend && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button 
+                        className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary/80 transition-colors"
+                        aria-label={isMuted ? "Unmute friend" : "Mute friend"}
                       >
-                        Remove
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        {isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{isMuted ? 'Unmute' : 'Mute'} {profile?.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {isMuted 
+                            ? "Their posts will appear in your feed again."
+                            : "Their posts won't show in your feed. You'll stay friends."}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleToggleMute}>
+                          {isMuted ? 'Unmute' : 'Mute'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
+                {/* Remove Friend Button - only for friends */}
+                {isFriend && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button 
+                        className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                        aria-label="Remove friend"
+                      >
+                        <UserMinus className="w-4 h-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remove {profile?.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          You'll no longer see each other's posts.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleRemoveFriend}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Remove
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
+                {/* Report User Button - always visible for other logged-in users */}
+                <ReportButton
+                  itemType="user"
+                  itemId={profile.id}
+                  reportedUserId={profile.id}
+                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground/50 hover:text-destructive"
+                />
               </div>
             )}
             <div className="flex items-center gap-4 mb-4 mt-2">

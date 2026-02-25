@@ -12,7 +12,7 @@ export function useReport() {
       reportedItemId,
       reportedUserId,
     }: {
-      reportedItemType: 'comment' | 'group_post';
+      reportedItemType: 'comment' | 'group_post' | 'user';
       reportedItemId: string;
       reportedUserId: string;
     }) => {

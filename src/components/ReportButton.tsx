@@ -14,12 +14,13 @@ import {
 import { useReport } from '@/hooks/useReport';
 
 interface ReportButtonProps {
-  itemType: 'comment' | 'group_post';
+  itemType: 'comment' | 'group_post' | 'user';
   itemId: string;
   reportedUserId: string;
+  className?: string;
 }
 
-export function ReportButton({ itemType, itemId, reportedUserId }: ReportButtonProps) {
+export function ReportButton({ itemType, itemId, reportedUserId, className }: ReportButtonProps) {
   const [open, setOpen] = useState(false);
   const report = useReport();
 
@@ -28,7 +29,7 @@ export function ReportButton({ itemType, itemId, reportedUserId }: ReportButtonP
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 text-muted-foreground/50 hover:text-destructive"
+        className={className || "h-6 w-6 text-muted-foreground/50 hover:text-destructive"}
         onClick={() => setOpen(true)}
         title="Report"
       >
@@ -38,7 +39,7 @@ export function ReportButton({ itemType, itemId, reportedUserId }: ReportButtonP
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Report this {itemType === 'comment' ? 'comment' : 'post'}?</AlertDialogTitle>
+            <AlertDialogTitle>Report this {itemType === 'comment' ? 'comment' : itemType === 'user' ? 'user' : 'post'}?</AlertDialogTitle>
             <AlertDialogDescription>
               This will be reviewed by the noteshare team. False reports may result in action on your account.
             </AlertDialogDescription>
