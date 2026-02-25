@@ -23,6 +23,7 @@ import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { ShareEducationTour } from "@/components/onboarding/ShareEducationTour";
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
+import { useFriendIds } from "@/hooks/useFriendIds";
 
 // Lazy load Checkout Dialogs to defer Stripe.js (~155KB) until checkout is needed
 const CheckoutDialog = lazy(() => 
@@ -117,9 +118,10 @@ function LifetimeCheckoutDialogWrapper() {
   );
 }
 
-// Component to run avatar prefetch inside auth context
-function AvatarPrefetcher() {
+// Component to run avatar prefetch and friend IDs prefetch inside auth context
+function AppPrefetcher() {
   useAvatarPrefetch();
+  useFriendIds(); // Eagerly load friend IDs so Friends feed loads instantly from cache
   return null;
 }
 
@@ -156,7 +158,7 @@ function AppInner() {
                       <LifetimeCheckoutDialogWrapper />
                       <OnboardingFlow />
                       <ShareEducationTour />
-                      <AvatarPrefetcher />
+                      <AppPrefetcher />
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/welcome" element={<Welcome />} />

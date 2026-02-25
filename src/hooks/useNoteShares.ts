@@ -26,12 +26,13 @@ export interface PendingNoteShare extends NoteShare {
 
 // Get pending shares for the current user
 export function usePendingNoteShares() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: ['pending-note-shares', profile?.id],
+    queryKey: ['pending-note-shares', userId],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('note_shares')
@@ -44,7 +45,7 @@ export function usePendingNoteShares() {
           ),
           shared_by:profiles!note_shares_shared_by_id_fkey (id, name, username, avatar)
         `)
-        .eq('shared_with_id', profile.id)
+        .eq('shared_with_id', userId)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -60,7 +61,7 @@ export function usePendingNoteShares() {
         shared_by: share.shared_by,
       })) as PendingNoteShare[];
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   });
@@ -68,12 +69,13 @@ export function usePendingNoteShares() {
 
 // Get accepted shares (notes shared with the current user that they accepted)
 export function useAcceptedNoteShares() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: ['accepted-note-shares', profile?.id],
+    queryKey: ['accepted-note-shares', userId],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('note_shares')
@@ -85,7 +87,7 @@ export function useAcceptedNoteShares() {
             practice_sessions!notes_session_id_fkey (id, started_at, ended_at, paused_duration_ms)
           )
         `)
-        .eq('shared_with_id', profile.id)
+        .eq('shared_with_id', userId)
         .eq('status', 'accepted')
         .order('created_at', { ascending: false });
 
@@ -98,7 +100,7 @@ export function useAcceptedNoteShares() {
         _share_id: share.id, // Keep track of the share for potential removal
       })) as NoteWithAuthor[];
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
@@ -206,23 +208,24 @@ export function useRespondToNoteShare() {
 
 // Count pending shares (for notification badge)
 export function usePendingNoteShareCount() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: ['pending-note-share-count', profile?.id],
+    queryKey: ['pending-note-share-count', userId],
     queryFn: async () => {
-      if (!profile?.id) return 0;
+      if (!userId) return 0;
 
       const { count, error } = await supabase
         .from('note_shares')
         .select('*', { count: 'exact', head: true })
-        .eq('shared_with_id', profile.id)
+        .eq('shared_with_id', userId)
         .eq('status', 'pending');
 
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   });

@@ -47,14 +47,15 @@ function getLocalDateString(): string {
 }
 
 export function useTodaysFocus() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
   const queryClient = useQueryClient();
 
   // Fetch today's focus entry, or the most recent one if today doesn't exist
   const query = useQuery({
-    queryKey: ['daily-focus', profile?.id],
+    queryKey: ['daily-focus', userId],
     queryFn: async () => {
-      if (!profile?.id) return null;
+      if (!userId) return null;
 
       const today = getLocalDateString();
 
@@ -62,7 +63,7 @@ export function useTodaysFocus() {
       const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .eq('focus_date', today)
         .maybeSingle();
 
@@ -76,7 +77,7 @@ export function useTodaysFocus() {
       const { data: recentFocus, error: recentError } = await supabase
         .from('daily_focus')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .order('focus_date', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -93,7 +94,7 @@ export function useTodaysFocus() {
 
       return null;
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: () => readFocusCache(),
@@ -111,7 +112,7 @@ export function useTodaysFocus() {
   // Upsert today's focus
   const updateFocus = useMutation({
     mutationFn: async (focusText: string) => {
-      if (!profile?.id) throw new Error('Not authenticated');
+      if (!userId) throw new Error('Not authenticated');
 
       const today = getLocalDateString();
 
@@ -119,7 +120,7 @@ export function useTodaysFocus() {
         .from('daily_focus')
         .upsert(
           {
-            user_id: profile.id,
+            user_id: userId,
             focus_date: today,
             focus_text: focusText,
           },
@@ -134,8 +135,8 @@ export function useTodaysFocus() {
       return data as DailyFocus;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['daily-focus', profile?.id] });
-      queryClient.invalidateQueries({ queryKey: ['current-focus-entry', profile?.id] });
+      queryClient.invalidateQueries({ queryKey: ['daily-focus', userId] });
+      queryClient.invalidateQueries({ queryKey: ['current-focus-entry', userId] });
     },
   });
 
@@ -150,12 +151,13 @@ export function useTodaysFocus() {
 // Hook to get the current focus entry for attaching to notes/sessions
 // Returns today's focus OR the most recent carried-forward focus with text
 export function useCurrentFocusEntry() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: ['current-focus-entry', profile?.id],
+    queryKey: ['current-focus-entry', userId],
     queryFn: async () => {
-      if (!profile?.id) return null;
+      if (!userId) return null;
 
       const today = getLocalDateString();
 
@@ -163,7 +165,7 @@ export function useCurrentFocusEntry() {
       const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .eq('focus_date', today)
         .maybeSingle();
 
@@ -177,7 +179,7 @@ export function useCurrentFocusEntry() {
       const { data: recentFocus, error: recentError } = await supabase
         .from('daily_focus')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .order('focus_date', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -191,7 +193,7 @@ export function useCurrentFocusEntry() {
 
       return null;
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: () => readFocusCache(),
@@ -200,44 +202,46 @@ export function useCurrentFocusEntry() {
 
 // Hook to fetch all focus entries for history view
 export function useFocusHistory() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: ['focus-history', profile?.id],
+    queryKey: ['focus-history', userId],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('daily_focus')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .order('focus_date', { ascending: false });
 
       if (error) throw error;
       return data as DailyFocus[];
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
   });
 }
 
 // Hook to fetch all focus dates for filtering
 export function useFocusDates() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: ['focus-dates', profile?.id],
+    queryKey: ['focus-dates', userId],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!userId) return [];
 
       const { data, error } = await supabase
         .from('daily_focus')
         .select('focus_date')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .order('focus_date', { ascending: false });
 
       if (error) throw error;
       return data.map((d) => d.focus_date) as string[];
     },
-    enabled: !!profile?.id,
+    enabled: !!userId,
   });
 }
