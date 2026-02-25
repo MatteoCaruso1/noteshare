@@ -144,7 +144,7 @@ export const AddNoteDialog = ({
           <input
             ref={audioInputRef}
             type="file"
-            accept="audio/*"
+            accept="audio/mpeg,audio/mp3,audio/mp4,audio/m4a,audio/x-m4a,audio/aac,audio/ogg,audio/wav,audio/webm,audio/flac,audio/aiff,.mp3,.m4a,.aac,.ogg,.wav,.webm,.flac,.aiff,.mp4"
             onChange={handleAudioUpload}
             className="hidden"
           />
