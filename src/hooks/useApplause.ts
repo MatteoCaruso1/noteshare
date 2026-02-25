@@ -17,6 +17,12 @@ export interface ApplauseWithProfile extends Applause {
   } | null;
 }
 
+/**
+ * Fetch applause for a single note.
+ * Prefer using batchFetchApplause (from useNotes) for lists —
+ * this hook is only for individual note detail pages or footers
+ * where the cache was already seeded by batchFetchApplause.
+ */
 export function useNoteApplause(noteId: string) {
   return useQuery({
     queryKey: ['applause', noteId],
@@ -36,6 +42,54 @@ export function useNoteApplause(noteId: string) {
       if (error) throw error;
       return (data || []) as unknown as ApplauseWithProfile[];
     },
+    staleTime: 30000,
+  });
+}
+
+/**
+ * Fetch applause for multiple notes in a single query.
+ * Used by timeline pages to avoid N+1 applause queries.
+ * Results are seeded into the per-note ['applause', noteId] cache.
+ */
+export function useMultiNoteApplause(noteIds: string[]) {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: ['applause-batch', noteIds.sort().join(',')],
+    queryFn: async () => {
+      if (noteIds.length === 0) return new Map<string, ApplauseWithProfile[]>();
+
+      const { data, error } = await supabase
+        .from('applause')
+        .select(`
+          id,
+          note_id,
+          user_id,
+          created_at,
+          profile:profiles!applause_user_id_fkey(id, name, avatar)
+        `)
+        .in('note_id', noteIds)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      const map = new Map<string, ApplauseWithProfile[]>();
+      // Initialize all noteIds with empty arrays so we cache "no applause" too
+      noteIds.forEach(id => map.set(id, []));
+      (data as unknown as ApplauseWithProfile[]).forEach(a => {
+        const list = map.get(a.note_id) || [];
+        list.push(a);
+        map.set(a.note_id, list);
+      });
+
+      // Seed per-note cache
+      map.forEach((applauseList, noteId) => {
+        queryClient.setQueryData(['applause', noteId], applauseList);
+      });
+
+      return map;
+    },
+    enabled: noteIds.length > 0,
     staleTime: 30000,
   });
 }

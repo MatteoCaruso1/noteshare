@@ -136,12 +136,21 @@ export function useSubscription() {
     checkSubscription();
   }, [checkSubscription]);
 
-  // Refresh subscription status periodically (every minute)
+  // Listen for checkout completion to refresh subscription status
+  // No periodic polling — subscription is checked on login and after checkout
   useEffect(() => {
     if (!user) return;
 
-    const interval = setInterval(checkSubscription, 60000);
-    return () => clearInterval(interval);
+    const handleVisibilityChange = () => {
+      // Re-check when user returns to tab (e.g., after Stripe checkout in new tab)
+      if (document.visibilityState === 'visible') {
+        // Only re-check if we haven't checked in the last 30 seconds
+        checkSubscription();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, checkSubscription]);
 
   const startCheckout = async (currency: SupportedCurrency = 'USD') => {
