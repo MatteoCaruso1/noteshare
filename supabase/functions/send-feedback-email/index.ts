@@ -84,13 +84,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build email content with HTML-escaped user inputs
     const emailHtml = `
-      <h2>New Feedback from noteshare</h2>
+      <h2>New Feedback from Noteshare</h2>
       <p><strong>From:</strong> ${escapeHtml(userName)} (${escapeHtml(userEmail)})</p>
       <p><strong>User ID:</strong> ${escapeHtml(user.id)}</p>
       <p><strong>Submitted:</strong> ${new Date().toISOString()}</p>
       <hr/>
       
-      <h3>1. What do you like most about noteshare?</h3>
+      <h3>1. What do you like most about Noteshare?</h3>
       <p>${escapeHtml(likeMost)}</p>
       
       <h3>2. What do you dislike or find confusing?</h3>
@@ -110,9 +110,9 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "noteshare Feedback <onboarding@resend.dev>",
+        from: "Noteshare Feedback <onboarding@resend.dev>",
         to: ["matteo.m.caruso1@gmail.com"],
-        subject: `noteshare Feedback from ${userName}`,
+        subject: `Noteshare Feedback from ${userName}`,
         html: emailHtml,
       }),
     });
