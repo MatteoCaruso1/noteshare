@@ -1,56 +1,30 @@
 
 
-# Fix: Stale Content After Hard Refresh (PWA Caching)
+# Capitalize "Noteshare" Everywhere It's User-Visible
 
-## Problem
-After a hard refresh (Ctrl+Shift+R), users still see outdated versions of the app (e.g., missing the report flag icon on profiles). This happens because the service worker intercepts requests before the browser cache and serves stale precached JavaScript bundles.
+## Summary
+Several places in the codebase still use lowercase "noteshare" in user-facing text. Internal storage keys, filenames, and URLs will be left as-is since they're not visible to users and changing them could break existing localStorage data.
 
-## Root Cause
-Two issues in the current PWA setup:
+## Changes
 
-1. **Workbox precache serves old bundles**: The `globPatterns` config caches all JS/CSS/HTML. Even hard refresh doesn't bypass the service worker's cache -- it only bypasses the browser's HTTP cache.
+### 1. index.html -- Meta tags (2 fixes)
+- Line 28: `content="noteshare"` → `content="Noteshare"` (author meta)
+- Line 29: `content="noteshare, noteshare music, ..."` → `content="Noteshare, Noteshare music, ..."` (keywords meta)
 
-2. **Deferred reload on controller change**: When a new service worker takes control, the reload is deferred until the user leaves the tab and comes back. If they stay on the page, they run old code forever.
+### 2. supabase/functions/send-feedback-email/index.ts -- Email content (4 fixes)
+- Line 87: `"New Feedback from noteshare"` → `"New Feedback from Noteshare"`
+- Line 93: `"What do you like most about noteshare?"` → `"What do you like most about Noteshare?"`
+- Line 113: `"noteshare Feedback <...>"` → `"Noteshare Feedback <...>"`
+- Line 115: `` `noteshare Feedback from ${userName}` `` → `` `Noteshare Feedback from ${userName}` ``
 
-## Solution
+## What stays lowercase (intentionally)
+These are NOT user-visible and changing them would break existing user sessions/data:
+- localStorage keys (e.g., `noteshare_remember_me`, `noteshare_active_session`)
+- IndexedDB names (e.g., `noteshare-url-cache`, `noteshare_recordings`)
+- File download names (e.g., `noteshare-practice.png`)
+- Code comments
+- Domain URLs (`notesharemusic.com`)
 
-### Change 1: Add `skipWaiting` to the Workbox config (vite.config.ts)
-
-Add `skipWaiting: true` and `clientsClaim: true` to the Workbox configuration. This tells the new service worker to activate immediately upon installation instead of waiting.
-
-```
-workbox: {
-  skipWaiting: true,
-  clientsClaim: true,
-  globPatterns: [...]
-  ...
-}
-```
-
-### Change 2: Reload immediately on controller change (main.tsx)
-
-Remove the deferred visibility-based reload logic. When a new service worker takes control, reload immediately so the user gets fresh assets. The `skipWaiting` + `clientsClaim` combo ensures this only happens once per deployment, and the reload is near-instant since the new assets are already precached.
-
-Replace the `controllerchange` listener with a simple immediate reload:
-
-```typescript
-navigator.serviceWorker.addEventListener("controllerchange", () => {
-  if (refreshing) return;
-  refreshing = true;
-  window.location.reload();
-});
-```
-
-### Change 3: Simplify SW registration (main.tsx)
-
-Since `skipWaiting` is now handled by Workbox in the SW itself, remove the manual `postMessage({ type: "SKIP_WAITING" })` calls from main.tsx -- they're redundant.
-
-## Why This Works
-- `skipWaiting: true` makes new service workers activate instantly (no waiting for old tabs to close)
-- `clientsClaim: true` makes the new SW take over existing pages immediately
-- Immediate reload on `controllerchange` ensures users get fresh code right away
-- Hard refresh will now work as expected because the SW updates on the spot
-
-## Trade-off
-Users may see a single quick page reload after a new deployment while they're actively using the app. This is a much better UX than serving stale code indefinitely.
-
+## Technical Details
+- **index.html**: Simple text replacement in 2 meta tag attributes
+- **send-feedback-email edge function**: 4 string replacements in the email HTML template; will need redeployment
