@@ -939,6 +939,7 @@ export type Database = {
           goals: string | null
           id: string
           is_active: boolean | null
+          is_mobile: boolean
           notes_summary: string | null
           paused_at: string | null
           paused_duration_ms: number | null
@@ -955,6 +956,7 @@ export type Database = {
           goals?: string | null
           id?: string
           is_active?: boolean | null
+          is_mobile?: boolean
           notes_summary?: string | null
           paused_at?: string | null
           paused_duration_ms?: number | null
@@ -971,6 +973,7 @@ export type Database = {
           goals?: string | null
           id?: string
           is_active?: boolean | null
+          is_mobile?: boolean
           notes_summary?: string | null
           paused_at?: string | null
           paused_duration_ms?: number | null
