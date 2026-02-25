@@ -3,12 +3,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePremium } from '@/contexts/PremiumContext';
-import { useSubscription } from '@/hooks/useSubscription';
 import { format } from 'date-fns';
 
 export function ManagePlansSection() {
-  const { isPremium, openCheckoutDialog } = usePremium();
-  const { subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = useSubscription();
+  const { isPremium, openCheckoutDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();
 
   const handleSwitchPlan = async () => {
     if (isPremium) {

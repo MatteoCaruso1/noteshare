@@ -8,6 +8,7 @@ interface PremiumContextType {
   isPremium: boolean;
   isLoading: boolean;
   isLifetime: boolean;
+  subscriptionEnd: string | null;
   openCustomerPortal: () => Promise<void>;
   checkSubscription: () => Promise<void>;
   // Premium dialog state
@@ -34,6 +35,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     isPremium, 
     isLoading,
     isLifetime,
+    subscriptionEnd,
     openCustomerPortal,
     checkSubscription,
   } = useSubscription();
@@ -92,6 +94,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
       isPremium, 
       isLoading,
       isLifetime,
+      subscriptionEnd,
       openCustomerPortal,
       checkSubscription,
       isPremiumDialogOpen,
