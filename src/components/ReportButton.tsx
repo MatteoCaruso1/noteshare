@@ -29,7 +29,7 @@ export function ReportButton({ itemType, itemId, reportedUserId, className }: Re
       <Button
         variant="ghost"
         size="icon"
-        className={className || "h-6 w-6 text-muted-foreground/50 hover:text-destructive"}
+        className={className || "h-6 w-6 text-muted-foreground hover:text-destructive"}
         onClick={() => setOpen(true)}
         title="Report"
       >
