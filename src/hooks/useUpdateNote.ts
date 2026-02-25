@@ -229,10 +229,16 @@ export function useUpdateNoteContent() {
       noteId,
       textContent,
       focusTextSnapshot,
+      audioFiles,
+      audioFileNames,
+      imageFiles,
     }: {
       noteId: string;
       textContent?: string;
       focusTextSnapshot?: string | null;
+      audioFiles?: string[];
+      audioFileNames?: string[];
+      imageFiles?: string[];
     }) => {
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
@@ -243,6 +249,15 @@ export function useUpdateNoteContent() {
       }
       if (focusTextSnapshot !== undefined) {
         updateData.focus_text_snapshot = focusTextSnapshot;
+      }
+      if (audioFiles !== undefined) {
+        updateData.audio_files = audioFiles;
+      }
+      if (audioFileNames !== undefined) {
+        updateData.audio_file_names = audioFileNames;
+      }
+      if (imageFiles !== undefined) {
+        updateData.image_files = imageFiles;
       }
 
       const { data, error } = await supabase
@@ -255,7 +270,7 @@ export function useUpdateNoteContent() {
       if (error) throw error;
       return data;
     },
-    onMutate: async ({ noteId, textContent, focusTextSnapshot }) => {
+    onMutate: async ({ noteId, textContent, focusTextSnapshot, audioFiles, audioFileNames, imageFiles }) => {
       await queryClient.cancelQueries({ queryKey: ['note', noteId] });
       await queryClient.cancelQueries({ queryKey: ['notes'] });
 
@@ -265,6 +280,9 @@ export function useUpdateNoteContent() {
         const updatedNote = { ...previousNote };
         if (textContent !== undefined) updatedNote.text_content = textContent;
         if (focusTextSnapshot !== undefined) updatedNote.focus_text_snapshot = focusTextSnapshot;
+        if (audioFiles !== undefined) updatedNote.audio_files = audioFiles;
+        if (audioFileNames !== undefined) updatedNote.audio_file_names = audioFileNames;
+        if (imageFiles !== undefined) updatedNote.image_files = imageFiles;
         queryClient.setQueryData<NoteWithAuthor>(['note', noteId], updatedNote);
       }
 
@@ -275,6 +293,9 @@ export function useUpdateNoteContent() {
           const updated = { ...note };
           if (textContent !== undefined) updated.text_content = textContent;
           if (focusTextSnapshot !== undefined) updated.focus_text_snapshot = focusTextSnapshot;
+          if (audioFiles !== undefined) updated.audio_files = audioFiles;
+          if (audioFileNames !== undefined) updated.audio_file_names = audioFileNames;
+          if (imageFiles !== undefined) updated.image_files = imageFiles;
           return updated;
         })
       );
