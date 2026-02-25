@@ -41,7 +41,7 @@ export function ReportButton({ itemType, itemId, reportedUserId, className }: Re
           <AlertDialogHeader>
             <AlertDialogTitle>Report this {itemType === 'comment' ? 'comment' : itemType === 'user' ? 'user' : 'post'}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will be reviewed by the noteshare team. False reports may result in action on your account.
+              This will be reviewed by the Noteshare team.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
