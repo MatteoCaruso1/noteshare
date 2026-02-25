@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { PREMIUM_PRICES, SupportedCurrency, detectUserCurrency } from '@/lib/currencyUtils';
@@ -31,12 +31,13 @@ interface SubscriptionState {
 
 export function useSubscription() {
   const { user } = useAuth();
+  const lastCheckRef = useRef<number>(0);
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
     productId: null,
     subscriptionEnd: null,
     isLifetime: false,
-    isLoading: true, // Start with loading true for initial check
+    isLoading: true,
     hasCheckedOnce: false,
     hasValidatedWithUser: false,
     error: null,
@@ -133,18 +134,20 @@ export function useSubscription() {
 
   // Check subscription on mount and when user changes
   useEffect(() => {
+    lastCheckRef.current = Date.now();
     checkSubscription();
   }, [checkSubscription]);
 
   // Listen for checkout completion to refresh subscription status
-  // No periodic polling — subscription is checked on login and after checkout
+  // Throttle to once per 30 seconds to prevent duplicate fires
   useEffect(() => {
     if (!user) return;
 
     const handleVisibilityChange = () => {
-      // Re-check when user returns to tab (e.g., after Stripe checkout in new tab)
       if (document.visibilityState === 'visible') {
-        // Only re-check if we haven't checked in the last 30 seconds
+        const now = Date.now();
+        if (now - lastCheckRef.current < 30_000) return;
+        lastCheckRef.current = now;
         checkSubscription();
       }
     };
