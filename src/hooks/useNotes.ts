@@ -50,10 +50,10 @@ async function fetchCollaboratorProfiles(notes: any[]): Promise<Map<string, Prof
     return new Map();
   }
   
-  // Fetch all collaborator profiles in one query
+  // Fetch only the fields needed for display
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, user_id, name, username, avatar, current_streak')
     .in('id', Array.from(allCollaboratorIds));
   
   if (error || !profiles) {
@@ -97,8 +97,8 @@ export function useNotes(projectId?: string) {
           .from('notes')
           .select(`
             *,
-            profiles!notes_author_id_fkey (*),
-            practice_sessions!notes_session_id_fkey (*),
+            profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme),
+            practice_sessions!notes_session_id_fkey (id, user_id, started_at, ended_at, paused_duration_ms, collaborator_ids, is_active, paused_at),
             projects!notes_project_id_fkey (id, title),
             goals!notes_goal_id_fkey (id, title, content),
             promo_posts!notes_gig_id_fkey (id, title)
@@ -129,15 +129,15 @@ export function useNotes(projectId?: string) {
         .from('notes')
         .select(`
           *,
-          profiles!notes_author_id_fkey (*),
-          practice_sessions!notes_session_id_fkey (*),
+          profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme),
+          practice_sessions!notes_session_id_fkey (id, user_id, started_at, ended_at, paused_duration_ms, collaborator_ids, is_active, paused_at),
           projects!notes_project_id_fkey (id, title),
           goals!notes_goal_id_fkey (id, title, content),
           promo_posts!notes_gig_id_fkey (id, title)
         `)
       .eq('author_id', userId)
         .order('created_at', { ascending: false })
-        .limit(200);
+        .limit(50);
 
       if (error) throw error;
 
@@ -196,8 +196,8 @@ async function fetchNote(noteId: string) {
     .from('notes')
     .select(`
       *,
-      profiles!notes_author_id_fkey (*),
-      practice_sessions!notes_session_id_fkey (*),
+      profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme),
+      practice_sessions!notes_session_id_fkey (id, user_id, started_at, ended_at, paused_duration_ms, collaborator_ids, is_active, paused_at, goals, notes_summary, focus_text_snapshot),
       projects!notes_project_id_fkey (id, title),
       goals!notes_goal_id_fkey (id, title, content),
       promo_posts!notes_gig_id_fkey (id, title)
@@ -213,7 +213,7 @@ async function fetchNote(noteId: string) {
   if (collaboratorIds && Array.isArray(collaboratorIds) && collaboratorIds.length > 0) {
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, user_id, name, username, avatar, current_streak')
       .in('id', collaboratorIds);
     
     if (profiles) {
@@ -223,8 +223,8 @@ async function fetchNote(noteId: string) {
 
   return {
     ...data,
-    author: data.profiles,
-    session: data.practice_sessions,
+    author: data.profiles as any,
+    session: data.practice_sessions as any,
     sessionCollaborators,
     project: data.projects,
     goal: data.goals,
@@ -398,7 +398,7 @@ export function useMemoryNotes() {
         .from('notes')
         .select(`
           *,
-          profiles!notes_author_id_fkey (*)
+          profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme)
         `)
         .or(`created_at.gte.${oneYearAgo.toISOString().split('T')[0]},created_at.gte.${sixMonthsAgo.toISOString().split('T')[0]},created_at.gte.${oneMonthAgo.toISOString().split('T')[0]}`)
         .order('created_at', { ascending: false })
