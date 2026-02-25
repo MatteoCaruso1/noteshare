@@ -1,56 +1,53 @@
 
 
-## Fix: Notes Disappearing When Starting a Practice Session
+# Fix Note Detail Loading Performance (Statement Timeouts)
 
-### Root Cause
+## Problem
+Note detail pages (and comment loading) are failing with **database statement timeouts** (error code 57014). Queries take 10+ seconds and get cancelled by the database. This affects both your own notes and friends' notes.
 
-The Timeline uses `isPending` from three data sources (notes, projects, gigs) to determine the `loading` prop. When a practice session starts, a brief auth/profile state change can cause `profile?.id` to momentarily become undefined, which changes the React Query keys (e.g., `['notes', undefined, undefined]`). Since there's no cached data for the new key, `isPending` flips to `true`, and the Timeline's state machine forces `uiMode = 'loading'`, hiding all existing content.
+## Root Cause
+The database security policies on `notes` and `note_comments` tables use complex nested queries to check friendship status, but **critical database indexes are missing**. Without indexes, the database scans every row in multiple tables for every single query, causing timeouts as data grows.
 
-The sequence you see:
-1. Notes visible (cached data for old key)
-2. Profile flickers -> notes query gets new key -> `isPending = true` -> notes vanish, but gigs/folders still cached
-3. Gigs/folders query also gets new key -> everything vanishes
-4. Profile stabilizes -> queries refetch -> content reappears
+### Missing indexes identified:
+- `notes.author_id` -- checked in almost every security policy
+- `notes.session_id` -- used in joins when loading note details
+- `notes.project_id` -- used in joins and security policies
+- `notes.visibility` -- filtered in friendship visibility checks
+- `note_comments.note_id` -- every comment query filters by this
+- `note_comments.author_id` -- security policy checks this
+- `friendships.addressee_id` -- friendship lookups (only a composite index on requester+addressee exists, not a standalone addressee index)
+- `friendships.status` -- filtered as `status = 'accepted'` in every friendship check
 
-### Fix
+## Solution
 
-**File: `src/components/Timeline.tsx`** (lines 160-164)
+### Step 1: Add database indexes (single migration)
 
-The state machine currently forces loading mode whenever `loading` is `true`, even if we already have content. The fix: once content has been displayed, never go back to loading/skeleton state. Only show loading on the true cold start (first ever load with no data).
+Create indexes on all the columns used in security policy checks and query joins:
 
-Change the logic at line 160-164 from:
+```sql
+-- Notes table: core columns used in RLS and queries
+CREATE INDEX IF NOT EXISTS idx_notes_author_id ON public.notes (author_id);
+CREATE INDEX IF NOT EXISTS idx_notes_session_id ON public.notes (session_id);
+CREATE INDEX IF NOT EXISTS idx_notes_project_id ON public.notes (project_id);
+CREATE INDEX IF NOT EXISTS idx_notes_visibility ON public.notes (visibility);
+CREATE INDEX IF NOT EXISTS idx_notes_created_at ON public.notes (created_at DESC);
 
+-- Note comments: columns used in RLS and queries
+CREATE INDEX IF NOT EXISTS idx_note_comments_note_id ON public.note_comments (note_id);
+CREATE INDEX IF NOT EXISTS idx_note_comments_author_id ON public.note_comments (author_id);
+
+-- Friendships: standalone index on addressee_id for reverse lookups
+CREATE INDEX IF NOT EXISTS idx_friendships_addressee_id ON public.friendships (addressee_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_status ON public.friendships (status);
 ```
-if (loading) {
-  setUiMode('loading');
-  return;
-}
-```
 
-To:
+### Step 2: No code changes needed
 
-```
-if (loading && !hasContent) {
-  setUiMode('loading');
-  return;
-}
+The queries and security policies themselves are fine -- they just need indexes to perform efficiently. Once indexes are in place, the same queries that currently timeout should complete in milliseconds.
 
-if (loading && hasContent) {
-  // Background reload - keep showing existing content
-  return;
-}
-```
+## Expected Result
+- Note detail pages load in under 1-2 seconds instead of timing out
+- Friends feed loads reliably
+- Comment sections appear immediately
+- No more 500 errors from statement timeouts
 
-This ensures that once notes/gigs/folders are on screen, they stay visible even if a query key change triggers `isPending = true` momentarily. The user will never see their timeline disappear during a session start.
-
-### Why This Is Safe
-
-- Cold start (no cached data): Still shows loading skeletons as before
-- Background refetch with existing data: Keeps content visible (no flicker)
-- The `isRefetching` prop already handles showing a subtle loading indicator if needed
-
-### Summary
-
-| File | Change |
-|------|--------|
-| `src/components/Timeline.tsx` | Guard loading state: only show skeletons when `loading` is true AND there is no existing content |
