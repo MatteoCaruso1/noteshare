@@ -19,6 +19,7 @@ import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
 import { ArrowLeft, User, Trash2, SendHorizontal } from 'lucide-react';
+import { ReportButton } from '@/components/ReportButton';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -242,36 +243,45 @@ const NoteDetail = () => {
                                 {format(new Date(comment.created_at), 'MMM d, h:mm a')}
                               </span>
                             </div>
-                            {isCommentOwner && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This will permanently delete your comment. This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDeleteComment(comment.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            <div className="flex items-center gap-0.5">
+                              {!isCommentOwner && (
+                                <ReportButton
+                                  itemType="comment"
+                                  itemId={comment.id}
+                                  reportedUserId={comment.author_id}
+                                />
+                              )}
+                              {isCommentOwner && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
                                     >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will permanently delete your comment. This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDeleteComment(comment.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
                           </div>
                           <p className="text-sm mb-2">
                             <CommentText content={comment.content} />

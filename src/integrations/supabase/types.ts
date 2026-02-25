@@ -1199,6 +1199,36 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          reported_item_id: string
+          reported_item_type: string
+          reported_user_id: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reported_item_id: string
+          reported_item_type: string
+          reported_user_id: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reported_item_id?: string
+          reported_item_type?: string
+          reported_user_id?: string
+          reporter_id?: string
+        }
+        Relationships: []
+      }
       weekly_goals: {
         Row: {
           created_at: string
