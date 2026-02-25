@@ -80,13 +80,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // If auth header present, verify it
+    // If auth header present, verify JWT locally (no server round-trip)
     if (authHeader && !isPublicRequest) {
       const token = authHeader.replace("Bearer ", "");
-      const { data: { user }, error: userError } = await admin.auth.getUser(token);
+      const { data, error: claimsError } = await admin.auth.getClaims(token);
 
-      if (userError || !user) {
-        console.log("[get-signed-url] Auth failed:", userError?.message || "No user");
+      if (claimsError || !data?.claims?.sub) {
+        console.log("[get-signed-url] Auth failed:", claimsError?.message || "No claims");
         const results: Record<string, string> = {};
         for (const url of toSign) {
           if (url) results[url] = url;
@@ -95,7 +95,6 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.log("[get-signed-url] Auth verified for user:", user.id);
     }
 
     if (isPublicRequest) {
