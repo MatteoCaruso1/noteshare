@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { useAnalytics, PremiumUser, NoteActivatedUser } from '@/hooks/useAnalytics';
+import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music } from 'lucide-react';
+import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
 const PREVIEW_COUNT = 5;
-// Metric definitions for tooltips
 const METRIC_DEFINITIONS = {
   noteActivatedUsers: "Users who created at least one Note on a given day. This measures daily active engagement with the core feature.",
   activationRate: "Percentage of users who visited the Practice page and then created a Note. Formula: (Note Creators / Practice Page Viewers) × 100",
@@ -72,7 +71,16 @@ const getTypeLabel = (type: PremiumUser['type']) => {
   }
 };
 
-const PremiumUsersList = ({ users }: { users: PremiumUser[] }) => {
+// Generic user list component
+interface UserListProps<T> {
+  users: T[];
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  renderBadge: (user: T) => React.ReactNode;
+}
+
+function UserList<T extends { name: string; username?: string }>({ users, icon, title, description, renderBadge }: UserListProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const hasMore = users.length > PREVIEW_COUNT;
   const displayUsers = isOpen ? users : users.slice(0, PREVIEW_COUNT);
@@ -82,10 +90,10 @@ const PremiumUsersList = ({ users }: { users: PremiumUser[] }) => {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5" />
-            Premium Users
+            {icon}
+            {title}
           </CardTitle>
-          <CardDescription>No premium users yet</CardDescription>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -95,10 +103,10 @@ const PremiumUsersList = ({ users }: { users: PremiumUser[] }) => {
     <Card className="mb-8">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Crown className="w-5 h-5" />
-          Premium Users ({users.length})
+          {icon}
+          {title} ({users.length})
         </CardTitle>
-        <CardDescription>Users with active premium access</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
@@ -110,9 +118,7 @@ const PremiumUsersList = ({ users }: { users: PremiumUser[] }) => {
                   <span className="text-sm text-muted-foreground">@{user.username}</span>
                 )}
               </div>
-              <Badge variant={getTypeBadgeVariant(user.type)}>
-                {getTypeLabel(user.type)}
-              </Badge>
+              {renderBadge(user)}
             </div>
           ))}
         </div>
@@ -130,63 +136,7 @@ const PremiumUsersList = ({ users }: { users: PremiumUser[] }) => {
       </CardContent>
     </Card>
   );
-};
-
-const NoteActivatedUsersList = ({ users }: { users: NoteActivatedUser[] }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const hasMore = users.length > PREVIEW_COUNT;
-  const displayUsers = isOpen ? users : users.slice(0, PREVIEW_COUNT);
-
-  if (users.length === 0) {
-    return (
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Music className="w-5 h-5" />
-            Note-activated Users
-          </CardTitle>
-          <CardDescription>No users have created notes yet</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Music className="w-5 h-5" />
-          Note-activated Users ({users.length})
-        </CardTitle>
-        <CardDescription>All users who have created at least one note</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {displayUsers.map((user, idx) => (
-            <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-              <div className="flex flex-col">
-                <span className="font-medium">{user.name}</span>
-                <span className="text-sm text-muted-foreground">@{user.username}</span>
-              </div>
-              <Badge variant="outline">{user.noteCount} notes</Badge>
-            </div>
-          ))}
-        </div>
-        {hasMore && (
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger className="flex items-center gap-1 text-sm text-primary mt-3 hover:underline">
-              {isOpen ? (
-                <>Show less <ChevronUp className="w-4 h-4" /></>
-              ) : (
-                <>Show all {users.length} users <ChevronDown className="w-4 h-4" /></>
-              )}
-            </CollapsibleTrigger>
-          </Collapsible>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+}
 
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
@@ -575,10 +525,62 @@ const AdminAnalytics = () => {
       </Card>
 
       {/* Premium Users List */}
-      <PremiumUsersList users={data.premiumUsers || []} />
+      <UserList<PremiumUser>
+        users={data.premiumUsers || []}
+        icon={<Crown className="w-5 h-5" />}
+        title="Premium Users"
+        description="Users with active premium access"
+        renderBadge={(user) => (
+          <Badge variant={getTypeBadgeVariant(user.type)}>
+            {getTypeLabel(user.type)}
+          </Badge>
+        )}
+      />
 
-      {/* Note-activated Users List */}
-      <NoteActivatedUsersList users={data.noteActivatedUsers.users || []} />
+      {/* Note-activated Users List (filtered by date range) */}
+      <UserList<NoteActivatedUser>
+        users={data.noteActivatedUsers.users || []}
+        icon={<Music className="w-5 h-5" />}
+        title="Note-activated Users"
+        description={`Users who created at least one note in the last ${days} days`}
+        renderBadge={(user) => (
+          <Badge variant="outline">{user.noteCount} notes</Badge>
+        )}
+      />
+
+      {/* Friends Count by Account */}
+      <UserList<FriendCountUser>
+        users={data.friendCountUsers || []}
+        icon={<UserPlus className="w-5 h-5" />}
+        title="Friends by Account"
+        description="Number of accepted friendships per user"
+        renderBadge={(user) => (
+          <Badge variant="outline">{user.friendCount} friends</Badge>
+        )}
+      />
+
+      {/* Try Pro Clicks by Account */}
+      <UserList<TryProClickUser>
+        users={data.tryProClickUsers || []}
+        icon={<Star className="w-5 h-5" />}
+        title="Try Pro Clicks"
+        description="Lifetime count of times each user opened the Pro dialog"
+        renderBadge={(user) => (
+          <Badge variant="outline">{user.clickCount} clicks</Badge>
+        )}
+      />
+
+      {/* Mobile Session Percentage by Account */}
+      <UserList<MobileSessionUser>
+        users={data.mobileSessionUsers || []}
+        icon={<Smartphone className="w-5 h-5" />}
+        title="Mobile vs Total Sessions"
+        description="Percentage of practice sessions started on mobile (lifetime)"
+        renderBadge={(user) => (
+          <Badge variant="outline">{user.mobilePercent}% mobile ({user.mobileCount}/{user.totalCount})</Badge>
+        )}
+      />
+
       </div>
     </div>
   );

@@ -146,6 +146,10 @@ export function useStartSession() {
         .eq('user_id', userId)
         .eq('is_active', true);
 
+      // Detect mobile
+      const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (window.innerWidth <= 768);
+
       // Create new session
       const { data, error } = await supabase
         .from('practice_sessions')
@@ -154,7 +158,8 @@ export function useStartSession() {
           goals,
           is_active: true,
           started_at: new Date().toISOString(),
-        })
+          is_mobile: isMobile,
+        } as any)
         .select()
         .single();
 

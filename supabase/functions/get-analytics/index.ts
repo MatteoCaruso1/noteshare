@@ -57,6 +57,26 @@ interface NoteActivatedUser {
   noteCount: number;
 }
 
+interface FriendCountUser {
+  name: string;
+  username: string;
+  friendCount: number;
+}
+
+interface TryProClickUser {
+  name: string;
+  username: string;
+  clickCount: number;
+}
+
+interface MobileSessionUser {
+  name: string;
+  username: string;
+  mobileCount: number;
+  totalCount: number;
+  mobilePercent: number;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -178,7 +198,6 @@ serve(async (req) => {
 
     if (pageViewsError) {
       console.error('Page views query error:', pageViewsError);
-      // Don't throw - this table may be empty initially
     }
 
     // Aggregate page views by date
@@ -201,7 +220,6 @@ serve(async (req) => {
       const viewers = viewersByDate.get(dateStr)?.size || 0;
       const creators = notesByDate.get(dateStr)?.size || 0;
       
-      // Only calculate rate if there were viewers
       const rate = viewers > 0 ? Math.round((creators / viewers) * 10000) / 100 : 0;
       
       dailyRates.push({
@@ -215,7 +233,6 @@ serve(async (req) => {
     // ============================================
     // Metric 3: Day 7 Core Retention (Note → Note)
     // ============================================
-    // Get all notes to find each user's first note date
     const { data: allNotesData, error: allNotesError } = await supabaseAdmin
       .from('notes')
       .select('author_id, created_at')
@@ -253,7 +270,6 @@ serve(async (req) => {
       cohortDate.setDate(currentDate.getDate() - i);
       const cohortDateStr = cohortDate.toISOString().split('T')[0];
       
-      // Find users whose first note was on this cohort date
       const cohortUsers: string[] = [];
       userFirstNoteDate.forEach((firstNoteDate, userId) => {
         if (firstNoteDate === cohortDateStr) {
@@ -261,7 +277,6 @@ serve(async (req) => {
         }
       });
 
-      // Check how many returned 7 days later
       const retentionDate = new Date(cohortDate);
       retentionDate.setDate(retentionDate.getDate() + 7);
       const retentionDateStr = retentionDate.toISOString().split('T')[0];
@@ -285,13 +300,12 @@ serve(async (req) => {
       });
     }
 
-    // Get today's Day 7 retention (for users who joined 7 days ago)
+    // Get today's Day 7 retention
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Find users whose first note was exactly 7 days ago
     const cohortFrom7DaysAgo: string[] = [];
     userFirstNoteDate.forEach((firstNoteDate, userId) => {
       if (firstNoteDate === sevenDaysAgoStr) {
@@ -316,7 +330,121 @@ serve(async (req) => {
     };
 
     // ============================================
-    // Metrics 4 & 5: Stripe Subscription Analysis
+    // Note-activated users list (FILTERED by date range)
+    // ============================================
+    const noteCountByUserFiltered = new Map<string, number>();
+    for (const note of notesData || []) {
+      const count = noteCountByUserFiltered.get(note.author_id) || 0;
+      noteCountByUserFiltered.set(note.author_id, count + 1);
+    }
+
+    const filteredNoteUserIds = Array.from(noteCountByUserFiltered.keys());
+    const { data: filteredNoteUserProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name, username')
+      .in('id', filteredNoteUserIds.length > 0 ? filteredNoteUserIds : ['00000000-0000-0000-0000-000000000000']);
+
+    const noteActivatedUsersList: NoteActivatedUser[] = (filteredNoteUserProfiles || [])
+      .map(p => ({
+        name: p.name,
+        username: p.username,
+        noteCount: noteCountByUserFiltered.get(p.id) || 0
+      }))
+      .sort((a, b) => b.noteCount - a.noteCount);
+
+    // ============================================
+    // NEW: Friends count by account
+    // ============================================
+    const { data: friendshipsData } = await supabaseAdmin
+      .from('friendships')
+      .select('requester_id, addressee_id')
+      .eq('status', 'accepted');
+
+    const friendCountByUser = new Map<string, number>();
+    for (const f of friendshipsData || []) {
+      friendCountByUser.set(f.requester_id, (friendCountByUser.get(f.requester_id) || 0) + 1);
+      friendCountByUser.set(f.addressee_id, (friendCountByUser.get(f.addressee_id) || 0) + 1);
+    }
+
+    const friendUserIds = Array.from(friendCountByUser.keys());
+    const { data: friendUserProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name, username')
+      .in('id', friendUserIds.length > 0 ? friendUserIds : ['00000000-0000-0000-0000-000000000000']);
+
+    const friendCountUsers: FriendCountUser[] = (friendUserProfiles || [])
+      .map(p => ({
+        name: p.name,
+        username: p.username,
+        friendCount: friendCountByUser.get(p.id) || 0
+      }))
+      .sort((a, b) => b.friendCount - a.friendCount);
+
+    // ============================================
+    // NEW: Try Pro button clicks by account (lifetime)
+    // ============================================
+    const { data: tryProViews } = await supabaseAdmin
+      .from('page_views')
+      .select('user_id')
+      .eq('page_name', 'try_pro');
+
+    const tryProCountByUser = new Map<string, number>();
+    for (const v of tryProViews || []) {
+      tryProCountByUser.set(v.user_id, (tryProCountByUser.get(v.user_id) || 0) + 1);
+    }
+
+    // Get profiles for try_pro users - need to match by user_id (auth uid)
+    const tryProUserIds = Array.from(tryProCountByUser.keys());
+    const { data: tryProUserProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('user_id, name, username')
+      .in('user_id', tryProUserIds.length > 0 ? tryProUserIds : ['00000000-0000-0000-0000-000000000000']);
+
+    const tryProClickUsers: TryProClickUser[] = (tryProUserProfiles || [])
+      .map(p => ({
+        name: p.name,
+        username: p.username,
+        clickCount: tryProCountByUser.get(p.user_id!) || 0
+      }))
+      .sort((a, b) => b.clickCount - a.clickCount);
+
+    // ============================================
+    // NEW: Mobile session percentage by account (lifetime)
+    // ============================================
+    const { data: allSessions } = await supabaseAdmin
+      .from('practice_sessions')
+      .select('user_id, is_mobile')
+      .not('ended_at', 'is', null);
+
+    const mobileStatsByUser = new Map<string, { mobile: number; total: number }>();
+    for (const s of allSessions || []) {
+      const stats = mobileStatsByUser.get(s.user_id) || { mobile: 0, total: 0 };
+      stats.total++;
+      if (s.is_mobile) stats.mobile++;
+      mobileStatsByUser.set(s.user_id, stats);
+    }
+
+    const mobileUserIds = Array.from(mobileStatsByUser.keys());
+    const { data: mobileUserProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name, username')
+      .in('id', mobileUserIds.length > 0 ? mobileUserIds : ['00000000-0000-0000-0000-000000000000']);
+
+    const mobileSessionUsers: MobileSessionUser[] = (mobileUserProfiles || [])
+      .map(p => {
+        const stats = mobileStatsByUser.get(p.id) || { mobile: 0, total: 0 };
+        return {
+          name: p.name,
+          username: p.username,
+          mobileCount: stats.mobile,
+          totalCount: stats.total,
+          mobilePercent: stats.total > 0 ? Math.round((stats.mobile / stats.total) * 10000) / 100 : 0
+        };
+      })
+      .sort((a, b) => b.totalCount - a.totalCount);
+
+    // ============================================
+    // Stripe Subscription Analysis
     // ============================================
     let paidConversion: PaidConversion = {
       totalActive: 0,
@@ -330,31 +458,6 @@ serve(async (req) => {
       rate: 0
     };
 
-    // Also get note-activated users list with profile info
-    const noteCountByUser = new Map<string, number>();
-    for (const note of allNotesData || []) {
-      const count = noteCountByUser.get(note.author_id) || 0;
-      noteCountByUser.set(note.author_id, count + 1);
-    }
-
-    // Get profile info for note-activated users
-    const noteUserIds = Array.from(noteCountByUser.keys());
-    const { data: noteUserProfiles } = await supabaseAdmin
-      .from('profiles')
-      .select('id, name, username')
-      .in('id', noteUserIds);
-
-    const noteActivatedUsersList: NoteActivatedUser[] = (noteUserProfiles || [])
-      .map(p => ({
-        name: p.name,
-        username: p.username,
-        noteCount: noteCountByUser.get(p.id) || 0
-      }))
-      .sort((a, b) => b.noteCount - a.noteCount);
-
-    // ============================================
-    // Metrics 4 & 5: Stripe Subscription Analysis + Premium User Details
-    // ============================================
     let premiumUsers: PremiumUser[] = [];
 
     if (stripeSecretKey) {
@@ -362,7 +465,6 @@ serve(async (req) => {
         const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
         console.log('Fetching Stripe subscription data...');
 
-        // Metric 4: Get active subscriptions (trialing + active)
         const activeSubscriptions = await stripe.subscriptions.list({
           status: 'active',
           limit: 100,
@@ -379,20 +481,13 @@ serve(async (req) => {
         const actuallyPaying = activeSubscriptions.data.length;
         const totalActive = inTrial + actuallyPaying;
 
-        paidConversion = {
-          totalActive,
-          inTrial,
-          actuallyPaying
-        };
+        paidConversion = { totalActive, inTrial, actuallyPaying };
 
         console.log(`Stripe: ${totalActive} active (${inTrial} trial, ${actuallyPaying} paying)`);
 
-        // Collect premium user details
-        // Active (paying) subscriptions
         for (const sub of activeSubscriptions.data) {
           const customer = sub.customer as Stripe.Customer;
           const priceId = sub.items.data[0]?.price?.id || '';
-          // Check if it's a lifetime purchase or monthly subscription
           const isLifetime = sub.items.data[0]?.price?.type === 'one_time' || 
                             priceId.includes('lifetime') ||
                             sub.items.data[0]?.price?.recurring === null;
@@ -406,7 +501,6 @@ serve(async (req) => {
           });
         }
 
-        // Trialing subscriptions
         for (const sub of trialingSubscriptions.data) {
           const customer = sub.customer as Stripe.Customer;
           premiumUsers.push({
@@ -421,15 +515,12 @@ serve(async (req) => {
         // Get usernames from profiles based on email
         const premiumEmails = premiumUsers.map(u => u.email).filter(Boolean);
         if (premiumEmails.length > 0) {
-          // Get user_ids from auth.users by email
           const { data: profilesWithEmails } = await supabaseAdmin
             .from('profiles')
             .select('name, username, user_id');
           
-          // Map usernames to premium users by matching auth emails
           for (const pu of premiumUsers) {
             if (pu.email) {
-              // Find matching profile - we need to check auth.users for email match
               const matchingProfile = profilesWithEmails?.find(p => p.name === pu.name);
               if (matchingProfile) {
                 pu.username = matchingProfile.username;
@@ -439,7 +530,7 @@ serve(async (req) => {
           }
         }
 
-        // Metric 5: Trial to Paid Conversion Rate (last 7 days)
+        // Trial to Paid Conversion Rate (last 7 days)
         const allSubscriptions = await stripe.subscriptions.list({
           status: 'all',
           limit: 100,
@@ -467,11 +558,7 @@ serve(async (req) => {
           ? Math.round((converted / trialsEndedLast7Days) * 10000) / 100 
           : 0;
 
-        trialToPaidRate = {
-          trialsEndedLast7Days,
-          converted,
-          rate: conversionRate
-        };
+        trialToPaidRate = { trialsEndedLast7Days, converted, rate: conversionRate };
 
         console.log(`Trial conversion: ${converted}/${trialsEndedLast7Days} = ${conversionRate}%`);
 
@@ -523,6 +610,9 @@ serve(async (req) => {
       paidConversion,
       trialToPaidRate,
       premiumUsers,
+      friendCountUsers,
+      tryProClickUsers,
+      mobileSessionUsers,
       metadata: {
         daysRequested: days,
         startDate: startDateStr,

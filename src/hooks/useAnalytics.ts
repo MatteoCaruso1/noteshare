@@ -57,6 +57,26 @@ export interface NoteActivatedUser {
   noteCount: number;
 }
 
+export interface FriendCountUser {
+  name: string;
+  username: string;
+  friendCount: number;
+}
+
+export interface TryProClickUser {
+  name: string;
+  username: string;
+  clickCount: number;
+}
+
+export interface MobileSessionUser {
+  name: string;
+  username: string;
+  mobileCount: number;
+  totalCount: number;
+  mobilePercent: number;
+}
+
 export interface AnalyticsData {
   noteActivatedUsers: {
     dailyCounts: DailyCount[];
@@ -73,6 +93,9 @@ export interface AnalyticsData {
   paidConversion: PaidConversion;
   trialToPaidRate: TrialToPaidRate;
   premiumUsers: PremiumUser[];
+  friendCountUsers: FriendCountUser[];
+  tryProClickUsers: TryProClickUser[];
+  mobileSessionUsers: MobileSessionUser[];
   metadata: {
     daysRequested: number;
     startDate: string;

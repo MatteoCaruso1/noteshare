@@ -1,6 +1,8 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
 import { useSubscription, SUBSCRIPTION_TIERS } from '@/hooks/useSubscription';
 import { detectUserCurrency, SupportedCurrency } from '@/lib/currencyUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PremiumContextType {
   isPremium: boolean;
@@ -27,6 +29,7 @@ interface PremiumContextType {
 const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
 
 export function PremiumProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const { 
     isPremium, 
     isLoading,
@@ -53,7 +56,16 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
 
   const openPremiumDialog = useCallback(() => {
     setIsPremiumDialogOpen(true);
-  }, []);
+    // Track "Try Pro" click for analytics
+    if (user?.id) {
+      supabase
+        .from('page_views')
+        .insert({ user_id: user.id, page_name: 'try_pro' })
+        .then(({ error }) => {
+          if (error) console.debug('Try Pro tracking error:', error.message);
+        });
+    }
+  }, [user?.id]);
 
   const closePremiumDialog = useCallback(() => {
     setIsPremiumDialogOpen(false);
