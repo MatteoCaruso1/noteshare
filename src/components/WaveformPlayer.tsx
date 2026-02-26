@@ -284,8 +284,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   
   if (error && signedUrl) {
     return (
-      <div className={`flex items-center gap-2 p-3 rounded-lg ${isSepia ? 'bg-purple-900/20 border border-purple-700/30' : 'bg-secondary/50'}`}>
-        <Mic className={`w-4 h-4 flex-shrink-0 ${isSepia ? 'text-purple-500' : 'text-primary'}`} />
+      <div className={`flex items-center gap-2 pl-2 pr-3 py-3 rounded-lg ${isSepia ? 'bg-purple-900/20 border border-purple-700/30' : 'bg-secondary/50'}`}>
         <audio
           src={signedUrl}
           controls
@@ -375,7 +374,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
           ) : null}
         </div>
       )}
-      <div className="flex items-center gap-3 p-3 pt-2">
+      <div className="flex items-center gap-2 pl-1 pr-3 py-2 pt-1.5">
         <Button
           variant="ghost"
           size="icon"
