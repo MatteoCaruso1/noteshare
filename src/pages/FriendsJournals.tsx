@@ -18,8 +18,10 @@ import { Users, Bell, MessageCircle, PenSquare, UserPlus, X, Waypoints } from 'l
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+const FRIENDS_LIST_VIEWED_KEY = 'noteshare_friends_list_viewed';
+
 const FriendsJournals = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { data: friends } = useFriends();
@@ -34,6 +36,34 @@ const FriendsJournals = () => {
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
+
+  // Persistent highlight for friends list button until first clicked
+  const [friendsListViewed, setFriendsListViewed] = useState(() => {
+    if (!profile?.id) return true; // default to no pulse if no profile yet
+    try {
+      return localStorage.getItem(`${FRIENDS_LIST_VIEWED_KEY}_${profile.id}`) === 'true';
+    } catch { return false; }
+  });
+
+  // Re-check when profile loads
+  useEffect(() => {
+    if (profile?.id) {
+      try {
+        const viewed = localStorage.getItem(`${FRIENDS_LIST_VIEWED_KEY}_${profile.id}`) === 'true';
+        setFriendsListViewed(viewed);
+      } catch { /* ignore */ }
+    }
+  }, [profile?.id]);
+
+  const handleFriendsListOpenChange = (open: boolean) => {
+    setFriendsListOpen(open);
+    if (open && !friendsListViewed && profile?.id) {
+      try {
+        localStorage.setItem(`${FRIENDS_LIST_VIEWED_KEY}_${profile.id}`, 'true');
+      } catch { /* ignore */ }
+      setFriendsListViewed(true);
+    }
+  };
   
   // Calculate unread messages count
   const unreadMessagesCount = conversations?.reduce((sum, c) => sum + c.unreadCount, 0) || 0;
@@ -159,9 +189,9 @@ const FriendsJournals = () => {
               </Dialog>
 
               {/* Friends Button - no count, Add Friend is inside FriendsList */}
-              <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-                <div className="cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
-                  <Users className="w-4 h-4 text-muted-foreground" />
+              <FriendsList open={friendsListOpen} onOpenChange={handleFriendsListOpenChange}>
+                <div data-tour="friends-list" className="cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                  <Users className={`w-4 h-4 ${!friendsListViewed ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
                 </div>
               </FriendsList>
             </div>
