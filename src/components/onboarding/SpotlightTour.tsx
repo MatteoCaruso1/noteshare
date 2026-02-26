@@ -40,6 +40,12 @@ const tourSteps: TourStep[] = [
     position: 'top',
   },
   {
+    targetSelector: '[data-tour="friends-list"]',
+    message: 'View your friends and add new ones here!',
+    position: 'bottom',
+    navigateTo: '/friends',
+  },
+  {
     targetSelector: '[data-tour="help-tips"]',
     message: 'Learn how to best leverage Noteshare using the tips button',
     position: 'bottom',
@@ -61,7 +67,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isFinalStep = step === 6;
+  const isFinalStep = step === 7;
   const currentTourStep = !isFinalStep ? tourSteps[step - 1] : null;
 
   const updateTargetRect = useCallback(() => {
@@ -299,7 +305,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       {/* Step indicator - hide on step 4 (friends nav) since it overlaps with bottom nav */}
       {!isFinalStep && step !== 4 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-          {[1, 2, 3, 4, 5].map((s) => (
+          {[1, 2, 3, 4, 5, 6].map((s) => (
             <div
               key={s}
               className={cn(
