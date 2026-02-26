@@ -94,7 +94,7 @@ export function useFriendsFeedProjects() {
         owner: project.profiles,
       }));
     },
-    enabled: !!friendIds && friendIds.length > 0,
+    enabled: friendIds !== undefined,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev: any) => prev,

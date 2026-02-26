@@ -293,7 +293,7 @@ export function useFriendsNotes() {
         session: note.practice_sessions,
       })) as NoteWithAuthor[];
     },
-    enabled: !!profile?.id && !!friendIds && friendIds.length > 0,
+    enabled: !!profile?.id && friendIds !== undefined,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (previousData) => previousData,
