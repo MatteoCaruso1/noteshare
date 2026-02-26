@@ -295,16 +295,16 @@ export function QuickNoteCapture() {
                       onCheckedChange={(checked) => {
                         setAttachFocus(checked);
                         if (checked) {
-                          toast.success("Your note will be linked to Practice Board");
+                          toast.success("Your note will be linked to Practice List");
                         } else {
-                          toast.success("Your note will no longer be linked to Practice Board");
+                          toast.success("Your note will no longer be linked to Practice List");
                         }
                       }}
                       className="scale-90"
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Link to Practice Board</TooltipContent>
+                <TooltipContent>Link to Practice List</TooltipContent>
               </Tooltip>
             </div>
           </TooltipProvider>
