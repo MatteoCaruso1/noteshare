@@ -11,7 +11,7 @@ export function useGoals(userId?: string) {
       
       const { data, error } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, user_id, goal_type, title, content, description, target_date, progress_type, target_steps, current_steps, target_minutes, current_minutes, is_completed, completed_at, reflection, priority, created_at, updated_at')
         .eq('user_id', userId)
         .order('goal_type', { ascending: true });
 
@@ -55,7 +55,7 @@ export function useCreateGoal() {
       // Get current max priority for this goal type
       const { data: existingGoals } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, priority, is_completed')
         .eq('user_id', userId)
         .eq('goal_type', goalType);
 
@@ -243,7 +243,7 @@ export function useCompleteGoal() {
       // First get the goal to update progress to 100%
       const { data: goalData } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, target_steps, target_minutes')
         .eq('id', goalId)
         .single();
 
@@ -291,7 +291,7 @@ export function useIncrementProgress() {
       // Get current value
       const { data: goalData } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, current_steps, current_minutes, target_steps, target_minutes')
         .eq('id', goalId)
         .single();
 
@@ -343,7 +343,7 @@ export function useDecrementProgress() {
     }) => {
       const { data: goalData } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, current_steps, current_minutes, target_steps, target_minutes')
         .eq('id', goalId)
         .single();
 
@@ -385,7 +385,7 @@ export function useSetProgress() {
     }) => {
       const { data: goalData } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, current_steps, current_minutes, target_steps, target_minutes')
         .eq('id', goalId)
         .single();
 
@@ -439,7 +439,7 @@ export function useRestoreGoal() {
       // Get current goal data
       const { data: goalData } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, user_id')
         .eq('id', goalId)
         .single();
 
@@ -449,7 +449,7 @@ export function useRestoreGoal() {
       // Get max priority for this goal type
       const { data: existingGoals } = await supabase
         .from('goals')
-        .select('*')
+        .select('id, priority, is_completed')
         .eq('user_id', goal.user_id)
         .eq('goal_type', goalType);
 

@@ -17,7 +17,7 @@ export function useFriendships() {
       const [friendshipsResult, profilesResult] = await Promise.all([
         supabase
           .from('friendships')
-          .select('*')
+          .select('id, requester_id, addressee_id, status, created_at, updated_at')
           .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`),
         supabase
           .from('profiles')
@@ -55,7 +55,7 @@ export function usePendingFriendRequests() {
       const { data, error } = await supabase
         .from('friendships')
         .select(`
-          *,
+          id, requester_id, addressee_id, status, created_at,
           profiles!friendships_requester_id_fkey (
             id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak
           )
@@ -207,7 +207,7 @@ export function useFriendshipStatus(targetProfileId: string | undefined) {
 
       const { data, error } = await supabase
         .from('friendships')
-        .select('*')
+        .select('id, requester_id, addressee_id, status')
         .or(`and(requester_id.eq.${profile.id},addressee_id.eq.${targetProfileId}),and(requester_id.eq.${targetProfileId},addressee_id.eq.${profile.id})`)
         .maybeSingle();
 
@@ -230,7 +230,7 @@ export function useSearchUsers(query: string) {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak, bio, location, skill_level')
         .or(`name.ilike.%${searchTerm}%,username.ilike.%${searchTerm}%`)
         .neq('id', profile?.id || '')
         .limit(20);
@@ -254,7 +254,9 @@ export function useFriendsNotes() {
       const { data: notes, error: notesError } = await supabase
         .from('notes')
         .select(`
-          *,
+          id, author_id, session_id, project_id, goal_id, gig_id, focus_entry_id, focus_date, focus_text_snapshot,
+          text_content, tags, visibility, comment_count, created_at, updated_at,
+          audio_files, audio_file_names, image_files, video_files,
           profiles!notes_author_id_fkey (
             id, name, username, avatar, current_streak
           ),
@@ -417,7 +419,7 @@ export function useSuggestedMusicians() {
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak, bio, location, skill_level, streak_achievement_counts, followers_count, following_count, celebrated_streak_milestones, color_theme, created_at, updated_at')
         .in('id', suggestionIds)
         .limit(15);
 

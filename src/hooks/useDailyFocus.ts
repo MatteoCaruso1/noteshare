@@ -62,7 +62,7 @@ export function useTodaysFocus() {
       // First, try to get today's focus
       const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
-        .select('*')
+        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
         .eq('user_id', userId)
         .eq('focus_date', today)
         .maybeSingle();
@@ -76,7 +76,7 @@ export function useTodaysFocus() {
       // If no entry for today, get the most recent focus to carry forward
       const { data: recentFocus, error: recentError } = await supabase
         .from('daily_focus')
-        .select('*')
+        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
         .eq('user_id', userId)
         .order('focus_date', { ascending: false })
         .limit(1)
@@ -174,7 +174,7 @@ export function useFocusHistory() {
 
       const { data, error } = await supabase
         .from('daily_focus')
-        .select('*')
+        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
         .eq('user_id', userId)
         .order('focus_date', { ascending: false });
 

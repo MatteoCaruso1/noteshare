@@ -33,7 +33,7 @@ export function useConversations() {
       // Get all messages involving the current user
       const { data: messages, error } = await supabase
         .from('direct_messages')
-        .select('*')
+        .select('id, sender_id, receiver_id, content, read, created_at')
         .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
         .order('created_at', { ascending: false });
 
@@ -99,7 +99,7 @@ export function useMessages(friendId: string | null) {
 
       const { data, error } = await supabase
         .from('direct_messages')
-        .select('*')
+        .select('id, sender_id, receiver_id, content, read, created_at')
         .or(`and(sender_id.eq.${profile.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${profile.id})`)
         .order('created_at', { ascending: true });
 
