@@ -511,7 +511,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                           }
                         }}
                         className="h-7 w-16 text-sm focus-visible:ring-1 focus-visible:ring-ring/50"
-                        placeholder="min"
+                        placeholder=""
                         aria-label="Session duration in minutes"
                         autoFocus
                       />
