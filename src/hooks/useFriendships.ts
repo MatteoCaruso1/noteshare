@@ -39,7 +39,6 @@ export function useFriendships() {
     enabled: !!profile?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 }
 
@@ -74,7 +73,6 @@ export function usePendingFriendRequests() {
     enabled: !!profile?.id,
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 }
 

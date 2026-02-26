@@ -78,8 +78,6 @@ export function useActiveSession(profileId?: string) {
     // Keep data fresh but don't throw away stale data while refetching
     staleTime: 60 * 1000, // Consider fresh for 1 minute
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    // Refetch on window focus to sync with server
-    refetchOnWindowFocus: true,
     // Don't refetch on mount if we have data (prevents flicker)
     refetchOnMount: (query) => query.state.data === undefined,
   });
