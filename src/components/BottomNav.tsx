@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Music, ClipboardList, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
@@ -63,6 +63,7 @@ const hiddenRoutes = ['/welcome', '/auth'];
 
 export function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: unreadCount } = useUnreadNotificationCount();
   const { overrideActiveRoute } = useBottomNavOverride();
@@ -141,10 +142,11 @@ export function BottomNav() {
   // Determine current path - allow override for nested routes
   const currentPath = overrideActiveRoute || location.pathname;
 
-  const handleNavClick = (to: string, e: React.PointerEvent) => {
+  const handleNavClick = (to: string, e: React.MouseEvent) => {
+    e.preventDefault();
+
     // If tapping the current tab, scroll to top
     if (to === location.pathname) {
-      e.preventDefault();
       window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
       return;
     }
@@ -167,8 +169,10 @@ export function BottomNav() {
     }
 
     // Mark this navigation to scroll to top after route change
-    // The ScrollToTop component will handle the actual scroll
     markScrollToTop(to);
+
+    // Programmatic navigation guarantees route change in the same event as state update
+    navigate(to);
   };
 
   // Don't render on hidden routes
@@ -213,7 +217,7 @@ export function BottomNav() {
               <NavLink
                 key={to}
                 to={to}
-                onPointerDown={(e) => handleNavClick(to, e)}
+                onClick={(e) => handleNavClick(to, e)}
                 data-tour={to === '/friends' ? 'friends-nav' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-2 rounded-lg transition-colors min-w-0 flex-1 max-w-[72px] relative touch-manipulation',
