@@ -280,34 +280,32 @@ export function QuickNoteCapture() {
               <PracticeTimer />
 
               {/* Focus toggle - inline, show if focus exists with text */}
-              {currentFocus?.focus_text && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      className="flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none"
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text ? 'invisible' : ''}`}
+                    data-no-hover-reset
+                    onTouchEnd={(e) => { e.currentTarget.blur(); }}
+                  >
+                    <ListTodo className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <Switch
+                      id="attach-focus"
+                      checked={attachFocus}
                       data-no-hover-reset
-                      onTouchEnd={(e) => { e.currentTarget.blur(); }}
-                    >
-                      <ListTodo className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <Switch
-                        id="attach-focus"
-                        checked={attachFocus}
-                        data-no-hover-reset
-                        onCheckedChange={(checked) => {
-                          setAttachFocus(checked);
-                          if (checked) {
-                            toast.success("Your note will be linked to Practice Board");
-                          } else {
-                            toast.success("Your note will no longer be linked to Practice Board");
-                          }
-                        }}
-                        className="scale-90"
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>Link to Practice Board</TooltipContent>
-                </Tooltip>
-              )}
+                      onCheckedChange={(checked) => {
+                        setAttachFocus(checked);
+                        if (checked) {
+                          toast.success("Your note will be linked to Practice Board");
+                        } else {
+                          toast.success("Your note will no longer be linked to Practice Board");
+                        }
+                      }}
+                      className="scale-90"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Link to Practice Board</TooltipContent>
+              </Tooltip>
             </div>
           </TooltipProvider>
 
