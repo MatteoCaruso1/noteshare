@@ -77,15 +77,13 @@ export function GroupHeaderPicker({
 
       if (uploadError) throw uploadError;
 
-      // Get signed URL for preview
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('practice-media')
-        .createSignedUrl(filePath, 60 * 60);
-
-      if (signedError) throw signedError;
+      // Get signed URL via batched pipeline (no direct storage signing)
+      const { getSignedUrls } = await import('@/hooks/useSignedUrl');
+      const results = await getSignedUrls([filePath]);
+      const signedUrl = results.get(filePath);
 
       onChange(filePath);
-      onPreviewUrlChange?.(signedData.signedUrl);
+      onPreviewUrlChange?.(signedUrl || null);
       toast.success('Header image uploaded!');
     } catch (error) {
       console.error('Upload error:', error);

@@ -7,6 +7,7 @@ const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
 // Helper to get a signed URL for private bucket access
+// Routes through the batched pipeline (no direct storage signing)
 export async function getSignedUrl(path: string): Promise<string | null> {
   // Extract the file path from a full URL if needed
   let filePath = path;
@@ -18,16 +19,9 @@ export async function getSignedUrl(path: string): Promise<string | null> {
     }
   }
   
-  const { data, error } = await supabase.storage
-    .from('practice-media')
-    .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 day expiry
-    
-  if (error) {
-    console.error('[MediaUpload] Error creating signed URL:', error);
-    return null;
-  }
-  
-  return data.signedUrl;
+  const { getSignedUrls } = await import('./useSignedUrl');
+  const results = await getSignedUrls([filePath]);
+  return results.get(filePath) || null;
 }
 
 /**

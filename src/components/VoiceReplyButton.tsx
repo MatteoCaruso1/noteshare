@@ -252,14 +252,13 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      // Get signed URL for private bucket
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('practice-media')
-        .createSignedUrl(uploadData.path, 60 * 60 * 24 * 7); // 7 day expiry
+      // Get signed URL via batched pipeline (no direct storage signing)
+      const { getSignedUrls } = await import('@/hooks/useSignedUrl');
+      const results = await getSignedUrls([uploadData.path]);
+      const signedUrl = results.get(uploadData.path);
 
-      if (signedUrlError) {
-        console.error('[VoiceReplyButton] Signed URL error:', signedUrlError);
-        throw new Error(`Could not get signed URL: ${signedUrlError.message}`);
+      if (!signedUrl || !signedUrl.startsWith('http')) {
+        throw new Error('Could not get signed URL');
       }
 
       // Create comment with audio - use custom title or default
@@ -270,7 +269,7 @@ export function VoiceReplyButton({ noteId, authorId, noteOwnerId, onSuccess }: V
           note_id: noteId,
           author_id: authorId,
           content: displayTitle,
-          audio_url: signedUrlData.signedUrl,
+          audio_url: signedUrl,
         });
 
       if (commentError) {
