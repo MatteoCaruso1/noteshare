@@ -1065,8 +1065,8 @@ body.session-active .session-focus-exempt {
 /* On mobile, make the textarea have even more touch-friendly spacing */
 @media (max-width: 768px) {
   .practice-board-textarea {
-    /* Larger font for mobile readability */
-    font-size: 16px !important;
+    /* Match note display font size (text-sm / 0.875rem) */
+    font-size: 0.875rem !important;
     /* Even more generous line height for fat fingers */
     line-height: 1.85 !important;
     /* More left padding for larger checkbox hit zone */
