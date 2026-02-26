@@ -26,7 +26,7 @@ const tourSteps: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="practice-board"]',
-    message: 'Manage your practice priorities with the Practice Board',
+    message: 'Manage your practice priorities with the Practice List',
     position: 'bottom',
   },
   {

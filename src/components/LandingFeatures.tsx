@@ -8,7 +8,7 @@ const features = [
   {
     title: 'Organize your focus areas',
     image: landingFocus,
-    alt: 'Practice Board showing exercises and songs to focus on',
+    alt: 'Practice List showing exercises and songs to focus on',
     cropTop: false,
     width: 1225,
     height: 464,

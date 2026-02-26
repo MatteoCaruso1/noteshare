@@ -8,7 +8,7 @@ const BENEFITS = [
   {
     icon: Timer,
     title: 'Pro Practice Tools',
-    description: 'Use metronomes, practice timers, linking to goals, logging past sessions, and saving practice boards, all within your sessions',
+    description: 'Use metronomes, practice timers, linking to goals, logging past sessions, and saving practice lists, all within your sessions',
   },
   {
     icon: BarChart3,
@@ -18,7 +18,7 @@ const BENEFITS = [
   {
     icon: FolderKanban,
     title: 'Improved Organization',
-    description: 'Organize your notes around goals, folders, gigs, and archived practice boards',
+    description: 'Organize your notes around goals, folders, gigs, and archived practice lists',
   },
   {
     icon: Palette,

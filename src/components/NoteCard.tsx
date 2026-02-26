@@ -76,7 +76,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
-              Practice Board
+              Practice List
             </p>
             <RichTextContent 
               content={focusTextSnapshot} 
@@ -123,7 +123,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
-              Practice Board
+              Practice List
             </p>
             <RichTextContent 
               content={focusTextSnapshot} 
