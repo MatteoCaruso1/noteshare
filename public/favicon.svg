@@ -1,4 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#1a1a2e"/>
-  <path d="M20.5 6v14.5a4 4 0 1 1-2-3.46V10.5l-7 1.75v8.25a4 4 0 1 1-2-3.46V8l11-2z" fill="#c4b5fd"/>
+  <rect width="32" height="32" rx="0" fill="#0a0a0f"/>
+  <g transform="translate(6, 4)">
+    <!-- Double eighth note (beamed) matching Noteshare icon style -->
+    <!-- Left note head -->
+    <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
+    <!-- Right note head -->
+    <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
+    <!-- Left stem -->
+    <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+    <!-- Right stem -->
+    <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+    <!-- Top beam -->
+    <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+    <!-- Bottom beam -->
+    <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+  </g>
 </svg>
