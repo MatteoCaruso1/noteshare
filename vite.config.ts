@@ -50,8 +50,8 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        skipWaiting: true,
-        clientsClaim: true,
+      // skipWaiting removed: new SW waits until user taps "Update" or next cold start
+      clientsClaim: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         // Exclude OAuth routes from service worker navigation handling
         navigateFallbackDenylist: [/^\/~oauth/, /^\/auth.*#access_token/],

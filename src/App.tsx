@@ -17,6 +17,7 @@ import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
 import { SessionFocusOverlay } from "@/components/SessionFocusOverlay";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import UpdateAvailableToast from "@/components/UpdateAvailableToast";
 import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
@@ -161,6 +162,7 @@ function AppInner() {
                       <OnboardingFlow />
                       <ShareEducationTour />
                       <AppPrefetcher />
+                      <UpdateAvailableToast />
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/welcome" element={<Welcome />} />
