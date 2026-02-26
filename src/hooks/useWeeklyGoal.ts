@@ -170,13 +170,13 @@ export function useLastWeekPracticeMinutes(profileId: string | undefined) {
 
 // Hook to get current week's practice minutes (for progress display)
 export function useCurrentWeekPracticeMinutes(profileId: string | undefined) {
-  const { data: stats } = usePracticeStats(profileId);
+  const { data: stats, isPending } = usePracticeStats(profileId);
   
   if (!stats?.weeklyMinutesOverTime || stats.weeklyMinutesOverTime.length === 0) {
-    return 0;
+    return { minutes: 0, isLoading: isPending && !!profileId };
   }
   
   // Current week is the last entry
   const currentWeekData = stats.weeklyMinutesOverTime[stats.weeklyMinutesOverTime.length - 1];
-  return currentWeekData?.minutes || 0;
+  return { minutes: currentWeekData?.minutes || 0, isLoading: false };
 }

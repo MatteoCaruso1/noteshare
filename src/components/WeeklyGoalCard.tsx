@@ -1,4 +1,5 @@
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
 import { useAuth } from '@/hooks/useAuth';
 import { Target, Trophy, PartyPopper } from 'lucide-react';
@@ -6,7 +7,7 @@ import { Target, Trophy, PartyPopper } from 'lucide-react';
 export function WeeklyGoalCard() {
   const { profile } = useAuth();
   const { currentWeekGoal, isLoading } = useWeeklyGoal(profile?.id);
-  const currentMinutes = useCurrentWeekPracticeMinutes(profile?.id);
+  const { minutes: currentMinutes, isLoading: minutesLoading } = useCurrentWeekPracticeMinutes(profile?.id);
   
   // Don't render if loading, no goal, or goal was skipped
   if (isLoading || !currentWeekGoal || currentWeekGoal.skipped) {
@@ -14,8 +15,8 @@ export function WeeklyGoalCard() {
   }
   
   const targetMinutes = currentWeekGoal.target_minutes;
-  const progressPercent = Math.min(100, (currentMinutes / targetMinutes) * 100);
-  const isComplete = currentMinutes >= targetMinutes;
+  const progressPercent = minutesLoading ? 0 : Math.min(100, (currentMinutes / targetMinutes) * 100);
+  const isComplete = !minutesLoading && currentMinutes >= targetMinutes;
   
   const formatMinutes = (mins: number) => {
     if (mins >= 60) {
@@ -47,7 +48,7 @@ export function WeeklyGoalCard() {
           {/* Progress display */}
           <div className="flex items-center gap-1.5">
             <span className={`text-sm font-bold ${isComplete ? 'text-primary' : ''}`}>
-              {formatMinutes(currentMinutes)}
+              {minutesLoading ? <Skeleton className="inline-block h-4 w-10 align-middle" /> : formatMinutes(currentMinutes)}
             </span>
             <span className="text-xs text-muted-foreground">
               / {formatMinutes(targetMinutes)}

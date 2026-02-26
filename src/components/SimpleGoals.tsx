@@ -44,7 +44,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const { profile } = useAuth();
   const { isPremium } = usePremium();
   const { currentWeekGoal, isLoading: weeklyLoading } = useWeeklyGoal(profile?.id);
-  const currentMinutes = useCurrentWeekPracticeMinutes(profile?.id);
+  const { minutes: currentMinutes, isLoading: minutesLoading } = useCurrentWeekPracticeMinutes(profile?.id);
 
   // Only show active (non-completed) goals, sorted by priority
   const activeGoals = goals
@@ -62,7 +62,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const showWeeklyGoal = !weeklyLoading && currentWeekGoal && !currentWeekGoal.skipped;
   const weeklyTargetMinutes = currentWeekGoal?.target_minutes || 0;
   const weeklyProgressPercent = weeklyTargetMinutes > 0 ? Math.min(100, (currentMinutes / weeklyTargetMinutes) * 100) : 0;
-  const isWeeklyComplete = currentMinutes >= weeklyTargetMinutes;
+  const isWeeklyComplete = currentMinutes >= weeklyTargetMinutes && !minutesLoading;
 
   // Pick a random example goal when adding starts
   const examplePlaceholder = useMemo(() => {
@@ -257,7 +257,11 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
               </span>
               <span className={`text-sm flex-1 ${isWeeklyComplete ? 'text-green-500' : ''}`}>
                 Weekly practice goal:{' '}
-                <span className="font-medium">{formatMinutes(currentMinutes)}</span>
+                {minutesLoading ? (
+                  <Skeleton className="inline-block h-4 w-10 align-middle" />
+                ) : (
+                  <span className="font-medium">{formatMinutes(currentMinutes)}</span>
+                )}
                 <span className="text-muted-foreground"> / {formatMinutes(weeklyTargetMinutes)}</span>
                 {isWeeklyComplete && ' 🎉'}
               </span>
