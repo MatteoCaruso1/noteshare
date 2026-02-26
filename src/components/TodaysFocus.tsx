@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { NotebookPen, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { Kanban, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -725,7 +725,7 @@ export function TodaysFocus() {
     return (
       <Card className="bg-card border-border min-h-[60px]">
         <div className="px-3 py-4 sm:px-4 flex items-center gap-2">
-          <NotebookPen className="w-5 h-5 text-muted-foreground" />
+          <Kanban className="w-5 h-5 text-muted-foreground" />
           <h2 className="font-semibold">Practice Board</h2>
         </div>
         {willBeOpen && (
@@ -784,7 +784,7 @@ export function TodaysFocus() {
           <CollapsibleTrigger asChild>
             <div className="px-3 py-4 sm:px-4 flex items-center justify-between cursor-pointer group touch-manipulation">
               <div className="flex items-center gap-2">
-                <NotebookPen className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                <Kanban className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
                 <h2 className="font-semibold">Practice Board</h2>
               </div>
               

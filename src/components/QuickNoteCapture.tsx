@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, NotebookPen } from 'lucide-react';
+import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, Kanban } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
@@ -288,7 +288,7 @@ export function QuickNoteCapture() {
                       data-no-hover-reset
                       onTouchEnd={(e) => { e.currentTarget.blur(); }}
                     >
-                      <NotebookPen className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Kanban className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
                       <Switch
                         id="attach-focus"
                         checked={attachFocus}
