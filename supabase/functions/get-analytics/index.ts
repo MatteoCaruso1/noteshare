@@ -409,12 +409,14 @@ serve(async (req) => {
       .sort((a, b) => b.clickCount - a.clickCount);
 
     // ============================================
-    // NEW: Mobile session percentage by account (lifetime)
+    // NEW: Mobile session percentage by account (since is_mobile tracking deployed)
     // ============================================
+    const MOBILE_TRACKING_START = '2026-02-25T00:00:00Z';
     const { data: allSessions } = await supabaseAdmin
       .from('practice_sessions')
       .select('user_id, is_mobile')
-      .not('ended_at', 'is', null);
+      .not('ended_at', 'is', null)
+      .gte('created_at', MOBILE_TRACKING_START);
 
     const mobileStatsByUser = new Map<string, { mobile: number; total: number }>();
     for (const s of allSessions || []) {
