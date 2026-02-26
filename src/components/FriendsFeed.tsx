@@ -3,6 +3,7 @@ import { useFriendsNotes } from '@/hooks/useFriendships';
 import { useFriendsFeedProjects } from '@/hooks/useProjects';
 import { useFriendsFeedGigs } from '@/hooks/usePromoPosts';
 import { batchFetchApplause } from '@/hooks/useNotes';
+import { getSignedUrls } from '@/hooks/useSignedUrl';
 import { NoteCard } from './NoteCard';
 import { FeedItemCard, FeedItem } from './FeedItemCard';
 import { FriendsFeedSkeleton } from './FriendsFeedSkeleton';
@@ -12,8 +13,6 @@ import { Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { getCachedUrl, setCachedUrls } from '@/lib/signedUrlPersistentCache';
 
 interface FriendsFeedProps {
   searchQuery?: string;
@@ -21,29 +20,6 @@ interface FriendsFeedProps {
 }
 
 const LOAD_MORE_COUNT = 10;
-
-/**
- * Extract storage path from avatar URL for caching
- */
-function extractStoragePath(url: string): string | null {
-  if (!url) return null;
-  if (url.startsWith('blob:')) return null;
-  if (!url.startsWith('http')) return url;
-  
-  try {
-    const urlObj = new URL(url);
-    if (!urlObj.pathname.includes('/storage/v1/object/')) {
-      return null; // External URL like dicebear
-    }
-    const match = urlObj.pathname.match(/\/storage\/v1\/object\/(?:public\/|authenticated\/|sign\/)?([^/]+)\/(.+)/);
-    if (match) {
-      return decodeURIComponent(match[2]).split('?')[0];
-    }
-  } catch {
-    // Not a valid URL
-  }
-  return null;
-}
 
 export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDateFilter }: FriendsFeedProps) {
   const { data: notes, isPending: notesPending } = useFriendsNotes();
@@ -101,56 +77,24 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     return items;
   }, [feedProjects, feedGigs]);
 
-  // Prefetch avatars in background - don't block rendering
+  // Prefetch avatars via coalesced batch pipeline - no separate edge call
   useEffect(() => {
     if (!notes || notes.length === 0) return;
 
-    const prefetchAvatars = async () => {
-      const avatarsToFetch: string[] = [];
-      const seenPaths = new Set<string>();
-      
-      // Collect unique avatar paths from note authors
-      for (const note of notes.slice(0, displayCount)) {
-        if (!note.author?.avatar) continue;
-        
-        const avatarPath = extractStoragePath(note.author.avatar);
-        if (!avatarPath || seenPaths.has(avatarPath)) continue;
-        seenPaths.add(avatarPath);
-        
-        // Check if already cached
-        const cached = await getCachedUrl(avatarPath);
-        if (!cached) {
-          avatarsToFetch.push(avatarPath);
-        }
-      }
+    const avatarUrls: string[] = [];
+    const seen = new Set<string>();
+    
+    for (const note of notes.slice(0, displayCount)) {
+      const avatar = note.author?.avatar;
+      if (!avatar || seen.has(avatar)) continue;
+      seen.add(avatar);
+      avatarUrls.push(avatar);
+    }
 
-      if (avatarsToFetch.length === 0) return;
-
-      try {
-        const { data, error } = await supabase.functions.invoke('get-signed-url', {
-          body: { urls: avatarsToFetch, expiresInSeconds: 60 * 60 * 24 },
-        });
-
-        if (!error && data?.results) {
-          const entries = avatarsToFetch
-            .filter(path => data.results[path])
-            .map(path => ({
-              path,
-              signedUrl: data.results[path],
-              expiresAt: Date.now() + 23 * 60 * 60 * 1000,
-              priority: 'avatar' as const,
-            }));
-
-          if (entries.length > 0) {
-            await setCachedUrls(entries);
-          }
-        }
-      } catch (err) {
-        console.warn('[FriendsFeed] Failed to prefetch avatars:', err);
-      }
-    };
-
-    prefetchAvatars();
+    if (avatarUrls.length > 0) {
+      // Feeds into the coalesced batch - merges with other concurrent calls
+      getSignedUrls(avatarUrls);
+    }
   }, [notes, displayCount]);
 
   // Batch-prefetch applause for all visible notes in a single query
