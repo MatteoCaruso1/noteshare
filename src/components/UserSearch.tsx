@@ -19,12 +19,7 @@ const ReasonBadge = ({ reason, matchingGenres }: { reason: SuggestionReason; mat
     case 'mutual':
       return null; // Handled separately with count
     case 'collaborate':
-      return (
-        <Badge variant="outline" className="text-xs py-0 px-1.5 gap-0.5 border-primary/30 text-primary">
-          <Handshake className="w-3 h-3" />
-          Open to collab
-        </Badge>
-      );
+      return null; // Open to collab badge removed
     case 'genre':
       return (
         <Badge variant="outline" className="text-xs py-0 px-1.5 gap-0.5 border-accent/50 text-accent-foreground">
