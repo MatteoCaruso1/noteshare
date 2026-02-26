@@ -32,6 +32,9 @@ interface SubscriptionState {
 export function useSubscription() {
   const { user } = useAuth();
   const lastCheckRef = useRef<number>(0);
+  // Track which user ID we've already fetched for — prevents duplicate calls
+  // when `user` object reference changes but the ID stays the same
+  const fetchedForUserRef = useRef<string | null>(null);
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
     productId: null,
@@ -43,8 +46,12 @@ export function useSubscription() {
     error: null,
   });
 
+  // Use a ref so the callback identity is stable (doesn't change when `user` changes)
+  const userRef = useRef(user);
+  userRef.current = user;
+
   const checkSubscription = useCallback(async () => {
-    if (!user) {
+    if (!userRef.current) {
       setState({
         subscribed: false,
         productId: null,
@@ -52,7 +59,7 @@ export function useSubscription() {
         isLifetime: false,
         isLoading: false,
         hasCheckedOnce: true,
-        hasValidatedWithUser: false, // No user to validate
+        hasValidatedWithUser: false,
         error: null,
       });
       return;
@@ -130,13 +137,34 @@ export function useSubscription() {
         error: message || 'Failed to check subscription',
       }));
     }
-  }, [user]);
+  }, []); // Stable callback — uses userRef internally
 
-  // Check subscription on mount and when user changes
+  // Check subscription once per user ID — not on every `user` object change
   useEffect(() => {
+    const userId = user?.id ?? null;
+
+    // If user is null, reset and mark as checked
+    if (!userId) {
+      fetchedForUserRef.current = null;
+      setState({
+        subscribed: false,
+        productId: null,
+        subscriptionEnd: null,
+        isLifetime: false,
+        isLoading: false,
+        hasCheckedOnce: true,
+        hasValidatedWithUser: false,
+        error: null,
+      });
+      return;
+    }
+
+    // Skip if we already fetched for this exact user
+    if (fetchedForUserRef.current === userId) return;
+    fetchedForUserRef.current = userId;
     lastCheckRef.current = Date.now();
     checkSubscription();
-  }, [checkSubscription]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, checkSubscription]);
 
   // Listen for checkout completion to refresh subscription status
   // Throttle to once per 30 seconds to prevent duplicate fires
