@@ -178,10 +178,30 @@ export function TodaysFocus() {
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
+  // Helper to update localStorage cache immediately with current text
+  const updateLocalCache = useCallback((value: string) => {
+    try {
+      const raw = localStorage.getItem(FOCUS_CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        cached.focus_text = value;
+        localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify(cached));
+      } else if (focus) {
+        // Create cache entry from current focus data with updated text
+        localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify({
+          ...focus,
+          focus_text: value,
+        }));
+      }
+    } catch { /* ignore */ }
+  }, [focus]);
+
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
     setText(value);
     setHasChanges(true);
+    // Immediately persist to localStorage so navigation doesn't lose changes
+    updateLocalCache(value);
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
