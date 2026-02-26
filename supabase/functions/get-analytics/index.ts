@@ -366,13 +366,8 @@ serve(async (req) => {
       friendCountByUser.set(f.addressee_id, (friendCountByUser.get(f.addressee_id) || 0) + 1);
     }
 
-    const friendUserIds = Array.from(friendCountByUser.keys());
-    const { data: friendUserProfiles } = await supabaseAdmin
-      .from('profiles')
-      .select('id, name, username')
-      .in('id', friendUserIds.length > 0 ? friendUserIds : ['00000000-0000-0000-0000-000000000000']);
-
-    const friendCountUsers: FriendCountUser[] = (friendUserProfiles || [])
+    // Use all note-activated user profiles (already fetched) so everyone shows up, even with 0 friends
+    const friendCountUsers: FriendCountUser[] = (filteredNoteUserProfiles || [])
       .map(p => ({
         name: p.name,
         username: p.username,
