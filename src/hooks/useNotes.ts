@@ -83,13 +83,13 @@ async function fetchCollaboratorProfiles(notes: any[]): Promise<Map<string, Prof
 }
 
 export function useNotes(projectId?: string) {
-  const { user } = useAuth();
-  const userId = user?.id;
+  const { user, profile } = useAuth();
+  const profileId = profile?.id;
   const queryClient = useQueryClient();
   const seededNoteIdsRef = useRef(new Set<string>());
   
   const query = useQuery({
-    queryKey: ['notes', projectId, userId],
+    queryKey: ['notes', projectId, profileId],
     queryFn: async () => {
       // If viewing a project, get all notes for that project the user can see
       if (projectId) {
@@ -125,7 +125,7 @@ export function useNotes(projectId?: string) {
       }
 
       // For personal journal (My Journal), only show current user's notes
-      if (!userId) return [];
+      if (!profileId) return [];
       
       const { data, error } = await supabase
         .from('notes')
@@ -139,7 +139,7 @@ export function useNotes(projectId?: string) {
           goals!notes_goal_id_fkey (id, title, content),
           promo_posts!notes_gig_id_fkey (id, title)
         `)
-      .eq('author_id', userId)
+      .eq('author_id', profileId)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -159,7 +159,7 @@ export function useNotes(projectId?: string) {
       })) as NoteWithAuthor[];
     },
     // Require both profile AND a valid session to ensure auth token is propagated
-    enabled: !!userId,
+    enabled: !!profileId,
     // Keep data visible during refetch - prevents "no notes" flash
     staleTime: 2 * 60 * 1000, // Consider fresh for 2 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
