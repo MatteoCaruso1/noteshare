@@ -575,7 +575,7 @@ const AdminAnalytics = () => {
         users={data.mobileSessionUsers || []}
         icon={<Smartphone className="w-5 h-5" />}
         title="Mobile vs Total Sessions"
-        description="Percentage of practice sessions started on mobile (lifetime)"
+        description="Percentage of practice sessions started on mobile (since Feb 25 tracking)"
         renderBadge={(user) => (
           <Badge variant="outline">{user.mobilePercent}% mobile ({user.mobileCount}/{user.totalCount})</Badge>
         )}
