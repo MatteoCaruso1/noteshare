@@ -92,7 +92,7 @@ function getTodayLocalDate(): string {
 export function PracticeControls() {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
-  const { data: activeSession } = useActiveSession(profile?.id);
+  const { data: activeSession, isPending: isSessionPending } = useActiveSession(profile?.id);
   const { data: projects } = useProjects();
   const { data: goals } = useGoals(profile?.id);
   const { data: gigs } = useMyPromoPosts(profile?.id);
@@ -314,9 +314,9 @@ export function PracticeControls() {
     };
   }, [wakeLockEnabled, acquireWakeLock]);
 
-  // Release wake lock when session ends or component unmounts
+  // Release wake lock when session truly ends (not during transient refetch)
   useEffect(() => {
-    if (!activeSession && wakeLockRef.current) {
+    if (!activeSession && !isSessionPending && wakeLockRef.current) {
       wakeLockRef.current.release().catch(() => {});
       wakeLockRef.current = null;
       setWakeLockEnabledState(false);
@@ -327,7 +327,7 @@ export function PracticeControls() {
         wakeLockRef.current.release().catch(() => {});
       }
     };
-  }, [activeSession]);
+  }, [activeSession, isSessionPending]);
 
   // Force session refresh when app returns to foreground (iOS lock/unlock fix)
   useEffect(() => {
