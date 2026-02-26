@@ -140,6 +140,7 @@ export function useSendFriendRequest() {
 
 export function useRespondToFriendRequest() {
   const queryClient = useQueryClient();
+  const { profile, refreshProfile } = useAuth();
 
   return useMutation({
     mutationFn: async ({ friendshipId, status }: { friendshipId: string; status: 'accepted' | 'rejected' }) => {
@@ -153,12 +154,28 @@ export function useRespondToFriendRequest() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, { status }) => {
+    onSuccess: async (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['friendships'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
       queryClient.invalidateQueries({ queryKey: ['pending-friend-requests'] });
       queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
       toast.success(status === 'accepted' ? 'Friend request accepted!' : 'Friend request declined');
+
+      // Check first-friend milestone on acceptance
+      if (status === 'accepted' && profile && !profile.has_added_first_friend) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_added_first_friend: true })
+          .eq('id', profile.id);
+        if (!error) {
+          toast('First connection made.', {
+            description: 'Practicing with others raises the standard.',
+            duration: 4000,
+            className: 'milestone-toast border-l-4 border-l-primary bg-card shadow-lg',
+          });
+          await refreshProfile();
+        }
+      }
     },
     onError: (error) => {
       console.error('Error responding to friend request:', error);
@@ -417,7 +434,7 @@ export function useSuggestedMusicians() {
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, user_id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak, bio, location, skill_level, streak_achievement_counts, followers_count, following_count, celebrated_streak_milestones, color_theme, created_at, updated_at')
+        .select('id, user_id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak, bio, location, skill_level, streak_achievement_counts, followers_count, following_count, celebrated_streak_milestones, color_theme, created_at, updated_at, has_logged_first_note, has_added_first_friend, has_logged_ten_notes')
         .in('id', suggestionIds)
         .limit(15);
 
