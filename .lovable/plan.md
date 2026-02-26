@@ -1,41 +1,44 @@
 
 
-# Fix Practice Board Link Toggle Visibility
+# Update Onboarding & Highlight for Friends List Button
 
-## Problem
-The Practice Board link toggle (ListTodo icon + Switch) is not appearing in the Quick Note or Practice Session toolbars, even though the Practice Board has content. The toggle depends on `currentFocus?.focus_text` being truthy, but data loading timing or conditional rendering may cause it to not display.
+## Context
+The recent change moved "Add Friend" inside the Friends List dialog and removed it as a standalone header button. This requires two updates:
 
-## Root Cause
-In `QuickNoteCapture.tsx`, the toggle is conditionally rendered -- it only mounts when `currentFocus?.focus_text` is truthy. When the collapsible opens, the `useCurrentFocusEntry` hook may not have resolved yet, so the toggle never appears (and once the data arrives, the component may not re-evaluate properly). Similarly, in `PracticeControls.tsx`, the toggle uses an `invisible` CSS class but could still be affected by data timing.
+## What's NOT Broken
+- The onboarding spotlight tour step 4 highlights the **bottom nav "Friends" tab** (`data-tour="friends-nav"`), which is unchanged and still works fine.
 
-## Fix
+## Changes Needed
 
-### 1. QuickNoteCapture.tsx -- Always render the toggle
-Change from conditional rendering to always-render with `invisible` class (matching the PracticeControls pattern). This ensures the toggle is in the DOM and becomes visible once data loads, rather than needing a re-render to mount.
+### 1. Add `data-tour` attribute to the Friends List button
+In `FriendsJournals.tsx`, add `data-tour="friends-list"` to the Friends List button (the Users icon in the header) so the spotlight tour can target it.
 
-**Before:**
-```tsx
-{currentFocus?.focus_text && (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <div className="flex items-center gap-2 ml-auto cursor-pointer ...">
-```
+### 2. Add a new onboarding tour step for the Friends List button
+In `SpotlightTour.tsx`, add a step after the current Friends nav step that:
+- Navigates to `/friends`
+- Targets `[data-tour="friends-list"]`
+- Shows a message like "View your friends list and add new friends here"
+- This means the tour will go from 5 steps to 6 (plus the final "Happy practicing!" screen), updating the final step number from 6 to 7
 
-**After:**
-```tsx
-<Tooltip>
-  <TooltipTrigger asChild>
-    <div className={`flex items-center gap-2 ml-auto cursor-pointer ... ${!currentFocus?.focus_text ? 'invisible' : ''}`}>
-```
+### 3. Add persistent highlight (pulse) on the Friends List button until first clicked
+Similar to how `HelpTipsDialog` uses `localStorage` to track whether the help icon has been viewed:
+- Create a `localStorage` key like `noteshare_friends_list_viewed_{userId}`
+- In `FriendsJournals.tsx`, check this key and apply `text-primary animate-pulse` to the Users icon when not yet viewed
+- When the Friends List dialog opens, mark it as viewed and stop the pulse
 
-### 2. PracticeControls.tsx -- Verify same pattern is correct
-The existing `invisible` pattern in PracticeControls looks correct. No changes needed unless testing reveals an issue.
+### Technical Details
 
-## Files Modified
-- `src/components/QuickNoteCapture.tsx` (change conditional render to visibility toggle)
+**Files to modify:**
 
-## What This Fixes
-- Toggle will be in the DOM immediately, becoming visible as soon as focus data loads
-- Prevents race conditions between collapsible opening and data availability
-- Matches the pattern already used in PracticeControls for consistency
+1. **`src/pages/FriendsJournals.tsx`**
+   - Add `data-tour="friends-list"` to the Friends List button div
+   - Add localStorage-based pulse highlight logic (check `noteshare_friends_list_viewed_{userId}`)
+   - On FriendsList `onOpenChange`, mark as viewed when opened
 
+2. **`src/components/onboarding/SpotlightTour.tsx`**
+   - Insert new tour step at index 4 (after friends-nav): `{ targetSelector: '[data-tour="friends-list"]', message: 'View your friends and add new ones here!', position: 'bottom', navigateTo: '/friends' }`
+   - Update final step check from `step === 6` to `step === 7`
+   - Update step indicator dots from 5 to 6
+
+3. **`src/contexts/OnboardingContext.tsx`**
+   - Update the max step from 6 to 7 in `nextStep()`
