@@ -154,9 +154,11 @@ interface NoteCardProps {
   fromProject?: string;
   fromGig?: string;
   onShareClick?: () => void;
+  /** Pre-fetched applause data from batch query — prevents per-note fetch */
+  applauseData?: import('@/hooks/useApplause').ApplauseWithProfile[];
 }
 
-export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig, onShareClick }: NoteCardProps) {
+export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fromProject, fromGig, onShareClick, applauseData }: NoteCardProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { isPremium, isLoading: isPremiumLoading, openPremiumDialog } = usePremium();
@@ -908,6 +910,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         commentCount={note.comment_count}
         onCommentClick={handleNavigateToNote}
         skipAnimation={fromFriends}
+        applauseData={applauseData}
       />
 
       {/* Voice Reply Button - hidden on homepage for cleaner UI */}

@@ -1,8 +1,8 @@
-import { memo, useMemo, useEffect, useRef } from 'react';
+import { memo, useMemo, useEffect } from 'react';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { useFriendsFeedProjects } from '@/hooks/useProjects';
 import { useFriendsFeedGigs } from '@/hooks/usePromoPosts';
-import { batchFetchApplause } from '@/hooks/useNotes';
+import { useMultiNoteApplause } from '@/hooks/useApplause';
 import { getSignedUrls } from '@/hooks/useSignedUrl';
 import { NoteCard } from './NoteCard';
 import { FeedItemCard, FeedItem } from './FeedItemCard';
@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface FriendsFeedProps {
   searchQuery?: string;
@@ -26,7 +25,6 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
   const { data: feedProjects, isPending: projectsPending } = useFriendsFeedProjects();
   const { data: feedGigs, isPending: gigsPending } = useFriendsFeedGigs();
   const { displayCount, setDisplayCount } = useScrollRestoration('friends-feed', 10);
-  const queryClient = useQueryClient();
 
   const isFirstLoad = notes === undefined || feedProjects === undefined || feedGigs === undefined;
   const hasLoadedOnce = notes !== undefined && feedProjects !== undefined && feedGigs !== undefined;
@@ -97,25 +95,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     }
   }, [notes, displayCount]);
 
-  // Batch-prefetch applause for all visible notes in a single query
-  const seededNoteIdsRef = useRef(new Set<string>());
-  useEffect(() => {
-    if (!notes || notes.length === 0) return;
-
-    const unseededIds = notes
-      .slice(0, displayCount)
-      .map(n => n.id)
-      .filter(id => !seededNoteIdsRef.current.has(id));
-
-    if (unseededIds.length === 0) return;
-
-    batchFetchApplause(unseededIds).then(applauseMap => {
-      applauseMap.forEach((applauseList, noteId) => {
-        queryClient.setQueryData(['applause', noteId], applauseList);
-        seededNoteIdsRef.current.add(noteId);
-      });
-    });
-  }, [notes, displayCount, queryClient]);
+  // No manual batchFetchApplause effect needed — useMultiNoteApplause handles it below
 
   // Fixed skeleton count - don't wait for friends data to load
   const skeletonCount = 3;
@@ -180,6 +160,15 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     [mergedTimeline, displayCount]
   );
 
+  // Batch-fetch applause for all displayed notes in a single query
+  const displayedNoteIds = useMemo(() => 
+    displayedItems
+      .filter((item): item is typeof displayedItems[number] & { type: 'note' } => item.type === 'note')
+      .map(item => item.data.id),
+    [displayedItems]
+  );
+  const { data: applauseMap } = useMultiNoteApplause(displayedNoteIds);
+
   const hasMore = displayCount < mergedTimeline.length;
 
   const handleLoadMore = () => {
@@ -219,7 +208,7 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
     <div className="space-y-4">
       {displayedItems.map((item) => (
         item.type === 'note' ? (
-          <NoteCard key={`note-${item.data.id}`} note={item.data} fromFriends />
+          <NoteCard key={`note-${item.data.id}`} note={item.data} fromFriends applauseData={applauseMap?.get(item.data.id)} />
         ) : (
           <FeedItemCard key={`${item.data.type}-${item.data.id}`} item={item.data} />
         )
