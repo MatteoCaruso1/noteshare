@@ -24,6 +24,7 @@ import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
 import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
+import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
@@ -60,32 +61,48 @@ const Index = () => {
   const [threeDayDialogOpen, setThreeDayDialogOpen] = useState(false);
   const threeDayClaimingRef = useRef(false);
 
+  // 7-day streak one-time popup
+  const [sevenDayDialogOpen, setSevenDayDialogOpen] = useState(false);
+  const sevenDayClaimingRef = useRef(false);
+
   useEffect(() => {
     if (!profile || !practiceStats) return;
     const streak = practiceStats.currentStreak;
-    if (streak < 3) return;
-    // Already celebrated lifetime? Skip
-    if ((profile.celebrated_streak_milestones || []).includes(3)) return;
-    // Already claiming this session? Skip
-    if (threeDayClaimingRef.current) return;
-    threeDayClaimingRef.current = true;
+    const milestones = profile.celebrated_streak_milestones || [];
 
-    const claim = async () => {
-      const { data, error } = await supabase.rpc('claim_streak_milestone', {
-        p_profile_id: profile.id,
-        p_milestone: 3,
-      });
-      if (error) {
-        threeDayClaimingRef.current = false;
-        return;
-      }
-      const result = data as { claimed: boolean } | null;
-      if (result?.claimed) {
-        setThreeDayDialogOpen(true);
-        await refreshProfile();
-      }
-    };
-    claim();
+    // --- 3-day milestone ---
+    if (streak >= 3 && !milestones.includes(3) && !threeDayClaimingRef.current) {
+      threeDayClaimingRef.current = true;
+      (async () => {
+        const { data, error } = await supabase.rpc('claim_streak_milestone', {
+          p_profile_id: profile.id,
+          p_milestone: 3,
+        });
+        if (error) { threeDayClaimingRef.current = false; return; }
+        const result = data as { claimed: boolean } | null;
+        if (result?.claimed) {
+          setThreeDayDialogOpen(true);
+          await refreshProfile();
+        }
+      })();
+    }
+
+    // --- 7-day milestone ---
+    if (streak >= 7 && !milestones.includes(7) && !sevenDayClaimingRef.current) {
+      sevenDayClaimingRef.current = true;
+      (async () => {
+        const { data, error } = await supabase.rpc('claim_streak_milestone', {
+          p_profile_id: profile.id,
+          p_milestone: 7,
+        });
+        if (error) { sevenDayClaimingRef.current = false; return; }
+        const result = data as { claimed: boolean } | null;
+        if (result?.claimed) {
+          setSevenDayDialogOpen(true);
+          await refreshProfile();
+        }
+      })();
+    }
   }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
 
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
@@ -269,6 +286,12 @@ const Index = () => {
       <ThreeDayStreakDialog
         open={threeDayDialogOpen}
         onOpenChange={setThreeDayDialogOpen}
+      />
+
+      {/* 7-day streak one-time celebration */}
+      <SevenDayStreakDialog
+        open={sevenDayDialogOpen}
+        onOpenChange={setSevenDayDialogOpen}
       />
     </PageLayout>
   );
