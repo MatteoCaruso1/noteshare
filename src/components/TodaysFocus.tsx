@@ -204,11 +204,20 @@ export function TodaysFocus() {
     }
   };
 
-  // Cleanup timeout on unmount
+  // Flush pending save on unmount (e.g. navigating away)
+  const textRef = useRef(text);
+  const hasChangesRef = useRef(hasChanges);
+  textRef.current = text;
+  hasChangesRef.current = hasChanges;
+
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
+      }
+      // Save any unsaved changes before unmounting
+      if (hasChangesRef.current) {
+        updateFocus(textRef.current);
       }
     };
   }, []);
