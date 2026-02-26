@@ -136,7 +136,7 @@ export function useSubscription() {
   useEffect(() => {
     lastCheckRef.current = Date.now();
     checkSubscription();
-  }, [checkSubscription]);
+  }, [checkSubscription]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for checkout completion to refresh subscription status
   // Throttle to once per 30 seconds to prevent duplicate fires
@@ -146,6 +146,7 @@ export function useSubscription() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         const now = Date.now();
+        // Skip if we've checked recently (prevents double-fire with initial mount)
         if (now - lastCheckRef.current < 30_000) return;
         lastCheckRef.current = now;
         checkSubscription();
@@ -154,7 +155,7 @@ export function useSubscription() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user, checkSubscription]);
+  }, [user, checkSubscription]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCheckout = async (currency: SupportedCurrency = 'USD') => {
     if (!user) {

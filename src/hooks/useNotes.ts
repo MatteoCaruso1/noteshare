@@ -161,8 +161,8 @@ export function useNotes(projectId?: string) {
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     // Keep previous data visible while refetching
     placeholderData: (previousData) => previousData,
-    // Refetch on focus but don't remove existing data
-    refetchOnWindowFocus: true,
+    // Don't refetch on window focus - staleTime handles freshness
+    refetchOnWindowFocus: false,
     // Retry configuration for slow networks
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),

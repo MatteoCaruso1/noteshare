@@ -149,55 +149,17 @@ export function useTodaysFocus() {
 }
 
 // Hook to get the current focus entry for attaching to notes/sessions
-// Returns today's focus OR the most recent carried-forward focus with text
+// Derives from useTodaysFocus cache instead of making a separate DB call
 export function useCurrentFocusEntry() {
-  const { user } = useAuth();
-  const userId = user?.id;
-
-  return useQuery({
-    queryKey: ['current-focus-entry', userId],
-    queryFn: async () => {
-      if (!userId) return null;
-
-      const today = getLocalDateString();
-
-      // First try to get today's focus
-      const { data: todayFocus, error: todayError } = await supabase
-        .from('daily_focus')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('focus_date', today)
-        .maybeSingle();
-
-      if (todayError) throw todayError;
-
-      if (todayFocus) {
-        return todayFocus as DailyFocus;
-      }
-
-      // If no entry for today, get the most recent focus (for display purposes)
-      const { data: recentFocus, error: recentError } = await supabase
-        .from('daily_focus')
-        .select('*')
-        .eq('user_id', userId)
-        .order('focus_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (recentError) throw recentError;
-
-      // Return the recent focus if it has text
-      if (recentFocus && recentFocus.focus_text) {
-        return recentFocus as DailyFocus;
-      }
-
-      return null;
-    },
-    enabled: !!userId,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    placeholderData: () => readFocusCache(),
-  });
+  const { focus, isLoading } = useTodaysFocus();
+  
+  // useTodaysFocus already returns today's focus or the most recent carried-forward one
+  // Just re-expose the data in the shape consumers expect
+  return {
+    data: focus as (DailyFocus & { isCarriedForward?: boolean }) | null | undefined,
+    isLoading,
+    isPending: isLoading,
+  };
 }
 
 // Hook to fetch all focus entries for history view
