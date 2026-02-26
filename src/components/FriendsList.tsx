@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { UserSearch } from '@/components/UserSearch';
 import { useFriends } from '@/hooks/useFriendships';
-import { Users, Music, Guitar, Flame } from 'lucide-react';
+import { Users, Music, Guitar, Flame, UserPlus, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FriendsListProps {
   children: React.ReactNode;
@@ -16,16 +18,15 @@ interface FriendsListProps {
 export function FriendsList({ children, open, onOpenChange }: FriendsListProps) {
   const navigate = useNavigate();
   const { data: friends, isLoading } = useFriends();
+  const [addFriendExpanded, setAddFriendExpanded] = useState(false);
 
   const handleFriendClick = (friendId: string) => {
-    // Validate friendId before navigation
     if (!friendId || friendId === 'undefined' || friendId === 'null') {
       console.warn('[FriendsList] Invalid friendId:', friendId);
       return;
     }
     
     onOpenChange?.(false);
-    // Navigate with state so back button knows to reopen the dialog
     try {
       navigate(`/user/${friendId}`, { state: { fromFriendsList: true } });
     } catch (error) {
@@ -34,7 +35,10 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => {
+      onOpenChange?.(o);
+      if (!o) setAddFriendExpanded(false);
+    }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -48,6 +52,25 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
             </Badge>
           </DialogTitle>
         </DialogHeader>
+
+        {/* Add Friend Section */}
+        <button
+          onClick={() => setAddFriendExpanded(!addFriendExpanded)}
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-colors text-left"
+        >
+          <UserPlus className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-primary flex-1">Add Friend</span>
+          {addFriendExpanded ? (
+            <ChevronUp className="w-4 h-4 text-primary" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-primary" />
+          )}
+        </button>
+        {addFriendExpanded && (
+          <div className="pb-1">
+            <UserSearch />
+          </div>
+        )}
         
         <div className="border-y border-border">
           <ScrollArea className="h-[60vh]">
@@ -123,7 +146,7 @@ export function FriendsList({ children, open, onOpenChange }: FriendsListProps) 
                   <Users className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
                   <p className="text-sm text-muted-foreground">No friends yet</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Search for musicians above to add friends
+                    Use "Add Friend" above to find musicians
                   </p>
                 </div>
               )}

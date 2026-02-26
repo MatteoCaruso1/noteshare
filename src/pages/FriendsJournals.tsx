@@ -30,13 +30,7 @@ const FriendsJournals = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [showNewMessageView, setShowNewMessageView] = useState(false);
-  const [addFriendOpen, setAddFriendOpen] = useState(false);
   const [inChatView, setInChatView] = useState(false);
-  
-  // Track if user has ever clicked the add friend button
-  const [hasClickedAddFriend, setHasClickedAddFriend] = useState(() => {
-    return localStorage.getItem('hasClickedAddFriend') === 'true';
-  });
   
   // Check if we should open the friends list (coming back from a profile)
   const [friendsListOpen, setFriendsListOpen] = useState(false);
@@ -65,13 +59,13 @@ const FriendsJournals = () => {
           <div className="flex items-center justify-between gap-3 h-9">
             <h1 className="text-lg sm:text-xl font-semibold shrink-0">Friends' Practice</h1>
             <div className="flex items-center gap-2 flex-1 justify-end">
-              {/* Groups Navigation Button */}
+              {/* Groups Navigation Button - icon only on mobile */}
               <button
                 onClick={() => navigate('/groups')}
-                className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 shrink-0"
+                className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-2 sm:px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 shrink-0"
               >
                 <Waypoints className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Groups</span>
+                <span className="text-sm font-medium text-primary hidden sm:inline">Groups</span>
               </button>
 
               {/* Notifications Button */}
@@ -164,43 +158,12 @@ const FriendsJournals = () => {
                 </DialogContent>
               </Dialog>
 
-              {/* Friends Button */}
+              {/* Friends Button - no count, Add Friend is inside FriendsList */}
               <FriendsList open={friendsListOpen} onOpenChange={setFriendsListOpen}>
-                <div className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
+                <div className="cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                   <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{friends?.length || 0}</span>
                 </div>
               </FriendsList>
-
-              {/* Add Friend Button */}
-              <Dialog open={addFriendOpen} onOpenChange={(open) => {
-                setAddFriendOpen(open);
-                if (open && !hasClickedAddFriend) {
-                  setHasClickedAddFriend(true);
-                  localStorage.setItem('hasClickedAddFriend', 'true');
-                }
-              }}>
-                <DialogTrigger asChild>
-                  <div className={`cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${
-                    hasClickedAddFriend 
-                      ? 'bg-secondary/30 border border-border hover:bg-secondary/50' 
-                      : 'bg-primary/20 border-2 border-primary animate-pulse hover:bg-primary/30'
-                  }`}>
-                    <UserPlus className={`w-4 h-4 ${hasClickedAddFriend ? 'text-muted-foreground' : 'text-primary'}`} />
-                  </div>
-                </DialogTrigger>
-                <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <UserPlus className="w-5 h-5 text-primary" />
-                      Add Friend
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="pt-2">
-                    <UserSearch />
-                  </div>
-                </DialogContent>
-              </Dialog>
             </div>
           </div>
         </div>
