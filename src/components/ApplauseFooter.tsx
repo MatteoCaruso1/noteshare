@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from 'react';
-import { useNoteApplause, useGiveApplause, useRemoveApplause } from '@/hooks/useApplause';
+import { useNoteApplause, useGiveApplause, useRemoveApplause, ApplauseWithProfile } from '@/hooks/useApplause';
 import { useAuth } from '@/hooks/useAuth';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ interface ApplauseFooterProps {
   className?: string;
   /** When true, skip the expand animation and show immediately */
   skipAnimation?: boolean;
+  /** Pre-fetched applause data from batch query — skips per-note fetch when provided */
+  applauseData?: ApplauseWithProfile[];
 }
 
 export const ApplauseFooter = memo(function ApplauseFooter({ 
@@ -22,10 +24,14 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   commentCount = 0,
   onCommentClick,
   className,
-  skipAnimation = false
+  skipAnimation = false,
+  applauseData
 }: ApplauseFooterProps) {
   const { profile } = useAuth();
-  const { data: applauseList = [], isLoading } = useNoteApplause(noteId);
+  // Only fetch per-note if no batch data was provided (i.e. NoteDetail page)
+  const { data: fetchedApplause = [], isLoading: isFetching } = useNoteApplause(noteId, { enabled: applauseData === undefined });
+  const applauseList = applauseData ?? fetchedApplause;
+  const isLoading = applauseData === undefined ? isFetching : false;
   const giveApplause = useGiveApplause();
   const removeApplause = useRemoveApplause();
 

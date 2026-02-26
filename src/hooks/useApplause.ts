@@ -23,7 +23,7 @@ export interface ApplauseWithProfile extends Applause {
  * this hook is only for individual note detail pages or footers
  * where the cache was already seeded by batchFetchApplause.
  */
-export function useNoteApplause(noteId: string) {
+export function useNoteApplause(noteId: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['applause', noteId],
     queryFn: async () => {
@@ -43,6 +43,7 @@ export function useNoteApplause(noteId: string) {
       return (data || []) as unknown as ApplauseWithProfile[];
     },
     staleTime: 30000,
+    enabled: options?.enabled !== false,
   });
 }
 

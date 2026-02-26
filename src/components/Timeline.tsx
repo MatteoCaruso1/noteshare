@@ -5,6 +5,7 @@ import { NoteCardSkeleton } from './NoteCardSkeleton';
 import { FeedItemCard, FeedItem } from './FeedItemCard';
 import { Button } from '@/components/ui/button';
 import { useSignedUrlPrefetch } from '@/hooks/useSignedUrlPrefetch';
+import { useMultiNoteApplause } from '@/hooks/useApplause';
 import { Loader2, Music, Lock, Sparkles } from 'lucide-react';
 import { usePremium } from '@/contexts/PremiumContext';
 
@@ -245,6 +246,10 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
   // Prefetch signed URLs for all displayed notes in a single batch
   useSignedUrlPrefetch(displayedNotes);
 
+  // Batch-fetch applause for all displayed notes in a single query
+  const displayedNoteIds = useMemo(() => displayedNotes.map(n => n.id), [displayedNotes]);
+  const { data: applauseMap } = useMultiNoteApplause(displayedNoteIds);
+
   // ========================================
   // RENDER
   // ========================================
@@ -266,7 +271,7 @@ export const Timeline = memo(function Timeline({ notes, feedItems = [], loading,
     <div className="space-y-4">
       {displayedItems.map((item) => (
         item.type === 'note' ? (
-          <NoteCard key={`note-${item.data.id}`} note={item.data} />
+          <NoteCard key={`note-${item.data.id}`} note={item.data} applauseData={applauseMap?.get(item.data.id)} />
         ) : (
           <FeedItemCard key={`feed-${item.data.id}`} item={item.data} />
         )
