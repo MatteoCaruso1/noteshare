@@ -7,7 +7,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
-import { useCurrentFocusEntry } from '@/hooks/useDailyFocus';
+import { useCurrentFocusEntry, FOCUS_CACHE_KEY } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
@@ -790,7 +790,7 @@ export function PracticeControls() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text ? 'invisible' : ''}`}
+                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text && !localStorage.getItem(FOCUS_CACHE_KEY) ? 'invisible' : ''}`}
                     data-no-hover-reset
                     onTouchEnd={(e) => { e.currentTarget.blur(); }}
                   >
