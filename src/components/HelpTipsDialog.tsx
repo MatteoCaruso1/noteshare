@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, Mic, Target, Timer, NotebookPen, Save, FileText, Share, Waypoints, Calendar, UserPlus, ClipboardList, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
+import { HelpCircle, Mic, Target, Timer, Kanban, Save, FileText, Share, Waypoints, Calendar, UserPlus, ClipboardList, FolderOpen, CalendarDays, Lock, ToggleRight, Settings, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,7 @@ interface HelpSection {
 // Combined icon for Practice Board + Toggle
 const PracticeBoardToggleIcon = () => (
   <span className="inline-flex items-center gap-0.5 -ml-5">
-    <NotebookPen className="w-4 h-4" />
+    <Kanban className="w-4 h-4" />
     <ToggleRight className="w-4 h-4" />
   </span>
 );
@@ -61,7 +61,7 @@ const helpSections: HelpSection[] = [
   },
   {
     feature: 'Practice Board',
-    featureIcon: <NotebookPen className="w-4 h-4 text-foreground" />,
+    featureIcon: <Kanban className="w-4 h-4 text-foreground" />,
     definition: 'Document your cross-session focus areas to maintain intentionality across sessions',
     items: [
       { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Boards to revisit later' },
