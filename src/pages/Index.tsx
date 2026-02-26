@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
@@ -9,6 +9,8 @@ import { usePageViewTracking } from '@/hooks/usePageViewTracking';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
 import { usePremium } from '@/contexts/PremiumContext';
+import { usePracticeStats } from '@/hooks/usePracticeStats';
+import { supabase } from '@/integrations/supabase/client';
 
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -21,13 +23,15 @@ import { TimelineSearch } from '@/components/TimelineSearch';
 import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
 import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
+import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const { isPremium } = usePremium();
+  const { data: practiceStats } = usePracticeStats(profile?.id);
   
   // Track page views for analytics
   usePageViewTracking('practice');
@@ -51,7 +55,39 @@ const Index = () => {
       setWeeklyGoalModalOpen(true);
     }
   }, [shouldShowWeeklyGoal]);
-  
+
+  // 3-day streak one-time popup
+  const [threeDayDialogOpen, setThreeDayDialogOpen] = useState(false);
+  const threeDayClaimingRef = useRef(false);
+
+  useEffect(() => {
+    if (!profile || !practiceStats) return;
+    const streak = practiceStats.currentStreak;
+    if (streak < 3) return;
+    // Already celebrated lifetime? Skip
+    if ((profile.celebrated_streak_milestones || []).includes(3)) return;
+    // Already claiming this session? Skip
+    if (threeDayClaimingRef.current) return;
+    threeDayClaimingRef.current = true;
+
+    const claim = async () => {
+      const { data, error } = await supabase.rpc('claim_streak_milestone', {
+        p_profile_id: profile.id,
+        p_milestone: 3,
+      });
+      if (error) {
+        threeDayClaimingRef.current = false;
+        return;
+      }
+      const result = data as { claimed: boolean } | null;
+      if (result?.claimed) {
+        setThreeDayDialogOpen(true);
+        await refreshProfile();
+      }
+    };
+    claim();
+  }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
+
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
   const isBootstrapping = authLoading || (!!user && !profile);
   const [searchQuery, setSearchQuery] = useState('');
@@ -227,6 +263,12 @@ const Index = () => {
         open={weeklyGoalModalOpen}
         onOpenChange={setWeeklyGoalModalOpen}
         onComplete={markAsShown}
+      />
+      
+      {/* 3-day streak one-time celebration */}
+      <ThreeDayStreakDialog
+        open={threeDayDialogOpen}
+        onOpenChange={setThreeDayDialogOpen}
       />
     </PageLayout>
   );

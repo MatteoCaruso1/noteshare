@@ -100,8 +100,9 @@ const Profile = () => {
     
     // Clear milestones that are now above current streak (so they can be re-earned later)
     // This allows users to earn the same milestone multiple times across different streaks
+    // Never clear milestone 3 — it's a one-time-only lifetime achievement
     const milestonesToClear = celebratedMilestones.filter(
-      (milestone: number) => milestone > currentStreak
+      (milestone: number) => milestone > currentStreak && milestone !== 3
     );
     
     if (milestonesToClear.length > 0) {
