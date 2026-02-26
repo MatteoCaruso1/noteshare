@@ -87,6 +87,7 @@ const queryClient = new QueryClient({
         return failureCount < 2;
       },
       staleTime: 1000 * 60, // 1 minute
+      refetchOnWindowFocus: false, // Prevent refetch thrashing on tab switch
     },
   },
 });
