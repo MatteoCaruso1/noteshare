@@ -168,14 +168,13 @@ export function ProjectCoverPicker({
 
       if (uploadError) throw uploadError;
 
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('practice-media')
-        .createSignedUrl(filePath, 60 * 60);
-
-      if (signedError) throw signedError;
+      // Get signed URL via batched pipeline (no direct storage signing)
+      const { getSignedUrls } = await import('@/hooks/useSignedUrl');
+      const results = await getSignedUrls([filePath]);
+      const signedUrl = results.get(filePath);
 
       onChange(filePath);
-      onPreviewUrlChange?.(signedData.signedUrl);
+      onPreviewUrlChange?.(signedUrl || null);
       setShowPicker(false);
       toast.success('Album art uploaded!');
     } catch (error) {
