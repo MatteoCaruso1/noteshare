@@ -1,34 +1,38 @@
 
 
-# Fix: Bottom Nav First-Tap Navigation Failure
+# Fix: "Link to Practice List" Toggle Not Showing
 
-## Problem
+## Root Cause
 
-The bottom nav uses `onPointerDown` for its click handler, but `NavLink` navigates via the browser's `click` event. On mobile, there's a race condition:
+In `PracticeControls.tsx` line 793, the "Link to Practice List" switch has a conditional `invisible` class:
 
-1. `pointerdown` fires -- optimistic state is set, icon lights up
-2. The React state update from step 1 causes a re-render between `pointerdown` and `click`
-3. Occasionally, the re-render disrupts the synthetic `click` event chain, so `NavLink` never actually navigates
-4. On the second tap, the component is stable (no state change since the route didn't change), so the `click` fires normally
+```tsx
+className={`... ${!currentFocus?.focus_text ? 'invisible' : ''}`}
+```
 
-This is an inherent risk of splitting user-facing feedback (`onPointerDown`) from navigation (`click`) -- they can fall out of sync.
+This hides the toggle whenever `currentFocus?.focus_text` is falsy. The problem is that `currentFocus` comes from a database query (`useCurrentFocusEntry` -> `useTodaysFocus`), while the Practice List textarea content is driven by localStorage first (via `FOCUS_CACHE_KEY`). There are several scenarios where the Practice List has visible text but `currentFocus?.focus_text` is falsy:
 
-## Solution
+1. **Debounce delay**: The user types in Practice List, but the 1-second debounced save hasn't fired yet, so no DB entry exists
+2. **New day carry-forward**: Text is shown from localStorage cache, but the DB query hasn't completed yet
+3. **First edit of the day**: The user starts typing but hasn't triggered the upsert, so today's `daily_focus` row doesn't exist yet
 
-Use `onClick` instead of `onPointerDown` and add programmatic navigation via `useNavigate()` as a guarantee. This ensures navigation and visual feedback happen in the same event, eliminating the race.
+This explains why the toggle is missing even though the Practice List clearly has content (as seen in the screenshot).
 
-### Changes to `src/components/BottomNav.tsx`
+## Fix
 
-1. Import `useNavigate` from `react-router-dom`
-2. Change `onPointerDown` to `onClick` on the `NavLink`
-3. In `handleNavClick`, call `e.preventDefault()` to stop `NavLink`'s default navigation, then use `navigate(to)` programmatically -- this guarantees navigation happens in the same event handler as the optimistic state update
-4. Update the handler signature from `React.PointerEvent` to `React.MouseEvent`
+Change the visibility condition to also check the localStorage cache, which is the same source of truth the Practice List textarea uses. This adds zero performance overhead -- it's a single synchronous `localStorage.getItem` read done once at render time (already cached by the browser).
 
-The result: one event (`click`) triggers both the visual highlight and the navigation, so they can never diverge.
+### Change in `src/components/PracticeControls.tsx`
 
-## Why This Is Safe
+Replace the `invisible` condition on the focus toggle (line 793) to also check `localStorage` for cached focus text. This way:
+- If the DB has focus text -> show toggle (current behavior, works)
+- If localStorage has focus text -> show toggle (new, fixes the gap)
+- If neither has text -> hide toggle (correct, nothing to attach)
 
-- `onClick` on mobile fires after `touchend`, which is fast enough that users won't notice any difference vs `pointerdown`
-- The optimistic route state still provides instant visual feedback within the same synchronous handler
-- Programmatic `navigate()` is more reliable than relying on `NavLink`'s internal click handling after state changes
+Specifically:
+1. Import `FOCUS_CACHE_KEY` from `useDailyFocus`
+2. Create a small helper or inline check that reads the cached focus text
+3. Update the `invisible` condition: `!currentFocus?.focus_text && !cachedFocusText`
+
+This is a minimal, zero-overhead change -- `localStorage.getItem` is synchronous and effectively free.
 
