@@ -1080,3 +1080,15 @@ body.session-active .session-focus-exempt {
     background: hsl(var(--primary) / 0.3);
   }
 }
+
+/* Milestone toast - refined, calm, earned */
+.milestone-toast {
+  font-family: inherit;
+}
+.milestone-toast [data-title] {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.milestone-toast [data-description] {
+  color: hsl(var(--muted-foreground));
+}
