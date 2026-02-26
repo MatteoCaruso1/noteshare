@@ -39,6 +39,7 @@ export function useFriendships() {
     enabled: !!profile?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -73,34 +74,20 @@ export function usePendingFriendRequests() {
     enabled: !!profile?.id,
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
 export function useFriends() {
   const { profile } = useAuth();
+  const { data: friendIds } = useFriendIds();
 
   return useQuery({
     queryKey: ['friends', profile?.id],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!friendIds || friendIds.length === 0) return [];
 
-      // Get friendships first
-      const { data: friendships, error: friendshipsError } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
-        .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
-
-      if (friendshipsError) throw friendshipsError;
-
-      // Get friend IDs (the other person)
-      const friendIds = friendships.map(f => 
-        f.requester_id === profile.id ? f.addressee_id : f.requester_id
-      );
-
-      if (friendIds.length === 0) return [];
-
-      // Only fetch profiles for actual friends (not all profiles)
+      // Reuse friend IDs from shared useFriendIds hook instead of re-querying friendships
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak')
@@ -110,9 +97,9 @@ export function useFriends() {
 
       return profiles as Profile[];
     },
-    enabled: !!profile?.id,
-    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    enabled: !!profile?.id && !!friendIds,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -464,25 +451,30 @@ export function useSuggestedMusicians() {
   });
 }
 
-// Hook to get muted friends list
+// Hook to get muted friends list - derives from useFriendIds shared query
+// useFriendIds already fetches muted_friends and excludes them from friend IDs,
+// but some components need the raw muted list. We keep a lightweight query here
+// with the same staleTime so it deduplicates with the shared cache.
 export function useMutedFriends() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
+  const profileId = profile?.id;
 
   return useQuery({
-    queryKey: ['muted-friends', user?.id],
+    queryKey: ['muted-friends', profileId],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!profileId) return [];
 
       const { data, error } = await supabase
         .from('muted_friends')
         .select('muted_friend_id')
-        .eq('user_id', user.id);
+        .eq('user_id', profileId);
 
       if (error) throw error;
       return (data || []).map(m => m.muted_friend_id);
     },
-    enabled: !!user?.id,
+    enabled: !!profileId,
     staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
