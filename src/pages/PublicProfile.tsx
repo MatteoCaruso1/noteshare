@@ -277,7 +277,7 @@ const PublicProfile = () => {
           <Card className="p-6 bg-card border-border relative">
             {/* Friend Actions - only show if friend */}
             {isLoggedIn && myProfile?.id !== profile.id && (
-              <div className="absolute top-4 right-4 flex items-center gap-1">
+              <div className="absolute top-3 right-4 flex items-center gap-1">
                 {/* Message Button - only for friends */}
                 {isFriend && (
                   <button 
@@ -355,11 +355,11 @@ const PublicProfile = () => {
                   itemType="user"
                   itemId={profile.id}
                   reportedUserId={profile.id}
-                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground/50 hover:text-destructive"
+                  className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
                 />
               </div>
             )}
-            <div className="flex items-center gap-4 mb-4 mt-2">
+            <div className="flex items-center gap-4 mb-4 mt-6">
               <Avatar className="w-20 h-20 border-2 border-primary/20">
                 {avatarUrl ? (
                   <img 
