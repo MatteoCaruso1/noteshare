@@ -4,8 +4,8 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-// Robust service worker registration with auto-update.
-// This prevents old cached builds from breaking critical flows like OAuth redirects.
+// Service worker registration with deferred updates.
+// New versions are detected but NOT force-reloaded; a toast lets the user choose when to update.
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
@@ -16,18 +16,24 @@ if ("serviceWorker" in navigator) {
         window.setInterval(() => {
           registration.update().catch(() => void 0);
         }, 60 * 60 * 1000); // hourly
+
+        // When a new SW is found and installed, notify the app instead of force-reloading.
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener("statechange", () => {
+            if (
+              newWorker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              window.dispatchEvent(new CustomEvent("sw-update-available"));
+            }
+          });
+        });
       })
       .catch((error) => {
         console.warn("SW registration failed:", error);
       });
-
-    // Reload immediately when a new SW takes control.
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
   });
 }
 

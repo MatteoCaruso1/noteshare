@@ -122,10 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Clear stale query cache when auth state changes
-        // Only clear signed URL caches on SIGNED_OUT (not token refresh)
-        // to preserve cached avatar URLs across token refreshes
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        // Clear stale query cache only on real auth transitions (not token refresh)
+        // TOKEN_REFRESHED happens frequently on mobile resume and should NOT wipe cached data
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
           queryClient.clear();
         }
         if (event === 'SIGNED_OUT') {
