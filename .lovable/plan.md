@@ -1,44 +1,34 @@
 
 
-# Update Onboarding & Highlight for Friends List Button
+# Fix: Bottom Nav First-Tap Navigation Failure
 
-## Context
-The recent change moved "Add Friend" inside the Friends List dialog and removed it as a standalone header button. This requires two updates:
+## Problem
 
-## What's NOT Broken
-- The onboarding spotlight tour step 4 highlights the **bottom nav "Friends" tab** (`data-tour="friends-nav"`), which is unchanged and still works fine.
+The bottom nav uses `onPointerDown` for its click handler, but `NavLink` navigates via the browser's `click` event. On mobile, there's a race condition:
 
-## Changes Needed
+1. `pointerdown` fires -- optimistic state is set, icon lights up
+2. The React state update from step 1 causes a re-render between `pointerdown` and `click`
+3. Occasionally, the re-render disrupts the synthetic `click` event chain, so `NavLink` never actually navigates
+4. On the second tap, the component is stable (no state change since the route didn't change), so the `click` fires normally
 
-### 1. Add `data-tour` attribute to the Friends List button
-In `FriendsJournals.tsx`, add `data-tour="friends-list"` to the Friends List button (the Users icon in the header) so the spotlight tour can target it.
+This is an inherent risk of splitting user-facing feedback (`onPointerDown`) from navigation (`click`) -- they can fall out of sync.
 
-### 2. Add a new onboarding tour step for the Friends List button
-In `SpotlightTour.tsx`, add a step after the current Friends nav step that:
-- Navigates to `/friends`
-- Targets `[data-tour="friends-list"]`
-- Shows a message like "View your friends list and add new friends here"
-- This means the tour will go from 5 steps to 6 (plus the final "Happy practicing!" screen), updating the final step number from 6 to 7
+## Solution
 
-### 3. Add persistent highlight (pulse) on the Friends List button until first clicked
-Similar to how `HelpTipsDialog` uses `localStorage` to track whether the help icon has been viewed:
-- Create a `localStorage` key like `noteshare_friends_list_viewed_{userId}`
-- In `FriendsJournals.tsx`, check this key and apply `text-primary animate-pulse` to the Users icon when not yet viewed
-- When the Friends List dialog opens, mark it as viewed and stop the pulse
+Use `onClick` instead of `onPointerDown` and add programmatic navigation via `useNavigate()` as a guarantee. This ensures navigation and visual feedback happen in the same event, eliminating the race.
 
-### Technical Details
+### Changes to `src/components/BottomNav.tsx`
 
-**Files to modify:**
+1. Import `useNavigate` from `react-router-dom`
+2. Change `onPointerDown` to `onClick` on the `NavLink`
+3. In `handleNavClick`, call `e.preventDefault()` to stop `NavLink`'s default navigation, then use `navigate(to)` programmatically -- this guarantees navigation happens in the same event handler as the optimistic state update
+4. Update the handler signature from `React.PointerEvent` to `React.MouseEvent`
 
-1. **`src/pages/FriendsJournals.tsx`**
-   - Add `data-tour="friends-list"` to the Friends List button div
-   - Add localStorage-based pulse highlight logic (check `noteshare_friends_list_viewed_{userId}`)
-   - On FriendsList `onOpenChange`, mark as viewed when opened
+The result: one event (`click`) triggers both the visual highlight and the navigation, so they can never diverge.
 
-2. **`src/components/onboarding/SpotlightTour.tsx`**
-   - Insert new tour step at index 4 (after friends-nav): `{ targetSelector: '[data-tour="friends-list"]', message: 'View your friends and add new ones here!', position: 'bottom', navigateTo: '/friends' }`
-   - Update final step check from `step === 6` to `step === 7`
-   - Update step indicator dots from 5 to 6
+## Why This Is Safe
 
-3. **`src/contexts/OnboardingContext.tsx`**
-   - Update the max step from 6 to 7 in `nextStep()`
+- `onClick` on mobile fires after `touchend`, which is fast enough that users won't notice any difference vs `pointerdown`
+- The optimistic route state still provides instant visual feedback within the same synchronous handler
+- Programmatic `navigate()` is more reliable than relying on `NavLink`'s internal click handling after state changes
+
