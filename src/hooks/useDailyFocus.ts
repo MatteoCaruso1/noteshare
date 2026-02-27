@@ -14,11 +14,16 @@ interface DailyFocus {
 
 export const FOCUS_CACHE_KEY = 'noteshare_focus_cache';
 
-function readFocusCache(): DailyFocus | null {
+export function readFocusCache(): DailyFocus | null {
   try {
     const raw = localStorage.getItem(FOCUS_CACHE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as DailyFocus;
+    const parsed = JSON.parse(raw);
+    // Validate it has the required id field
+    if (parsed && typeof parsed === 'object' && parsed.id) {
+      return parsed as DailyFocus;
+    }
+    return null;
   } catch {
     return null;
   }
