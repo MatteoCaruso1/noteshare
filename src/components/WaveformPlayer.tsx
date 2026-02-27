@@ -157,8 +157,8 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       backend: 'MediaElement',
       interact: true,
       dragToSeek: true,
-      // Use cached peaks for instant visual rendering
-      ...(cached ? { peaks: cached.peaks } : {}),
+      // Use cached peaks + duration for instant visual rendering
+      ...(cached ? { peaks: cached.peaks, duration: cached.duration } : {}),
     });
 
     wavesurferRef.current = wavesurfer;
@@ -186,9 +186,10 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    // If we have cached peaks, mark as visually ready immediately
+    // If we have cached peaks, mark as fully ready immediately
     if (cached) {
       setIsLoading(false);
+      setIsReady(true);
     }
 
     wavesurfer.on('seeking', () => {
@@ -233,9 +234,9 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    // Load audio — pass cached peaks so WaveSurfer skips waveform re-decode
+    // Load audio — pass cached peaks + duration so WaveSurfer skips waveform re-decode
     try {
-      wavesurfer.load(signedUrl, cached?.peaks);
+      wavesurfer.load(signedUrl, cached?.peaks, cached?.duration);
     } catch (e) {
       console.error('[WaveformPlayer] Error initiating load:', e);
       if (isMounted) {
