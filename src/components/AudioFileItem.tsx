@@ -66,9 +66,9 @@ export function AudioFileItem({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 bg-secondary/30 rounded-lg border border-border/50">
+    <div className="flex flex-col gap-1.5 px-2.5 py-2 bg-secondary/30 rounded-lg border border-border/50">
       {/* Header row: icon, name, actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {isUploading ? (
           <Loader2 className="w-4 h-4 text-primary flex-shrink-0 animate-spin" />
         ) : uploadComplete ? (
@@ -162,7 +162,7 @@ export function AudioFileItem({
       
       {/* Upload progress bar */}
       {isUploading && uploadProgress !== undefined && (
-        <div className="pl-6 space-y-1">
+        <div className="space-y-1">
           <Progress value={uploadProgress} className="h-1.5" />
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Upload className="w-3 h-3" />
@@ -173,7 +173,7 @@ export function AudioFileItem({
       
       {/* Waveform player row - only show when not uploading */}
       {!isUploading && (
-        <div className="pl-6">
+        <div>
           <WaveformPlayer src={audio.url} title={audio.name} />
         </div>
       )}
