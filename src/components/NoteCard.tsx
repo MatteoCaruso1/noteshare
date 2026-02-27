@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo, useState, useRef, useEffect } from 'react';
+import { toast as sonnerToast } from 'sonner';
 import { useTouchActive } from '@/hooks/useTouchActive';
 import { NoteWithAuthor } from '@/types';
 import { Card } from '@/components/ui/card';
@@ -24,7 +25,7 @@ import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, 
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames, useUpdateNoteContent } from '@/hooks/useUpdateNote';
+import { useUpdateNoteVisibility, useRemoveNoteFocus, useUpdateNoteAudioNames, useUpdateNoteContent, useUpdateNotePrivateAudios } from '@/hooks/useUpdateNote';
 import { useDeleteNote, usePrefetchNote } from '@/hooks/useNotes';
 import { useUpdateSessionDuration } from '@/hooks/useSessions';
 import { useAuth } from '@/hooks/useAuth';
@@ -168,6 +169,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const updateContent = useUpdateNoteContent();
   const updateSessionDuration = useUpdateSessionDuration();
   const removeNoteFocus = useRemoveNoteFocus();
+  const updatePrivateAudios = useUpdateNotePrivateAudios();
   const deleteNote = useDeleteNote();
   const queryClient = useQueryClient();
   const prefetchNote = usePrefetchNote();
@@ -198,6 +200,33 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   }, [note.id, note.audio_file_names, note.audio_files, updateAudioNames]);
 
   const isOwner = profile?.id === note.author_id;
+
+  // Per-audio privacy: compute which indices are private and filtered audio for non-owners
+  const privateAudioIndices = useMemo(() => new Set((note as any).private_audio_indices || []), [(note as any).private_audio_indices]);
+  
+  const visibleAudioFiles = useMemo(() => {
+    if (isOwner) return note.audio_files;
+    return note.audio_files.filter((_, i) => !privateAudioIndices.has(i));
+  }, [isOwner, note.audio_files, privateAudioIndices]);
+  
+  const visibleAudioFileNames = useMemo(() => {
+    if (isOwner) return note.audio_file_names;
+    return note.audio_file_names.filter((_, i) => !privateAudioIndices.has(i));
+  }, [isOwner, note.audio_file_names, privateAudioIndices]);
+
+  const handleToggleAudioPrivacy = useCallback((audioIndex: number) => {
+    const current: number[] = (note as any).private_audio_indices || [];
+    const newIndices = current.includes(audioIndex)
+      ? current.filter((i: number) => i !== audioIndex)
+      : [...current, audioIndex];
+    updatePrivateAudios.mutate({ noteId: note.id, privateAudioIndices: newIndices });
+    
+    if (newIndices.includes(audioIndex)) {
+      sonnerToast('Recording set to private');
+    } else {
+      sonnerToast('Recording set to public');
+    }
+  }, [note.id, (note as any).private_audio_indices, updatePrivateAudios]);
   const isPracticeSession = !!note.session_id;
   
   // Get streak info from author's profile for badge display
@@ -782,6 +811,8 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
                   audio={audio}
                   onRemove={() => setEditAudioFiles(prev => prev.filter((_, idx) => idx !== i))}
                   onRename={(newName) => setEditAudioFiles(prev => prev.map((a, idx) => idx === i ? { ...a, name: newName } : a))}
+                  isPrivate={privateAudioIndices.has(i)}
+                  onTogglePrivacy={() => handleToggleAudioPrivacy(i)}
                 />
               ))}
             </div>
@@ -852,24 +883,35 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           focusTextSnapshot={note.focus_text_snapshot}
           expanded={expanded}
           inlineExpanded={isInlineExpanded}
-          hasMediaBelow={note.audio_files.length > 0 || note.image_files.length > 0}
+          hasMediaBelow={visibleAudioFiles.length > 0 || note.image_files.length > 0}
           onShowMore={() => setIsInlineExpanded(true)}
           onShowLess={() => setIsInlineExpanded(false)}
         />
       )}
 
-      {note.audio_files.length > 0 && (
+      {visibleAudioFiles.length > 0 && (
         <div className={`space-y-2 ${note.image_files.length > 0 ? 'mb-3' : 'pb-1'}`}>
-          {(expanded ? note.audio_files : note.audio_files.slice(0, 1)).map((url, i) => (
-            <WaveformPlayer 
-              key={i}
-              src={url} 
-              title={note.audio_file_names?.[i]}
-              onRename={expanded && isOwner ? (newName) => handleRenameAudio(i, newName) : undefined}
-            />
-          ))}
-          {!expanded && note.audio_files.length > 1 && (
-            <p className="text-xs text-muted-foreground">+{note.audio_files.length - 1} more audio</p>
+          {(expanded ? visibleAudioFiles : visibleAudioFiles.slice(0, 1)).map((url, i) => {
+            // Find the original index for this audio file (needed for privacy toggle)
+            const originalIndex = isOwner ? i : note.audio_files.indexOf(url);
+            return (
+              <div key={originalIndex} className="relative">
+                <WaveformPlayer 
+                  src={url} 
+                  title={visibleAudioFileNames?.[i]}
+                  onRename={expanded && isOwner ? (newName) => handleRenameAudio(originalIndex, newName) : undefined}
+                />
+                {/* Show lock icon for private audios in display mode (owner only) */}
+                {isOwner && privateAudioIndices.has(originalIndex) && (
+                  <div className="absolute top-1 right-1">
+                    <Lock className="w-3 h-3 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {!expanded && visibleAudioFiles.length > 1 && (
+            <p className="text-xs text-muted-foreground">+{visibleAudioFiles.length - 1} more audio</p>
           )}
         </div>
       )}

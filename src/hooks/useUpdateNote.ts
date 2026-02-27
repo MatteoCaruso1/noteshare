@@ -221,6 +221,64 @@ return useMutation({
 });
 }
 
+export function useUpdateNotePrivateAudios() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      noteId,
+      privateAudioIndices,
+    }: {
+      noteId: string;
+      privateAudioIndices: number[];
+    }) => {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ private_audio_indices: privateAudioIndices } as any)
+        .eq('id', noteId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onMutate: async ({ noteId, privateAudioIndices }) => {
+      await queryClient.cancelQueries({ queryKey: ['note', noteId] });
+      await queryClient.cancelQueries({ queryKey: ['notes'] });
+
+      const previousNote = queryClient.getQueryData<NoteWithAuthor>(['note', noteId]);
+
+      if (previousNote) {
+        queryClient.setQueryData<NoteWithAuthor>(['note', noteId], {
+          ...previousNote,
+          private_audio_indices: privateAudioIndices,
+        });
+      }
+
+      queryClient.setQueriesData<NoteWithAuthor[]>(
+        { queryKey: ['notes'], exact: false },
+        (old) => old?.map(note =>
+          note.id === noteId ? { ...note, private_audio_indices: privateAudioIndices } : note
+        )
+      );
+
+      return { previousNote };
+    },
+    onError: (error, { noteId }, context) => {
+      if (context?.previousNote) {
+        queryClient.setQueryData(['note', noteId], context.previousNote);
+      }
+      console.error('Error updating audio privacy:', error);
+      toast.error('Failed to update audio privacy');
+    },
+    onSuccess: (_, { noteId }) => {
+      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+    },
+  });
+}
+
 export function useUpdateNoteContent() {
   const queryClient = useQueryClient();
 

@@ -2,17 +2,20 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Trash2, Pencil, Check, Loader2, Upload, CheckCircle } from 'lucide-react';
+import { Trash2, Pencil, Check, Loader2, Upload, CheckCircle, Users, Lock } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
+import { Switch } from '@/components/ui/switch';
 
 interface AudioFileItemProps {
   audio: AudioFileWithName;
   onRemove: () => void;
   onRename: (newName: string) => void;
-  uploadProgress?: number; // 0-100, undefined means not uploading or complete
+  uploadProgress?: number;
   isUploading?: boolean;
   uploadComplete?: boolean;
+  isPrivate?: boolean;
+  onTogglePrivacy?: () => void;
 }
 
 export function AudioFileItem({ 
@@ -21,7 +24,9 @@ export function AudioFileItem({
   onRename, 
   uploadProgress,
   isUploading,
-  uploadComplete 
+  uploadComplete,
+  isPrivate,
+  onTogglePrivacy,
 }: AudioFileItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(audio.name);
@@ -102,11 +107,28 @@ export function AudioFileItem({
             </Button>
           </div>
         )}
+
+        {/* Privacy toggle */}
+        {onTogglePrivacy && (
+          <div
+            className="flex items-center gap-1 flex-shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Users className={`w-3.5 h-3.5 ${!isPrivate ? 'text-primary' : 'text-muted-foreground/50'}`} />
+            <Switch
+              checked={!!isPrivate}
+              onCheckedChange={() => onTogglePrivacy()}
+              className="h-5 w-9 data-[state=checked]:bg-muted-foreground data-[state=unchecked]:bg-primary/80"
+              disabled={isUploading}
+            />
+            <Lock className={`w-3.5 h-3.5 ${isPrivate ? 'text-foreground' : 'text-muted-foreground/50'}`} />
+          </div>
+        )}
         
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-foreground"
+          className="h-7 w-7 flex-shrink-0 border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
           onClick={onRemove}
           disabled={isUploading}
         >

@@ -67,6 +67,7 @@ export interface Note {
   video_files: string[];
   tags: string[];
   visibility: 'private' | 'friends';
+  private_audio_indices: number[];
   comment_count: number;
   created_at: string;
   updated_at: string;

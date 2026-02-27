@@ -736,6 +736,7 @@ export type Database = {
           goal_id: string | null
           id: string
           image_files: string[] | null
+          private_audio_indices: number[]
           project_id: string | null
           session_id: string | null
           tags: string[] | null
@@ -757,6 +758,7 @@ export type Database = {
           goal_id?: string | null
           id?: string
           image_files?: string[] | null
+          private_audio_indices?: number[]
           project_id?: string | null
           session_id?: string | null
           tags?: string[] | null
@@ -778,6 +780,7 @@ export type Database = {
           goal_id?: string | null
           id?: string
           image_files?: string[] | null
+          private_audio_indices?: number[]
           project_id?: string | null
           session_id?: string | null
           tags?: string[] | null
