@@ -6,6 +6,17 @@ import { Trash2, Pencil, Check, Loader2, Upload, CheckCircle, Users, Lock } from
 import { AudioFileWithName } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface AudioFileItemProps {
   audio: AudioFileWithName;
@@ -118,22 +129,35 @@ export function AudioFileItem({
             <Switch
               checked={!!isPrivate}
               onCheckedChange={() => onTogglePrivacy()}
-              className="h-5 w-9 data-[state=checked]:bg-muted-foreground data-[state=unchecked]:bg-primary/80"
+              className="h-5 w-9 data-[state=checked]:bg-primary data-[state=unchecked]:bg-primary/80"
               disabled={isUploading}
             />
             <Lock className={`w-3.5 h-3.5 ${isPrivate ? 'text-foreground' : 'text-muted-foreground/50'}`} />
           </div>
         )}
         
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 flex-shrink-0 border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
-          onClick={onRemove}
-          disabled={isUploading}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
+              disabled={isUploading}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="max-w-xs">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete recording?</AlertDialogTitle>
+              <AlertDialogDescription>This can't be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onRemove}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
       
       {/* Upload progress bar */}
