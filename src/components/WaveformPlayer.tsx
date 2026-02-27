@@ -6,8 +6,8 @@ import { Play, Pause, Mic, Loader2, Check } from 'lucide-react';
 import { audioManager } from '@/lib/audioManager';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 
-// In-memory cache for waveform peaks keyed by storage path (src prop)
-const peaksCache = new Map<string, number[][]>();
+// In-memory cache for waveform peaks + duration keyed by storage path (src prop)
+const peaksCache = new Map<string, { peaks: number[][]; duration: number }>();
 
 interface WaveformPlayerProps {
   src: string;
@@ -104,11 +104,13 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
 
     let isMounted = true;
     
-    const cachedPeaks = peaksCache.get(src);
+    const cached = peaksCache.get(src);
     
     // If we have cached peaks, skip the loading state entirely
-    if (!cachedPeaks) {
+    if (!cached) {
       setIsLoading(true);
+    } else {
+      setDuration(cached.duration);
     }
     setError(false);
     
@@ -156,7 +158,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       interact: true,
       dragToSeek: true,
       // Use cached peaks for instant visual rendering
-      ...(cachedPeaks ? { peaks: cachedPeaks } : {}),
+      ...(cached ? { peaks: cached.peaks } : {}),
     });
 
     wavesurferRef.current = wavesurfer;
@@ -168,12 +170,12 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
 
     wavesurfer.on('ready', () => {
       if (isMounted) {
-        // Cache peaks for future mounts
+        // Cache peaks + duration for future mounts
         if (!peaksCache.has(src)) {
           try {
             const exportedPeaks = wavesurfer.exportPeaks();
             if (exportedPeaks?.length) {
-              peaksCache.set(src, exportedPeaks);
+              peaksCache.set(src, { peaks: exportedPeaks, duration: wavesurfer.getDuration() });
             }
           } catch { /* ignore export errors */ }
         }
@@ -185,8 +187,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     });
 
     // If we have cached peaks, mark as visually ready immediately
-    if (cachedPeaks) {
-      // Waveform is already drawn from peaks — show it right away
+    if (cached) {
       setIsLoading(false);
     }
 
@@ -232,9 +233,9 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    // Load audio (peaks already drawn if cached, audio loads in background)
+    // Load audio — pass cached peaks so WaveSurfer skips waveform re-decode
     try {
-      wavesurfer.load(signedUrl);
+      wavesurfer.load(signedUrl, cached?.peaks);
     } catch (e) {
       console.error('[WaveformPlayer] Error initiating load:', e);
       if (isMounted) {
