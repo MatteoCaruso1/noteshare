@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Mic, X, Pencil, Check, Loader2, Upload, CheckCircle } from 'lucide-react';
+import { Trash2, Pencil, Check, Loader2, Upload, CheckCircle } from 'lucide-react';
 import { AudioFileWithName } from '@/types';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 
@@ -57,9 +57,7 @@ export function AudioFileItem({
           <Loader2 className="w-4 h-4 text-primary flex-shrink-0 animate-spin" />
         ) : uploadComplete ? (
           <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-        ) : (
-          <Mic className="w-4 h-4 text-primary flex-shrink-0" />
-        )}
+        ) : null}
         
         {isEditing ? (
           <div className="flex items-center gap-1 flex-1 min-w-0">
@@ -106,13 +104,13 @@ export function AudioFileItem({
         )}
         
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-destructive"
+          className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-foreground"
           onClick={onRemove}
           disabled={isUploading}
         >
-          <X className="w-4 h-4" />
+          <Trash2 className="w-3.5 h-3.5" />
         </Button>
       </div>
       
