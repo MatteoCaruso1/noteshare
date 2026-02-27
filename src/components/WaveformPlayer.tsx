@@ -39,6 +39,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   const instanceId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const audioLoadedRef = useRef(false);
   const playStartTimeoutRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -73,9 +74,20 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     const ws = wavesurferRef.current;
     if (!ws || !isReady) return;
 
+    // Lazy-load audio on first play if we rendered from cached peaks
+    if (!audioLoadedRef.current && signedUrl) {
+      audioLoadedRef.current = true;
+      ws.load(signedUrl, peaksCache.get(src)?.peaks, peaksCache.get(src)?.duration);
+      // Wait for ready then auto-play
+      ws.once('ready', () => {
+        audioManager.play({ pause: () => ws.pause() }, instanceId);
+        ws.play();
+      });
+      return;
+    }
+
     try {
       if (!ws.isPlaying()) {
-        // If playback doesn't actually start, fall back to native audio controls.
         if (playStartTimeoutRef.current) {
           window.clearTimeout(playStartTimeoutRef.current);
         }
@@ -87,8 +99,6 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
           }
         }, 400);
 
-        // Pause all OTHER audio - but not this instance!
-        // We use play() with the instance ID to exclude self from pausing
         audioManager.play({ pause: () => ws.pause() }, instanceId);
       }
 
@@ -97,7 +107,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       console.error('[WaveformPlayer] Error during playPause:', err);
       setError(true);
     }
-  }, [isReady, instanceId]);
+  }, [isReady, instanceId, signedUrl, src]);
 
   useEffect(() => {
     if (!containerRef.current || !signedUrl || urlLoading) return;
@@ -234,15 +244,21 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    // Load audio — pass cached peaks + duration so WaveSurfer skips waveform re-decode
-    try {
-      wavesurfer.load(signedUrl, cached?.peaks, cached?.duration);
-    } catch (e) {
-      console.error('[WaveformPlayer] Error initiating load:', e);
-      if (isMounted) {
-        setError(true);
-        setIsLoading(false);
+    // Only load audio immediately if we DON'T have cached peaks
+    // When cached, audio loading is deferred to first play press to prevent visual stutter
+    if (!cached) {
+      audioLoadedRef.current = true;
+      try {
+        wavesurfer.load(signedUrl);
+      } catch (e) {
+        console.error('[WaveformPlayer] Error initiating load:', e);
+        if (isMounted) {
+          setError(true);
+          setIsLoading(false);
+        }
       }
+    } else {
+      audioLoadedRef.current = false;
     }
 
     return () => {
