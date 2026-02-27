@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { ExternalLink, Youtube, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -207,14 +208,23 @@ export function RichTextContent({ content, className = '', lineClamp, onShowMore
     }
   }, [content, lineClamp]);
 
-  // For HTML content (from TipTap), render as HTML
+  const sanitizedHtml = useMemo(() => {
+    if (!isHtml) return '';
+    return DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['p', 'strong', 'em', 'b', 'i', 'u', 'ul', 'ol', 'li', 'br', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'span', 'div', 's', 'sub', 'sup', 'hr'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-type', 'data-id', 'data-label'],
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    });
+  }, [content, isHtml]);
+
+  // For HTML content (from TipTap), render as sanitized HTML
   if (isHtml) {
     return (
       <div className={className}>
         <div 
           ref={contentRef}
           className={`text-sm prose prose-sm prose-invert max-w-none ${lineClampClass}`}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
         {/* Show more link - X style */}
         {lineClamp && isTruncated && onShowMore && (
