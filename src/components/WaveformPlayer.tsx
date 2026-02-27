@@ -6,6 +6,9 @@ import { Play, Pause, Mic, Loader2, Check } from 'lucide-react';
 import { audioManager } from '@/lib/audioManager';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 
+// In-memory cache for waveform peaks keyed by storage path (src prop)
+const peaksCache = new Map<string, number[][]>();
+
 interface WaveformPlayerProps {
   src: string;
   title?: string;
@@ -100,39 +103,37 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     if (!containerRef.current || !signedUrl || urlLoading) return;
 
     let isMounted = true;
-    setIsLoading(true);
+    
+    const cachedPeaks = peaksCache.get(src);
+    
+    // If we have cached peaks, skip the loading state entirely
+    if (!cachedPeaks) {
+      setIsLoading(true);
+    }
     setError(false);
     
     // Get theme-aware colors from CSS custom properties
-    // Theme classes are applied to body, so read computed style from there
     const computedStyle = getComputedStyle(document.body);
     const primaryHsl = computedStyle.getPropertyValue('--primary').trim();
-    // CSS variables are in format "200 98% 39%" (space-separated)
-    // Convert to comma-separated for hsl() function
     const hslParts = primaryHsl.split(/\s+/);
     
-    // Create distinct colors: waveColor (unplayed) is theme-colored, progressColor (played) is dark grey
     let waveColor: string;
     let progressColor: string;
     let cursorColor: string;
     
-    // Played: dark grey for all themes
     progressColor = 'hsl(220, 10%, 35%)';
     
     if (hslParts.length === 3) {
       const h = hslParts[0];
       const s = parseInt(hslParts[1]);
       const l = parseInt(hslParts[2]);
-      // Unplayed: theme color, slightly faded
       waveColor = `hsla(${h}, ${s * 0.6}%, ${Math.min(l + 5, 60)}%, 0.5)`;
-      // Cursor: theme colored
       cursorColor = `hsl(${h}, ${s * 0.8}%, ${Math.min(l + 10, 65)}%)`;
     } else {
       waveColor = 'rgba(147, 197, 253, 0.5)';
       cursorColor = 'hsl(200, 80%, 50%)';
     }
     
-    // Purple colors for memory variant
     const isSepia = variant === 'sepia';
     if (isSepia) {
       waveColor = 'rgba(168, 130, 220, 0.5)';
@@ -151,16 +152,15 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       barRadius: 3,
       height: 48,
       normalize: true,
-      // Use MediaElement backend for better mobile/iOS compatibility
       backend: 'MediaElement',
-      // Enable touch/drag interaction
       interact: true,
       dragToSeek: true,
+      // Use cached peaks for instant visual rendering
+      ...(cachedPeaks ? { peaks: cachedPeaks } : {}),
     });
 
     wavesurferRef.current = wavesurfer;
 
-    // Register with audio manager for global pause coordination
     audioManager.registerWavesurfer(instanceId, {
       pause: () => wavesurfer.pause(),
       isPlaying: () => wavesurfer.isPlaying(),
@@ -168,6 +168,15 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
 
     wavesurfer.on('ready', () => {
       if (isMounted) {
+        // Cache peaks for future mounts
+        if (!peaksCache.has(src)) {
+          try {
+            const exportedPeaks = wavesurfer.exportPeaks();
+            if (exportedPeaks?.length) {
+              peaksCache.set(src, exportedPeaks);
+            }
+          } catch { /* ignore export errors */ }
+        }
         setDuration(wavesurfer.getDuration());
         setIsReady(true);
         setIsLoading(false);
@@ -175,7 +184,11 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    // audioprocess removed — replaced by rAF polling loop below
+    // If we have cached peaks, mark as visually ready immediately
+    if (cachedPeaks) {
+      // Waveform is already drawn from peaks — show it right away
+      setIsLoading(false);
+    }
 
     wavesurfer.on('seeking', () => {
       if (isMounted) {
@@ -208,7 +221,6 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     });
 
     wavesurfer.on('error', (err) => {
-      // Ignore AbortErrors from unmount cleanup
       if (err?.name === 'AbortError' || (err as any)?.message?.includes('abort')) {
         return;
       }
@@ -220,7 +232,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       }
     });
 
-    // Load with error handling - use signed URL
+    // Load audio (peaks already drawn if cached, audio loads in background)
     try {
       wavesurfer.load(signedUrl);
     } catch (e) {
@@ -238,13 +250,11 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
         window.clearTimeout(playStartTimeoutRef.current);
         playStartTimeoutRef.current = null;
       }
-      // Don't destroy wavesurfer if it's currently playing - let audio continue
-      // Only clean up if not playing
       if (!wavesurfer.isPlaying()) {
         try {
           wavesurfer.destroy();
         } catch (e) {
-          // Ignore destroy errors (e.g., AbortError when unmounting during load)
+          // Ignore destroy errors
         }
       }
     };
