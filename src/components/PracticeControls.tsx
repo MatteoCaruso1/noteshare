@@ -8,7 +8,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
-import { useCurrentFocusEntry, FOCUS_CACHE_KEY } from '@/hooks/useDailyFocus';
+import { useCurrentFocusEntry, FOCUS_CACHE_KEY, readFocusCache } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
@@ -517,11 +517,14 @@ export function PracticeControls() {
       endSession.mutate(
         { sessionId: activeSession.id, userId: profile.id, notesSummary, collaboratorIds: playingWithIds, customDurationMinutes },
         {
-          onSuccess: () => {
+        onSuccess: () => {
             // Determine projectId, goalId, and gigId based on selectedLink
             const projectId = selectedLink?.type === 'project' ? selectedLink.id : undefined;
             const goalId = selectedLink?.type === 'goal' ? selectedLink.id : undefined;
             const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
+            
+            // Resolve focus data: use hook data first, fall back to localStorage cache
+            const focusData = attachFocus ? (currentFocus || readFocusCache()) : null;
             
             createNote.mutate(
               {
@@ -536,9 +539,9 @@ export function PracticeControls() {
                 goalId,
                 gigId,
                  visibility,
-                 focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
-                 focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
-                 focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
+                 focusEntryId: focusData ? focusData.id : undefined,
+                 focusDate: focusData ? getTodayLocalDate() : undefined,
+                 focusTextSnapshot: focusData ? focusData.focus_text : undefined,
                  privateAudioIndices,
               },
               {

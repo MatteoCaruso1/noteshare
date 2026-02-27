@@ -5,7 +5,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
-import { useCurrentFocusEntry, FOCUS_CACHE_KEY } from '@/hooks/useDailyFocus';
+import { useCurrentFocusEntry, FOCUS_CACHE_KEY, readFocusCache } from '@/hooks/useDailyFocus';
 import { useActiveSession } from '@/hooks/useSessions';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
@@ -157,6 +157,9 @@ export function QuickNoteCapture() {
     const goalId = selectedLink?.type === 'goal' ? selectedLink.id : undefined;
     const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
     
+    // Resolve focus data: use hook data first, fall back to localStorage cache
+    const focusData = attachFocus ? (currentFocus || readFocusCache()) : null;
+    
     createNote.mutate(
       {
         authorId: profile.id,
@@ -169,10 +172,10 @@ export function QuickNoteCapture() {
         goalId,
         gigId,
         visibility,
-        // Attach focus if toggle is on and focus exists - always use today's date
-        focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
-        focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
-        focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
+        // Attach focus if toggle is on and focus data is available
+        focusEntryId: focusData ? focusData.id : undefined,
+        focusDate: focusData ? getTodayLocalDate() : undefined,
+        focusTextSnapshot: focusData ? focusData.focus_text : undefined,
       },
       {
         onSuccess: () => {
