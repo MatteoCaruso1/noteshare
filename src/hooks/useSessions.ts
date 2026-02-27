@@ -329,6 +329,11 @@ export function usePauseSession() {
 
   return useMutation({
     mutationFn: async ({ sessionId }: { sessionId: string; userId: string }) => {
+      if (sessionId.startsWith('optimistic-')) {
+        console.warn('[Session] Skipping pause for optimistic session:', sessionId);
+        return { id: sessionId, paused_at: new Date().toISOString() } as PracticeSession;
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -391,6 +396,11 @@ export function useResumeSession() {
 
   return useMutation({
     mutationFn: async ({ sessionId, userId }: { sessionId: string; userId: string }) => {
+      if (sessionId.startsWith('optimistic-')) {
+        console.warn('[Session] Skipping resume for optimistic session:', sessionId);
+        return { id: sessionId, paused_at: null } as PracticeSession;
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
 
