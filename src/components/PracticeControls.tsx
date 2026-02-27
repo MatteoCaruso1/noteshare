@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { toast as sonnerToast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession, useDeleteSession } from '@/hooks/useSessions';
@@ -141,6 +142,19 @@ export function PracticeControls() {
     failPendingUpload,
   } = usePersistentNoteState('practice_session', profile?.id);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
+
+  const handleToggleAudioPrivacy = useCallback((index: number) => {
+    setPrivateAudioIndices(prev => {
+      if (prev.includes(index)) {
+        sonnerToast('Recording set to public');
+        return prev.filter(i => i !== index);
+      } else {
+        sonnerToast('Recording set to private');
+        return [...prev, index];
+      }
+    });
+  }, []);
 
   // Initialize from session storage if we have the same active session
   const storedSettings = getSessionSettings();
@@ -392,6 +406,7 @@ export function PracticeControls() {
       }
       // Clear all session-related state
       clearState();
+      setPrivateAudioIndices([]);
       clearSessionSettings();
       deleteSession.mutate({ sessionId: activeSession.id, userId: profile.id });
     }
@@ -485,6 +500,7 @@ export function PracticeControls() {
           {
             onSuccess: () => {
               clearState();
+              setPrivateAudioIndices([]);
               clearSessionSettings();
               setShowEndSessionDialog(false);
               setManuallyCollapsed(true);
@@ -519,10 +535,11 @@ export function PracticeControls() {
                 projectId,
                 goalId,
                 gigId,
-                visibility,
-                focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
-                focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
-                focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
+                 visibility,
+                 focusEntryId: attachFocus && currentFocus ? currentFocus.id : undefined,
+                 focusDate: attachFocus && currentFocus ? getTodayLocalDate() : undefined,
+                 focusTextSnapshot: attachFocus && currentFocus ? currentFocus.focus_text : undefined,
+                 privateAudioIndices,
               },
               {
                 onSuccess: (newNote) => {
@@ -536,7 +553,8 @@ export function PracticeControls() {
                     });
                   }
                   
-                  clearState();
+                   clearState();
+                   setPrivateAudioIndices([]);
                   clearSessionSettings();
                   setShowEndSessionDialog(false);
                   setManuallyCollapsed(true);
@@ -843,8 +861,16 @@ export function PracticeControls() {
                 <AudioFileItem
                   key={i}
                   audio={audio}
-                  onRemove={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
+                  onRemove={() => {
+                    setAudioFiles(audioFiles.filter((_, idx) => idx !== i));
+                    // Adjust private indices when removing an audio
+                    setPrivateAudioIndices(prev => 
+                      prev.filter(idx => idx !== i).map(idx => idx > i ? idx - 1 : idx)
+                    );
+                  }}
                   onRename={(newName) => handleRenameAudio(i, newName)}
+                  isPrivate={privateAudioIndices.includes(i)}
+                  onTogglePrivacy={() => handleToggleAudioPrivacy(i)}
                 />
               ))}
             </div>

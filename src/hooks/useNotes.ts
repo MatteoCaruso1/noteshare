@@ -277,6 +277,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusEntryId,
       focusDate,
       focusTextSnapshot,
+      privateAudioIndices = [],
     }: {
       authorId: string;
       textContent?: string;
@@ -293,6 +294,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusEntryId?: string;
       focusDate?: string;
       focusTextSnapshot?: string;
+      privateAudioIndices?: number[];
     }) => {
       const { data, error } = await supabase
         .from('notes')
@@ -312,6 +314,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
           focus_entry_id: focusEntryId,
           focus_date: focusDate,
           focus_text_snapshot: focusTextSnapshot,
+          private_audio_indices: privateAudioIndices,
         })
         .select()
         .single();
