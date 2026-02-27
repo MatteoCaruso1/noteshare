@@ -27,12 +27,6 @@ function getPersistedActiveSession(profileId?: string): PracticeSession | null {
     const { session, profileId: storedProfileId } = JSON.parse(stored);
     // Only return if it matches current profile and is active
     if (storedProfileId === profileId && session?.is_active) {
-      // Discard stuck optimistic sessions
-      if (typeof session.id === 'string' && session.id.startsWith('optimistic-')) {
-        console.warn('[Session] Discarding stuck optimistic session from localStorage:', session.id);
-        localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
-        return null;
-      }
       return session as PracticeSession;
     }
   } catch {
@@ -240,12 +234,6 @@ export function useEndSession() {
       collaboratorIds?: string[];
       customDurationMinutes?: number;
     }) => {
-      // Guard: skip DB call for stuck optimistic sessions
-      if (sessionId.startsWith('optimistic-')) {
-        console.warn('[Session] Ending stuck optimistic session locally:', sessionId);
-        return { id: sessionId, user_id: userId, is_active: false } as PracticeSession;
-      }
-
       // First, fetch the current session to finalize pause time
       const { data: currentSession, error: fetchError } = await supabase
         .from('practice_sessions')
@@ -329,11 +317,6 @@ export function usePauseSession() {
 
   return useMutation({
     mutationFn: async ({ sessionId }: { sessionId: string; userId: string }) => {
-      if (sessionId.startsWith('optimistic-')) {
-        console.warn('[Session] Skipping pause for optimistic session:', sessionId);
-        return { id: sessionId, paused_at: new Date().toISOString() } as PracticeSession;
-      }
-
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -396,11 +379,6 @@ export function useResumeSession() {
 
   return useMutation({
     mutationFn: async ({ sessionId, userId }: { sessionId: string; userId: string }) => {
-      if (sessionId.startsWith('optimistic-')) {
-        console.warn('[Session] Skipping resume for optimistic session:', sessionId);
-        return { id: sessionId, paused_at: null } as PracticeSession;
-      }
-
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -556,12 +534,6 @@ export function useDeleteSession() {
 
   return useMutation({
     mutationFn: async ({ sessionId }: { sessionId: string; userId: string }) => {
-      // Guard: skip DB call for stuck optimistic sessions
-      if (sessionId.startsWith('optimistic-')) {
-        console.warn('[Session] Deleting stuck optimistic session locally:', sessionId);
-        return;
-      }
-
       const { error } = await supabase
         .from('practice_sessions')
         .delete()
