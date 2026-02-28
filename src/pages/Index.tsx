@@ -25,6 +25,7 @@ import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
+import { FeedbackPromptDialog, hasFeedbackPromptBeenShown, markFeedbackPromptShown } from '@/components/FeedbackPromptDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
@@ -64,6 +65,10 @@ const Index = () => {
   // 7-day streak one-time popup
   const [sevenDayDialogOpen, setSevenDayDialogOpen] = useState(false);
   const sevenDayClaimingRef = useRef(false);
+
+  // 20-note feedback prompt (one-time, localStorage-gated, no new queries)
+  const [feedbackPromptOpen, setFeedbackPromptOpen] = useState(false);
+  const feedbackPromptFiredRef = useRef(false);
 
   useEffect(() => {
     if (!profile || !practiceStats) return;
@@ -105,6 +110,7 @@ const Index = () => {
     }
   }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
 
+
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
   const isBootstrapping = authLoading || (!!user && !profile);
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,6 +141,17 @@ const Index = () => {
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [notes, acceptedSharedNotes]);
+
+  // 20-note feedback prompt — piggybacks on existing allNotes count, no new queries
+  const notesCount = allNotes.length;
+  useEffect(() => {
+    if (feedbackPromptFiredRef.current) return;
+    if (notesCount >= 20 && !hasFeedbackPromptBeenShown()) {
+      feedbackPromptFiredRef.current = true;
+      markFeedbackPromptShown();
+      setFeedbackPromptOpen(true);
+    }
+  }, [notesCount]);
 
   // Convert projects and gigs to feed items
   const feedItems = useMemo(() => {
@@ -293,6 +310,12 @@ const Index = () => {
       <SevenDayStreakDialog
         open={sevenDayDialogOpen}
         onOpenChange={setSevenDayDialogOpen}
+      />
+
+      {/* 20-note one-time feedback prompt */}
+      <FeedbackPromptDialog
+        open={feedbackPromptOpen}
+        onOpenChange={setFeedbackPromptOpen}
       />
     </PageLayout>
   );
