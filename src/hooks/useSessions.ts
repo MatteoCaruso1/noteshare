@@ -479,7 +479,9 @@ export function useLogOfflineSession() {
       collaboratorIds?: string[];
     }) => {
       // Calculate started_at and ended_at from date and duration
-      const startedAt = new Date(date);
+      // Parse date string as local date (YYYY-MM-DD) at noon to avoid timezone shifts
+      const [year, month, day] = date.split('-').map(Number);
+      const startedAt = new Date(year, month - 1, day, 12, 0, 0);
       const endedAt = new Date(startedAt.getTime() + durationMinutes * 60 * 1000);
 
       // Create the session
