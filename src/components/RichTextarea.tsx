@@ -277,6 +277,16 @@ export function RichTextarea({
       return;
     }
     
+    // Collapse double-space after bullet (happens when "-" auto-converts to "• " then user types space)
+    if (lineBeforeCursor.match(/^(\s*)•  $/) || lineBeforeCursor.match(/^(\s*)[☐☑]  $/)) {
+      const fixed = newValue.substring(0, cursorPos - 1) + newValue.substring(cursorPos);
+      onChange(fixed);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursorPos - 1;
+      }, 0);
+      return;
+    }
+
     // Auto-convert "-" at line start to bullet (no space required)
     if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
