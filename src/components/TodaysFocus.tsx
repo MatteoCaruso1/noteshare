@@ -75,6 +75,23 @@ export function TodaysFocus() {
     }
   }, [focus?.focus_text, isInitialized]);
 
+  // Sync fresh DB data to local state when it arrives (cross-device sync)
+  // Only update if user is NOT actively editing (no pending changes)
+  const prevFocusTextRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (!focus?.focus_text && focus?.focus_text !== '') return;
+    const freshText = focus.focus_text;
+    // Skip if this is the same value we already know about
+    if (prevFocusTextRef.current === freshText) return;
+    prevFocusTextRef.current = freshText;
+    // Only overwrite local text if user has no pending edits
+    if (!hasChangesRef.current && freshText !== text) {
+      setText(freshText);
+      updateLocalCache(freshText);
+    }
+  }, [focus?.focus_text, isInitialized]);
+
   // Deterministic autosize using useLayoutEffect - runs before paint
   // Triggers on: isOpen change, text change, initialization
   // IMPORTANT: Radix CollapsibleContent uses CSS animations for open/close transitions.
