@@ -100,8 +100,9 @@ export function useTodaysFocus() {
       return null;
     },
     enabled: !!userId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000, // 30s — ensures cross-device edits sync quickly
     gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: true,
     placeholderData: () => readFocusCache(),
   });
 
