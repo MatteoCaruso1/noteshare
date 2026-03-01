@@ -23,7 +23,7 @@ interface CalendarHeatmapProps {
 function getColor(minutes: number | undefined): string {
   if (minutes === undefined || minutes === 0) return 'bg-red-100 dark:bg-red-950/40';
   if (minutes < 60) return 'bg-green-200 dark:bg-green-900/60';
-  return 'bg-green-400 dark:bg-green-600';
+  return 'bg-green-500 dark:bg-green-500';
 }
 
 function getLabel(minutes: number | undefined): string {
@@ -140,9 +140,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
                   cell.isFutureDay
                     ? 'bg-muted/30 text-muted-foreground/40'
                     : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-1 ring-foreground/40' : ''}`
-                } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : 'text-foreground'} ${
-                  !cell.isCurrentMonth ? 'opacity-40' : ''
-                }`}
+                } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : 'text-foreground'}`}
               >
                 {ordinal(cell.day)}
               </div>
@@ -164,7 +162,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
         <span>None</span>
         <div className="w-[11px] h-[11px] rounded-[2px] bg-red-100 dark:bg-red-950/40" />
         <div className="w-[11px] h-[11px] rounded-[2px] bg-green-200 dark:bg-green-900/60" />
-        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-400 dark:bg-green-600" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-500 dark:bg-green-500" />
         <span>Lots</span>
       </div>
     </div>
