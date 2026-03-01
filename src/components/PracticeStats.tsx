@@ -115,11 +115,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         <p className="text-sm text-muted-foreground mb-2">
           Minutes practiced per week
           {trends && trends.lastWeekMin > 0 && trends.thisWeekMin > 0 && (
-            <span className={`ml-1 ${trendColor(trends.weekPctChange)}`}>
-              (on pace to be {trends.weekPctChange === 0
-                ? 'the same as'
-                : `${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher than' : 'lower than'}`} last week)
-            </span>
+            <>
+              <br className="sm:hidden" />
+              <span className={`sm:ml-1 ${trendColor(trends.weekPctChange)}`}>
+                (on pace to be {trends.weekPctChange === 0
+                  ? 'the same as'
+                  : `${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher than' : 'lower than'}`} last week)
+              </span>
+            </>
           )}
         </p>
         <div className="h-40 mb-2">
