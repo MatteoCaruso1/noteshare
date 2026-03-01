@@ -1,8 +1,8 @@
+import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Clock, Calendar, Hash, Flame, Trophy, Award } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface PracticeStatsProps {
@@ -12,7 +12,55 @@ interface PracticeStatsProps {
 export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
 
-  // Show error state with retry option
+  // Compute trend callouts from existing weeklyMinutesOverTime data (no new queries)
+  const trends = useMemo(() => {
+    if (!stats) return null;
+    const weeks = stats.weeklyMinutesOverTime;
+    if (!weeks || weeks.length < 2) return null;
+
+    // Current week is last entry, last week is second-to-last
+    const thisWeekMin = weeks[weeks.length - 1].minutes;
+    const lastWeekMin = weeks[weeks.length - 2].minutes;
+    const weekPctChange = lastWeekMin > 0
+      ? Math.round(((thisWeekMin - lastWeekMin) / lastWeekMin) * 100)
+      : thisWeekMin > 0 ? 100 : 0;
+
+    // Monthly: sum current month weeks vs previous month weeks
+    // Last 4 weeks = this month approximation, 4 before that = last month
+    const thisMonthWeeks = weeks.slice(-4);
+    const lastMonthWeeks = weeks.slice(-8, -4);
+    const thisMonthTotal = thisMonthWeeks.reduce((s, w) => s + w.minutes, 0);
+    const lastMonthTotal = lastMonthWeeks.reduce((s, w) => s + w.minutes, 0);
+
+    // Projection: current month pace extrapolated to full month
+    const now = new Date();
+    const dayOfMonth = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const avgPerDay = dayOfMonth > 0 ? thisMonthTotal / dayOfMonth : 0;
+    const projectedTotal = Math.round(avgPerDay * daysInMonth);
+    const monthPctChange = lastMonthTotal > 0
+      ? Math.round(((projectedTotal - lastMonthTotal) / lastMonthTotal) * 100)
+      : projectedTotal > 0 ? 100 : 0;
+
+    return { weekPctChange, thisWeekMin, lastWeekMin, thisMonthTotal, lastMonthTotal, projectedTotal, monthPctChange };
+  }, [stats?.weeklyMinutesOverTime]);
+
+  const trendColor = (pct: number) =>
+    pct > 0 ? 'text-green-500' : pct < 0 ? 'text-red-500' : 'text-muted-foreground';
+
+  const TrendIcon = ({ pct }: { pct: number }) =>
+    pct > 0 ? <ArrowUpRight className="w-3.5 h-3.5 inline" /> :
+    pct < 0 ? <ArrowDownRight className="w-3.5 h-3.5 inline" /> :
+    <Minus className="w-3.5 h-3.5 inline" />;
+
+  const formatMinutes = (mins: number) => {
+    if (mins < 60) return `${mins}m`;
+    const hours = Math.floor(mins / 60);
+    const remaining = mins % 60;
+    return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`;
+  };
+
+  // Show error state
   if (error) {
     return (
       <Card className="p-4 bg-card border-border">
@@ -26,10 +74,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
   if (isLoading && !stats) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-32 w-full animate-pulse" />
-        <Skeleton className="h-32 w-full animate-pulse" />
         <Skeleton className="h-48 w-full animate-pulse" />
-        <Skeleton className="h-32 w-full animate-pulse" />
       </div>
     );
   }
@@ -38,59 +83,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     return null;
   }
 
-  const formatMinutes = (mins: number) => {
-    if (mins < 60) return `${mins}m`;
-    const hours = Math.floor(mins / 60);
-    const remaining = mins % 60;
-    return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`;
-  };
-
-  // Set to true to show session/minutes stats cards
-  const SHOW_SESSION_STATS = false;
-
   return (
     <div className="space-y-4">
-      {/* Section 1: Number of sessions (hidden - set SHOW_SESSION_STATS to true to restore) */}
-      {SHOW_SESSION_STATS && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Number of sessions</h3>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{stats.sessionsThisWeek}</p>
-              <p className="text-xs text-muted-foreground">This week</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{stats.sessionsThisMonth}</p>
-              <p className="text-xs text-muted-foreground">This month</p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Section 2: Minutes practiced (hidden - set SHOW_SESSION_STATS to true to restore) */}
-      {SHOW_SESSION_STATS && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Minutes practiced</h3>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{formatMinutes(stats.totalMinutesThisWeek)}</p>
-              <p className="text-xs text-muted-foreground">This week</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{formatMinutes(stats.totalMinutesThisMonth)}</p>
-              <p className="text-xs text-muted-foreground">This month</p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Section 3: Progress */}
+      {/* Section: Progress */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-primary" />
@@ -99,7 +94,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         
         {/* Line Chart */}
         <p className="text-sm text-muted-foreground mb-2">Minutes practiced per week</p>
-        <div className="h-40 mb-4">
+        <div className="h-40 mb-2">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={stats.weeklyMinutesOverTime}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -116,7 +111,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 width={36}
                 tickFormatter={(value) => `${value}`}
                 domain={[0, (dataMax: number) => {
-                  // Calculate nice round tick interval
                   if (dataMax <= 60) return 60;
                   if (dataMax <= 120) return 120;
                   if (dataMax <= 180) return 180;
@@ -168,48 +162,29 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Days Practiced Per Week Line Chart */}
-        <p className="text-sm text-muted-foreground mb-2">Days practiced per week</p>
-        <div className="h-32 mb-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={stats.weeklyDaysPracticed}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis 
-                dataKey="week" 
-                tick={{ fontSize: 10 }} 
-                className="text-muted-foreground"
-                tickLine={false}
-              />
-              <YAxis 
-                tick={{ fontSize: 10 }} 
-                className="text-muted-foreground"
-                tickLine={false}
-                width={24}
-                domain={[0, 7]}
-                ticks={[1, 3, 5, 7]}
-                interval={0}
-                allowDecimals={false}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
-                  borderColor: 'hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number) => [`${value} day${value !== 1 ? 's' : ''}`, 'Practiced']}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="days" 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={2}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {/* Weekly trend callout */}
+        {trends && trends.lastWeekMin > 0 && (
+          <p className={`text-xs mb-4 ${trendColor(trends.weekPctChange)}`}>
+            <TrendIcon pct={trends.weekPctChange} />{' '}
+            {trends.weekPctChange === 0
+              ? 'Same pace as last week'
+              : `On pace to be ${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} than last week`}
+          </p>
+        )}
+
+        {/* Monthly pace callout */}
+        {trends && trends.projectedTotal > 0 && (
+          <div className="rounded-lg bg-muted/50 p-3 mb-4">
+            <p className="text-sm font-medium">
+              On pace for {formatMinutes(trends.projectedTotal)} this month
+              {trends.lastMonthTotal > 0 && (
+                <span className={`ml-1 ${trendColor(trends.monthPctChange)}`}>
+                  ({trends.monthPctChange > 0 ? '+' : ''}{trends.monthPctChange}% vs last month)
+                </span>
+              )}
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-2">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
@@ -229,36 +204,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </div>
       </Card>
-
-      {/* Section 4: Recent Focuses */}
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-2">
-          <Hash className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Recent Focuses</h3>
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Based on words from your practice notes and boards.
-        </p>
-        
-        <div className="space-y-4">
-          {/* Keywords from text content */}
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">Top this month</p>
-            <div className="flex flex-wrap gap-2">
-              {stats.topKeywordsThisMonth.length > 0 ? (
-                stats.topKeywordsThisMonth.map(({ keyword, count }) => (
-                  <Badge key={keyword} variant="secondary" className="text-xs">
-                    {keyword} ({count})
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground italic">No keywords yet</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-
     </div>
   );
 }
