@@ -1,18 +1,24 @@
 import { useMemo, useState } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subMonths, addMonths, isSameMonth, isFuture, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subMonths, addMonths, isSameMonth } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+interface WeekGoalInfo {
+  weekStart: string; // yyyy-MM-dd (Monday)
+  targetMinutes: number;
+  skipped: boolean;
+}
+
 interface CalendarHeatmapProps {
   dailyMinutesMap: Record<string, number>;
+  weeklyGoals?: WeekGoalInfo[];
 }
 
 function getColor(minutes: number | undefined, isCurrentMonth: boolean): string {
   if (!isCurrentMonth) return 'bg-transparent';
   if (minutes === undefined || minutes === 0) return 'bg-red-100 dark:bg-red-950/40';
-  if (minutes < 30) return 'bg-green-200 dark:bg-green-900/60';
-  if (minutes < 60) return 'bg-green-400 dark:bg-green-600';
-  return 'bg-green-600 dark:bg-green-400';
+  if (minutes < 60) return 'bg-green-200 dark:bg-green-900/60';
+  return 'bg-green-400 dark:bg-green-600';
 }
 
 function getLabel(minutes: number | undefined): string {
@@ -27,29 +33,33 @@ function weekTotal(days: { minutes: number | undefined; isCurrentMonth: boolean 
   return days.reduce((sum, d) => sum + (d.isCurrentMonth ? (d.minutes || 0) : 0), 0);
 }
 
-const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
+export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarHeatmapProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const { weeks, monthLabel, canGoNext } = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
-    const calStart = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
 
-    const weeks: { date: string; day: number; minutes: number | undefined; isCurrentMonth: boolean; isFutureDay: boolean; isToday: boolean }[][] = [];
+    const weeks: { 
+      days: { date: string; day: number; minutes: number | undefined; isCurrentMonth: boolean; isFutureDay: boolean; isToday: boolean }[];
+      weekStartStr: string;
+    }[] = [];
     let day = calStart;
 
     while (day <= calEnd) {
-      const week: typeof weeks[number] = [];
+      const weekDays: typeof weeks[number]['days'] = [];
+      const weekStartStr = format(day, 'yyyy-MM-dd');
       for (let i = 0; i < 7; i++) {
         const dateStr = format(day, 'yyyy-MM-dd');
         const inMonth = isSameMonth(day, currentMonth);
         const futureDay = dateStr > todayStr;
-        week.push({
+        weekDays.push({
           date: dateStr,
           day: day.getDate(),
           minutes: futureDay ? undefined : (dailyMinutesMap[dateStr] || 0),
@@ -59,7 +69,7 @@ export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
         });
         day = addDays(day, 1);
       }
-      weeks.push(week);
+      weeks.push({ days: weekDays, weekStartStr });
     }
 
     return {
@@ -68,6 +78,19 @@ export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
       canGoNext: !isSameMonth(currentMonth, today),
     };
   }, [currentMonth, dailyMinutesMap]);
+
+  // Build a map of weekStart -> goal info
+  const goalMap = useMemo(() => {
+    const m = new Map<string, WeekGoalInfo>();
+    weeklyGoals.forEach(g => m.set(g.weekStart, g));
+    return m;
+  }, [weeklyGoals]);
+
+  function getMetGoal(weekStartStr: string, total: number): 'yes' | 'no' | 'na' {
+    const goal = goalMap.get(weekStartStr);
+    if (!goal || goal.skipped || goal.targetMinutes <= 0) return 'na';
+    return total >= goal.targetMinutes ? 'yes' : 'no';
+  }
 
   return (
     <div className="space-y-2">
@@ -83,19 +106,21 @@ export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
       </div>
 
       {/* Day headers */}
-      <div className="grid grid-cols-[repeat(7,1fr)_auto] gap-1 text-[10px] text-muted-foreground font-medium">
+      <div className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-1 text-[10px] text-muted-foreground font-medium">
         {DAY_LABELS.map((d, i) => (
           <div key={i} className="text-center">{d}</div>
         ))}
-        <div className="w-10 text-center">Total</div>
+        <div className="w-12 text-center">Total</div>
+        <div className="w-10 text-center">Goal</div>
       </div>
 
       {/* Weeks */}
       {weeks.map((week, wi) => {
-        const total = weekTotal(week);
+        const total = weekTotal(week.days);
+        const metGoal = getMetGoal(week.weekStartStr, total);
         return (
-          <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto] gap-1 items-center">
-            {week.map((cell) => (
+          <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-1 items-center">
+            {week.days.map((cell) => (
               <div
                 key={cell.date}
                 title={cell.isCurrentMonth ? `${format(new Date(cell.date + 'T12:00:00'), 'MMM d')}: ${cell.isFutureDay ? '—' : getLabel(cell.minutes)}` : ''}
@@ -110,8 +135,13 @@ export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
                 {cell.isCurrentMonth ? cell.day : ''}
               </div>
             ))}
-            <div className="w-10 text-center text-[10px] text-muted-foreground font-medium">
+            <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
               {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
+            </div>
+            <div className={`w-10 text-center text-[10px] font-semibold ${
+              metGoal === 'yes' ? 'text-green-500' : metGoal === 'no' ? 'text-red-400' : 'text-muted-foreground'
+            }`}>
+              {metGoal === 'yes' ? 'Yes' : metGoal === 'no' ? 'No' : 'N/A'}
             </div>
           </div>
         );
@@ -119,12 +149,11 @@ export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
 
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-        <span>Less</span>
+        <span>None</span>
         <div className="w-[11px] h-[11px] rounded-[2px] bg-red-100 dark:bg-red-950/40" />
         <div className="w-[11px] h-[11px] rounded-[2px] bg-green-200 dark:bg-green-900/60" />
         <div className="w-[11px] h-[11px] rounded-[2px] bg-green-400 dark:bg-green-600" />
-        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-600 dark:bg-green-400" />
-        <span>More</span>
+        <span>Lots</span>
       </div>
     </div>
   );
