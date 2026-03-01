@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, StickyNote } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, StickyNote, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { useQuery } from '@tanstack/react-query';
@@ -203,7 +203,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       {/* Section: Deep-dives */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-primary" />
+          <BarChart3 className="w-5 h-5 text-primary" />
           <h3 className="font-semibold">Deep-dives</h3>
         </div>
 
@@ -266,14 +266,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Streaks</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col items-center text-center">
-                  <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Current</p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
-                </div>
+                 <div className="flex flex-col items-center text-center">
+                   <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
+                   <p className="text-[10px] sm:text-xs text-muted-foreground">Current Streak</p>
+                 </div>
+                 <div className="flex flex-col items-center text-center">
+                   <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
+                   <p className="text-[10px] sm:text-xs text-muted-foreground">Best Streak</p>
+                 </div>
               </div>
             </div>
             {/* Notes Created — 1/3 */}
