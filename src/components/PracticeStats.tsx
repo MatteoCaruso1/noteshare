@@ -40,12 +40,17 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     const weeks = stats.weeklyMinutesOverTime;
     if (!weeks || weeks.length < 2) return null;
 
-    // Current week is last entry, last week is second-to-last
+    // Current week: project pace to end of Sunday (7 days, Mon=1)
     const thisWeekMin = weeks[weeks.length - 1].minutes;
     const lastWeekMin = weeks[weeks.length - 2].minutes;
+    const now = new Date();
+    // day of week: 0=Sun,1=Mon,...6=Sat → days elapsed in Mon-Sun week
+    const jsDay = now.getDay();
+    const daysElapsed = jsDay === 0 ? 7 : jsDay; // Sunday = 7th day
+    const projectedWeekTotal = daysElapsed > 0 ? Math.round((thisWeekMin / daysElapsed) * 7) : thisWeekMin;
     const weekPctChange = lastWeekMin > 0
-      ? Math.round(((thisWeekMin - lastWeekMin) / lastWeekMin) * 100)
-      : thisWeekMin > 0 ? 100 : 0;
+      ? Math.round(((projectedWeekTotal - lastWeekMin) / lastWeekMin) * 100)
+      : projectedWeekTotal > 0 ? 100 : 0;
 
     // Monthly: sum current month weeks vs previous month weeks
     // Last 4 weeks = this month approximation, 4 before that = last month
@@ -55,7 +60,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     const lastMonthTotal = lastMonthWeeks.reduce((s, w) => s + w.minutes, 0);
 
     // Projection: current month pace extrapolated to full month
-    const now = new Date();
     const dayOfMonth = now.getDate();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const avgPerDay = dayOfMonth > 0 ? thisMonthTotal / dayOfMonth : 0;
@@ -114,11 +118,11 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         {/* Line Chart */}
         <p className="text-sm text-muted-foreground mb-2">
           Minutes practiced per week
-          {trends && trends.lastWeekMin > 0 && (
+          {trends && trends.lastWeekMin > 0 && trends.thisWeekMin > 0 && (
             <span className={`ml-1 ${trendColor(trends.weekPctChange)}`}>
-              ({trends.weekPctChange === 0
-                ? 'same as last week'
-                : `${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} than last week`})
+              (on pace to be {trends.weekPctChange === 0
+                ? 'the same as'
+                : `${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher than' : 'lower than'}`} last week)
             </span>
           )}
         </p>
