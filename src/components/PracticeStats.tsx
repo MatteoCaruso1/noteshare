@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, StickyNote } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { useQuery } from '@tanstack/react-query';
@@ -198,29 +198,20 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
 
 
-        {/* Streaks — connected row */}
-        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Flame className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Streaks</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Current</p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
-            </div>
-          </div>
+      </Card>
+
+      {/* Section: Deep-dives */}
+      <Card className="p-4 bg-card border-border">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          <h3 className="font-semibold">Deep-dives</h3>
         </div>
 
-        {/* Personal Bests — connected row with single icon */}
+        {/* Practice Records */}
         <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
           <div className="flex items-center gap-1.5 mb-2">
             <Trophy className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Personal Bests</span>
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Practice Records</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div className="flex flex-col items-center text-center">
@@ -238,11 +229,11 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </div>
 
-        {/* Monthly Summary — connected row */}
-        <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+        {/* Monthly Minutes Practiced */}
+        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
           <div className="flex items-center gap-1.5 mb-2">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</span>
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Minutes Practiced</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div className="flex flex-col items-center text-center">
@@ -261,6 +252,40 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <div className="flex flex-col items-center text-center">
               <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{formatMinutes(stats.lastMonthTotal)}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">Last Month</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Streaks + Notes Created — inline */}
+        <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+          <div className="grid grid-cols-3 gap-2">
+            {/* Streaks — 2/3 */}
+            <div className="col-span-2">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Flame className="w-4 h-4 text-primary" />
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Streaks</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col items-center text-center">
+                  <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Current</p>
+                </div>
+                <div className="flex flex-col items-center text-center">
+                  <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
+                </div>
+              </div>
+            </div>
+            {/* Notes Created — 1/3 */}
+            <div className="col-span-1 border-l border-border pl-2">
+              <div className="flex items-center gap-1.5 mb-2">
+                <StickyNote className="w-4 h-4 text-primary" />
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Created</p>
+              </div>
             </div>
           </div>
         </div>

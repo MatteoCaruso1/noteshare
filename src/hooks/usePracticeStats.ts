@@ -30,6 +30,9 @@ interface PracticeStats {
 
   // Calendar heatmap: date string -> total minutes
   dailyMinutesMap: Record<string, number>;
+
+  // Total notes created (all time)
+  totalNotesCount: number;
 }
 
 export function usePracticeStats(profileId: string | undefined) {
@@ -57,6 +60,7 @@ export function usePracticeStats(profileId: string | undefined) {
           topKeywordsThisMonth: [],
           topTagsThisMonth: [],
           dailyMinutesMap: {},
+          totalNotesCount: 0,
         };
       }
 
@@ -71,7 +75,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const thisMonthStart = startOfMonth(now);
 
       // Run all queries in parallel for better performance
-      const [sessionsResult, notesResult, focusResult, backlogResult] = await Promise.all([
+      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult] = await Promise.all([
         supabase
           .from('practice_sessions')
           .select('id, started_at, ended_at, paused_duration_ms')
@@ -92,7 +96,11 @@ export function usePracticeStats(profileId: string | undefined) {
           .from('focus_backlog')
           .select('focus_text, saved_at')
           .eq('user_id', profileId)
-          .gte('saved_at', threeMonthsAgo.toISOString())
+          .gte('saved_at', threeMonthsAgo.toISOString()),
+        supabase
+          .from('notes')
+          .select('id', { count: 'exact', head: true })
+          .eq('author_id', profileId)
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
@@ -436,6 +444,8 @@ export function usePracticeStats(profileId: string | undefined) {
       const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
       const lastMonthTotal = monthlyTotals[lastMonthKey] || 0;
 
+      const totalNotesCount = notesCountResult.count ?? 0;
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,
@@ -452,6 +462,7 @@ export function usePracticeStats(profileId: string | undefined) {
         topKeywordsThisMonth,
         topTagsThisMonth,
         dailyMinutesMap,
+        totalNotesCount,
       };
     },
     enabled: !!profileId,
