@@ -215,20 +215,20 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <h3 className="font-semibold">Deep-dives</h3>
         </div>
 
-        {/* Practice Records */}
+        {/* Time Records */}
         <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
           <div className="flex items-center gap-1.5 mb-2">
             <Trophy className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Practice Records</span>
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Time Records</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center text-center">
               <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Best Week</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Top Week</p>
             </div>
             <div className="flex flex-col items-center text-center">
               <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Best Month</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Top Month</p>
             </div>
           </div>
         </div>
@@ -237,7 +237,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
           <div className="flex items-center gap-1.5 mb-2">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Minutes Practiced</span>
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Monthly Time</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center text-center">
@@ -262,7 +262,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <div className="col-span-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <Flame className="w-4 h-4 text-primary" />
-                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Streaks</span>
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Consistency</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                  <div className="flex flex-col items-center text-center">
@@ -279,7 +279,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <div className="col-span-1 border-l border-border pl-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <StickyNote className="w-4 h-4 text-primary" />
-                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Notes</span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
