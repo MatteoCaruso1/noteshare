@@ -1284,6 +1284,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_note: { Args: { p_note_id: string }; Returns: boolean }
       claim_streak_milestone: {
         Args: { p_milestone: number; p_profile_id: string }
         Returns: Json
