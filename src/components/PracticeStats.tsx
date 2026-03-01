@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus, CalendarDays, Star, Calendar } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, Award, CalendarDays, Star, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { useQuery } from '@tanstack/react-query';
@@ -67,25 +67,10 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     return { weekPctChange, thisWeekMin, lastWeekMin, thisMonthTotal, lastMonthTotal, projectedTotal, monthPctChange };
   }, [stats?.weeklyMinutesOverTime]);
 
-  // 4-week rolling average overlaid on the same chart data — pure client memo, no queries
-  const chartDataWithRollingAvg = useMemo(() => {
-    const weeks = stats?.weeklyMinutesOverTime;
-    if (!weeks || weeks.length === 0) return weeks ?? [];
-    return weeks.map((entry, i) => {
-      const windowStart = Math.max(0, i - 3);
-      const window = weeks.slice(windowStart, i + 1);
-      const avg = Math.round(window.reduce((s, w) => s + w.minutes, 0) / window.length);
-      return { ...entry, rollingAvg: avg };
-    });
-  }, [stats?.weeklyMinutesOverTime]);
 
   const trendColor = (pct: number) =>
     pct > 0 ? 'text-green-500' : pct < 0 ? 'text-red-500' : 'text-muted-foreground';
 
-  const TrendIcon = ({ pct }: { pct: number }) =>
-    pct > 0 ? <ArrowUpRight className="w-3.5 h-3.5 inline" /> :
-    pct < 0 ? <ArrowDownRight className="w-3.5 h-3.5 inline" /> :
-    <Minus className="w-3.5 h-3.5 inline" />;
 
   const formatMinutes = (mins: number) => {
     if (mins < 60) return `${mins}m`;
@@ -127,10 +112,19 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
         
         {/* Line Chart */}
-        <p className="text-sm text-muted-foreground mb-2">Minutes practiced per week</p>
+        <p className="text-sm text-muted-foreground mb-2">
+          Minutes practiced per week
+          {trends && trends.lastWeekMin > 0 && (
+            <span className={`ml-1 ${trendColor(trends.weekPctChange)}`}>
+              ({trends.weekPctChange === 0
+                ? 'same as last week'
+                : `${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} than last week`})
+            </span>
+          )}
+        </p>
         <div className="h-40 mb-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartDataWithRollingAvg}>
+            <LineChart data={stats.weeklyMinutesOverTime}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis 
                 dataKey="week" 
@@ -182,9 +176,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   borderRadius: '8px'
                 }}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number, name: string) => [
+                formatter={(value: number) => [
                   `${formatMinutes(value)}`,
-                  name === 'rollingAvg' ? '4-wk avg' : 'Practice time'
+                  'Practice time'
                 ]}
               />
               <Line 
@@ -195,28 +189,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
                 activeDot={{ r: 5 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="rollingAvg" 
-                stroke="hsl(var(--muted-foreground))" 
-                strokeWidth={1.5}
-                strokeDasharray="4 3"
-                dot={false}
-                activeDot={false}
-              />
             </LineChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Weekly trend callout */}
-        {trends && trends.lastWeekMin > 0 && (
-          <p className={`text-xs mb-4 ${trendColor(trends.weekPctChange)}`}>
-            <TrendIcon pct={trends.weekPctChange} />{' '}
-            {trends.weekPctChange === 0
-              ? 'Same pace as last week'
-              : `On pace to be ${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} than last week`}
-          </p>
-        )}
 
         {/* Monthly pace callout */}
         {trends && trends.projectedTotal > 0 && (
