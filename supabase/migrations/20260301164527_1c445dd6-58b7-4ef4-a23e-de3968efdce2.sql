@@ -1,0 +1,1 @@
+CREATE INDEX idx_practice_sessions_user_started ON public.practice_sessions (user_id, started_at ASC);
