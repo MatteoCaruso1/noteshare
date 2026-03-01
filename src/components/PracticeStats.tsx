@@ -196,6 +196,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
 
       </Card>
 
+      {/* Section: Calendar Heatmap */}
+      <Card className="p-4 bg-card border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <CalendarDays className="w-5 h-5 text-primary" />
+          <h3 className="font-semibold">Practice Calendar</h3>
+        </div>
+        <CalendarHeatmap dailyMinutesMap={stats.dailyMinutesMap} weeklyGoals={weeklyGoals} />
+      </Card>
+
       {/* Section: Deep-dives */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
@@ -276,15 +285,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
           </div>
         </div>
-      </Card>
-
-      {/* Section: Calendar Heatmap */}
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-3">
-          <CalendarDays className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Practice Calendar</h3>
-        </div>
-        <CalendarHeatmap dailyMinutesMap={stats.dailyMinutesMap} weeklyGoals={weeklyGoals} />
       </Card>
     </div>
   );
