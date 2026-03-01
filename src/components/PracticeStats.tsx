@@ -5,6 +5,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus, CalendarDays, Star, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PracticeStatsProps {
   profileId: string;
@@ -12,6 +14,25 @@ interface PracticeStatsProps {
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
+
+  // Fetch all weekly goals for the calendar heatmap
+  const { data: weeklyGoals } = useQuery({
+    queryKey: ['weekly-goals-all', profileId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('weekly_goals')
+        .select('week_start, target_minutes, skipped')
+        .eq('user_id', profileId);
+      if (error) throw error;
+      return (data || []).map(g => ({
+        weekStart: g.week_start,
+        targetMinutes: g.target_minutes,
+        skipped: g.skipped,
+      }));
+    },
+    enabled: !!profileId,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Compute trend callouts from existing weeklyMinutesOverTime data (no new queries)
   const trends = useMemo(() => {
@@ -254,7 +275,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <CalendarDays className="w-5 h-5 text-primary" />
           <h3 className="font-semibold">Practice Calendar</h3>
         </div>
-        <CalendarHeatmap dailyMinutesMap={stats.dailyMinutesMap} />
+        <CalendarHeatmap dailyMinutesMap={stats.dailyMinutesMap} weeklyGoals={weeklyGoals} />
       </Card>
     </div>
   );
