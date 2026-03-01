@@ -86,7 +86,14 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
     return m;
   }, [weeklyGoals]);
 
-  function getMetGoal(weekStartStr: string, total: number): 'yes' | 'no' | 'na' {
+  function getMetGoal(weekStartStr: string, total: number): 'yes' | 'no' | 'na' | 'tbd' {
+    // Current week is TBD
+    const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    if (weekStartStr === currentWeekStart) {
+      const goal = goalMap.get(weekStartStr);
+      if (goal && !goal.skipped && goal.targetMinutes > 0) return 'tbd';
+      return 'na';
+    }
     const goal = goalMap.get(weekStartStr);
     if (!goal || goal.skipped || goal.targetMinutes <= 0) return 'na';
     return total >= goal.targetMinutes ? 'yes' : 'no';
@@ -139,9 +146,9 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
               {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
             </div>
             <div className={`w-10 text-center text-[10px] font-semibold ${
-              metGoal === 'yes' ? 'text-green-500' : metGoal === 'no' ? 'text-red-400' : 'text-muted-foreground'
+              metGoal === 'yes' ? 'text-green-500' : metGoal === 'no' ? 'text-red-400' : metGoal === 'tbd' ? 'text-yellow-500' : 'text-muted-foreground'
             }`}>
-              {metGoal === 'yes' ? 'Yes' : metGoal === 'no' ? 'No' : 'N/A'}
+              {metGoal === 'yes' ? 'Yes' : metGoal === 'no' ? 'No' : metGoal === 'tbd' ? 'TBD' : 'N/A'}
             </div>
           </div>
         );
