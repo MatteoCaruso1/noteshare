@@ -1,17 +1,14 @@
 import { useMemo, useState } from 'react';
-import { format, subDays, startOfWeek, addDays } from 'date-fns';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subMonths, addMonths, isSameMonth, isFuture, isToday } from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CalendarHeatmapProps {
   dailyMinutesMap: Record<string, number>;
 }
 
-const CELL_SIZE = 11;
-const CELL_GAP = 2;
-const TOTAL = CELL_SIZE + CELL_GAP;
-const WEEKS_TO_SHOW = 53; // ~365 days
-
-function getColor(minutes: number | undefined): string {
+function getColor(minutes: number | undefined, isCurrentMonth: boolean): string {
+  if (!isCurrentMonth) return 'bg-transparent';
   if (minutes === undefined || minutes === 0) return 'bg-red-100 dark:bg-red-950/40';
   if (minutes < 30) return 'bg-green-200 dark:bg-green-900/60';
   if (minutes < 60) return 'bg-green-400 dark:bg-green-600';
@@ -26,107 +23,108 @@ function getLabel(minutes: number | undefined): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function weekTotal(days: { minutes: number | undefined; isCurrentMonth: boolean }[]): number {
+  return days.reduce((sum, d) => sum + (d.isCurrentMonth ? (d.minutes || 0) : 0), 0);
+}
+
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export function CalendarHeatmap({ dailyMinutesMap }: CalendarHeatmapProps) {
-  // Build grid data once, memoized
-  const { grid, monthHeaders, todayStr } = useMemo(() => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const { weeks, monthLabel, canGoNext } = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const calStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
 
-    // Start from the most recent Sunday that is <= today, then go back WEEKS_TO_SHOW weeks
-    const endWeekStart = startOfWeek(today, { weekStartsOn: 0 });
-    const gridStartDate = subDays(endWeekStart, (WEEKS_TO_SHOW - 1) * 7);
+    const weeks: { date: string; day: number; minutes: number | undefined; isCurrentMonth: boolean; isFutureDay: boolean; isToday: boolean }[][] = [];
+    let day = calStart;
 
-    // Build columns (weeks) × rows (days 0-6, Sun-Sat)
-    const grid: { date: string; minutes: number | undefined; isFuture: boolean }[][] = [];
-    const monthHeaders: { label: string; colIndex: number }[] = [];
-    let lastMonth = -1;
-
-    for (let w = 0; w < WEEKS_TO_SHOW; w++) {
-      const weekCol: { date: string; minutes: number | undefined; isFuture: boolean }[] = [];
-      for (let d = 0; d < 7; d++) {
-        const cellDate = addDays(gridStartDate, w * 7 + d);
-        const dateStr = format(cellDate, 'yyyy-MM-dd');
-        const isFuture = dateStr > todayStr;
-        weekCol.push({
+    while (day <= calEnd) {
+      const week: typeof weeks[number] = [];
+      for (let i = 0; i < 7; i++) {
+        const dateStr = format(day, 'yyyy-MM-dd');
+        const inMonth = isSameMonth(day, currentMonth);
+        const futureDay = dateStr > todayStr;
+        week.push({
           date: dateStr,
-          minutes: isFuture ? undefined : (dailyMinutesMap[dateStr] || 0),
-          isFuture,
+          day: day.getDate(),
+          minutes: futureDay ? undefined : (dailyMinutesMap[dateStr] || 0),
+          isCurrentMonth: inMonth,
+          isFutureDay: futureDay,
+          isToday: dateStr === todayStr,
         });
-
-        // Track month transitions for headers (use first day of week row 0)
-        if (d === 0) {
-          const month = cellDate.getMonth();
-          if (month !== lastMonth) {
-            monthHeaders.push({ label: MONTH_LABELS[month], colIndex: w });
-            lastMonth = month;
-          }
-        }
+        day = addDays(day, 1);
       }
-      grid.push(weekCol);
+      weeks.push(week);
     }
 
-    return { grid, monthHeaders, todayStr };
-  }, [dailyMinutesMap]);
-
-  const gridWidth = WEEKS_TO_SHOW * TOTAL;
+    return {
+      weeks,
+      monthLabel: format(currentMonth, 'MMMM yyyy'),
+      canGoNext: !isSameMonth(currentMonth, today),
+    };
+  }, [currentMonth, dailyMinutesMap]);
 
   return (
-    <div className="space-y-1">
-      {/* Month labels */}
-      <div className="relative overflow-x-auto scrollbar-none">
-        <div style={{ width: gridWidth, minWidth: gridWidth }}>
-          <div className="relative h-4 mb-1">
-            {monthHeaders.map((mh, i) => (
-              <span
-                key={`${mh.label}-${i}`}
-                className="absolute text-[10px] text-muted-foreground"
-                style={{ left: mh.colIndex * TOTAL }}
-              >
-                {mh.label}
-              </span>
-            ))}
-          </div>
+    <div className="space-y-2">
+      {/* Month nav */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-medium">{monthLabel}</span>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoNext} onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
 
-          {/* Grid */}
-          <div className="flex gap-[2px]">
-            {grid.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-[2px]">
-                {week.map((cell) => (
-                  <Tooltip key={cell.date} delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`rounded-[2px] ${
-                          cell.isFuture
-                            ? 'bg-muted/30'
-                            : getColor(cell.minutes)
-                        }`}
-                        style={{ width: CELL_SIZE, height: CELL_SIZE }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs px-2 py-1">
-                      <p className="font-medium">{format(new Date(cell.date + 'T12:00:00'), 'MMM d, yyyy')}</p>
-                      <p className="text-muted-foreground">
-                        {cell.isFuture ? 'Future' : getLabel(cell.minutes)}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
+      {/* Day headers */}
+      <div className="grid grid-cols-[repeat(7,1fr)_auto] gap-1 text-[10px] text-muted-foreground font-medium">
+        {DAY_LABELS.map((d, i) => (
+          <div key={i} className="text-center">{d}</div>
+        ))}
+        <div className="w-10 text-center">Total</div>
+      </div>
+
+      {/* Weeks */}
+      {weeks.map((week, wi) => {
+        const total = weekTotal(week);
+        return (
+          <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto] gap-1 items-center">
+            {week.map((cell) => (
+              <div
+                key={cell.date}
+                title={cell.isCurrentMonth ? `${format(new Date(cell.date + 'T12:00:00'), 'MMM d')}: ${cell.isFutureDay ? '—' : getLabel(cell.minutes)}` : ''}
+                className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-colors ${
+                  !cell.isCurrentMonth
+                    ? 'text-transparent'
+                    : cell.isFutureDay
+                      ? 'bg-muted/30 text-muted-foreground/40'
+                      : `${getColor(cell.minutes, true)} ${cell.isToday ? 'ring-1 ring-foreground/40' : ''}`
+                } ${cell.isCurrentMonth && !cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : cell.isCurrentMonth ? 'text-foreground' : ''}`}
+              >
+                {cell.isCurrentMonth ? cell.day : ''}
               </div>
             ))}
+            <div className="w-10 text-center text-[10px] text-muted-foreground font-medium">
+              {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
+            </div>
           </div>
+        );
+      })}
 
-          {/* Legend */}
-          <div className="flex items-center gap-1.5 mt-2 text-[10px] text-muted-foreground">
-            <span>Less</span>
-            <div className="w-[11px] h-[11px] rounded-[2px] bg-red-100 dark:bg-red-950/40" />
-            <div className="w-[11px] h-[11px] rounded-[2px] bg-green-200 dark:bg-green-900/60" />
-            <div className="w-[11px] h-[11px] rounded-[2px] bg-green-400 dark:bg-green-600" />
-            <div className="w-[11px] h-[11px] rounded-[2px] bg-green-600 dark:bg-green-400" />
-            <span>More</span>
-          </div>
-        </div>
+      {/* Legend */}
+      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+        <span>Less</span>
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-red-100 dark:bg-red-950/40" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-200 dark:bg-green-900/60" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-400 dark:bg-green-600" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-600 dark:bg-green-400" />
+        <span>More</span>
       </div>
     </div>
   );
