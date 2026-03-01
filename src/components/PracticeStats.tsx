@@ -34,7 +34,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Compute trend callouts from existing weeklyMinutesOverTime data (no new queries)
+  // Compute trend callouts from stats data
   const trends = useMemo(() => {
     if (!stats) return null;
     const weeks = stats.weeklyMinutesOverTime;
@@ -52,24 +52,20 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       ? Math.round(((projectedWeekTotal - lastWeekMin) / lastWeekMin) * 100)
       : projectedWeekTotal > 0 ? 100 : 0;
 
-    // Monthly: sum current month weeks vs previous month weeks
-    // Last 4 weeks = this month approximation, 4 before that = last month
-    const thisMonthWeeks = weeks.slice(-4);
-    const lastMonthWeeks = weeks.slice(-8, -4);
-    const thisMonthTotal = thisMonthWeeks.reduce((s, w) => s + w.minutes, 0);
-    const lastMonthTotal = lastMonthWeeks.reduce((s, w) => s + w.minutes, 0);
+    // Monthly: use actual calendar month data from the hook
+    const thisMonthTotal = stats.totalMinutesThisMonth;
+    const lastMonthTotal = stats.lastMonthTotal;
 
     // Projection: current month pace extrapolated to full month
     const dayOfMonth = now.getDate();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    // Need at least 1 full day of data for a meaningful projection
     const avgPerDay = dayOfMonth > 0 ? thisMonthTotal / dayOfMonth : 0;
     const projectedTotal = Math.round(avgPerDay * daysInMonth);
-    const monthPctChange = lastMonthTotal > 0
-      ? Math.round(((projectedTotal - lastMonthTotal) / lastMonthTotal) * 100)
-      : projectedTotal > 0 ? 100 : 0;
+    const paceAboveLastMonth = projectedTotal > lastMonthTotal;
 
-    return { weekPctChange, thisWeekMin, lastWeekMin, thisMonthTotal, lastMonthTotal, projectedTotal, monthPctChange };
-  }, [stats?.weeklyMinutesOverTime]);
+    return { weekPctChange, thisWeekMin, lastWeekMin, thisMonthTotal, lastMonthTotal, projectedTotal, paceAboveLastMonth };
+  }, [stats?.weeklyMinutesOverTime, stats?.totalMinutesThisMonth, stats?.lastMonthTotal]);
 
 
   const trendColor = (pct: number) =>
@@ -235,18 +231,13 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <Calendar className="w-4 h-4 text-primary" />
             <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Minutes Practiced</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{trends ? formatMinutes(trends.thisMonthTotal) : '0m'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{trends ? formatMinutes(trends.projectedTotal) : '0m'}</p>
-              <p className={`text-[10px] sm:text-xs ${trends && trends.lastMonthTotal > 0 ? trendColor(trends.monthPctChange) : 'text-muted-foreground'}`}>
-                On Pace
-                {trends && trends.lastMonthTotal > 0 && (
-                  <span> ({trends.monthPctChange > 0 ? '+' : ''}{trends.monthPctChange}%)</span>
-                )}
+              <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${trends && trends.paceAboveLastMonth ? 'text-green-500' : ''}`}>
+                {trends ? formatMinutes(trends.projectedTotal) : '0m'}
+              </p>
+              <p className={`text-[10px] sm:text-xs ${trends && trends.paceAboveLastMonth ? 'text-green-500' : 'text-muted-foreground'}`}>
+                This Month (Pace)
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
