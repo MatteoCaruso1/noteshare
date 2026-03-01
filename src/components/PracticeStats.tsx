@@ -209,11 +209,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <Trophy className="w-4 h-4 text-primary" />
             <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Practice Records</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDayMinutes ? formatMinutes(stats.bestDayMinutes.minutes) : '0m'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Best Day</p>
-            </div>
+          <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center text-center">
               <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">Best Week</p>
