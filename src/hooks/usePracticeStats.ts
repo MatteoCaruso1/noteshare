@@ -33,6 +33,9 @@ interface PracticeStats {
 
   // Total notes created (all time)
   totalNotesCount: number;
+
+  // Notes created in last 30 days
+  notesLast30Days: number;
 }
 
 export function usePracticeStats(profileId: string | undefined) {
@@ -61,6 +64,7 @@ export function usePracticeStats(profileId: string | undefined) {
           topTagsThisMonth: [],
           dailyMinutesMap: {},
           totalNotesCount: 0,
+          notesLast30Days: 0,
         };
       }
 
@@ -75,7 +79,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const thisMonthStart = startOfMonth(now);
 
       // Run all queries in parallel for better performance
-      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult] = await Promise.all([
+      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult, notesLast30Result] = await Promise.all([
         supabase
           .from('practice_sessions')
           .select('id, started_at, ended_at, paused_duration_ms')
@@ -100,7 +104,12 @@ export function usePracticeStats(profileId: string | undefined) {
         supabase
           .from('notes')
           .select('id', { count: 'exact', head: true })
+          .eq('author_id', profileId),
+        supabase
+          .from('notes')
+          .select('id', { count: 'exact', head: true })
           .eq('author_id', profileId)
+          .gte('created_at', subDays(now, 30).toISOString())
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
@@ -445,6 +454,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const lastMonthTotal = monthlyTotals[lastMonthKey] || 0;
 
       const totalNotesCount = notesCountResult.count ?? 0;
+      const notesLast30Days = notesLast30Result.count ?? 0;
 
       return {
         sessionsThisWeek,
@@ -463,6 +473,7 @@ export function usePracticeStats(profileId: string | undefined) {
         topTagsThisMonth,
         dailyMinutesMap,
         totalNotesCount,
+        notesLast30Days,
       };
     },
     enabled: !!profileId,
