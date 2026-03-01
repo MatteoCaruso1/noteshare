@@ -290,7 +290,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.notesLast30Days}</p>
+              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.notesLast30Days ?? 0}</p>
               <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (Last 30 Days)</p>
             </div>
             <div className="flex flex-col items-center text-center">
