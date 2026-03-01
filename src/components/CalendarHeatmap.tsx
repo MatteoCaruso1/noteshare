@@ -20,8 +20,7 @@ interface CalendarHeatmapProps {
   weeklyGoals?: WeekGoalInfo[];
 }
 
-function getColor(minutes: number | undefined, isCurrentMonth: boolean): string {
-  if (!isCurrentMonth) return 'bg-transparent';
+function getColor(minutes: number | undefined): string {
   if (minutes === undefined || minutes === 0) return 'bg-red-100 dark:bg-red-950/40';
   if (minutes < 60) return 'bg-green-200 dark:bg-green-900/60';
   return 'bg-green-400 dark:bg-green-600';
@@ -35,8 +34,8 @@ function getLabel(minutes: number | undefined): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function weekTotal(days: { minutes: number | undefined; isCurrentMonth: boolean }[]): number {
-  return days.reduce((sum, d) => sum + (d.isCurrentMonth ? (d.minutes || 0) : 0), 0);
+function fullWeekTotal(days: { minutes: number | undefined }[]): number {
+  return days.reduce((sum, d) => sum + (d.minutes || 0), 0);
 }
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -129,23 +128,23 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
 
       {/* Weeks */}
       {weeks.map((week, wi) => {
-        const total = weekTotal(week.days);
+        const total = fullWeekTotal(week.days);
         const metGoal = getMetGoal(week.weekStartStr, total);
         return (
           <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-1 items-center">
             {week.days.map((cell) => (
               <div
                 key={cell.date}
-                title={cell.isCurrentMonth ? `${format(new Date(cell.date + 'T12:00:00'), 'MMM d')}: ${cell.isFutureDay ? '—' : getLabel(cell.minutes)}` : ''}
+                title={`${format(new Date(cell.date + 'T12:00:00'), 'MMM d')}: ${cell.isFutureDay ? '—' : getLabel(cell.minutes)}`}
                 className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-colors ${
-                  !cell.isCurrentMonth
-                    ? 'text-transparent'
-                    : cell.isFutureDay
-                      ? 'bg-muted/30 text-muted-foreground/40'
-                      : `${getColor(cell.minutes, true)} ${cell.isToday ? 'ring-1 ring-foreground/40' : ''}`
-                } ${cell.isCurrentMonth && !cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : cell.isCurrentMonth ? 'text-foreground' : ''}`}
+                  cell.isFutureDay
+                    ? 'bg-muted/30 text-muted-foreground/40'
+                    : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-1 ring-foreground/40' : ''}`
+                } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : 'text-foreground'} ${
+                  !cell.isCurrentMonth ? 'opacity-40' : ''
+                }`}
               >
-                {cell.isCurrentMonth ? ordinal(cell.day) : ''}
+                {ordinal(cell.day)}
               </div>
             ))}
             <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
