@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -41,10 +41,13 @@ export function LinkToPicker({
 
   const hasItems = projects.length > 0 || gigs.length > 0 || goals.length > 0;
 
-  // Always show button during loading (data not yet fetched) to prevent pop-in.
-  // Only hide when premium user has confirmed zero items (all data loaded, nothing there).
-  const isDataLoading = projects === undefined || gigs === undefined || goals === undefined;
-  if (!hasItems && !isDataLoading && isPremium) return null;
+  // Latch: once we've confirmed items exist, never hide during refetches.
+  // This prevents the button from disappearing during tab-resume refetch cycles.
+  const hasEverHadItems = useRef(false);
+  if (hasItems) hasEverHadItems.current = true;
+
+  // Only hide when premium user truly has zero items and we never saw any
+  if (!hasItems && !hasEverHadItems.current && !isPremiumLoading && isPremium) return null;
 
   const handleOpenChange = (newOpen: boolean) => {
     // If lite user tries to open, show toast and block
