@@ -3,6 +3,12 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subM
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+function ordinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 interface WeekGoalInfo {
   weekStart: string; // yyyy-MM-dd (Monday)
   targetMinutes: number;
@@ -139,7 +145,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
                       : `${getColor(cell.minutes, true)} ${cell.isToday ? 'ring-1 ring-foreground/40' : ''}`
                 } ${cell.isCurrentMonth && !cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : cell.isCurrentMonth ? 'text-foreground' : ''}`}
               >
-                {cell.isCurrentMonth ? cell.day : ''}
+                {cell.isCurrentMonth ? ordinal(cell.day) : ''}
               </div>
             ))}
             <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
