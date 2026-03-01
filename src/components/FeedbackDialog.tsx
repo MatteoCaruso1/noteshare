@@ -129,7 +129,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {/* Question 2 - Required */}
           <div className="space-y-2">
             <Label htmlFor="dislike-most" className="text-sm font-medium">
-              What do you dislike or find confusing? <span className="text-destructive">*</span>
+              What do you want Noteshare to improve? <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="dislike-most"
