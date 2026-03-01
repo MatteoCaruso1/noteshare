@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, Award, CalendarDays, Calendar } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { useQuery } from '@tanstack/react-query';
@@ -197,32 +197,22 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Monthly pace callout */}
-        {trends && trends.projectedTotal > 0 && (
-          <div className="rounded-lg bg-muted/50 p-3 mb-4">
-            <p className="text-sm font-medium">
-              On pace for {formatMinutes(trends.projectedTotal)} this month
-              {trends.lastMonthTotal > 0 && (
-                <span className={`ml-1 ${trendColor(trends.monthPctChange)}`}>
-                  ({trends.monthPctChange > 0 ? '+' : ''}{trends.monthPctChange}% vs last month)
-                </span>
-              )}
-            </p>
-          </div>
-        )}
 
-        {/* Personal Bests */}
-        {/* Streak row */}
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-            <Flame className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-primary" />
-            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Streak</p>
+        {/* Streaks — connected row */}
+        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Flame className="w-4 h-4 text-primary" />
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Streaks</span>
           </div>
-          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-            <Award className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
-            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Best Streak</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Current</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
+            </div>
           </div>
         </div>
 
@@ -248,11 +238,31 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </div>
 
-        {/* Last Month */}
-        <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
-          <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
-          <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{formatMinutes(stats.lastMonthTotal)}</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Last Month</p>
+        {/* Monthly Summary — connected row */}
+        <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{trends ? formatMinutes(trends.thisMonthTotal) : '0m'}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{trends ? formatMinutes(trends.projectedTotal) : '0m'}</p>
+              <p className={`text-[10px] sm:text-xs ${trends && trends.lastMonthTotal > 0 ? trendColor(trends.monthPctChange) : 'text-muted-foreground'}`}>
+                On Pace
+                {trends && trends.lastMonthTotal > 0 && (
+                  <span> ({trends.monthPctChange > 0 ? '+' : ''}{trends.monthPctChange}%)</span>
+                )}
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{formatMinutes(stats.lastMonthTotal)}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Last Month</p>
+            </div>
+          </div>
         </div>
       </Card>
 
