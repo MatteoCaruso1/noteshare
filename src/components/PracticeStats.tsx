@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus, CalendarDays } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus, CalendarDays, Star, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 
@@ -211,7 +211,8 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2">
+        {/* Personal Bests */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
             <Flame className="w-4 h-4 sm:w-5 sm:h-5 mb-1 text-primary" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
@@ -220,12 +221,29 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
             <Award className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Best</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Best Streak</p>
           </div>
+          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+            <Star className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
+            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDayMinutes ? formatMinutes(stats.bestDayMinutes.minutes) : '0m'}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Best Day</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
           <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
             <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
             <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Top Wk</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Best Week</p>
+          </div>
+          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
+            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Best Month</p>
+          </div>
+          <div className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary mb-1" />
+            <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{formatMinutes(stats.lastMonthTotal)}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Last Month</p>
           </div>
         </div>
       </Card>

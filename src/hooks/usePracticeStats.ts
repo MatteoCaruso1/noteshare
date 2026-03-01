@@ -19,6 +19,11 @@ interface PracticeStats {
   bestDailyStreak: number;
   bestWeekMinutes: { week: string; minutes: number } | null;
   
+  // Personal bests
+  bestDayMinutes: { date: string; minutes: number } | null;
+  bestMonthMinutes: { month: string; minutes: number } | null;
+  lastMonthTotal: number;
+  
   // Themes
   topKeywordsThisMonth: { keyword: string; count: number }[];
   topTagsThisMonth: { tag: string; count: number }[];
@@ -46,6 +51,9 @@ export function usePracticeStats(profileId: string | undefined) {
           currentStreak: 0,
           bestDailyStreak: 0,
           bestWeekMinutes: null,
+          bestDayMinutes: null,
+          bestMonthMinutes: null,
+          lastMonthTotal: 0,
           topKeywordsThisMonth: [],
           topTagsThisMonth: [],
           dailyMinutesMap: {},
@@ -401,6 +409,33 @@ export function usePracticeStats(profileId: string | undefined) {
         dailyMinutesMap[dayKey] = (dailyMinutesMap[dayKey] || 0) + s.durationMinutes;
       });
 
+      // Best day (most minutes in a single day) — derived from dailyMinutesMap, no new query
+      let bestDayMinutes: { date: string; minutes: number } | null = null;
+      for (const [date, mins] of Object.entries(dailyMinutesMap)) {
+        if (!bestDayMinutes || mins > bestDayMinutes.minutes) {
+          bestDayMinutes = { date, minutes: mins };
+        }
+      }
+
+      // Monthly totals — derived from sessionsWithDuration, no new query
+      const monthlyTotals: Record<string, number> = {};
+      sessionsWithDuration.forEach(s => {
+        const monthKey = format(s.startDate, 'yyyy-MM');
+        monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + s.durationMinutes;
+      });
+
+      // Best month
+      let bestMonthMinutes: { month: string; minutes: number } | null = null;
+      for (const [month, mins] of Object.entries(monthlyTotals)) {
+        if (!bestMonthMinutes || mins > bestMonthMinutes.minutes) {
+          bestMonthMinutes = { month, minutes: mins };
+        }
+      }
+
+      // Last month total
+      const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
+      const lastMonthTotal = monthlyTotals[lastMonthKey] || 0;
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,
@@ -411,6 +446,9 @@ export function usePracticeStats(profileId: string | undefined) {
         currentStreak,
         bestDailyStreak,
         bestWeekMinutes,
+        bestDayMinutes,
+        bestMonthMinutes,
+        lastMonthTotal,
         topKeywordsThisMonth,
         topTagsThisMonth,
         dailyMinutesMap,
