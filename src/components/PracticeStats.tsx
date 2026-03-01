@@ -237,7 +237,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
           <div className="flex items-center gap-1.5 mb-2">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Monthly Time</span>
+            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Monthly Progress</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col items-center text-center">
