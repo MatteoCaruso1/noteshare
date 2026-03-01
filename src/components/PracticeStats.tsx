@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, Award, ArrowUpRight, ArrowDownRight, Minus, CalendarDays } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CalendarHeatmap } from './CalendarHeatmap';
 
 interface PracticeStatsProps {
   profileId: string;
@@ -203,6 +204,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <p className="text-[10px] sm:text-xs text-muted-foreground">Top Wk</p>
           </div>
         </div>
+      </Card>
+
+      {/* Section: Calendar Heatmap */}
+      <Card className="p-4 bg-card border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <CalendarDays className="w-5 h-5 text-primary" />
+          <h3 className="font-semibold">Practice Calendar</h3>
+        </div>
+        <CalendarHeatmap dailyMinutesMap={stats.dailyMinutesMap} />
       </Card>
     </div>
   );

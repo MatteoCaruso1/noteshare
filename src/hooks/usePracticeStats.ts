@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfWeek, endOfWeek, subWeeks, subMonths, differenceInMinutes, parseISO, format, startOfMonth, endOfMonth, subDays, isWithinInterval } from 'date-fns';
+import { startOfWeek, endOfWeek, subWeeks, subMonths, subDays, differenceInMinutes, parseISO, format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { useAuth } from './useAuth';
 
 interface PracticeStats {
@@ -22,6 +22,9 @@ interface PracticeStats {
   // Themes
   topKeywordsThisMonth: { keyword: string; count: number }[];
   topTagsThisMonth: { tag: string; count: number }[];
+
+  // Calendar heatmap: date string -> total minutes
+  dailyMinutesMap: Record<string, number>;
 }
 
 export function usePracticeStats(profileId: string | undefined) {
@@ -45,6 +48,7 @@ export function usePracticeStats(profileId: string | undefined) {
           bestWeekMinutes: null,
           topKeywordsThisMonth: [],
           topTagsThisMonth: [],
+          dailyMinutesMap: {},
         };
       }
 
@@ -54,6 +58,7 @@ export function usePracticeStats(profileId: string | undefined) {
       });
 
       const now = new Date();
+      const oneYearAgo = subDays(now, 365);
       const threeMonthsAgo = subMonths(now, 3);
       const thisMonthStart = startOfMonth(now);
 
@@ -63,7 +68,7 @@ export function usePracticeStats(profileId: string | undefined) {
           .from('practice_sessions')
           .select('id, started_at, ended_at, paused_duration_ms')
           .eq('user_id', profileId)
-          .gte('started_at', threeMonthsAgo.toISOString())
+          .gte('started_at', oneYearAgo.toISOString())
           .order('started_at', { ascending: true }),
         supabase
           .from('notes')
@@ -389,6 +394,13 @@ export function usePracticeStats(profileId: string | undefined) {
           );
         });
 
+      // Build daily minutes map for calendar heatmap (from all sessionsWithDuration, which now covers 365 days)
+      const dailyMinutesMap: Record<string, number> = {};
+      sessionsWithDuration.forEach(s => {
+        const dayKey = format(s.startDate, 'yyyy-MM-dd');
+        dailyMinutesMap[dayKey] = (dailyMinutesMap[dayKey] || 0) + s.durationMinutes;
+      });
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,
@@ -401,6 +413,7 @@ export function usePracticeStats(profileId: string | undefined) {
         bestWeekMinutes,
         topKeywordsThisMonth,
         topTagsThisMonth,
+        dailyMinutesMap,
       };
     },
     enabled: !!profileId,
