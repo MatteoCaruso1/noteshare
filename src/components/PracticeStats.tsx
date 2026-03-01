@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, StickyNote, BarChart3 } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { useQuery } from '@tanstack/react-query';
@@ -275,15 +275,24 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                  </div>
               </div>
             </div>
-            {/* Notes Created — 1/3 */}
+            {/* Volume — 1/3 */}
             <div className="col-span-1 border-l border-border pl-2">
               <div className="flex items-center gap-1.5 mb-2">
-                <StickyNote className="w-4 h-4 text-primary" />
-                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Notes</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4">
+                  <g transform="translate(6, 4)">
+                    <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
+                    <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
+                    <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+                    <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+                    <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                    <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                  </g>
+                </svg>
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Volume</span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Created</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Notes</p>
               </div>
             </div>
           </div>
