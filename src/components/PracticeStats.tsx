@@ -46,6 +46,18 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     return { weekPctChange, thisWeekMin, lastWeekMin, thisMonthTotal, lastMonthTotal, projectedTotal, monthPctChange };
   }, [stats?.weeklyMinutesOverTime]);
 
+  // 4-week rolling average overlaid on the same chart data — pure client memo, no queries
+  const chartDataWithRollingAvg = useMemo(() => {
+    const weeks = stats?.weeklyMinutesOverTime;
+    if (!weeks || weeks.length === 0) return weeks ?? [];
+    return weeks.map((entry, i) => {
+      const windowStart = Math.max(0, i - 3);
+      const window = weeks.slice(windowStart, i + 1);
+      const avg = Math.round(window.reduce((s, w) => s + w.minutes, 0) / window.length);
+      return { ...entry, rollingAvg: avg };
+    });
+  }, [stats?.weeklyMinutesOverTime]);
+
   const trendColor = (pct: number) =>
     pct > 0 ? 'text-green-500' : pct < 0 ? 'text-red-500' : 'text-muted-foreground';
 
@@ -97,7 +109,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         <p className="text-sm text-muted-foreground mb-2">Minutes practiced per week</p>
         <div className="h-40 mb-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={stats.weeklyMinutesOverTime}>
+            <LineChart data={chartDataWithRollingAvg}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis 
                 dataKey="week" 
@@ -149,7 +161,10 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   borderRadius: '8px'
                 }}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number) => [`${formatMinutes(value)}`, 'Practice time']}
+                formatter={(value: number, name: string) => [
+                  `${formatMinutes(value)}`,
+                  name === 'rollingAvg' ? '4-wk avg' : 'Practice time'
+                ]}
               />
               <Line 
                 type="monotone" 
@@ -158,6 +173,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 strokeWidth={2}
                 dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
                 activeDot={{ r: 5 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="rollingAvg" 
+                stroke="hsl(var(--muted-foreground))" 
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+                dot={false}
+                activeDot={false}
               />
             </LineChart>
           </ResponsiveContainer>
