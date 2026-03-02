@@ -22,7 +22,7 @@ interface CalendarHeatmapProps {
 
 function getColor(minutes: number | undefined): string {
   if (minutes === undefined || minutes === 0) return 'bg-red-100 dark:bg-red-950/40';
-  if (minutes < 60) return 'bg-green-200 dark:bg-green-900/60';
+  if (minutes < 45) return 'bg-green-200 dark:bg-green-900/60';
   return 'bg-green-500 dark:bg-green-500';
 }
 
@@ -140,7 +140,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
                   cell.isFutureDay
                     ? 'bg-muted/30 text-muted-foreground/40'
                     : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-2 ring-primary' : ''}`
-                } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : 'text-foreground'}`}
+                } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 45 ? 'text-white dark:text-white' : 'text-foreground'}`}
               >
                 {ordinal(cell.day)}
               </div>
