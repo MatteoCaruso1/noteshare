@@ -277,7 +277,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           {/* Volume */}
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-5 h-5">
                 <g transform="translate(6, 4)">
                   <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
                   <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
