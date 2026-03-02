@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subMonths, addMonths, isSameMonth } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 function ordinal(n: number): string {
   const s = ['th', 'st', 'nd', 'rd'];
@@ -133,17 +134,29 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
         return (
           <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-1 items-center">
             {week.days.map((cell) => (
-              <div
-                key={cell.date}
-                title={`${format(new Date(cell.date + 'T12:00:00'), 'MMM d')}: ${cell.isFutureDay ? '—' : getLabel(cell.minutes)}`}
-                className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-colors ${
-                  cell.isFutureDay
-                    ? 'bg-muted/30 text-muted-foreground/40'
-                    : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-2 ring-primary' : ''}`
-                } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 45 ? 'text-white dark:text-white' : 'text-foreground'}`}
-              >
-                {ordinal(cell.day)}
-              </div>
+              <Popover key={cell.date}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={cell.isFutureDay}
+                    className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-colors cursor-pointer touch-manipulation ${
+                      cell.isFutureDay
+                        ? 'bg-muted/30 text-muted-foreground/40 cursor-default'
+                        : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-2 ring-primary' : ''} [@media(hover:hover)]:hover:ring-2 [@media(hover:hover)]:hover:ring-foreground/50`
+                    } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 45 ? 'text-white dark:text-white' : 'text-foreground'}`}
+                    data-no-hover-reset
+                    onTouchEnd={(e) => (e.currentTarget as HTMLElement).blur()}
+                  >
+                    {ordinal(cell.day)}
+                  </button>
+                </PopoverTrigger>
+                {!cell.isFutureDay && (
+                  <PopoverContent side="top" className="w-auto px-3 py-2 text-xs" sideOffset={4}>
+                    <p className="font-medium">{format(new Date(cell.date + 'T12:00:00'), 'EEE, MMM d')}</p>
+                    <p className="text-muted-foreground">{getLabel(cell.minutes)}</p>
+                  </PopoverContent>
+                )}
+              </Popover>
             ))}
             <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
               {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
