@@ -129,7 +129,7 @@ export function AudioFileItem({
             <Switch
               checked={!!isPrivate}
               onCheckedChange={() => onTogglePrivacy()}
-              className="h-5 w-9 data-[state=checked]:bg-primary data-[state=unchecked]:bg-primary/80"
+              className="h-5 w-9 data-[state=checked]:bg-muted-foreground data-[state=unchecked]:bg-primary/80"
               disabled={isUploading}
             />
             <Lock className={`w-3.5 h-3.5 ${isPrivate ? 'text-foreground' : 'text-muted-foreground/50'}`} />
