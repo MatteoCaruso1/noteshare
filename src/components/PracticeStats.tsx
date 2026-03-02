@@ -215,87 +215,89 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <h3 className="font-semibold">Deep-dives</h3>
         </div>
 
-        {/* Time Records */}
-        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Trophy className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Time Records</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Top Week</p>
+        <div className="grid grid-cols-2 gap-2">
+          {/* Time Records */}
+          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Trophy className="w-4 h-4 text-primary" />
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Time Records</span>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Top Month</p>
+            <div className="space-y-2">
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Week</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Month</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Monthly Minutes Practiced */}
-        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Monthly Time</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col items-center text-center">
-              <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${trends && trends.paceAboveLastMonth ? 'text-green-500' : ''}`}>
-                {trends ? formatMinutes(trends.projectedTotal) : '0m'}
-              </p>
-              <p className={`text-[10px] sm:text-xs ${trends && trends.paceAboveLastMonth ? 'text-green-500' : 'text-muted-foreground'}`}>
-                This Month (Pace)
-              </p>
+          {/* Monthly Minutes Practiced */}
+          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Monthly Time</span>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{formatMinutes(stats.lastMonthTotal)}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Last Month</p>
+            <div className="space-y-2">
+              <div className="flex flex-col items-center text-center">
+                <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${trends && trends.paceAboveLastMonth ? 'text-green-500' : ''}`}>
+                  {trends ? formatMinutes(trends.projectedTotal) : '0m'}
+                </p>
+                <p className={`text-[10px] sm:text-xs ${trends && trends.paceAboveLastMonth ? 'text-green-500' : 'text-muted-foreground'}`}>
+                  This Month (Pace)
+                </p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{formatMinutes(stats.lastMonthTotal)}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Last Month</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Streaks */}
-        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 mb-2">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Flame className="w-4 h-4 text-primary" />
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Consistency</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Current Streak</p>
+          {/* Streaks */}
+          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Flame className="w-4 h-4 text-primary" />
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Consistency</span>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Best Streak</p>
+            <div className="space-y-2">
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Current Streak</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestDailyStreak}d</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Best Streak</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Volume */}
-        <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
-          <div className="flex items-center gap-1.5 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4">
-              <g transform="translate(6, 4)">
-                <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
-                <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
-                <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
-                <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
-                <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
-                <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
-              </g>
-            </svg>
-            <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Volume</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.notesLast30Days ?? 'TBD'}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (Last 30 Days)</p>
+          {/* Volume */}
+          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4">
+                <g transform="translate(6, 4)">
+                  <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
+                  <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
+                  <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+                  <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+                  <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                  <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                </g>
+              </svg>
+              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Volume</span>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (All Time)</p>
+            <div className="space-y-2">
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.notesLast30Days ?? 'TBD'}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (Last 30 Days)</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (All Time)</p>
+              </div>
             </div>
           </div>
         </div>
