@@ -139,7 +139,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
                 className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-colors ${
                   cell.isFutureDay
                     ? 'bg-muted/30 text-muted-foreground/40'
-                    : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-1 ring-foreground/40' : ''}`
+                    : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-2 ring-primary' : ''}`
                 } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 60 ? 'text-white dark:text-white' : 'text-foreground'}`}
               >
                 {ordinal(cell.day)}
