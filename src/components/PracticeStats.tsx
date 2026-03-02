@@ -118,9 +118,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <>
               <br className="sm:hidden" />
               <span className={`sm:ml-1 ${trendColor(trends.weekPctChange)}`}>
-                (on pace to be {trends.weekPctChange === 0
-                  ? 'the same as'
-                  : `${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher than' : 'lower than'}`} last week)
+                ({trends.weekPctChange === 0
+                  ? 'trending the same this week vs. last'
+                  : `trending ${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} this week vs. last`})
               </span>
             </>
           )}
