@@ -80,7 +80,7 @@ export function ShareCalendarSheet({
   userName,
   currentMonth,
 }: ShareCalendarSheetProps) {
-  const [selectedStyle, setSelectedStyle] = useState<CardStyle>('primary');
+  const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -231,23 +231,8 @@ export function ShareCalendarSheet({
           <div className="w-12" />
         </SheetHeader>
 
-        {/* Style Picker */}
-        <div className="flex gap-2 justify-center pb-4 overflow-x-auto">
-          {STYLE_OPTIONS.map((style) => (
-            <button
-              key={style.id}
-              onClick={() => setSelectedStyle(style.id)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                selectedStyle === style.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              {style.label}
-            </button>
-          ))}
-        </div>
+
+
 
         {/* Calendar Card Preview */}
         <div className="flex justify-center py-4">
