@@ -135,6 +135,8 @@ export function AudioFileItem({
             <Lock className={`w-3.5 h-3.5 ${isPrivate ? 'text-foreground' : 'text-muted-foreground/50'}`} />
           </div>
         )}
+
+        <div className="w-1.5 flex-shrink-0" />
         
         <AlertDialog>
           <AlertDialogTrigger asChild>

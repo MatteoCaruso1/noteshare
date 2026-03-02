@@ -72,6 +72,19 @@ export function QuickNoteCapture() {
   const [isOpen, setIsOpen] = useState(false);
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
+  const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
+
+  const handleToggleAudioPrivacy = useCallback((index: number) => {
+    setPrivateAudioIndices(prev => {
+      if (prev.includes(index)) {
+        toast('Recording set to public');
+        return prev.filter(i => i !== index);
+      } else {
+        toast('Recording set to private');
+        return [...prev, index];
+      }
+    });
+  }, []);
   
   // Simply hide when there's an active session - no complex animation state
   const hasActiveSession = !!activeSession;
@@ -172,6 +185,7 @@ export function QuickNoteCapture() {
         goalId,
         gigId,
         visibility,
+        privateAudioIndices,
         // Attach focus if toggle is on and focus data is available
         focusEntryId: focusData ? focusData.id : undefined,
         focusDate: focusData ? getTodayLocalDate() : undefined,
@@ -181,6 +195,7 @@ export function QuickNoteCapture() {
         onSuccess: () => {
           incrementCount(); // Update local count optimistically
           clearState();
+          setPrivateAudioIndices([]);
           setIsOpen(false);
         },
       }
@@ -360,8 +375,15 @@ export function QuickNoteCapture() {
                 <AudioFileItem
                   key={i}
                   audio={audio}
-                  onRemove={() => setAudioFiles(audioFiles.filter((_, idx) => idx !== i))}
+                  onRemove={() => {
+                    setAudioFiles(audioFiles.filter((_, idx) => idx !== i));
+                    setPrivateAudioIndices(prev => 
+                      prev.filter(idx => idx !== i).map(idx => idx > i ? idx - 1 : idx)
+                    );
+                  }}
                   onRename={(newName) => handleRenameAudio(i, newName)}
+                  isPrivate={privateAudioIndices.includes(i)}
+                  onTogglePrivacy={() => handleToggleAudioPrivacy(i)}
                 />
               ))}
             </div>
