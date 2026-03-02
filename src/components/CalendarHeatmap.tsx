@@ -19,6 +19,8 @@ interface WeekGoalInfo {
 interface CalendarHeatmapProps {
   dailyMinutesMap: Record<string, number>;
   weeklyGoals?: WeekGoalInfo[];
+  currentMonth?: Date;
+  onMonthChange?: (month: Date) => void;
 }
 
 function getColor(minutes: number | undefined): string {
@@ -41,8 +43,10 @@ function fullWeekTotal(days: { minutes: number | undefined }[]): number {
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarHeatmapProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMonth: controlledMonth, onMonthChange }: CalendarHeatmapProps) {
+  const [internalMonth, setInternalMonth] = useState(new Date());
+  const currentMonth = controlledMonth ?? internalMonth;
+  const setCurrentMonth = onMonthChange ?? setInternalMonth;
 
   const { weeks, monthLabel, canGoNext } = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -109,11 +113,11 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
     <div className="space-y-2">
       {/* Month nav */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="text-sm font-medium">{monthLabel}</span>
-        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoNext} onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" disabled={!canGoNext} onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
