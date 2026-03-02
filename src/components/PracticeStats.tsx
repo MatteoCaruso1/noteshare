@@ -1,19 +1,24 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3 } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
+import { ShareCalendarSheet } from './ShareCalendarSheet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PracticeStatsProps {
   profileId: string;
 }
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
+  const { profile } = useAuth();
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [showShareCalendar, setShowShareCalendar] = useState(false);
 
   // Fetch all weekly goals for the calendar heatmap
   const { data: weeklyGoals } = useQuery({
@@ -201,12 +206,35 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
 
       {/* Section: Calendar Heatmap */}
       <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-3">
-          <CalendarDays className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Practice Calendar</h3>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Practice Calendar</h3>
+          </div>
+          <button
+            onClick={() => setShowShareCalendar(true)}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="Share calendar"
+          >
+            <Share className="w-4 h-4" />
+          </button>
         </div>
-        <CalendarHeatmap dailyMinutesMap={stats.dailyMinutesMap} weeklyGoals={weeklyGoals} />
+        <CalendarHeatmap
+          dailyMinutesMap={stats.dailyMinutesMap}
+          weeklyGoals={weeklyGoals}
+          currentMonth={calendarMonth}
+          onMonthChange={setCalendarMonth}
+        />
       </Card>
+
+      <ShareCalendarSheet
+        open={showShareCalendar}
+        onOpenChange={setShowShareCalendar}
+        dailyMinutesMap={stats.dailyMinutesMap}
+        weeklyGoals={weeklyGoals}
+        userName={profile?.name || 'My'}
+        currentMonth={calendarMonth}
+      />
 
       {/* Section: Deep-dives */}
       <Card className="p-4 bg-card border-border">
