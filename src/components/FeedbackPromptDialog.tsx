@@ -42,12 +42,12 @@ export function FeedbackPromptDialog({ open, onOpenChange }: FeedbackPromptDialo
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader className="text-center items-center">
-            <DialogTitle className="text-lg">
-              Help Us Build This With You
+          <DialogTitle className="text-lg">
+              Help Shape Noteshare
             </DialogTitle>
             <DialogDescription className="text-center pt-1">
               <p className="text-sm">
-                As a valued user, we want to build a product you actually want to use. Your feedback means a lot to us.
+                We're always looking to improve Noteshare for musicians like you. Do you have any ideas or feedback?
               </p>
             </DialogDescription>
           </DialogHeader>
