@@ -160,9 +160,9 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
         <span>None</span>
-        <div className="w-[11px] h-[11px] rounded-[2px] bg-red-100 dark:bg-red-950/40" />
-        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-200 dark:bg-green-900/60" />
-        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-500 dark:bg-green-500" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-red-100 dark:bg-red-950/40 ring-1 ring-foreground/20" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-200 dark:bg-green-900/60 ring-1 ring-foreground/20" />
+        <div className="w-[11px] h-[11px] rounded-[2px] bg-green-500 dark:bg-green-500 ring-1 ring-foreground/20" />
         <span>Lots</span>
       </div>
     </div>
