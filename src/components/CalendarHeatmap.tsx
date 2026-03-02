@@ -142,7 +142,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [] }: CalendarH
                     className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-colors cursor-pointer touch-manipulation ${
                       cell.isFutureDay
                         ? 'bg-muted/30 text-muted-foreground/40 cursor-default'
-                        : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-2 ring-primary' : ''} [@media(hover:hover)]:hover:ring-2 [@media(hover:hover)]:hover:ring-foreground/50`
+                        : `${getColor(cell.minutes)} ${cell.isToday ? 'ring-2 ring-foreground/60' : ''} [@media(hover:hover)]:hover:ring-2 [@media(hover:hover)]:hover:ring-foreground/50`
                     } ${!cell.isFutureDay && cell.minutes && cell.minutes >= 45 ? 'text-white dark:text-white' : 'text-foreground'}`}
                     data-no-hover-reset
                     onTouchEnd={(e) => (e.currentTarget as HTMLElement).blur()}
