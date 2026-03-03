@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
@@ -117,89 +117,110 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
         
         {/* Line Chart */}
-        <p className="text-sm text-muted-foreground mb-2">
-          Minutes practiced per week
-          {trends && trends.lastWeekMin > 0 && trends.thisWeekMin > 0 && (
+        {(() => {
+          const chartData = (stats.weeklyMinutesOverTime || []).map(d => ({
+            ...d,
+            hours: Math.round((d.minutes / 60) * 100) / 100,
+          }));
+          const allTimeAvgHours = chartData.length > 0
+            ? Math.round((chartData.reduce((s, d) => s + d.hours, 0) / chartData.length) * 100) / 100
+            : 0;
+          const maxHours = Math.max(...chartData.map(d => d.hours), allTimeAvgHours, 1);
+
+          const formatHours = (h: number) => {
+            const hrs = Math.floor(h);
+            const mins = Math.round((h - hrs) * 60);
+            if (hrs === 0 && mins === 0) return '0:00';
+            return `${hrs}:${mins.toString().padStart(2, '0')}`;
+          };
+
+          // Compute tick interval in hours
+          let interval: number;
+          if (maxHours <= 1) interval = 0.5;
+          else if (maxHours <= 2) interval = 0.5;
+          else if (maxHours <= 4) interval = 1;
+          else if (maxHours <= 8) interval = 2;
+          else interval = 2;
+          const maxTick = Math.ceil(maxHours / interval) * interval;
+          const ticks: number[] = [];
+          for (let i = 0; i <= maxTick; i += interval) {
+            ticks.push(Math.round(i * 100) / 100);
+          }
+
+          return (
             <>
-              <br className="sm:hidden" />
-              <span className={`sm:ml-1 ${trendColor(trends.weekPctChange)}`}>
-                ({trends.weekPctChange === 0
-                  ? 'trending the same this week vs. last'
-                  : `trending ${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} this week vs. last`})
-              </span>
+              <p className="text-sm text-muted-foreground mb-2">
+                Time practiced per week
+                {trends && trends.lastWeekMin > 0 && trends.thisWeekMin > 0 && (
+                  <>
+                    <br className="sm:hidden" />
+                    <span className={`sm:ml-1 ${trendColor(trends.weekPctChange)}`}>
+                      ({trends.weekPctChange === 0
+                        ? 'trending the same this week vs. last'
+                        : `trending ${Math.abs(trends.weekPctChange)}% ${trends.weekPctChange > 0 ? 'higher' : 'lower'} this week vs. last`})
+                    </span>
+                  </>
+                )}
+              </p>
+              <div className="h-40 mb-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis 
+                      dataKey="week" 
+                      tick={{ fontSize: 10 }} 
+                      className="text-muted-foreground"
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10 }} 
+                      className="text-muted-foreground"
+                      tickLine={false}
+                      width={40}
+                      tickFormatter={formatHours}
+                      domain={[0, maxTick]}
+                      ticks={ticks}
+                      interval={0}
+                      allowDecimals={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        borderColor: 'hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      formatter={(value: number, name: string) => {
+                        if (name === 'hours') return [formatHours(value), 'Practice time'];
+                        return [formatHours(value), name];
+                      }}
+                    />
+                    <ReferenceLine
+                      y={allTimeAvgHours}
+                      stroke="hsl(var(--destructive))"
+                      strokeWidth={1.5}
+                      strokeDasharray="6 3"
+                      label={{
+                        value: `Avg ${formatHours(allTimeAvgHours)}`,
+                        position: 'right',
+                        fontSize: 10,
+                        fill: 'hsl(var(--destructive))',
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="hours" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </>
-          )}
-        </p>
-        <div className="h-40 mb-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={stats.weeklyMinutesOverTime}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis 
-                dataKey="week" 
-                tick={{ fontSize: 10 }} 
-                className="text-muted-foreground"
-                tickLine={false}
-              />
-              <YAxis 
-                tick={{ fontSize: 10 }} 
-                className="text-muted-foreground"
-                tickLine={false}
-                width={36}
-                tickFormatter={(value) => `${value}`}
-                domain={[0, (dataMax: number) => {
-                  if (dataMax <= 60) return 60;
-                  if (dataMax <= 120) return 120;
-                  if (dataMax <= 180) return 180;
-                  if (dataMax <= 240) return 240;
-                  if (dataMax <= 300) return 300;
-                  if (dataMax <= 360) return 360;
-                  if (dataMax <= 480) return 480;
-                  if (dataMax <= 600) return 600;
-                  return Math.ceil(dataMax / 120) * 120;
-                }]}
-                ticks={(() => {
-                  const maxMinutes = Math.max(...(stats.weeklyMinutesOverTime?.map(d => d.minutes) || [0]), 60);
-                  let interval: number;
-                  if (maxMinutes <= 60) interval = 30;
-                  else if (maxMinutes <= 120) interval = 30;
-                  else if (maxMinutes <= 240) interval = 60;
-                  else if (maxMinutes <= 360) interval = 90;
-                  else if (maxMinutes <= 480) interval = 120;
-                  else interval = 120;
-                  
-                  const maxTick = Math.ceil(maxMinutes / interval) * interval;
-                  const ticks = [];
-                  for (let i = 0; i <= maxTick; i += interval) {
-                    ticks.push(i);
-                  }
-                  return ticks;
-                })()}
-                interval={0}
-                allowDecimals={false}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
-                  borderColor: 'hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
-                formatter={(value: number) => [
-                  `${formatMinutes(value)}`,
-                  'Practice time'
-                ]}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="minutes" 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={2}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+          );
+        })()}
 
 
       </Card>
