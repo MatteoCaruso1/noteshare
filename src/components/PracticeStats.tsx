@@ -132,11 +132,22 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             1
           );
 
-          const formatHours = (h: number) => {
+          // For axis ticks: compact "0h", "2h", "4h"
+          const formatAxisHours = (h: number) => {
             const hrs = Math.floor(h);
             const mins = Math.round((h - hrs) * 60);
-            if (hrs === 0 && mins === 0) return '0:00';
-            return `${hrs}:${mins.toString().padStart(2, '0')}`;
+            if (mins > 0) return `${hrs}h ${mins}m`;
+            return `${hrs}h`;
+          };
+
+          // For tooltips: friendly "1h 20m" or "45m"
+          const formatFriendlyHours = (h: number) => {
+            const hrs = Math.floor(h);
+            const mins = Math.round((h - hrs) * 60);
+            if (hrs === 0 && mins === 0) return '0m';
+            if (hrs === 0) return `${mins}m`;
+            if (mins === 0) return `${hrs}h`;
+            return `${hrs}h ${mins}m`;
           };
 
           // Compute tick interval in hours
@@ -193,7 +204,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       className="text-muted-foreground"
                       tickLine={false}
                       width={40}
-                      tickFormatter={formatHours}
+                      tickFormatter={formatAxisHours}
                       domain={[0, maxTick]}
                       ticks={ticks}
                       interval={0}
@@ -207,9 +218,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       }}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       formatter={(value: number, name: string) => {
-                        if (name === 'hours') return [formatHours(value), 'Weekly total'];
-                        if (name === 'avgHours') return [formatHours(value), 'All time avg'];
-                        return [formatHours(value), name];
+                        if (name === 'hours') return [formatFriendlyHours(value), 'Weekly total'];
+                        if (name === 'avgHours') return [formatFriendlyHours(value), 'All time avg'];
+                        return [formatFriendlyHours(value), name];
                       }}
                     />
                     <Line 
