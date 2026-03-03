@@ -7,7 +7,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Music, Link, MessageCircle, Loader2, Download } from 'lucide-react';
+import { Music, MessageCircle, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
@@ -82,12 +82,11 @@ export function ShareCalendarSheet({
 }: ShareCalendarSheetProps) {
   const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
-  const [activeButton, setActiveButton] = useState<'imessage' | 'link' | null>(null);
+  const [activeButton, setActiveButton] = useState<'imessage' | 'save' | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
   const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
-  const showShareButton = canShareNative || deviceInfo.isDesktop;
 
   const shareUrl = 'https://notesharemusic.com';
   const monthLabel = format(currentMonth, 'MMMM');
@@ -152,11 +151,6 @@ export function ShareCalendarSheet({
     [selectedStyle]
   );
 
-  const handleCopyLink = useCallback(async () => {
-    await navigator.clipboard.writeText(shareUrl);
-    toast.success('Link copied to clipboard');
-  }, [shareUrl]);
-
   const generateImage = useCallback(async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
     try {
@@ -174,35 +168,47 @@ export function ShareCalendarSheet({
     }
   }, []);
 
-  const handleShareOrSave = useCallback(async () => {
+  const handleSaveImage = useCallback(async () => {
     if (isExporting) return;
     setIsExporting(true);
-    setActiveButton('imessage');
-
+    setActiveButton('save');
     try {
       const blob = await generateImage();
       if (!blob) throw new Error('Failed to generate image');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'noteshare-practice-calendar.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Image saved!');
+    } catch (err) {
+      console.error('Save error:', err);
+      toast.error('Save failed. Please try again.');
+    } finally {
+      setIsExporting(false);
+      setActiveButton(null);
+    }
+  }, [generateImage, isExporting]);
 
+  const handleShareMessages = useCallback(async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setActiveButton('imessage');
+    try {
+      const blob = await generateImage();
+      if (!blob) throw new Error('Failed to generate image');
       const imageFile = new File([blob], 'noteshare-practice-calendar.png', { type: 'image/png' });
       const files: File[] = [imageFile];
       const shareText = `Check out my Practice Calendar on Noteshare!\n\n.${shareUrl}.`;
-
-      if (canShareNative && navigator.share && navigator.canShare?.({ files })) {
+      if (navigator.share && navigator.canShare?.({ files })) {
         await navigator.share({ files, text: shareText });
         toast.success('Shared successfully!');
-      } else if (canShareNative && navigator.share) {
+      } else if (navigator.share) {
         await navigator.share({ title, text: shareText });
         toast.success('Shared successfully!');
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'noteshare-practice-calendar.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success('Image saved!');
       }
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
@@ -213,7 +219,7 @@ export function ShareCalendarSheet({
       setIsExporting(false);
       setActiveButton(null);
     }
-  }, [generateImage, shareUrl, title, isExporting, canShareNative]);
+  }, [generateImage, shareUrl, title, isExporting]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     onOpenChange(nextOpen);
@@ -311,26 +317,33 @@ export function ShareCalendarSheet({
         {/* Share Options */}
         <div className="space-y-6 pb-8">
           <div>
-            <p className="font-semibold mb-3">Share outside Noteshare</p>
-            <div className="flex gap-6">
-              <button onClick={handleCopyLink} className="flex flex-col items-center gap-2">
+            <div className="flex gap-6 justify-center">
+              <button
+                onClick={handleSaveImage}
+                disabled={isExporting && activeButton === 'save'}
+                className="flex flex-col items-center gap-2"
+              >
                 <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                  <Link className="w-5 h-5" />
+                  {isExporting && activeButton === 'save' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
                 </div>
-                <span className="text-xs text-center">Copy<br />Link</span>
+                <span className="text-xs text-center">
+                  {isExporting && activeButton === 'save' ? 'Saving...' : 'Save\nImage'}
+                </span>
               </button>
 
-              {showShareButton && (
+              {canShareNative && (
                 <button
-                  onClick={handleShareOrSave}
-                  disabled={isExporting}
+                  onClick={handleShareMessages}
+                  disabled={isExporting && activeButton === 'imessage'}
                   className="flex flex-col items-center gap-2"
                 >
                   <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white">
                     {isExporting && activeButton === 'imessage' ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : deviceInfo.isDesktop ? (
-                      <Download className="w-5 h-5" />
                     ) : (
                       <MessageCircle className="w-5 h-5" />
                     )}
@@ -338,11 +351,9 @@ export function ShareCalendarSheet({
                   <span className="text-xs text-center">
                     {isExporting && activeButton === 'imessage'
                       ? 'Preparing...'
-                      : deviceInfo.isDesktop
-                        ? 'Save Image'
-                        : deviceInfo.isIOS
-                          ? 'iMessage'
-                          : 'Share'}
+                      : deviceInfo.isIOS
+                        ? 'iMessage'
+                        : 'Messages'}
                   </span>
                 </button>
               )}
