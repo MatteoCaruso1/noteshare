@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, getDaysInMonth } from 'date-fns';
 import {
   Sheet,
   SheetContent,
@@ -7,6 +7,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Music, MessageCircle, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -83,6 +84,9 @@ export function ShareCalendarSheet({
   const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
   const [activeButton, setActiveButton] = useState<'imessage' | 'save' | null>(null);
+  const [showGoalColumn, setShowGoalColumn] = useState(false);
+  const [onlyCurrentMonthDays, setOnlyCurrentMonthDays] = useState(false);
+  const [showDaysPracticed, setShowDaysPracticed] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
@@ -145,6 +149,22 @@ export function ShareCalendarSheet({
     if (!goal || goal.skipped || goal.targetMinutes <= 0) return 'na';
     return total >= goal.targetMinutes ? 'yes' : 'no';
   }
+
+  // Days practiced stat
+  const daysPracticedStat = useMemo(() => {
+    const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
+    const totalDaysInMonth = getDaysInMonth(currentMonth);
+    const monthStart = startOfMonth(currentMonth);
+    let practiced = 0;
+    for (let i = 0; i < totalDaysInMonth; i++) {
+      const d = addDays(monthStart, i);
+      const dateStr = format(d, 'yyyy-MM-dd');
+      if (dateStr > todayStr) break;
+      if ((dailyMinutesMap[dateStr] || 0) > 0) practiced++;
+    }
+    return { practiced, total: totalDaysInMonth };
+  }, [currentMonth, dailyMinutesMap]);
 
   const currentStyle = useMemo(() =>
     STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0],
@@ -226,6 +246,10 @@ export function ShareCalendarSheet({
     if (!nextOpen) unlockScrollAfterClose();
   };
 
+  const gridCols = showGoalColumn
+    ? 'grid-cols-[repeat(7,1fr)_auto_auto]'
+    : 'grid-cols-[repeat(7,1fr)_auto]';
+
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl overflow-y-auto">
@@ -237,8 +261,33 @@ export function ShareCalendarSheet({
           <div className="w-12" />
         </SheetHeader>
 
-
-
+        {/* Toggle Options */}
+        <div className="space-y-3 px-1 pb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Show goal column</span>
+            <Switch
+              checked={showGoalColumn}
+              onCheckedChange={setShowGoalColumn}
+              className="data-[state=checked]:bg-muted-foreground"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Only show {monthLabel} days</span>
+            <Switch
+              checked={onlyCurrentMonthDays}
+              onCheckedChange={setOnlyCurrentMonthDays}
+              className="data-[state=checked]:bg-muted-foreground"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Show days practiced stat</span>
+            <Switch
+              checked={showDaysPracticed}
+              onCheckedChange={setShowDaysPracticed}
+              className="data-[state=checked]:bg-muted-foreground"
+            />
+          </div>
+        </div>
 
         {/* Calendar Card Preview */}
         <div className="flex justify-center py-4">
@@ -256,12 +305,12 @@ export function ShareCalendarSheet({
             <h3 className="text-base font-bold text-center mb-3">{title}</h3>
 
             {/* Day headers */}
-            <div className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-0.5 text-[8px] font-medium opacity-80 mb-1">
+            <div className={cn("grid gap-0.5 text-[8px] font-medium opacity-80 mb-1", gridCols)}>
               {DAY_LABELS.map((d, i) => (
                 <div key={i} className="text-center">{d}</div>
               ))}
               <div className="w-9 text-center">Total</div>
-              <div className="w-8 text-center">Goal</div>
+              {showGoalColumn && <div className="w-8 text-center">Goal</div>}
             </div>
 
             {/* Weeks */}
@@ -269,33 +318,47 @@ export function ShareCalendarSheet({
               const total = fullWeekTotal(week.days);
               const metGoal = getMetGoal(week.weekStartStr, total);
               return (
-                <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-0.5 items-center mb-0.5">
-                  {week.days.map((cell) => (
-                    <div
-                      key={cell.date}
-                      className={cn(
-                        "aspect-square rounded-sm flex items-center justify-center text-[7px] font-medium",
-                        cell.isFutureDay
-                          ? 'bg-white/10'
-                          : getColor(cell.minutes),
-                        !cell.isFutureDay && cell.minutes && cell.minutes >= 45 ? 'text-white' : ''
-                      )}
-                    >
-                      {ordinal(cell.day)}
-                    </div>
-                  ))}
+                <div key={wi} className={cn("grid gap-0.5 items-center mb-0.5", gridCols)}>
+                  {week.days.map((cell) => {
+                    const hidden = onlyCurrentMonthDays && !cell.isCurrentMonth;
+                    return (
+                      <div
+                        key={cell.date}
+                        className={cn(
+                          "aspect-square rounded-sm flex items-center justify-center text-[7px] font-medium",
+                          hidden
+                            ? 'bg-transparent'
+                            : cell.isFutureDay
+                              ? 'bg-white/10'
+                              : getColor(cell.minutes),
+                          !hidden && !cell.isFutureDay && cell.minutes && cell.minutes >= 45 ? 'text-white' : ''
+                        )}
+                      >
+                        {hidden ? '' : ordinal(cell.day)}
+                      </div>
+                    );
+                  })}
                   <div className="w-9 text-center text-[7px] font-medium opacity-80">
                     {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? `${total % 60}m` : ''}`) : '—'}
                   </div>
-                  <div className={cn(
-                    "w-8 text-center text-[7px] font-semibold",
-                    metGoal === 'yes' ? 'text-green-400' : metGoal === 'no' ? 'text-red-400' : metGoal === 'tbd' ? 'text-yellow-400' : 'opacity-50'
-                  )}>
-                    {metGoal === 'yes' ? 'Yes' : metGoal === 'no' ? 'No' : metGoal === 'tbd' ? 'TBD' : 'N/A'}
-                  </div>
+                  {showGoalColumn && (
+                    <div className={cn(
+                      "w-8 text-center text-[7px] font-semibold",
+                      metGoal === 'yes' ? 'text-green-400' : metGoal === 'no' ? 'text-red-400' : metGoal === 'tbd' ? 'text-yellow-400' : 'opacity-50'
+                    )}>
+                      {metGoal === 'yes' ? 'Yes' : metGoal === 'no' ? 'No' : metGoal === 'tbd' ? 'TBD' : 'N/A'}
+                    </div>
+                  )}
                 </div>
               );
             })}
+
+            {/* Days Practiced Stat */}
+            {showDaysPracticed && (
+              <div className="text-center text-[9px] font-semibold mt-2 opacity-90">
+                {daysPracticedStat.practiced}/{daysPracticedStat.total} days practiced
+              </div>
+            )}
 
             {/* Legend */}
             <div className="flex items-center gap-1 mt-2 text-[7px] opacity-70">
