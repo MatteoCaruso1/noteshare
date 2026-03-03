@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Timer, BarChart3, FolderKanban, Heart, Sparkles, ChevronDown, ChevronUp, Palette } from 'lucide-react';
+import { Timer, BarChart3, ClipboardList, Heart, Sparkles, ChevronDown, ChevronUp, Palette } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -16,9 +16,9 @@ const BENEFITS = [
     description: 'Unlock detailed stats that measure your progress',
   },
   {
-    icon: FolderKanban,
-    title: 'Improved Organization',
-    description: 'Organize your notes around goals, folders, gigs, and archived practice lists',
+    icon: ClipboardList,
+    title: "Unlock 'Organize'",
+    description: 'Organize your notes around goals, folders, and gigs; manage all your musical pursuits, on Noteshare',
   },
   {
     icon: Palette,
