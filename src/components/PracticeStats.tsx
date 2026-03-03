@@ -185,7 +185,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   <span className="text-[10px] text-muted-foreground">Weekly Total</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="inline-block w-3 h-0.5 rounded-full bg-destructive" style={{ borderTop: '1.5px dashed' }} />
+                  <svg width="12" height="4" className="inline-block">
+                    <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(var(--destructive))" strokeWidth="1.5" strokeDasharray="3 2" />
+                  </svg>
                   <span className="text-[10px] text-muted-foreground">All Time Avg</span>
                 </div>
               </div>
