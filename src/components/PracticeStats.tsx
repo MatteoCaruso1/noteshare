@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
@@ -118,14 +118,19 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         
         {/* Line Chart */}
         {(() => {
-          const chartData = (stats.weeklyMinutesOverTime || []).map(d => ({
+          const rawData = (stats.weeklyMinutesOverTime || []).map(d => ({
             ...d,
             hours: Math.round((d.minutes / 60) * 100) / 100,
           }));
-          const allTimeAvgHours = chartData.length > 0
-            ? Math.round((chartData.reduce((s, d) => s + d.hours, 0) / chartData.length) * 100) / 100
-            : 0;
-          const maxHours = Math.max(...chartData.map(d => d.hours), allTimeAvgHours, 1);
+          // Compute cumulative all-time average at each week
+          const chartData = rawData.map((d, i) => {
+            const sum = rawData.slice(0, i + 1).reduce((s, x) => s + x.hours, 0);
+            return { ...d, avgHours: Math.round((sum / (i + 1)) * 100) / 100 };
+          });
+          const maxHours = Math.max(
+            ...chartData.map(d => Math.max(d.hours, d.avgHours)),
+            1
+          );
 
           const formatHours = (h: number) => {
             const hrs = Math.floor(h);
@@ -162,6 +167,17 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   </>
                 )}
               </p>
+              {/* Legend */}
+              <div className="flex items-center gap-4 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-block w-3 h-0.5 rounded-full bg-primary" />
+                  <span className="text-[10px] text-muted-foreground">Weekly Total</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-block w-3 h-0.5 rounded-full bg-destructive" style={{ borderTop: '1.5px dashed' }} />
+                  <span className="text-[10px] text-muted-foreground">All Time Avg</span>
+                </div>
+              </div>
               <div className="h-40 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
@@ -191,21 +207,19 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       }}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       formatter={(value: number, name: string) => {
-                        if (name === 'hours') return [formatHours(value), 'Practice time'];
+                        if (name === 'hours') return [formatHours(value), 'Weekly total'];
+                        if (name === 'avgHours') return [formatHours(value), 'All time avg'];
                         return [formatHours(value), name];
                       }}
                     />
-                    <ReferenceLine
-                      y={allTimeAvgHours}
-                      stroke="hsl(var(--destructive))"
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgHours" 
+                      stroke="hsl(var(--destructive))" 
                       strokeWidth={1.5}
                       strokeDasharray="6 3"
-                      label={{
-                        value: `Avg ${formatHours(allTimeAvgHours)}`,
-                        position: 'right',
-                        fontSize: 10,
-                        fill: 'hsl(var(--destructive))',
-                      }}
+                      dot={false}
+                      activeDot={{ r: 3 }}
                     />
                     <Line 
                       type="monotone" 
