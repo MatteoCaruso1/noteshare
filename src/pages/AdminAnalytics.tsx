@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser } from '@/hooks/useAnalytics';
+import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone } from 'lucide-react';
+import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone, Filter } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
@@ -133,6 +133,91 @@ function UserList<T extends { name: string; username?: string }>({ users, icon, 
             </CollapsibleTrigger>
           </Collapsible>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Funnel visualization
+function AccountFunnelCard({ funnel, days }: { funnel: NonNullable<ReturnType<typeof useAnalytics>['data']>['accountFunnel']; days: number }) {
+  const [expandedStep, setExpandedStep] = useState<string | null>(null);
+
+  const steps = [
+    { key: 'accounts', label: 'Accounts Created', count: funnel.accountsCreated, users: funnel.accountUsers },
+    { key: '1plus', label: '1+ Notes', count: funnel.with1PlusNotes, users: funnel.note1PlusUsers },
+    { key: '5plus', label: '5+ Notes', count: funnel.with5PlusNotes, users: funnel.note5PlusUsers },
+  ];
+
+  const total = funnel.accountsCreated || 1;
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Filter className="w-5 h-5" />
+          Account Funnel
+        </CardTitle>
+        <CardDescription>
+          Accounts created in the last {days} days → note engagement. Click any step to see users.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {steps.map((step, i) => {
+            const pct = Math.round((step.count / total) * 100);
+            const widthPct = Math.max(pct, 8);
+            const isExpanded = expandedStep === step.key;
+
+            return (
+              <div key={step.key}>
+                <button
+                  onClick={() => setExpandedStep(isExpanded ? null : step.key)}
+                  className="w-full text-left group"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">{step.label}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {step.count} <span className="text-xs">({pct}%)</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-8 overflow-hidden">
+                    <div
+                      className="h-full bg-primary/80 rounded-full flex items-center justify-center transition-all group-hover:bg-primary"
+                      style={{ width: `${widthPct}%` }}
+                    >
+                      <span className="text-xs font-semibold text-primary-foreground">
+                        {step.count}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="mt-2 ml-2 border-l-2 border-primary/20 pl-3 max-h-[300px] overflow-y-auto">
+                    {step.users.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-2">No users</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {step.users.map((u, idx) => (
+                          <div key={idx} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">{u.name}</span>
+                              <span className="text-xs text-muted-foreground">@{u.username}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Badge variant="outline" className="text-xs">{u.noteCount} notes</Badge>
+                              <Badge variant="outline" className="text-xs">{u.friendCount} friends</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
@@ -305,6 +390,9 @@ const AdminAnalytics = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Account Funnel */}
+        {data.accountFunnel && <AccountFunnelCard funnel={data.accountFunnel} days={days} />}
 
       {/* Metric 1: Note-activated Users Chart */}
       <Card className="mb-8">

@@ -77,6 +77,22 @@ export interface MobileSessionUser {
   mobilePercent: number;
 }
 
+export interface FunnelUser {
+  name: string;
+  username: string;
+  noteCount: number;
+  friendCount: number;
+}
+
+export interface AccountFunnel {
+  accountsCreated: number;
+  with1PlusNotes: number;
+  with5PlusNotes: number;
+  accountUsers: FunnelUser[];
+  note1PlusUsers: FunnelUser[];
+  note5PlusUsers: FunnelUser[];
+}
+
 export interface AnalyticsData {
   noteActivatedUsers: {
     dailyCounts: DailyCount[];
@@ -96,6 +112,7 @@ export interface AnalyticsData {
   friendCountUsers: FriendCountUser[];
   tryProClickUsers: TryProClickUser[];
   mobileSessionUsers: MobileSessionUser[];
+  accountFunnel: AccountFunnel;
   metadata: {
     daysRequested: number;
     startDate: string;

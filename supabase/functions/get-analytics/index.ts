@@ -77,6 +77,22 @@ interface MobileSessionUser {
   mobilePercent: number;
 }
 
+interface FunnelUser {
+  name: string;
+  username: string;
+  noteCount: number;
+  friendCount: number;
+}
+
+interface AccountFunnel {
+  accountsCreated: number;
+  with1PlusNotes: number;
+  with5PlusNotes: number;
+  accountUsers: FunnelUser[];
+  note1PlusUsers: FunnelUser[];
+  note5PlusUsers: FunnelUser[];
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -441,6 +457,50 @@ serve(async (req) => {
       .sort((a, b) => b.totalCount - a.totalCount);
 
     // ============================================
+    // Account Funnel (accounts created → 1+ notes → 5+ notes)
+    // ============================================
+    const { data: accountsInRange } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name, username, created_at')
+      .gte('created_at', startDateStr);
+
+    const accountProfileIds = new Set((accountsInRange || []).map(p => p.id));
+
+    // Count notes per account (all-time notes for users created in range)
+    const { data: allTimeNotesForAccounts } = await supabaseAdmin
+      .from('notes')
+      .select('author_id')
+      .in('author_id', accountsInRange && accountsInRange.length > 0 
+        ? accountsInRange.map(p => p.id) 
+        : ['00000000-0000-0000-0000-000000000000']);
+
+    const noteCountByAccount = new Map<string, number>();
+    for (const n of allTimeNotesForAccounts || []) {
+      noteCountByAccount.set(n.author_id, (noteCountByAccount.get(n.author_id) || 0) + 1);
+    }
+
+    // Build funnel user lists with friend counts
+    const buildFunnelUser = (p: { id: string; name: string; username: string }): FunnelUser => ({
+      name: p.name,
+      username: p.username,
+      noteCount: noteCountByAccount.get(p.id) || 0,
+      friendCount: friendCountByUser.get(p.id) || 0,
+    });
+
+    const allAccountUsers = (accountsInRange || []).map(buildFunnelUser).sort((a, b) => b.noteCount - a.noteCount);
+    const note1PlusUsers = allAccountUsers.filter(u => u.noteCount >= 1);
+    const note5PlusUsers = allAccountUsers.filter(u => u.noteCount >= 5);
+
+    const accountFunnel: AccountFunnel = {
+      accountsCreated: allAccountUsers.length,
+      with1PlusNotes: note1PlusUsers.length,
+      with5PlusNotes: note5PlusUsers.length,
+      accountUsers: allAccountUsers,
+      note1PlusUsers,
+      note5PlusUsers,
+    };
+
+    // ============================================
     // Stripe Subscription Analysis
     // ============================================
     let paidConversion: PaidConversion = {
@@ -608,6 +668,7 @@ serve(async (req) => {
       trialToPaidRate,
       premiumUsers,
       friendCountUsers,
+      accountFunnel,
       tryProClickUsers,
       mobileSessionUsers,
       metadata: {
