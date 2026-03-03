@@ -248,7 +248,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Trophy className="w-4 h-4 text-primary" />
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Time Records</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Time Records</span>
             </div>
             <div className="space-y-2">
               <div className="flex flex-col items-center text-center">
@@ -266,7 +266,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Calendar className="w-4 h-4 text-primary" />
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Monthly Time</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Monthly Time</span>
             </div>
             <div className="space-y-2">
               <div className="flex flex-col items-center text-center">
@@ -288,7 +288,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Flame className="w-4 h-4 text-primary" />
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Consistency</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Consistency</span>
             </div>
             <div className="space-y-2">
               <div className="flex flex-col items-center text-center">
@@ -315,7 +315,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
                 </g>
               </svg>
-              <span className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide">Volume</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Volume</span>
             </div>
             <div className="space-y-2">
               <div className="flex flex-col items-center text-center">
