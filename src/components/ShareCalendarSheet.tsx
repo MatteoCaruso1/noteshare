@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, getDaysInMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth } from 'date-fns';
 import {
   Sheet,
   SheetContent,
@@ -150,21 +150,24 @@ export function ShareCalendarSheet({
     return total >= goal.targetMinutes ? 'yes' : 'no';
   }
 
-  // Days practiced stat
+  // Days practiced stat — adapts to visible days based on toggle
   const daysPracticedStat = useMemo(() => {
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
-    const totalDaysInMonth = getDaysInMonth(currentMonth);
-    const monthStart = startOfMonth(currentMonth);
     let practiced = 0;
-    for (let i = 0; i < totalDaysInMonth; i++) {
-      const d = addDays(monthStart, i);
-      const dateStr = format(d, 'yyyy-MM-dd');
-      if (dateStr > todayStr) break;
-      if ((dailyMinutesMap[dateStr] || 0) > 0) practiced++;
+    let total = 0;
+
+    for (const week of weeks) {
+      for (const cell of week.days) {
+        if (onlyCurrentMonthDays && !cell.isCurrentMonth) continue;
+        total++;
+        if (cell.date > todayStr) continue;
+        if ((cell.minutes || 0) > 0) practiced++;
+      }
     }
-    return { practiced, total: totalDaysInMonth };
-  }, [currentMonth, dailyMinutesMap]);
+
+    return { practiced, total };
+  }, [weeks, onlyCurrentMonthDays]);
 
   const currentStyle = useMemo(() =>
     STYLE_OPTIONS.find(s => s.id === selectedStyle) || STYLE_OPTIONS[0],
