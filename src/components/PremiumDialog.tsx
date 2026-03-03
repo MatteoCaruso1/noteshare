@@ -8,7 +8,7 @@ const BENEFITS = [
   {
     icon: Timer,
     title: 'Pro Practice Tools',
-    description: 'Use metronomes, practice timers, linking to goals, logging past sessions, and saving practice lists, all within your sessions',
+    description: 'Log past sessions, use metronomes and practice timers, save practice lists, link notes to goals, and more',
   },
   {
     icon: BarChart3,
