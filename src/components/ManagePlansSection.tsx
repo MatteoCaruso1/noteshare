@@ -6,7 +6,7 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { format } from 'date-fns';
 
 export function ManagePlansSection() {
-  const { isPremium, openCheckoutDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();
+  const { isPremium, openPremiumDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();
 
   const handleSwitchPlan = async () => {
     if (isPremium) {
@@ -21,7 +21,7 @@ export function ManagePlansSection() {
       }
     } else {
       // Free user wants to upgrade - open checkout dialog
-      openCheckoutDialog();
+      openPremiumDialog();
     }
   };
 
