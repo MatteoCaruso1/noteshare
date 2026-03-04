@@ -36,6 +36,9 @@ interface PracticeStats {
 
   // Notes created in last 30 days
   notesLast30Days: number;
+
+  // Weekly average focus level (from F=N tags)
+  weeklyFocusAverage: { week: string; average: number }[];
 }
 
 export function usePracticeStats(profileId: string | undefined) {
