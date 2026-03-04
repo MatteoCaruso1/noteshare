@@ -328,7 +328,11 @@ const Index = () => {
         onOpenChange={setSevenDayDialogOpen}
       />
 
-      {/* 20-note one-time feedback prompt */}
+      {/* 20-note one-time pro upsell for free users */}
+      <ProUpsellDialog
+        open={proUpsellOpen}
+        onOpenChange={setProUpsellOpen}
+      />
       <FeedbackPromptDialog
         open={feedbackPromptOpen}
         onOpenChange={setFeedbackPromptOpen}
