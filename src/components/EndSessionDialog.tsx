@@ -72,6 +72,7 @@ export function EndSessionDialog({
 
   const [durationInput, setDurationInput] = useState(() => String(calculateDuration()));
   const [playingWithIds, setPlayingWithIds] = useState<string[]>([]);
+  const [focusLevel, setFocusLevel] = useState<number | null>(null);
   
   // Derived state for validation
   const durationMinutes = parseInt(durationInput, 10) || 0;
@@ -82,6 +83,7 @@ export function EndSessionDialog({
     if (open) {
       setDurationInput(String(calculateDuration()));
       setPlayingWithIds([]);
+      setFocusLevel(null);
     }
   }, [open, session]);
 
