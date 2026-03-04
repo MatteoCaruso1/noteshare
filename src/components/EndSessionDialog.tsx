@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RichTextarea } from '@/components/RichTextarea';
 import { PlayingWithPicker } from '@/components/PlayingWithPicker';
-import { Clock, ArrowLeft, Save } from 'lucide-react';
+import { Clock, ArrowLeft, Save, Zap } from 'lucide-react';
 
 interface EndSessionDialogProps {
   open: boolean;
@@ -13,8 +13,41 @@ interface EndSessionDialogProps {
   session: PracticeSession;
   noteText: string;
   onNoteTextChange: (text: string) => void;
-  onSave: (sessionTitle: string, durationMinutes: number, playingWithIds: string[]) => void;
+  onSave: (sessionTitle: string, durationMinutes: number, playingWithIds: string[], focusLevel?: number) => void;
   isSaving: boolean;
+}
+
+function FocusLevelSelector({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+        <Zap className="w-4 h-4" />
+        Focus level
+      </label>
+      <div className="flex gap-1.5">
+        {[1, 2, 3, 4, 5].map((level) => {
+          const filled = value !== null && level <= value;
+          return (
+            <button
+              key={level}
+              type="button"
+              onClick={() => onChange(value === level ? null : level)}
+              className="touch-manipulation p-0"
+              aria-label={`Focus level ${level}`}
+            >
+              <Zap
+                className={`w-5 h-5 transition-colors ${
+                  filled
+                    ? 'text-primary fill-primary'
+                    : 'text-muted-foreground/30'
+                }`}
+              />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function EndSessionDialog({
