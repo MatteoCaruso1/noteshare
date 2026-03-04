@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, Zap } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { ShareCalendarSheet } from './ShareCalendarSheet';
