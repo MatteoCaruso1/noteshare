@@ -141,6 +141,9 @@ export function EndSessionDialog({
             </span>
           </div>
 
+          {/* Focus Level */}
+          <FocusLevelSelector value={focusLevel} onChange={setFocusLevel} />
+
           {/* Playing With */}
           <PlayingWithPicker
             selectedIds={playingWithIds}
