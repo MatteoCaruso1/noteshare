@@ -277,11 +277,11 @@ export function RichTextarea({
       return;
     }
     
-    // Auto-convert "-" at line start to bullet (no trailing space — user adds it naturally)
+    // Auto-convert "-" at line start to bullet
     if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
-      const transformed = newValue.substring(0, lineStart) + indent + '•' + newValue.substring(cursorPos);
-      const newCursor = lineStart + indent.length + 1;
+      const transformed = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
+      const newCursor = lineStart + indent.length + 2;
       
       onChange(transformed);
       setTimeout(() => {
