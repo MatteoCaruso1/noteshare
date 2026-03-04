@@ -233,8 +233,8 @@ export function usePracticeStats(profileId: string | undefined) {
       let bestDailyStreak = 0;
       let tempStreak = 0;
       
-      // Calculate best streak from last 90 days
-      for (let i = 90; i >= 0; i--) {
+      // Calculate best streak from all 365 days of data (not just 90)
+      for (let i = 365; i >= 0; i--) {
         const checkDate = format(subDays(now, i), 'yyyy-MM-dd');
         if (activityDates.has(checkDate)) {
           tempStreak++;
@@ -242,6 +242,25 @@ export function usePracticeStats(profileId: string | undefined) {
         } else {
           tempStreak = 0;
         }
+      }
+
+      // Also check streak_achievement_counts from profile to preserve historical records
+      // beyond the data window (e.g., a 30-day streak that happened > 365 days ago)
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('streak_achievement_counts')
+          .eq('id', profileId)
+          .single();
+        if (profileData?.streak_achievement_counts) {
+          const counts = profileData.streak_achievement_counts as Record<string, number>;
+          const highestMilestone = Math.max(0, ...Object.keys(counts).map(Number).filter(n => !isNaN(n) && counts[String(n)] > 0));
+          if (highestMilestone > bestDailyStreak) {
+            bestDailyStreak = highestMilestone;
+          }
+        }
+      } catch {
+        // Non-critical, fail silently
       }
 
       // Calculate current streak (consecutive days ending today or yesterday)
