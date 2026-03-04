@@ -26,6 +26,7 @@ import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
 import { FeedbackPromptDialog, hasFeedbackPromptBeenShown, markFeedbackPromptShown } from '@/components/FeedbackPromptDialog';
+import { ProUpsellDialog, hasProUpsellBeenShown, markProUpsellShown } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
@@ -69,6 +70,10 @@ const Index = () => {
   // 20-note feedback prompt (one-time, localStorage-gated, no new queries)
   const [feedbackPromptOpen, setFeedbackPromptOpen] = useState(false);
   const feedbackPromptFiredRef = useRef(false);
+
+  // 20-note pro upsell (one-time, localStorage-gated, free users only)
+  const [proUpsellOpen, setProUpsellOpen] = useState(false);
+  const proUpsellFiredRef = useRef(false);
 
   useEffect(() => {
     if (!profile || !practiceStats) return;
@@ -152,6 +157,17 @@ const Index = () => {
       setFeedbackPromptOpen(true);
     }
   }, [notesCount]);
+
+  // 20-note pro upsell — piggybacks on existing allNotes count, no new queries
+  useEffect(() => {
+    if (proUpsellFiredRef.current) return;
+    if (isPremium) return;
+    if (notesCount >= 20 && !hasProUpsellBeenShown()) {
+      proUpsellFiredRef.current = true;
+      markProUpsellShown();
+      setProUpsellOpen(true);
+    }
+  }, [notesCount, isPremium]);
 
   // Convert projects and gigs to feed items
   const feedItems = useMemo(() => {
@@ -312,7 +328,11 @@ const Index = () => {
         onOpenChange={setSevenDayDialogOpen}
       />
 
-      {/* 20-note one-time feedback prompt */}
+      {/* 20-note one-time pro upsell for free users */}
+      <ProUpsellDialog
+        open={proUpsellOpen}
+        onOpenChange={setProUpsellOpen}
+      />
       <FeedbackPromptDialog
         open={feedbackPromptOpen}
         onOpenChange={setFeedbackPromptOpen}
