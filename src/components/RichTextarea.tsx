@@ -279,25 +279,35 @@ export function RichTextarea({
     
     // Auto-convert "-" at line start to bullet
     if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
+      const scrollContainer = getScrollContainerFor(textarea);
+      const savedScrollTop = getScrollTop(scrollContainer);
+
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const transformed = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
       const newCursor = lineStart + indent.length + 2;
       
       onChange(transformed);
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = newCursor;
+        focusWithoutScroll(textarea);
+        textarea.setSelectionRange(newCursor, newCursor);
+        restoreScrollNextFrame(scrollContainer, savedScrollTop);
       }, 0);
       return;
     }
     
     // Mobile shortcut: ".- " creates a bullet
     if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
+      const scrollContainer = getScrollContainerFor(textarea);
+      const savedScrollTop = getScrollTop(scrollContainer);
+
       const transformed = newValue.substring(0, lineStart) + '• ' + newValue.substring(cursorPos);
       const newCursor = lineStart + 2;
       
       onChange(transformed);
       setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = newCursor;
+        focusWithoutScroll(textarea);
+        textarea.setSelectionRange(newCursor, newCursor);
+        restoreScrollNextFrame(scrollContainer, savedScrollTop);
       }, 0);
       return;
     }
