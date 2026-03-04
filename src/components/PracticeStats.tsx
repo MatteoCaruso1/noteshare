@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, Zap } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { ShareCalendarSheet } from './ShareCalendarSheet';
@@ -378,6 +378,56 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </div>
       </Card>
+
+      {/* Section: Focus Level Chart — hidden when no data */}
+      {stats.weeklyFocusAverage.some(w => w.average > 0) && (
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <Zap className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Focus Level</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">Average weekly session focus level</p>
+          <div className="h-40">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={stats.weeklyFocusAverage}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis
+                  dataKey="week"
+                  tick={{ fontSize: 10 }}
+                  className="text-muted-foreground"
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={[0, 5]}
+                  ticks={[1, 2, 3, 4, 5]}
+                  tick={{ fontSize: 10 }}
+                  className="text-muted-foreground"
+                  tickLine={false}
+                  width={24}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    borderColor: 'hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                  labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  formatter={(value: number) => [value > 0 ? value.toFixed(1) : '—', 'Avg Focus']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="average"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                  activeDot={{ r: 5 }}
+                  connectNulls={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

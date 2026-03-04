@@ -481,7 +481,7 @@ export function PracticeControls() {
     setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
-  const handleSaveNoteAndEndSession = (sessionTitle?: string, customDurationMinutes?: number, playingWithIds?: string[]) => {
+  const handleSaveNoteAndEndSession = (sessionTitle?: string, customDurationMinutes?: number, playingWithIds?: string[], focusLevel?: number) => {
     if (activeSession) {
       // Calculate session duration in minutes (accounting for paused time)
       const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
@@ -533,7 +533,14 @@ export function PracticeControls() {
                 audioFiles: audioFiles.map(a => a.url),
                 audioFileNames: audioFiles.map(a => a.name),
                 imageFiles,
-                tags,
+                tags: (() => {
+                  // Append focus level tag if set, replacing any existing F= tag
+                  const filtered = tags.filter(t => !/^F=[1-5]$/.test(t));
+                  if (focusLevel && focusLevel >= 1 && focusLevel <= 5) {
+                    filtered.push(`F=${focusLevel}`);
+                  }
+                  return filtered;
+                })(),
                 sessionId: activeSession.id,
                 projectId,
                 goalId,

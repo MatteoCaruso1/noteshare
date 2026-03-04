@@ -36,6 +36,9 @@ interface PracticeStats {
 
   // Notes created in last 30 days
   notesLast30Days: number;
+
+  // Weekly average focus level (from F=N tags)
+  weeklyFocusAverage: { week: string; average: number }[];
 }
 
 export function usePracticeStats(profileId: string | undefined) {
@@ -65,6 +68,7 @@ export function usePracticeStats(profileId: string | undefined) {
           dailyMinutesMap: {},
           totalNotesCount: 0,
           notesLast30Days: 0,
+          weeklyFocusAverage: [],
         };
       }
 
@@ -475,6 +479,31 @@ export function usePracticeStats(profileId: string | undefined) {
       const totalNotesCount = notesCountResult.count ?? 0;
       const notesLast30Days = notesLast30Result.count ?? 0;
 
+      // Extract weekly focus averages from F=N tags in notes (no new query)
+      const weeklyFocusMap: Record<string, number[]> = {};
+      notes.forEach(note => {
+        if (!note.tags) return;
+        const fTag = note.tags.find(t => /^F=[1-5]$/.test(t));
+        if (!fTag) return;
+        const level = parseInt(fTag.charAt(2), 10);
+        const noteDate = parseISO(note.created_at);
+        const weekKey = format(startOfWeek(noteDate, { weekStartsOn: 1 }), 'MMM d');
+        if (!weeklyFocusMap[weekKey]) weeklyFocusMap[weekKey] = [];
+        weeklyFocusMap[weekKey].push(level);
+      });
+      // Build array aligned to same 12-week window as weeklyMinutesOverTime
+      const weeklyFocusAverage: { week: string; average: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+        const weekKey = format(weekStart, 'MMM d');
+        const levels = weeklyFocusMap[weekKey];
+        if (levels && levels.length > 0) {
+          weeklyFocusAverage.push({ week: weekKey, average: Math.round((levels.reduce((s, v) => s + v, 0) / levels.length) * 10) / 10 });
+        } else {
+          weeklyFocusAverage.push({ week: weekKey, average: 0 });
+        }
+      }
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,
@@ -493,6 +522,7 @@ export function usePracticeStats(profileId: string | undefined) {
         dailyMinutesMap,
         totalNotesCount,
         notesLast30Days,
+        weeklyFocusAverage,
       };
     },
     enabled: !!profileId,
