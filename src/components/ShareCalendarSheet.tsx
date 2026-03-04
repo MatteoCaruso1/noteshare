@@ -318,7 +318,9 @@ export function ShareCalendarSheet({
 
             {/* Weeks */}
             {weeks.map((week, wi) => {
-              const total = fullWeekTotal(week.days);
+              const total = onlyCurrentMonthDays
+                ? week.days.reduce((sum, d) => sum + (d.isCurrentMonth ? (d.minutes || 0) : 0), 0)
+                : fullWeekTotal(week.days);
               const metGoal = getMetGoal(week.weekStartStr, total);
               return (
                 <div key={wi} className={cn("grid gap-0.5 items-center mb-0.5", gridCols)}>
