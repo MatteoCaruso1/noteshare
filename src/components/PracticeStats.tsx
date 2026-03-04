@@ -292,25 +292,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {/* Time Records */}
-          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Trophy className="w-4 h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Time Records</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Week</p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Month</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Monthly Minutes Practiced */}
+          {/* Monthly Minutes Practiced — top left */}
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Calendar className="w-4 h-4 text-primary" />
@@ -318,10 +300,10 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
             <div className="space-y-2">
               <div className="flex flex-col items-center text-center">
-                <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${trends && trends.paceAboveLastMonth ? 'text-green-500' : ''}`}>
+                <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${trends ? (trends.paceAboveLastMonth ? 'text-green-500' : 'text-red-500') : ''}`}>
                   {trends ? formatMinutes(trends.projectedTotal) : '0m'}
                 </p>
-                <p className={`text-[10px] sm:text-xs ${trends && trends.paceAboveLastMonth ? 'text-green-500' : 'text-muted-foreground'}`}>
+                <p className={`text-[10px] sm:text-xs ${trends ? (trends.paceAboveLastMonth ? 'text-green-500' : 'text-red-500') : 'text-muted-foreground'}`}>
                   This Month (Pace)
                 </p>
               </div>
@@ -332,7 +314,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
           </div>
 
-          {/* Streaks */}
+          {/* Streaks — top right */}
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Flame className="w-4 h-4 text-primary" />
@@ -350,7 +332,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
           </div>
 
-          {/* Volume */}
+          {/* Volume — bottom left */}
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4 scale-125 origin-center">
@@ -373,6 +355,24 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               <div className="flex flex-col items-center text-center">
                 <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
                 <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (All Time)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Time Records — bottom right */}
+          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Trophy className="w-4 h-4 text-primary" />
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Time Records</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Week</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Month</p>
               </div>
             </div>
           </div>
