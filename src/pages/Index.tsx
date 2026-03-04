@@ -26,6 +26,7 @@ import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
 import { FeedbackPromptDialog, hasFeedbackPromptBeenShown, markFeedbackPromptShown } from '@/components/FeedbackPromptDialog';
+import { ProUpsellDialog, hasProUpsellBeenShown, markProUpsellShown } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
