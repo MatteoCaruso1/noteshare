@@ -71,6 +71,10 @@ const Index = () => {
   const [feedbackPromptOpen, setFeedbackPromptOpen] = useState(false);
   const feedbackPromptFiredRef = useRef(false);
 
+  // 20-note pro upsell (one-time, localStorage-gated, free users only)
+  const [proUpsellOpen, setProUpsellOpen] = useState(false);
+  const proUpsellFiredRef = useRef(false);
+
   useEffect(() => {
     if (!profile || !practiceStats) return;
     const streak = practiceStats.currentStreak;
