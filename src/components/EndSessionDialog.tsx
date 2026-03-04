@@ -97,7 +97,7 @@ export function EndSessionDialog({
 
   const handleSave = () => {
     if (isValidDuration) {
-      onSave('', durationMinutes, playingWithIds);
+      onSave('', durationMinutes, playingWithIds, focusLevel ?? undefined);
     }
   };
 
