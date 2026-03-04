@@ -533,7 +533,14 @@ export function PracticeControls() {
                 audioFiles: audioFiles.map(a => a.url),
                 audioFileNames: audioFiles.map(a => a.name),
                 imageFiles,
-                tags,
+                tags: (() => {
+                  // Append focus level tag if set, replacing any existing F= tag
+                  const filtered = tags.filter(t => !/^F=[1-5]$/.test(t));
+                  if (focusLevel && focusLevel >= 1 && focusLevel <= 5) {
+                    filtered.push(`F=${focusLevel}`);
+                  }
+                  return filtered;
+                })(),
                 sessionId: activeSession.id,
                 projectId,
                 goalId,
