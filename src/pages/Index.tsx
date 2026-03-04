@@ -158,6 +158,17 @@ const Index = () => {
     }
   }, [notesCount]);
 
+  // 20-note pro upsell — piggybacks on existing allNotes count, no new queries
+  useEffect(() => {
+    if (proUpsellFiredRef.current) return;
+    if (isPremium) return;
+    if (notesCount >= 20 && !hasProUpsellBeenShown()) {
+      proUpsellFiredRef.current = true;
+      markProUpsellShown();
+      setProUpsellOpen(true);
+    }
+  }, [notesCount, isPremium]);
+
   // Convert projects and gigs to feed items
   const feedItems = useMemo(() => {
     const items: FeedItem[] = [];
