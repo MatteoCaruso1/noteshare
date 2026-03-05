@@ -503,6 +503,13 @@ serve(async (req) => {
     // ============================================
     // Stripe Subscription Analysis
     // ============================================
+    // Lifetime access price IDs (CAD and USD variants)
+    const LIFETIME_PRICE_IDS = [
+      "price_1Sw8hBGiNcIsULtkxrZRuf6O", // CAD $9.99 lifetime
+      "price_1SwEHaGiNcIsULtkrQuVwm7M", // USD $9.99 lifetime
+      "price_1Sv63tGiNcIsULtk4t3RRrAK", // Old $19.99 CAD lifetime
+    ];
+
     let paidConversion: PaidConversion = {
       totalActive: 0,
       inTrial: 0,
@@ -534,26 +541,76 @@ serve(async (req) => {
           expand: ['data.customer'],
         });
 
+        // ---- Lifetime purchases ----
+        // Get all customers, then check for lifetime payment intents
+        const allCustomers = await stripe.customers.list({ limit: 100 });
+        const lifetimeCustomerIds = new Set<string>();
+
+        for (const customer of allCustomers.data) {
+          const paymentIntents = await stripe.paymentIntents.list({
+            customer: customer.id,
+            limit: 50,
+          });
+
+          for (const pi of paymentIntents.data) {
+            if (pi.status === 'succeeded') {
+              const sessions = await stripe.checkout.sessions.list({
+                payment_intent: pi.id,
+                limit: 1,
+              });
+
+              if (sessions.data.length > 0 && sessions.data[0].mode === 'payment') {
+                const fullSession = await stripe.checkout.sessions.retrieve(sessions.data[0].id, {
+                  expand: ['line_items'],
+                });
+
+                const hasLifetimePrice = fullSession.line_items?.data?.some(
+                  (item: Stripe.LineItem) => LIFETIME_PRICE_IDS.includes(item.price?.id ?? '')
+                );
+
+                if (hasLifetimePrice) {
+                  lifetimeCustomerIds.add(customer.id);
+                  // Don't double-count if they also have an active subscription
+                  const alreadyInActive = activeSubscriptions.data.some(
+                    s => (s.customer as Stripe.Customer).id === customer.id
+                  );
+                  if (!alreadyInActive) {
+                    premiumUsers.push({
+                      name: customer.name || 'Unknown',
+                      username: '',
+                      email: customer.email || '',
+                      type: 'lifetime',
+                      status: 'lifetime'
+                    });
+                  }
+                  break; // Found lifetime for this customer, move on
+                }
+              }
+            }
+          }
+        }
+
+        console.log(`Found ${lifetimeCustomerIds.size} lifetime customers`);
+
         const inTrial = trialingSubscriptions.data.length;
         const actuallyPaying = activeSubscriptions.data.length;
-        const totalActive = inTrial + actuallyPaying;
+        // Count lifetime users who don't also have an active subscription
+        const lifetimeOnlyCount = [...lifetimeCustomerIds].filter(
+          id => !activeSubscriptions.data.some(s => (s.customer as Stripe.Customer).id === id)
+        ).length;
+        const totalActive = inTrial + actuallyPaying + lifetimeOnlyCount;
 
-        paidConversion = { totalActive, inTrial, actuallyPaying };
+        paidConversion = { totalActive, inTrial, actuallyPaying: actuallyPaying + lifetimeOnlyCount };
 
-        console.log(`Stripe: ${totalActive} active (${inTrial} trial, ${actuallyPaying} paying)`);
+        console.log(`Stripe: ${totalActive} active (${inTrial} trial, ${actuallyPaying} subscription, ${lifetimeOnlyCount} lifetime-only)`);
 
         for (const sub of activeSubscriptions.data) {
           const customer = sub.customer as Stripe.Customer;
-          const priceId = sub.items.data[0]?.price?.id || '';
-          const isLifetime = sub.items.data[0]?.price?.type === 'one_time' || 
-                            priceId.includes('lifetime') ||
-                            sub.items.data[0]?.price?.recurring === null;
-          
           premiumUsers.push({
             name: customer.name || 'Unknown',
             username: '',
             email: customer.email || '',
-            type: isLifetime ? 'lifetime' : 'subscription',
+            type: lifetimeCustomerIds.has(customer.id) ? 'lifetime' : 'subscription',
             status: 'active'
           });
         }
@@ -572,16 +629,28 @@ serve(async (req) => {
         // Get usernames from profiles based on email
         const premiumEmails = premiumUsers.map(u => u.email).filter(Boolean);
         if (premiumEmails.length > 0) {
-          const { data: profilesWithEmails } = await supabaseAdmin
+          // Look up auth users by email to get user_ids, then match profiles
+          const { data: allProfiles } = await supabaseAdmin
             .from('profiles')
             .select('name, username, user_id');
+
+          // Get auth user emails for matching
+          const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
           
+          const emailToProfile = new Map<string, { name: string; username: string }>();
+          for (const authUser of authUsers?.users || []) {
+            const profile = allProfiles?.find(p => p.user_id === authUser.id);
+            if (profile && authUser.email) {
+              emailToProfile.set(authUser.email.toLowerCase(), { name: profile.name, username: profile.username });
+            }
+          }
+
           for (const pu of premiumUsers) {
             if (pu.email) {
-              const matchingProfile = profilesWithEmails?.find(p => p.name === pu.name);
-              if (matchingProfile) {
-                pu.username = matchingProfile.username;
-                pu.name = matchingProfile.name;
+              const match = emailToProfile.get(pu.email.toLowerCase());
+              if (match) {
+                pu.username = match.username;
+                pu.name = match.name;
               }
             }
           }
