@@ -102,7 +102,13 @@ serve(async (req) => {
         }
       }
     } else {
-      logStep("No existing customer found, will create new");
+      // Create customer with metadata
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = newCustomer.id;
+      logStep("Created new customer with metadata", { customerId });
     }
 
     const origin = req.headers.get("origin") || "https://noteshare.app";
@@ -110,7 +116,6 @@ serve(async (req) => {
     // Create one-time payment session for lifetime access with embedded UI
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: lifetimePriceId,
