@@ -143,9 +143,18 @@ serve(async (req) => {
     logStep("Selected price", { priceId, currency });
 
     // Create checkout session for Noteshare Premium subscription
+    // If no existing customer, create one with metadata
+    if (!customerId) {
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = newCustomer.id;
+      logStep("Created new customer with metadata", { customerId });
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: priceId,

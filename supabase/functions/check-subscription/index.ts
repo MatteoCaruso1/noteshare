@@ -118,10 +118,29 @@ serve(async (req) => {
     logStep("Stripe key verified");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: email, limit: 1 });
+    
+    // Try email-based lookup first
+    let customers = await stripe.customers.list({ email: email, limit: 1 });
+    
+    // Fallback: search by supabase_user_id in metadata if email lookup fails
+    if (customers.data.length === 0) {
+      logStep("No customer found by email, trying metadata search", { userId });
+      try {
+        const searchResult = await stripe.customers.search({
+          query: `metadata["supabase_user_id"]:"${userId}"`,
+          limit: 1,
+        });
+        if (searchResult.data.length > 0) {
+          customers = searchResult as Stripe.ApiList<Stripe.Customer>;
+          logStep("Found customer via metadata fallback", { customerId: searchResult.data[0].id });
+        }
+      } catch (searchErr) {
+        logStep("Metadata search failed, continuing", { error: String(searchErr) });
+      }
+    }
     
     if (customers.data.length === 0) {
-      logStep("No customer found, user is not subscribed");
+      logStep("No customer found by email or metadata, user is not subscribed");
       return new Response(JSON.stringify({ 
         subscribed: false,
         product_id: null,
@@ -133,7 +152,16 @@ serve(async (req) => {
       });
     }
 
-    const customerId = customers.data[0].id;
+    const customer = customers.data[0];
+    const customerId = customer.id;
+    
+    // Backfill metadata if missing
+    if (!customer.metadata?.supabase_user_id) {
+      logStep("Backfilling supabase_user_id metadata on customer", { customerId });
+      await stripe.customers.update(customerId, {
+        metadata: { supabase_user_id: userId },
+      }).catch((e: Error) => logStep("Metadata backfill failed", { error: e.message }));
+    }
     logStep("Found Stripe customer", { customerId });
 
     // Check for lifetime purchase first

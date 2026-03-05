@@ -58,6 +58,12 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
+      // Backfill metadata if missing
+      if (!customers.data[0].metadata?.supabase_user_id) {
+        await stripe.customers.update(customerId, {
+          metadata: { supabase_user_id: user.id },
+        }).catch(() => {});
+      }
       
       // Check if user already has lifetime access by looking for completed payments
       const paymentIntents = await stripe.paymentIntents.list({
