@@ -111,6 +111,11 @@ serve(async (req) => {
       logStep("Created new customer with metadata", { customerId });
     }
 
+    // Guard: refuse to create session without a valid customer ID
+    if (!customerId) {
+      throw new Error("Failed to find or create Stripe customer. Cannot proceed with checkout.");
+    }
+
     const origin = req.headers.get("origin") || "https://noteshare.app";
 
     // Create one-time payment session for lifetime access with embedded UI
