@@ -244,6 +244,45 @@ serve(async (req) => {
       }
     }
 
+    // Fallback: if customer exists but no lifetime payment found on customer,
+    // search checkout sessions by email for orphan payments
+    logStep("No lifetime on customer, checking orphan sessions by email");
+    try {
+      const orphanSessions = await stripe.checkout.sessions.list({
+        limit: 100,
+      });
+      
+      for (const session of orphanSessions.data) {
+        if (
+          session.mode === 'payment' &&
+          session.payment_status === 'paid' &&
+          session.customer_details?.email?.toLowerCase() === email.toLowerCase() &&
+          (!session.customer || session.customer !== customerId)
+        ) {
+          const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+            expand: ['line_items'],
+          });
+          const hasLifetimePrice = fullSession.line_items?.data?.some(
+            (item: Stripe.LineItem) => LIFETIME_PRICE_IDS.includes(item.price?.id ?? '')
+          );
+          if (hasLifetimePrice) {
+            logStep("Found orphan lifetime payment via email fallback (customer exists)", { sessionId: session.id });
+            return new Response(JSON.stringify({
+              subscribed: true,
+              product_id: LIFETIME_PRODUCT_IDS[0],
+              subscription_end: null,
+              is_lifetime: true
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+        }
+      }
+    } catch (orphanErr) {
+      logStep("Orphan session search failed (customer exists path)", { error: String(orphanErr) });
+    }
+
     // Check for active subscriptions first
     let subscriptions = await stripe.subscriptions.list({
       customer: customerId,
