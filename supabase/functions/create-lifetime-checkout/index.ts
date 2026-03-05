@@ -58,6 +58,12 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
+      // Backfill metadata if missing
+      if (!customers.data[0].metadata?.supabase_user_id) {
+        await stripe.customers.update(customerId, {
+          metadata: { supabase_user_id: user.id },
+        }).catch(() => {});
+      }
       
       // Check if user already has lifetime access by looking for completed payments
       const paymentIntents = await stripe.paymentIntents.list({
@@ -96,7 +102,13 @@ serve(async (req) => {
         }
       }
     } else {
-      logStep("No existing customer found, will create new");
+      // Create customer with metadata
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = newCustomer.id;
+      logStep("Created new customer with metadata", { customerId });
     }
 
     const origin = req.headers.get("origin") || "https://noteshare.app";
@@ -104,7 +116,6 @@ serve(async (req) => {
     // Create one-time payment session for lifetime access with embedded UI
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: lifetimePriceId,

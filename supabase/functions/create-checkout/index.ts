@@ -71,6 +71,12 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
+      // Backfill metadata if missing
+      if (!customers.data[0].metadata?.supabase_user_id) {
+        await stripe.customers.update(customerId, {
+          metadata: { supabase_user_id: user.id },
+        }).catch(() => {});
+      }
     } else {
       logStep("No existing customer found, will create new");
     }
@@ -137,9 +143,18 @@ serve(async (req) => {
     logStep("Selected price", { priceId, currency });
 
     // Create checkout session for Noteshare Premium subscription
+    // If no existing customer, create one with metadata
+    if (!customerId) {
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = newCustomer.id;
+      logStep("Created new customer with metadata", { customerId });
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: priceId,
