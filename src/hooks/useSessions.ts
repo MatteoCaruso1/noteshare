@@ -144,9 +144,13 @@ export function useStartSession() {
         .eq('user_id', userId)
         .eq('is_active', true);
 
-      // Detect mobile
-      const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (window.innerWidth <= 768);
+      // Detect mobile - use multiple signals for reliability
+      const userAgentMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const uaDataMobile = !!(navigator as any).userAgentData?.mobile;
+      const touchDevice = navigator.maxTouchPoints > 0 && window.innerWidth <= 1024;
+      // iPadOS reports as "Macintosh" but has touch support
+      const isIPad = /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+      const isMobile = userAgentMobile || uaDataMobile || touchDevice || isIPad;
 
       // Create new session
       const { data, error } = await supabase
