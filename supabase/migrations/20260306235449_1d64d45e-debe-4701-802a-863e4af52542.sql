@@ -1,0 +1,1 @@
+UPDATE practice_sessions SET is_mobile = true WHERE user_id = '5117e3d7-ed9a-44dd-8c52-4b6369669020' AND created_at >= '2026-02-25' AND is_mobile = false;
