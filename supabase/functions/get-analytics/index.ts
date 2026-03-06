@@ -227,14 +227,24 @@ serve(async (req) => {
     }
 
     // Calculate activation rate for each day
+    // Note creators must have viewed the page, so union them into viewers
     const dailyRates: ActivationRate[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       
-      const viewers = viewersByDate.get(dateStr)?.size || 0;
-      const creators = notesByDate.get(dateStr)?.size || 0;
+      // Merge note creators into viewers set so viewers >= creators always
+      const viewersSet = new Set(viewersByDate.get(dateStr) || []);
+      const creatorsSet = notesByDate.get(dateStr);
+      if (creatorsSet) {
+        for (const creatorId of creatorsSet) {
+          viewersSet.add(creatorId);
+        }
+      }
+      
+      const viewers = viewersSet.size;
+      const creators = creatorsSet?.size || 0;
       
       const rate = viewers > 0 ? Math.round((creators / viewers) * 10000) / 100 : 0;
       
