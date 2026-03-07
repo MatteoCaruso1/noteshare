@@ -24,7 +24,7 @@ export function LandingTestimonial() {
         <p className="text-center text-xs text-muted-foreground/60 leading-relaxed flex flex-wrap justify-center gap-x-1">
           <span>Noteshare</span>
           <span>—</span>
-          <span>Practice smarter</span>
+          <span>Practice Smarter</span>
           <span>—</span>
           <span>Contact: matteo.m.caruso1@gmail.com</span>
           <span>—</span>
