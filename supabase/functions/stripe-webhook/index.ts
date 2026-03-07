@@ -203,16 +203,22 @@ serve(async (req) => {
         // Check if user has lifetime - don't revoke if so
         const { data: entitlement } = await supabase
           .from('user_entitlements')
-          .select('pro_type')
+          .select('pro_type, user_id')
           .eq('stripe_customer_id', stripeCustomerId)
           .maybeSingle();
 
         if (entitlement && entitlement.pro_type !== 'lifetime') {
-          await supabase
-            .from('user_entitlements')
-            .update({ is_pro: false, updated_at: new Date().toISOString() })
-            .eq('stripe_customer_id', stripeCustomerId);
-          logStep("Subscription entitlement revoked", { stripeCustomerId });
+          // Check premium override before revoking
+          const hasOverride = await hasPremiumOverride(supabase, entitlement.user_id);
+          if (hasOverride) {
+            logStep("Skipping revocation — user has premium override", { userId: entitlement.user_id });
+          } else {
+            await supabase
+              .from('user_entitlements')
+              .update({ is_pro: false, updated_at: new Date().toISOString() })
+              .eq('stripe_customer_id', stripeCustomerId);
+            logStep("Subscription entitlement revoked", { stripeCustomerId });
+          }
         }
       }
 
