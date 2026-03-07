@@ -18,7 +18,7 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, User, Trash2, SendHorizontal } from 'lucide-react';
+import { ArrowLeft, User, Trash2, SendHorizontal, Reply } from 'lucide-react';
 import { ReportButton } from '@/components/ReportButton';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
