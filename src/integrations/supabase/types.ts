@@ -272,6 +272,45 @@ export type Database = {
           },
         ]
       }
+      gig_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          gig_id: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          gig_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          gig_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gig_comments_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "promo_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           completed_at: string | null
@@ -1220,6 +1259,7 @@ export type Database = {
         Row: {
           author_id: string
           collaborator_ids: string[] | null
+          comment_count: number
           created_at: string
           description: string | null
           event_date: string | null
@@ -1235,6 +1275,7 @@ export type Database = {
         Insert: {
           author_id: string
           collaborator_ids?: string[] | null
+          comment_count?: number
           created_at?: string
           description?: string | null
           event_date?: string | null
@@ -1250,6 +1291,7 @@ export type Database = {
         Update: {
           author_id?: string
           collaborator_ids?: string[] | null
+          comment_count?: number
           created_at?: string
           description?: string | null
           event_date?: string | null
