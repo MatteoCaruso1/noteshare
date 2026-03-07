@@ -20,21 +20,16 @@ export function LandingTestimonial() {
       */}
 
       {/* Footer */}
-      <footer className="border-t border-border/40 bg-background/50 backdrop-blur-sm px-6 md:px-12 lg:px-24 pt-10 pb-6">
-        <div className="max-w-6xl mx-auto flex flex-col gap-6">
-          <div className="flex flex-col gap-1">
-            <span className="text-foreground font-semibold text-lg tracking-tight">Noteshare</span>
-            <span className="text-muted-foreground text-sm">Practice smarter</span>
-          </div>
-          <p className="text-muted-foreground text-xs">
-            Contact: matteo.m.caruso1@gmail.com
-          </p>
-          <div className="border-t border-border/30 pt-4">
-            <p className="text-muted-foreground text-xs text-center">
-              © 2026 Noteshare. All rights reserved.
-            </p>
-          </div>
-        </div>
+      <footer className="border-t border-border/20 px-6 py-4">
+        <p className="text-center text-xs text-muted-foreground/60 leading-relaxed flex flex-wrap justify-center gap-x-1">
+          <span>Noteshare</span>
+          <span>—</span>
+          <span>Practice smarter</span>
+          <span>—</span>
+          <span>Contact: matteo.m.caruso1@gmail.com</span>
+          <span>—</span>
+          <span>© 2026 Noteshare</span>
+        </p>
       </footer>
     </>
   );
