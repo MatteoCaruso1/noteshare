@@ -90,7 +90,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const handleAddGoal = () => {
     if (newGoalText.trim() && activeGoals.length < MAX_GOALS) {
       const goalText = newGoalText.trim();
-      setPendingGoal(goalText);
       setNewGoalText('');
       setIsAdding(false);
       createGoal.mutate({
@@ -98,8 +97,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         goalType: 'long-term',
         title: goalText,
         progressType: 'checkbox',
-      }, {
-        onSettled: () => setPendingGoal(null),
       });
     }
   };
