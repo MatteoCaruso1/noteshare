@@ -107,6 +107,7 @@ export interface NoteComment {
   author_id: string;
   content: string;
   created_at: string;
+  parent_comment_id: string | null;
 }
 
 export interface PromoPost {
