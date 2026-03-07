@@ -161,7 +161,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
       
       <div className="space-y-2">
         {activeGoals.map((goal, index) => (
-          <div key={goal.id} className="group flex items-start gap-2 animate-fade-in">
+          <div key={goal.id.startsWith('temp-') ? `pending-${goal.title}` : goal.id} className="group flex items-start gap-2">
             <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
               {index + 1}.
             </span>
