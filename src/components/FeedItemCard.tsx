@@ -46,9 +46,9 @@ export const FeedItemCard = memo(function FeedItemCard({ item }: FeedItemCardPro
   
   const handleClick = () => {
     if (item.type === 'project') {
-      navigate(`/projects/${item.id}`);
+      navigate(`/projects/${item.id}`, { state: { fromFriends: true } });
     } else {
-      navigate(`/gigs/${item.id}`);
+      navigate(`/gigs/${item.id}`, { state: { fromFriends: true } });
     }
   };
 

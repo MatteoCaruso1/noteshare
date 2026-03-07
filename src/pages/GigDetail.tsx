@@ -1,5 +1,5 @@
 import { useState, useLayoutEffect, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,7 @@ import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { ShareGigSheet } from '@/components/ShareGigSheet';
 import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
+import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 import { toast } from 'sonner';
 
 function useGig(gigId: string | undefined) {
@@ -223,7 +224,9 @@ function useCreateGigReminder() {
 const GigDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
+  const { setOverrideActiveRoute } = useBottomNavOverride();
   const { data: gig, isLoading: gigLoading, isError: gigError } = useGig(id);
   const { data: notes, isLoading: notesLoading } = useGigNotes(id);
   const { data: hasReminder } = useGigReminder(id, profile?.id);
@@ -231,6 +234,16 @@ const GigDetail = () => {
   const updateGig = useUpdatePromoPost();
   const deleteGig = useDeletePromoPost();
   const createReminder = useCreateGigReminder();
+
+  // Check where we came from for proper bottom nav highlighting
+  const fromFriends = location.state?.fromFriends;
+
+  useEffect(() => {
+    if (fromFriends) {
+      setOverrideActiveRoute('/friends');
+    }
+    return () => setOverrideActiveRoute(undefined);
+  }, [fromFriends, setOverrideActiveRoute]);
 
   // Scroll to top instantly on mount
   useLayoutEffect(() => {
