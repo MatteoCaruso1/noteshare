@@ -201,17 +201,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         ))}
 
-        {/* Optimistic pending goal */}
-        {pendingGoal && (
-          <div className="flex items-start gap-2 opacity-60 animate-fade-in">
-            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
-              {activeGoals.length + 1}.
-            </span>
-            <span className="text-sm flex-1 whitespace-pre-wrap break-words">
-              {pendingGoal}
-            </span>
-          </div>
-        )}
         
         {isAdding && (
           <div className="flex items-start gap-2 animate-fade-in">
