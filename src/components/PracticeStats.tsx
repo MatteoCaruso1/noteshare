@@ -228,7 +228,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                     <Line 
                       type="monotone" 
                       dataKey="avgHours" 
-                      stroke="hsl(var(--destructive))" 
+                      stroke="hsl(270 60% 65%)" 
                       strokeWidth={1.5}
                       strokeDasharray="6 3"
                       dot={false}
