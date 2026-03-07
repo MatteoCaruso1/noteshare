@@ -179,7 +179,7 @@ function useCreateGigReminder() {
         notifications.push({
           user_id: userId,
           type: 'gig_reminder',
-          content: `Your gig "${gigTitle}" is coming up in one week!`,
+          content: `"${gigTitle}" is coming up in one week!`,
           gig_id: gigId,
           from_user_id: userId,
           read: false,
@@ -192,7 +192,7 @@ function useCreateGigReminder() {
         notifications.push({
           user_id: userId,
           type: 'gig_reminder',
-          content: `Your gig "${gigTitle}" is tomorrow!`,
+          content: `"${gigTitle}" is tomorrow!`,
           gig_id: gigId,
           from_user_id: userId,
           read: false,
