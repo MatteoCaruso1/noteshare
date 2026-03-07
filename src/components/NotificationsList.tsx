@@ -73,6 +73,8 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
         return <Users className="w-4 h-4 text-primary" />;
       case 'group_invite':
         return <Waypoints className="w-4 h-4 text-primary" />;
+      case 'comment_reply':
+        return <Reply className="w-4 h-4 text-primary" />;
       default:
         return <AtSign className="w-4 h-4 text-primary" />;
     }
