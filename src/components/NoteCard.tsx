@@ -597,6 +597,18 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             </Badge>
           )}
           
+          {/* Focus Level Badge - shows progressive fill zap icon */}
+          {isPracticeSession && (() => {
+            const focusLevel = parseFocusLevel(note.tags);
+            if (!focusLevel) return null;
+            return (
+              <Badge variant="outline" className="inline-flex items-center gap-1 text-xs border-amber-500/30 py-0.5 px-1.5">
+                <FocusLevelIcon level={focusLevel} />
+                <span className="text-[10px] text-amber-400">{focusLevel}/5</span>
+              </Badge>
+            );
+          })()}
+
           {/* Focus Date Badge - now inline with type badge and tags */}
           {/* Practice Board badge removed - text is now shown in note content */}
 
