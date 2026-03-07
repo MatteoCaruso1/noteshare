@@ -86,6 +86,40 @@ const NoteDetail = () => {
   // Pre-seed applause cache for this note
   useNoteApplause(id || '');
 
+  // Group comments into top-level and replies client-side
+  const { topLevelComments, repliesByParent } = useMemo(() => {
+    if (!comments) return { topLevelComments: [], repliesByParent: {} as Record<string, typeof comments> };
+    const top: typeof comments = [];
+    const byParent: Record<string, typeof comments> = {};
+    for (const c of comments) {
+      const parentId = (c as any).parent_comment_id;
+      if (!parentId) {
+        top.push(c);
+      } else {
+        if (!byParent[parentId]) byParent[parentId] = [];
+        byParent[parentId].push(c);
+      }
+    }
+    return { topLevelComments: top, repliesByParent: byParent };
+  }, [comments]);
+
+  const handleReply = (comment: { id: string; author_id: string; author?: { name: string } | null }) => {
+    // Flatten: if this comment is itself a reply, reply to its parent instead
+    const parentId = (comment as any).parent_comment_id;
+    const targetId = parentId || comment.id;
+    const targetAuthorName = comment.author?.name || 'user';
+    const targetAuthorId = comment.author_id;
+    setReplyingTo({ id: targetId, authorId: targetAuthorId, authorName: targetAuthorName });
+    // Scroll to and focus the comment input
+    setTimeout(() => {
+      commentInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
   const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
     
@@ -94,10 +128,18 @@ const NoteDetail = () => {
     
     // Create comment
     createComment.mutate(
-      { noteId: id, authorId: profile.id, content: newComment, noteOwnerId: note?.author_id || '' },
+      { 
+        noteId: id, 
+        authorId: profile.id, 
+        content: newComment, 
+        noteOwnerId: note?.author_id || '',
+        parentCommentId: replyingTo?.id || null,
+        parentCommentAuthorId: replyingTo?.authorId || null,
+      },
       {
         onSuccess: async () => {
           setNewComment('');
+          setReplyingTo(null);
           
           // Create notifications for mentioned users
           if (mentions.length > 0) {
