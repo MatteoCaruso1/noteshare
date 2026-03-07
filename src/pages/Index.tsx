@@ -26,7 +26,7 @@ import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
 import { FeedbackPromptDialog, hasFeedbackPromptBeenShown, markFeedbackPromptShown } from '@/components/FeedbackPromptDialog';
-import { ProUpsellDialog, hasProUpsellBeenShown, markProUpsellShown } from '@/components/ProUpsellDialog';
+import { ProUpsellDialog } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
 const LOAD_MORE_COUNT = 10;
@@ -158,17 +158,20 @@ const Index = () => {
     }
   }, [notesCount]);
 
-  // 20-note pro upsell — piggybacks on existing allNotes count, no new queries
+  // 20-note pro upsell — uses profile flag (persisted in DB, survives app updates)
   useEffect(() => {
     if (proUpsellFiredRef.current) return;
-    if (premiumLoading) return; // wait for subscription check (incl. premium overrides)
+    if (premiumLoading) return;
     if (isPremium) return;
-    if (notesCount >= 20 && !hasProUpsellBeenShown()) {
+    if (!profile) return;
+    if (profile.has_seen_pro_upsell) return;
+    if (notesCount >= 20) {
       proUpsellFiredRef.current = true;
-      markProUpsellShown();
+      // Persist in DB so it never shows again, even after app updates
+      supabase.from('profiles').update({ has_seen_pro_upsell: true }).eq('id', profile.id).then(() => {});
       setProUpsellOpen(true);
     }
-  }, [notesCount, isPremium, premiumLoading]);
+  }, [notesCount, isPremium, premiumLoading, profile]);
 
   // Convert projects and gigs to feed items
   const feedItems = useMemo(() => {
