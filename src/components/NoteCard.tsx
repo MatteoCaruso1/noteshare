@@ -40,13 +40,13 @@ function FocusLevelIcon({ level }: { level: number }) {
   const clipId = `focus-clip-${Math.random().toString(36).slice(2, 8)}`;
   const fillPercent = (level / 5) * 100;
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(45 93% 58%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <defs>
         <clipPath id={clipId}>
           <rect x="0" y={24 - (24 * fillPercent / 100)} width="24" height={24 * fillPercent / 100} />
         </clipPath>
       </defs>
-      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="hsl(45 93% 58%)" clipPath={`url(#${clipId})`} />
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="hsl(var(--primary))" clipPath={`url(#${clipId})`} />
       <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="none" />
     </svg>
   );
