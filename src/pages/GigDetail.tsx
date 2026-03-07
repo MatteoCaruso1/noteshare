@@ -355,6 +355,19 @@ const GigDetail = () => {
   // Always use history back to return to the previous page with its state preserved
   const useHistoryBack = true;
 
+  const handleAddGigComment = () => {
+    if (!profile || !id || !newComment.trim() || !gig) return;
+    createGigComment.mutate(
+      { gigId: id, authorId: profile.id, content: newComment, gigOwnerId: gig.author_id },
+      { onSuccess: () => setNewComment('') }
+    );
+  };
+
+  const handleDeleteGigComment = (commentId: string) => {
+    if (!id) return;
+    deleteGigComment.mutate({ commentId, gigId: id });
+  };
+
   const handleAddNote = (data: {
     textContent?: string;
     audioFiles: string[];
