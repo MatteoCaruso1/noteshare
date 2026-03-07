@@ -100,10 +100,10 @@ export function ManagePlansSection() {
           <span className="text-sm text-muted-foreground">
             Contact for help:{' '}
             <a 
-              href="mailto:matteo.m.caruso1@gmail.com" 
+              href="mailto:notesharemusic@gmail.com" 
               className="text-primary hover:underline"
             >
-              matteo.m.caruso1@gmail.com
+              notesharemusic@gmail.com
             </a>
           </span>
         </div>
