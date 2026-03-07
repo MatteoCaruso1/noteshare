@@ -21,7 +21,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { ApplauseFooter } from '@/components/ApplauseFooter';
-import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ListTodo, Settings, X, Flame, Pencil, Check, Calendar, Share, Play } from 'lucide-react';
+import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ListTodo, Settings, X, Flame, Pencil, Check, Calendar, Share, Play, Zap } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +35,30 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
 
 
-// Combined text content component that handles line clamping for both note text and focus text together
+// Progressive-fill Zap icon for focus level (1–5)
+function FocusLevelIcon({ level }: { level: number }) {
+  const clipId = `focus-clip-${Math.random().toString(36).slice(2, 8)}`;
+  const fillPercent = (level / 5) * 100;
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(45 93% 58%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <defs>
+        <clipPath id={clipId}>
+          <rect x="0" y={24 - (24 * fillPercent / 100)} width="24" height={24 * fillPercent / 100} />
+        </clipPath>
+      </defs>
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="hsl(45 93% 58%)" clipPath={`url(#${clipId})`} />
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="none" />
+    </svg>
+  );
+}
+
+// Parse focus level from tags array (e.g. "F=4" → 4)
+function parseFocusLevel(tags: string[] | null): number | null {
+  if (!tags) return null;
+  const tag = tags.find(t => /^F=[1-5]$/.test(t));
+  return tag ? parseInt(tag.split('=')[1], 10) : null;
+}
+
 interface CombinedTextContentProps {
   textContent: string | null;
   focusTextSnapshot: string | null;
@@ -572,6 +595,18 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             </Badge>
           )}
           
+          {/* Focus Level Badge - shows progressive fill zap icon */}
+          {isPracticeSession && (() => {
+            const focusLevel = parseFocusLevel(note.tags);
+            if (!focusLevel) return null;
+            return (
+              <Badge variant="outline" className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5" style={{ borderColor: 'hsl(45 93% 58% / 0.3)' }}>
+                <FocusLevelIcon level={focusLevel} />
+                <span className="text-[10px]" style={{ color: 'hsl(45 93% 58%)' }}>{focusLevel}/5</span>
+              </Badge>
+            );
+          })()}
+
           {/* Focus Date Badge - now inline with type badge and tags */}
           {/* Practice Board badge removed - text is now shown in note content */}
 
