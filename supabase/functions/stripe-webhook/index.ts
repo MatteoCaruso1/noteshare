@@ -225,6 +225,256 @@ serve(async (req) => {
       });
     }
 
+    // Handle payment_intent.succeeded (catches delayed 3DS confirmations)
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const stripeCustomerId = typeof paymentIntent.customer === 'string'
+        ? paymentIntent.customer
+        : paymentIntent.customer?.id || null;
+
+      logStep("Processing payment_intent.succeeded", {
+        paymentIntentId: paymentIntent.id,
+        customerId: stripeCustomerId,
+        amount: paymentIntent.amount,
+      });
+
+      // Only act if we can identify the customer and they don't already have an entitlement
+      if (stripeCustomerId) {
+        const { data: entitlement } = await supabase
+          .from('user_entitlements')
+          .select('is_pro')
+          .eq('stripe_customer_id', stripeCustomerId)
+          .maybeSingle();
+
+        if (!entitlement?.is_pro) {
+          // Try to find user via customer metadata
+          const userId = await resolveUserFromCustomer(stripe, supabase, stripeCustomerId);
+          if (userId) {
+            // Check if this payment is for a lifetime price via the invoice/checkout
+            // For safety, grant subscription type — checkout.session.completed handles lifetime specifically
+            logStep("payment_intent.succeeded: user found but entitlement will be granted by checkout.session.completed or invoice.paid", { userId });
+          }
+        }
+      }
+
+      await supabase.from('purchase_event_log').insert({
+        stripe_event_id: event.id,
+        stripe_customer_id: stripeCustomerId,
+        payment_status: 'paid',
+        processed: true,
+        event_type: event.type,
+      });
+    }
+
+    // Handle charge.refunded — revoke Pro if lifetime purchase was refunded
+    if (event.type === 'charge.refunded') {
+      const charge = event.data.object as Stripe.Charge;
+      const stripeCustomerId = typeof charge.customer === 'string'
+        ? charge.customer
+        : charge.customer?.id || null;
+      const fullyRefunded = charge.refunded; // true if fully refunded
+
+      logStep("Processing charge.refunded", {
+        chargeId: charge.id,
+        customerId: stripeCustomerId,
+        fullyRefunded,
+        amountRefunded: charge.amount_refunded,
+      });
+
+      if (stripeCustomerId && fullyRefunded) {
+        // Check if this customer has a lifetime entitlement — revoke it
+        const { data: entitlement } = await supabase
+          .from('user_entitlements')
+          .select('pro_type, is_pro')
+          .eq('stripe_customer_id', stripeCustomerId)
+          .maybeSingle();
+
+        if (entitlement?.is_pro && entitlement.pro_type === 'lifetime') {
+          await supabase
+            .from('user_entitlements')
+            .update({ is_pro: false, updated_at: new Date().toISOString() })
+            .eq('stripe_customer_id', stripeCustomerId);
+          logStep("Lifetime entitlement revoked due to full refund", { stripeCustomerId });
+        }
+      }
+
+      await supabase.from('purchase_event_log').insert({
+        stripe_event_id: event.id,
+        stripe_customer_id: stripeCustomerId,
+        payment_status: fullyRefunded ? 'refunded' : 'partially_refunded',
+        processed: true,
+        event_type: event.type,
+      });
+    }
+
+    // Handle invoice.paid — activate/renew subscription Pro access
+    if (event.type === 'invoice.paid') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const stripeCustomerId = typeof invoice.customer === 'string'
+        ? invoice.customer
+        : invoice.customer?.id || null;
+      const subscriptionId = typeof invoice.subscription === 'string'
+        ? invoice.subscription
+        : invoice.subscription?.id || null;
+
+      logStep("Processing invoice.paid", {
+        invoiceId: invoice.id,
+        customerId: stripeCustomerId,
+        subscriptionId,
+      });
+
+      if (stripeCustomerId && subscriptionId) {
+        const userId = await resolveUserFromCustomer(stripe, supabase, stripeCustomerId);
+        if (userId) {
+          // Don't downgrade lifetime to subscription
+          const { data: existing } = await supabase
+            .from('user_entitlements')
+            .select('pro_type')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+          if (existing?.pro_type !== 'lifetime') {
+            await grantEntitlement(supabase, {
+              userId,
+              proType: 'subscription',
+              stripeCustomerId,
+              checkoutSessionId: invoice.id,
+              subscriptionId,
+            });
+            logStep("Subscription renewed/activated via invoice.paid", { userId });
+          }
+        }
+      }
+
+      await supabase.from('purchase_event_log').insert({
+        stripe_event_id: event.id,
+        stripe_customer_id: stripeCustomerId,
+        payment_status: 'paid',
+        processed: true,
+        event_type: event.type,
+      });
+    }
+
+    // Handle invoice.payment_failed — log but do NOT revoke access yet
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const stripeCustomerId = typeof invoice.customer === 'string'
+        ? invoice.customer
+        : invoice.customer?.id || null;
+
+      logStep("Processing invoice.payment_failed", {
+        invoiceId: invoice.id,
+        customerId: stripeCustomerId,
+        attemptCount: invoice.attempt_count,
+      });
+
+      // Do NOT revoke access here — Stripe will send customer.subscription.deleted
+      // if the subscription actually cancels after retry exhaustion
+      await supabase.from('purchase_event_log').insert({
+        stripe_event_id: event.id,
+        stripe_customer_id: stripeCustomerId,
+        payment_status: 'payment_failed',
+        processed: true,
+        event_type: event.type,
+        error_message: `Payment attempt ${invoice.attempt_count} failed`,
+      });
+    }
+
+    // Handle customer.subscription.created — grant Pro for new subscriptions
+    if (event.type === 'customer.subscription.created') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const stripeCustomerId = typeof subscription.customer === 'string'
+        ? subscription.customer
+        : subscription.customer?.id || null;
+      const subscriptionId = subscription.id;
+
+      logStep("Processing customer.subscription.created", {
+        subscriptionId,
+        customerId: stripeCustomerId,
+        status: subscription.status,
+      });
+
+      if (stripeCustomerId && (subscription.status === 'active' || subscription.status === 'trialing')) {
+        const userId = await resolveUserFromCustomer(stripe, supabase, stripeCustomerId);
+        if (userId) {
+          const { data: existing } = await supabase
+            .from('user_entitlements')
+            .select('pro_type')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+          if (existing?.pro_type !== 'lifetime') {
+            await grantEntitlement(supabase, {
+              userId,
+              proType: 'subscription',
+              stripeCustomerId,
+              checkoutSessionId: subscriptionId,
+              subscriptionId,
+            });
+            logStep("Subscription entitlement granted via subscription.created", { userId });
+          }
+        }
+      }
+
+      await supabase.from('purchase_event_log').insert({
+        stripe_event_id: event.id,
+        stripe_customer_id: stripeCustomerId,
+        payment_status: subscription.status,
+        processed: true,
+        event_type: event.type,
+      });
+    }
+
+    // Handle customer.subscription.updated — update status on plan changes
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const stripeCustomerId = typeof subscription.customer === 'string'
+        ? subscription.customer
+        : subscription.customer?.id || null;
+
+      logStep("Processing customer.subscription.updated", {
+        subscriptionId: subscription.id,
+        customerId: stripeCustomerId,
+        status: subscription.status,
+      });
+
+      if (stripeCustomerId) {
+        const { data: entitlement } = await supabase
+          .from('user_entitlements')
+          .select('pro_type, is_pro')
+          .eq('stripe_customer_id', stripeCustomerId)
+          .maybeSingle();
+
+        // Don't touch lifetime entitlements
+        if (entitlement && entitlement.pro_type !== 'lifetime') {
+          if (subscription.status === 'active' || subscription.status === 'trialing') {
+            if (!entitlement.is_pro) {
+              await supabase
+                .from('user_entitlements')
+                .update({
+                  is_pro: true,
+                  stripe_subscription_id: subscription.id,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('stripe_customer_id', stripeCustomerId);
+              logStep("Subscription reactivated via subscription.updated", { stripeCustomerId });
+            }
+          } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
+            // Keep access for now — will be revoked on subscription.deleted
+            logStep("Subscription past_due/unpaid, keeping access for now", { stripeCustomerId });
+          }
+        }
+      }
+
+      await supabase.from('purchase_event_log').insert({
+        stripe_event_id: event.id,
+        stripe_customer_id: stripeCustomerId,
+        payment_status: subscription.status,
+        processed: true,
+        event_type: event.type,
+      });
+    }
+
     // Mark event as processed (idempotency)
     await supabase.from('stripe_processed_events').insert({ event_id: event.id });
 
