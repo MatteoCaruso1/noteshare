@@ -1085,9 +1085,12 @@ export type Database = {
           following_count: number
           genres: string[] | null
           has_added_first_friend: boolean
+          has_completed_onboarding: boolean
           has_logged_first_note: boolean
           has_logged_ten_notes: boolean
+          has_seen_feedback_prompt: boolean
           has_seen_pro_upsell: boolean
+          has_seen_share_education: boolean
           has_used_trial: boolean | null
           id: string
           instruments: string[] | null
@@ -1112,9 +1115,12 @@ export type Database = {
           following_count?: number
           genres?: string[] | null
           has_added_first_friend?: boolean
+          has_completed_onboarding?: boolean
           has_logged_first_note?: boolean
           has_logged_ten_notes?: boolean
+          has_seen_feedback_prompt?: boolean
           has_seen_pro_upsell?: boolean
+          has_seen_share_education?: boolean
           has_used_trial?: boolean | null
           id?: string
           instruments?: string[] | null
@@ -1139,9 +1145,12 @@ export type Database = {
           following_count?: number
           genres?: string[] | null
           has_added_first_friend?: boolean
+          has_completed_onboarding?: boolean
           has_logged_first_note?: boolean
           has_logged_ten_notes?: boolean
+          has_seen_feedback_prompt?: boolean
           has_seen_pro_upsell?: boolean
+          has_seen_share_education?: boolean
           has_used_trial?: boolean | null
           id?: string
           instruments?: string[] | null
