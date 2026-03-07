@@ -600,9 +600,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             const focusLevel = parseFocusLevel(note.tags);
             if (!focusLevel) return null;
             return (
-              <Badge variant="outline" className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5" style={{ borderColor: 'hsl(45 93% 58% / 0.3)' }}>
+              <Badge variant="outline" className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 border-primary/30">
                 <FocusLevelIcon level={focusLevel} />
-                <span className="text-[10px]" style={{ color: 'hsl(45 93% 58%)' }}>{focusLevel}/5</span>
+                <span className="text-[10px] text-primary">{focusLevel}/5</span>
               </Badge>
             );
           })()}
