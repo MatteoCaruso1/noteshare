@@ -223,7 +223,9 @@ function useCreateGigReminder() {
 const GigDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
+  const { setOverrideActiveRoute } = useBottomNavOverride();
   const { data: gig, isLoading: gigLoading, isError: gigError } = useGig(id);
   const { data: notes, isLoading: notesLoading } = useGigNotes(id);
   const { data: hasReminder } = useGigReminder(id, profile?.id);
