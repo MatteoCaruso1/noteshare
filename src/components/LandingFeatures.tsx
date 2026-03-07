@@ -6,20 +6,20 @@ import landingFriends from '@/assets/landing-friends.png';
 
 const features = [
   {
-    title: 'Organize your focus areas',
-    image: landingFocus,
-    alt: 'Practice List showing exercises and songs to focus on',
-    cropTop: false,
-    width: 1225,
-    height: 464,
-  },
-  {
     title: 'Log practice sessions and record your playing',
     image: landingSessions,
     alt: 'Practice session with audio recording and comments',
     cropTop: false,
     width: 979,
     height: 631,
+  },
+  {
+    title: 'Organize your focus areas',
+    image: landingFocus,
+    alt: 'Practice List showing exercises and songs to focus on',
+    cropTop: false,
+    width: 1225,
+    height: 464,
   },
   {
     title: 'Track your progress over time',
