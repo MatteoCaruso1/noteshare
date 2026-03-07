@@ -198,23 +198,48 @@ export function ShareCalendarSheet({
     try {
       const blob = await generateImage();
       if (!blob) throw new Error('Failed to generate image');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'noteshare-practice-calendar.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('Image saved!');
+
+      // On mobile, use navigator.share to show the native share sheet directly
+      // (avoids the iOS quicklook/preview screen that anchor downloads trigger)
+      if (deviceInfo.isMobile && navigator.share) {
+        const imageFile = new File([blob], 'noteshare-practice-calendar.png', { type: 'image/png' });
+        if (navigator.canShare?.({ files: [imageFile] })) {
+          await navigator.share({ files: [imageFile] });
+          toast.success('Image saved!');
+        } else {
+          // Fallback to anchor download if file sharing not supported
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'noteshare-practice-calendar.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success('Image saved!');
+        }
+      } else {
+        // Desktop: use anchor download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'noteshare-practice-calendar.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('Image saved!');
+      }
     } catch (err) {
-      console.error('Save error:', err);
-      toast.error('Save failed. Please try again.');
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Save error:', err);
+        toast.error('Save failed. Please try again.');
+      }
     } finally {
       setIsExporting(false);
       setActiveButton(null);
     }
-  }, [generateImage, isExporting]);
+  }, [generateImage, isExporting, deviceInfo.isMobile]);
 
   const handleShareMessages = useCallback(async () => {
     if (isExporting) return;
