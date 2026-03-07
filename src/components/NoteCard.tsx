@@ -21,7 +21,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { ApplauseFooter } from '@/components/ApplauseFooter';
-import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ListTodo, Settings, X, Flame, Pencil, Check, Calendar, Share, Play } from 'lucide-react';
+import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ListTodo, Settings, X, Flame, Pencil, Check, Calendar, Share, Play, Zap } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
