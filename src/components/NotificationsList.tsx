@@ -7,7 +7,7 @@ import { PendingGroupInviteCard } from '@/components/PendingGroupInviteCard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Bell, AtSign, Users, Waypoints } from 'lucide-react';
+import { Bell, AtSign, Users, Waypoints, Reply } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -73,6 +73,8 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
         return <Users className="w-4 h-4 text-primary" />;
       case 'group_invite':
         return <Waypoints className="w-4 h-4 text-primary" />;
+      case 'comment_reply':
+        return <Reply className="w-4 h-4 text-primary" />;
       default:
         return <AtSign className="w-4 h-4 text-primary" />;
     }

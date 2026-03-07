@@ -61,12 +61,16 @@ export function useCreateNoteComment() {
       content,
       audioUrl,
       noteOwnerId,
+      parentCommentId,
+      parentCommentAuthorId,
     }: {
       noteId: string;
       authorId: string;
       content: string;
       audioUrl?: string;
       noteOwnerId: string;
+      parentCommentId?: string | null;
+      parentCommentAuthorId?: string | null;
     }) => {
       // Create the comment
       const { data, error } = await supabase
@@ -76,7 +80,8 @@ export function useCreateNoteComment() {
           author_id: authorId,
           content,
           audio_url: audioUrl,
-        })
+          parent_comment_id: parentCommentId || null,
+        } as any)
         .select()
         .single();
 
@@ -94,6 +99,23 @@ export function useCreateNoteComment() {
             user_id: noteOwnerId,
             type: 'comment',
             content: `replied to your note: "${truncatedContent}"`,
+            note_id: noteId,
+            from_user_id: authorId,
+          });
+      }
+
+      // Create notification for parent comment author (reply notification)
+      if (parentCommentId && parentCommentAuthorId && parentCommentAuthorId !== authorId && parentCommentAuthorId !== noteOwnerId) {
+        const truncatedContent = content.length > 50 
+          ? content.substring(0, 50) + '...' 
+          : content;
+        
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: parentCommentAuthorId,
+            type: 'comment_reply',
+            content: `replied to your comment: "${truncatedContent}"`,
             note_id: noteId,
             from_user_id: authorId,
           });

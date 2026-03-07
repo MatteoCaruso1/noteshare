@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
@@ -18,13 +18,105 @@ import { MentionInput, extractMentions } from '@/components/MentionInput';
 import { WaveformPlayer } from '@/components/WaveformPlayer';
 import { VoiceReplyButton } from '@/components/VoiceReplyButton';
 import { CommentText } from '@/components/CommentText';
-import { ArrowLeft, User, Trash2, SendHorizontal } from 'lucide-react';
+import { ArrowLeft, User, Trash2, SendHorizontal, Reply } from 'lucide-react';
 import { ReportButton } from '@/components/ReportButton';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { getSignedUrls } from '@/hooks/useSignedUrl';
 import { useNoteApplause } from '@/hooks/useApplause';
+
+// Extracted CommentCard component for reuse between top-level and reply comments
+function CommentCard({ comment, isOwner, onReply, onDelete, profile, isReply }: {
+  comment: any;
+  isOwner: boolean;
+  onReply: (comment: any) => void;
+  onDelete: (id: string) => void;
+  profile: any;
+  isReply?: boolean;
+}) {
+  return (
+    <Card className={`p-3 bg-background text-foreground border-border ${isReply ? 'border-l-2 border-l-primary/30' : ''}`}>
+      <div className="flex gap-3">
+        <ClickableAvatar
+          profileId={comment.author?.id || comment.author_id}
+          avatar={comment.author?.avatar}
+          name={comment.author?.name}
+          size={isReply ? 'sm' : 'md'}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{comment.author?.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+              </span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              {profile && !isOwner && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-primary"
+                  onClick={() => onReply(comment)}
+                  title="Reply"
+                >
+                  <Reply className="w-3.5 h-3.5" />
+                </Button>
+              )}
+              {!isOwner && (
+                <ReportButton
+                  itemType="comment"
+                  itemId={comment.id}
+                  reportedUserId={comment.author_id}
+                />
+              )}
+              {isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete your comment. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => onDelete(comment.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </div>
+          <p className="text-sm mb-2">
+            <CommentText content={comment.content} />
+          </p>
+          {comment.audio_url && (
+            <WaveformPlayer 
+              src={comment.audio_url} 
+              title={comment.content !== '🎤 Voice reply' ? comment.content : 'Voice Reply'} 
+            />
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 const NoteDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +132,8 @@ const NoteDetail = () => {
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; authorId: string; authorName: string } | null>(null);
+  const commentInputRef = useRef<HTMLDivElement>(null);
   
   const isOwner = profile?.id === note?.author_id;
   
@@ -84,6 +178,40 @@ const NoteDetail = () => {
   // Pre-seed applause cache for this note
   useNoteApplause(id || '');
 
+  // Group comments into top-level and replies client-side
+  const { topLevelComments, repliesByParent } = useMemo(() => {
+    if (!comments) return { topLevelComments: [], repliesByParent: {} as Record<string, typeof comments> };
+    const top: typeof comments = [];
+    const byParent: Record<string, typeof comments> = {};
+    for (const c of comments) {
+      const parentId = (c as any).parent_comment_id;
+      if (!parentId) {
+        top.push(c);
+      } else {
+        if (!byParent[parentId]) byParent[parentId] = [];
+        byParent[parentId].push(c);
+      }
+    }
+    return { topLevelComments: top, repliesByParent: byParent };
+  }, [comments]);
+
+  const handleReply = (comment: { id: string; author_id: string; author?: { name: string } | null }) => {
+    // Flatten: if this comment is itself a reply, reply to its parent instead
+    const parentId = (comment as any).parent_comment_id;
+    const targetId = parentId || comment.id;
+    const targetAuthorName = comment.author?.name || 'user';
+    const targetAuthorId = comment.author_id;
+    setReplyingTo({ id: targetId, authorId: targetAuthorId, authorName: targetAuthorName });
+    // Scroll to and focus the comment input
+    setTimeout(() => {
+      commentInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
   const handleAddComment = async () => {
     if (!profile || !id || !newComment.trim()) return;
     
@@ -92,10 +220,18 @@ const NoteDetail = () => {
     
     // Create comment
     createComment.mutate(
-      { noteId: id, authorId: profile.id, content: newComment, noteOwnerId: note?.author_id || '' },
+      { 
+        noteId: id, 
+        authorId: profile.id, 
+        content: newComment, 
+        noteOwnerId: note?.author_id || '',
+        parentCommentId: replyingTo?.id || null,
+        parentCommentAuthorId: replyingTo?.authorId || null,
+      },
       {
         onSuccess: async () => {
           setNewComment('');
+          setReplyingTo(null);
           
           // Create notifications for mentioned users
           if (mentions.length > 0) {
@@ -208,7 +344,14 @@ const NoteDetail = () => {
           <section className="space-y-3">
             {/* Comment Input */}
             {profile && (
-              <Card className="p-3 bg-background text-foreground border-border">
+              <Card ref={commentInputRef} className="p-3 bg-background text-foreground border-border">
+                {replyingTo && (
+                  <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                    <Reply className="w-3 h-3" />
+                    <span>Replying to <strong className="text-foreground">{replyingTo.authorName}</strong></span>
+                    <button onClick={cancelReply} className="ml-auto text-muted-foreground hover:text-foreground transition-colors text-xs">✕</button>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <ClickableAvatar
                     profileId={profile.id}
@@ -219,7 +362,7 @@ const NoteDetail = () => {
                   />
                   <div className="flex-1">
                     <MentionInput
-                      placeholder="Post a comment"
+                      placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Post a comment"}
                       value={newComment}
                       onChange={setNewComment}
                       rows={1}
@@ -248,81 +391,32 @@ const NoteDetail = () => {
             {/* Comments List */}
             {commentsLoading ? (
               <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>
-            ) : comments && comments.length > 0 ? (
+            ) : topLevelComments.length > 0 ? (
               <div className="space-y-3">
-                {comments.map((comment) => {
-                  const isCommentOwner = profile?.id === comment.author_id;
-                  return (
-                    <Card key={comment.id} className="p-3 bg-background text-foreground border-border">
-                      <div className="flex gap-3">
-                        <ClickableAvatar
-                          profileId={comment.author?.id || comment.author_id}
-                          avatar={comment.author?.avatar}
-                          name={comment.author?.name}
-                          size="md"
+                {topLevelComments.map((comment) => (
+                  <div key={comment.id}>
+                    <CommentCard
+                      comment={comment}
+                      isOwner={profile?.id === comment.author_id}
+                      onReply={handleReply}
+                      onDelete={handleDeleteComment}
+                      profile={profile}
+                    />
+                    {/* Replies */}
+                    {repliesByParent[comment.id]?.map((reply) => (
+                      <div key={reply.id} className="ml-8 mt-2">
+                        <CommentCard
+                          comment={reply}
+                          isOwner={profile?.id === reply.author_id}
+                          onReply={handleReply}
+                          onDelete={handleDeleteComment}
+                          profile={profile}
+                          isReply
                         />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">{comment.author?.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(comment.created_at), 'MMM d, h:mm a')}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-0.5">
-                              {!isCommentOwner && (
-                                <ReportButton
-                                  itemType="comment"
-                                  itemId={comment.id}
-                                  reportedUserId={comment.author_id}
-                                />
-                              )}
-                              {isCommentOwner && (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This will permanently delete your comment. This action cannot be undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleDeleteComment(comment.id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-sm mb-2">
-                            <CommentText content={comment.content} />
-                          </p>
-                          {comment.audio_url && (
-                            <WaveformPlayer 
-                              src={comment.audio_url} 
-                              title={comment.content !== '🎤 Voice reply' ? comment.content : 'Voice Reply'} 
-                            />
-                          )}
-                        </div>
                       </div>
-                    </Card>
-                  );
-                })}
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : null}
           </section>

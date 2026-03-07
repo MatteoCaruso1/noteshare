@@ -636,6 +636,7 @@ export type Database = {
           created_at: string
           id: string
           note_id: string
+          parent_comment_id: string | null
         }
         Insert: {
           audio_url?: string | null
@@ -644,6 +645,7 @@ export type Database = {
           created_at?: string
           id?: string
           note_id: string
+          parent_comment_id?: string | null
         }
         Update: {
           audio_url?: string | null
@@ -652,6 +654,7 @@ export type Database = {
           created_at?: string
           id?: string
           note_id?: string
+          parent_comment_id?: string | null
         }
         Relationships: [
           {
@@ -666,6 +669,13 @@ export type Database = {
             columns: ["note_id"]
             isOneToOne: false
             referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "note_comments"
             referencedColumns: ["id"]
           },
         ]
