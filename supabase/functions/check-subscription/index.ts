@@ -89,7 +89,34 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId, email });
 
-    // Check for developer premium override in dedicated table (no RLS - backend only)
+    // --- Phase 1: Check local DB entitlement (fastest path) ---
+    const { data: entitlement, error: entitlementError } = await supabaseClient
+      .from('user_entitlements')
+      .select('is_pro, pro_type, stripe_customer_id, stripe_subscription_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!entitlementError && entitlement?.is_pro) {
+      logStep("Local entitlement found", { proType: entitlement.pro_type });
+      
+      // For lifetime, return immediately - no need to check Stripe
+      if (entitlement.pro_type === 'lifetime') {
+        return new Response(JSON.stringify({
+          subscribed: true,
+          product_id: 'prod_TtwaOYfMnVypk4', // Lifetime product ID
+          subscription_end: null,
+          is_lifetime: true,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      // For subscriptions, we still verify with Stripe but use entitlement as fast-path indicator
+      // This avoids the expensive orphan session scan
+    }
+
+    // --- Phase 2: Check premium override ---
     logStep("Checking premium override", { userId });
     const { data: override, error: overrideError } = await supabaseClient
       .from('premium_overrides')
@@ -101,7 +128,6 @@ serve(async (req) => {
 
     if (!overrideError && override?.enabled === true) {
       logStep("Developer premium override active", { userId });
-      // Return the REAL premium product_id so frontend isPremium logic works
       return new Response(JSON.stringify({ 
         subscribed: true,
         product_id: 'prod_ToONzcZjkyqsAJ',
