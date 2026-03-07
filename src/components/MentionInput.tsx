@@ -99,6 +99,14 @@ export function MentionInput({ value, onChange, placeholder, rows = 3, className
     }
   };
 
+  // Auto-resize textarea to fit content
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
   return (
     <div className="relative">
       <Textarea
@@ -107,8 +115,9 @@ export function MentionInput({ value, onChange, placeholder, rows = 3, className
         onChange={handleChange}
         onFocus={handleFocus}
         placeholder={placeholder}
-        rows={rows}
-        className={className}
+        rows={1}
+        className={`${className ?? ''} resize-none overflow-hidden`}
+        style={{ minHeight: '2.5rem' }}
       />
       
       {showSuggestions && suggestions.length > 0 && (
