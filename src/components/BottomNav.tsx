@@ -68,7 +68,22 @@ export function BottomNav() {
   const { data: unreadCount } = useUnreadNotificationCount();
   const { overrideActiveRoute } = useBottomNavOverride();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+
+  // Detect PWA standalone mode vs browser
+  useEffect(() => {
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+      setIsStandalone(standalone);
+    };
+    checkStandalone();
+    const mql = window.matchMedia('(display-mode: standalone)');
+    mql.addEventListener('change', checkStandalone);
+    return () => mql.removeEventListener('change', checkStandalone);
+  }, []);
   
   // Optimistic active route - updates immediately on click before navigation completes
   const [optimisticRoute, setOptimisticRoute] = useState<string | null>(null);
@@ -183,7 +198,9 @@ export function BottomNav() {
       ref={navRef}
       data-bottom-nav="true"
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0 max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
+        "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0",
+        // In browser mode on mobile, add extra bottom padding to account for Safari chrome
+        !isStandalone && "max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
         // Hide via transform when keyboard is open (instead of returning null)
         isKeyboardOpen && "translate-y-full pointer-events-none"
       )}
