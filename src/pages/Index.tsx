@@ -33,7 +33,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
   // Track page views for analytics
@@ -161,13 +161,14 @@ const Index = () => {
   // 20-note pro upsell — piggybacks on existing allNotes count, no new queries
   useEffect(() => {
     if (proUpsellFiredRef.current) return;
+    if (premiumLoading) return; // wait for subscription check (incl. premium overrides)
     if (isPremium) return;
     if (notesCount >= 20 && !hasProUpsellBeenShown()) {
       proUpsellFiredRef.current = true;
       markProUpsellShown();
       setProUpsellOpen(true);
     }
-  }, [notesCount, isPremium]);
+  }, [notesCount, isPremium, premiumLoading]);
 
   // Convert projects and gigs to feed items
   const feedItems = useMemo(() => {
