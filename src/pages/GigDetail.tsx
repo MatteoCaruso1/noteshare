@@ -24,6 +24,7 @@ import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { ShareGigSheet } from '@/components/ShareGigSheet';
 import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
+import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 import { toast } from 'sonner';
 
 function useGig(gigId: string | undefined) {
