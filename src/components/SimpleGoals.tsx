@@ -56,7 +56,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const [editText, setEditText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [newGoalText, setNewGoalText] = useState('');
-  const [pendingGoal, setPendingGoal] = useState<string | null>(null);
+  
   
   // Check if weekly goal should be shown
   const showWeeklyGoal = !weeklyLoading && currentWeekGoal && !currentWeekGoal.skipped;
