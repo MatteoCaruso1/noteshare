@@ -119,6 +119,7 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://noteshare.app";
 
     // Create one-time payment session for lifetime access with embedded UI
+    // Include user_id in metadata for deterministic user mapping
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -132,6 +133,10 @@ serve(async (req) => {
       return_url: `${origin}/profile?lifetime=success&session_id={CHECKOUT_SESSION_ID}`,
       payment_method_types: ["card"],
       allow_promotion_codes: true,
+      metadata: {
+        user_id: user.id,
+        email: user.email,
+      },
     });
 
     logStep("Lifetime checkout session created", { 
