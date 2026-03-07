@@ -32,7 +32,7 @@ export interface Profile {
   has_added_first_friend: boolean;
   has_logged_ten_notes: boolean;
   color_theme: string | null;
-  has_seen_pro_upsell: boolean;
+  has_seen_pro_upsell?: boolean;
   created_at: string;
   updated_at: string;
 }
