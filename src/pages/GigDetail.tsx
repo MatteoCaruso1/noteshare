@@ -426,7 +426,7 @@ const GigDetail = () => {
                   className="gap-1 text-xs text-muted-foreground h-8 px-2"
                 >
                   <Bell className="w-4 h-4" />
-                  Remind
+                  Get Reminded
                 </Button>
               )}
               <Button
