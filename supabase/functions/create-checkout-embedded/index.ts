@@ -182,6 +182,7 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://noteshare.app";
 
     // Create checkout session with ui_mode: 'embedded' for embedded checkout
+    // Include user_id in metadata for deterministic user mapping
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -197,6 +198,10 @@ serve(async (req) => {
         : {},
       return_url: `${origin}/profile?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
       payment_method_types: ["card"],
+      metadata: {
+        user_id: user.id,
+        email: user.email,
+      },
     });
 
     logStep("Checkout session created", { 

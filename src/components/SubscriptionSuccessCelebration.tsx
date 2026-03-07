@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { usePremium } from '@/contexts/PremiumContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Simple confetti burst effect
 function ConfettiBurst() {
@@ -63,16 +64,44 @@ export function SubscriptionSuccessCelebration() {
   const { checkSubscription } = usePremium();
 
   useEffect(() => {
-    if (searchParams.get('subscription') === 'success') {
+    const isSubscriptionSuccess = searchParams.get('subscription') === 'success';
+    const isLifetimeSuccess = searchParams.get('lifetime') === 'success';
+    const sessionId = searchParams.get('session_id');
+
+    if ((isSubscriptionSuccess || isLifetimeSuccess) && sessionId) {
+      // Phase 8: Call verify-purchase to handle webhook latency
+      const verifyAndCelebrate = async () => {
+        try {
+          await supabase.functions.invoke('verify-purchase', {
+            body: { session_id: sessionId },
+          });
+        } catch (err) {
+          console.warn('verify-purchase failed, falling back to check-subscription:', err);
+        }
+
+        // Always refresh subscription status
+        await checkSubscription();
+        setShowCelebration(true);
+
+        // Clean up URL
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('subscription');
+        newParams.delete('lifetime');
+        newParams.delete('session_id');
+        setSearchParams(newParams, { replace: true });
+      };
+
+      verifyAndCelebrate();
+    } else if (isSubscriptionSuccess || isLifetimeSuccess) {
+      // No session_id - just refresh normally
       setShowCelebration(true);
-      // Clean up URL after showing
+      checkSubscription();
+      
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('subscription');
+      newParams.delete('lifetime');
       newParams.delete('session_id');
       setSearchParams(newParams, { replace: true });
-      
-      // CRITICAL: Refresh subscription status after successful checkout
-      checkSubscription();
     }
   }, [searchParams, setSearchParams, checkSubscription]);
 
@@ -89,7 +118,7 @@ export function SubscriptionSuccessCelebration() {
             </div>
             <DialogTitle className="text-xl">Welcome to Pro!</DialogTitle>
             <DialogDescription className="text-base">
-              Your 7-day free trial has started. Enjoy unlimited notes, practice stats, and all Pro features!
+              Your Pro access is now active. Enjoy unlimited notes, practice stats, and all Pro features!
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-2">

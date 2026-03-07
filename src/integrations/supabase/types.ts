@@ -899,6 +899,45 @@ export type Database = {
           },
         ]
       }
+      orphan_payments: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          email: string | null
+          id: string
+          resolved: boolean
+          resolved_at: string | null
+          resolved_user_id: string | null
+          stripe_customer_id: string | null
+          stripe_session_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_user_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_session_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_user_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_session_id?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           created_at: string
@@ -1211,6 +1250,45 @@ export type Database = {
           },
         ]
       }
+      purchase_event_log: {
+        Row: {
+          checkout_session_id: string | null
+          created_at: string
+          error_message: string | null
+          event_type: string | null
+          id: string
+          payment_status: string | null
+          processed: boolean
+          stripe_customer_id: string | null
+          stripe_event_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          checkout_session_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_type?: string | null
+          id?: string
+          payment_status?: string | null
+          processed?: boolean
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          checkout_session_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_type?: string | null
+          id?: string
+          payment_status?: string | null
+          processed?: boolean
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
@@ -1238,6 +1316,60 @@ export type Database = {
           reported_item_type?: string
           reported_user_id?: string
           reporter_id?: string
+        }
+        Relationships: []
+      }
+      stripe_processed_events: {
+        Row: {
+          event_id: string
+          processed_at: string
+        }
+        Insert: {
+          event_id: string
+          processed_at?: string
+        }
+        Update: {
+          event_id?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
+      user_entitlements: {
+        Row: {
+          created_at: string
+          id: string
+          is_pro: boolean
+          pro_activated_at: string | null
+          pro_type: string
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_pro?: boolean
+          pro_activated_at?: string | null
+          pro_type?: string
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_pro?: boolean
+          pro_activated_at?: string | null
+          pro_type?: string
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
