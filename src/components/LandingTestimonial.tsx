@@ -26,7 +26,7 @@ export function LandingTestimonial() {
           <span>—</span>
           <span>Practice Smarter</span>
           <span>—</span>
-          <span>Contact: matteo.m.caruso1@gmail.com</span>
+          <span>Contact: notesharemusic@gmail.com</span>
           <span>—</span>
           <span>© 2026 Noteshare</span>
         </p>

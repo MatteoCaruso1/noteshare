@@ -170,7 +170,7 @@ export function HelpTipsDialog() {
             
             <div className="pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground text-center">
-                Questions? Reach out to matteo.m.caruso1@gmail.com
+                Questions? Reach out to notesharemusic@gmail.com
               </p>
             </div>
           </div>
