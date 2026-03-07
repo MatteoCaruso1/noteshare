@@ -235,6 +235,16 @@ const GigDetail = () => {
   const deleteGig = useDeletePromoPost();
   const createReminder = useCreateGigReminder();
 
+  // Check where we came from for proper bottom nav highlighting
+  const fromFriends = location.state?.fromFriends;
+
+  useEffect(() => {
+    if (fromFriends) {
+      setOverrideActiveRoute('/friends');
+    }
+    return () => setOverrideActiveRoute(undefined);
+  }, [fromFriends, setOverrideActiveRoute]);
+
   // Scroll to top instantly on mount
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
