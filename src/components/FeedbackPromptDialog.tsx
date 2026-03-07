@@ -9,16 +9,6 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { FeedbackDialog } from './FeedbackDialog';
 
-const FEEDBACK_PROMPT_KEY = 'noteshare_feedback_prompt_shown_v1';
-
-export function hasFeedbackPromptBeenShown(): boolean {
-  return localStorage.getItem(FEEDBACK_PROMPT_KEY) === 'true';
-}
-
-export function markFeedbackPromptShown(): void {
-  localStorage.setItem(FEEDBACK_PROMPT_KEY, 'true');
-}
-
 interface FeedbackPromptDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
-const SHARE_EDUCATION_KEY = 'noteshare_share_education_completed';
 const SHARE_EDUCATION_TRIGGER_COUNT = 7;
 
 interface ShareEducationContextType {
@@ -22,24 +22,6 @@ export function ShareEducationProvider({ children }: { children: ReactNode }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [noteIdToShow, setNoteIdToShow] = useState<string | null>(null);
 
-  // Check if user has completed share education
-  const hasCompletedShareEducation = useCallback((userId: string) => {
-    try {
-      const completed = localStorage.getItem(`${SHARE_EDUCATION_KEY}_${userId}`);
-      return completed === 'true';
-    } catch {
-      return false;
-    }
-  }, []);
-
-  const markShareEducationCompleted = useCallback((userId: string) => {
-    try {
-      localStorage.setItem(`${SHARE_EDUCATION_KEY}_${userId}`, 'true');
-    } catch {
-      // Ignore storage errors
-    }
-  }, []);
-
   const startShareEducation = useCallback((noteId: string) => {
     setNoteIdToShow(noteId);
     setCurrentStep(0);
@@ -48,15 +30,15 @@ export function ShareEducationProvider({ children }: { children: ReactNode }) {
 
   const completeShareEducation = useCallback(() => {
     if (profile?.id) {
-      markShareEducationCompleted(profile.id);
+      // Persist in DB — fire and forget
+      supabase.from('profiles').update({ has_seen_share_education: true }).eq('id', profile.id).then(() => {});
     }
     setShowShareEducation(false);
     setCurrentStep(0);
     setNoteIdToShow(null);
-  }, [profile?.id, markShareEducationCompleted]);
+  }, [profile?.id]);
 
   const nextStep = useCallback(() => {
-    // Steps: 0 = intro message, 1 = click note, 2 = click share, 3 = show options, 4 = final
     if (currentStep >= 4) {
       completeShareEducation();
     } else {
@@ -67,12 +49,11 @@ export function ShareEducationProvider({ children }: { children: ReactNode }) {
   // Check if we should trigger the share education (after 7th note)
   const checkAndTrigger = useCallback((noteId: string, totalNoteCount: number) => {
     if (!profile?.id) return;
-    if (hasCompletedShareEducation(profile.id)) return;
+    if (profile.has_seen_share_education) return;
     if (totalNoteCount !== SHARE_EDUCATION_TRIGGER_COUNT) return;
     
-    // Trigger the education flow
     startShareEducation(noteId);
-  }, [profile?.id, hasCompletedShareEducation, startShareEducation]);
+  }, [profile?.id, profile?.has_seen_share_education, startShareEducation]);
 
   return (
     <ShareEducationContext.Provider
@@ -97,14 +78,4 @@ export function useShareEducation() {
     throw new Error('useShareEducation must be used within a ShareEducationProvider');
   }
   return context;
-}
-
-// Helper to check if user has completed share education (for external use)
-export function checkShareEducationCompleted(userId: string): boolean {
-  try {
-    const completed = localStorage.getItem(`${SHARE_EDUCATION_KEY}_${userId}`);
-    return completed === 'true';
-  } catch {
-    return false;
-  }
 }
