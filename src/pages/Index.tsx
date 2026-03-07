@@ -147,16 +147,18 @@ const Index = () => {
     );
   }, [notes, acceptedSharedNotes]);
 
-  // 20-note feedback prompt — piggybacks on existing allNotes count, no new queries
+  // 20-note feedback prompt — uses profile flag (persisted in DB)
   const notesCount = allNotes.length;
   useEffect(() => {
     if (feedbackPromptFiredRef.current) return;
-    if (notesCount >= 20 && !hasFeedbackPromptBeenShown()) {
+    if (!profile) return;
+    if (profile.has_seen_feedback_prompt) return;
+    if (notesCount >= 20) {
       feedbackPromptFiredRef.current = true;
-      markFeedbackPromptShown();
+      supabase.from('profiles').update({ has_seen_feedback_prompt: true }).eq('id', profile.id).then(() => {});
       setFeedbackPromptOpen(true);
     }
-  }, [notesCount]);
+  }, [notesCount, profile]);
 
   // 20-note pro upsell — uses profile flag (persisted in DB, survives app updates)
   useEffect(() => {
