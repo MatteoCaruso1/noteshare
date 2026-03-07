@@ -53,7 +53,7 @@ export function ProUpsellDialog({ open, onOpenChange }: ProUpsellDialogProps) {
               There is so much more to Noteshare
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              For the price of 1/5th a music lesson, improve your practice quality forever and help me sustain indie development 💙. Thank you!
+              For a fraction of the cost of a music lesson, improve your practice quality forever and help me sustain indie development 💙. Thank you!
             </p>
           </div>
 
