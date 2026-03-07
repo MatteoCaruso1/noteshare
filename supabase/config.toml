@@ -52,3 +52,6 @@ verify_jwt = false
 
 [functions.verify-purchase]
 verify_jwt = false
+
+[functions.reconcile-stripe-entitlements]
+verify_jwt = false
