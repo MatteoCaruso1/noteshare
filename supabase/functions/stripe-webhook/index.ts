@@ -543,3 +543,41 @@ async function recordOrphanPayment(
     currency: params.currency,
   });
 }
+
+// Resolve a Supabase user ID from a Stripe customer ID
+async function resolveUserFromCustomer(
+  stripe: Stripe,
+  supabase: ReturnType<typeof createClient>,
+  stripeCustomerId: string
+): Promise<string | null> {
+  // 1. Check user_entitlements table first (fastest)
+  const { data: entitlement } = await supabase
+    .from('user_entitlements')
+    .select('user_id')
+    .eq('stripe_customer_id', stripeCustomerId)
+    .maybeSingle();
+
+  if (entitlement?.user_id) return entitlement.user_id;
+
+  // 2. Check Stripe customer metadata
+  try {
+    const customer = await stripe.customers.retrieve(stripeCustomerId);
+    if (!customer.deleted) {
+      if (customer.metadata?.supabase_user_id) {
+        return customer.metadata.supabase_user_id;
+      }
+      // 3. Fall back to email lookup
+      if (customer.email) {
+        const { data: userData } = await supabase.auth.admin.listUsers();
+        const matched = userData?.users?.find(
+          (u: { email?: string }) => u.email?.toLowerCase() === customer.email!.toLowerCase()
+        );
+        if (matched) return matched.id;
+      }
+    }
+  } catch (e) {
+    logStep("resolveUserFromCustomer failed", { error: String(e) });
+  }
+
+  return null;
+}
