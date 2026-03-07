@@ -203,16 +203,22 @@ serve(async (req) => {
         // Check if user has lifetime - don't revoke if so
         const { data: entitlement } = await supabase
           .from('user_entitlements')
-          .select('pro_type')
+          .select('pro_type, user_id')
           .eq('stripe_customer_id', stripeCustomerId)
           .maybeSingle();
 
         if (entitlement && entitlement.pro_type !== 'lifetime') {
-          await supabase
-            .from('user_entitlements')
-            .update({ is_pro: false, updated_at: new Date().toISOString() })
-            .eq('stripe_customer_id', stripeCustomerId);
-          logStep("Subscription entitlement revoked", { stripeCustomerId });
+          // Check premium override before revoking
+          const hasOverride = await hasPremiumOverride(supabase, entitlement.user_id);
+          if (hasOverride) {
+            logStep("Skipping revocation — user has premium override", { userId: entitlement.user_id });
+          } else {
+            await supabase
+              .from('user_entitlements')
+              .update({ is_pro: false, updated_at: new Date().toISOString() })
+              .eq('stripe_customer_id', stripeCustomerId);
+            logStep("Subscription entitlement revoked", { stripeCustomerId });
+          }
         }
       }
 
@@ -285,16 +291,22 @@ serve(async (req) => {
         // Check if this customer has a lifetime entitlement — revoke it
         const { data: entitlement } = await supabase
           .from('user_entitlements')
-          .select('pro_type, is_pro')
+          .select('pro_type, is_pro, user_id')
           .eq('stripe_customer_id', stripeCustomerId)
           .maybeSingle();
 
         if (entitlement?.is_pro && entitlement.pro_type === 'lifetime') {
-          await supabase
-            .from('user_entitlements')
-            .update({ is_pro: false, updated_at: new Date().toISOString() })
-            .eq('stripe_customer_id', stripeCustomerId);
-          logStep("Lifetime entitlement revoked due to full refund", { stripeCustomerId });
+          // Check premium override before revoking
+          const hasOverride = await hasPremiumOverride(supabase, entitlement.user_id);
+          if (hasOverride) {
+            logStep("Skipping refund revocation — user has premium override", { userId: entitlement.user_id });
+          } else {
+            await supabase
+              .from('user_entitlements')
+              .update({ is_pro: false, updated_at: new Date().toISOString() })
+              .eq('stripe_customer_id', stripeCustomerId);
+            logStep("Lifetime entitlement revoked due to full refund", { stripeCustomerId });
+          }
         }
       }
 
@@ -580,4 +592,18 @@ async function resolveUserFromCustomer(
   }
 
   return null;
+}
+
+// Check if a user has a premium override that should prevent revocation
+async function hasPremiumOverride(
+  supabase: ReturnType<typeof createClient>,
+  userId: string
+): Promise<boolean> {
+  const { data: override } = await supabase
+    .from('premium_overrides')
+    .select('enabled')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  return override?.enabled === true;
 }
