@@ -593,3 +593,17 @@ async function resolveUserFromCustomer(
 
   return null;
 }
+
+// Check if a user has a premium override that should prevent revocation
+async function hasPremiumOverride(
+  supabase: ReturnType<typeof createClient>,
+  userId: string
+): Promise<boolean> {
+  const { data: override } = await supabase
+    .from('premium_overrides')
+    .select('enabled')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  return override?.enabled === true;
+}
