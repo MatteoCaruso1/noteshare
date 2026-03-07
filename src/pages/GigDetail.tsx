@@ -416,14 +416,28 @@ const GigDetail = () => {
             ) : undefined
           }
           headerActions={
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsShareOpen(true)}
-              aria-label="Share gig"
-            >
-              <Share className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {canSetReminder && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSetReminder}
+                  disabled={createReminder.isPending}
+                  className="gap-1 text-xs text-muted-foreground h-8 px-2"
+                >
+                  <Bell className="w-4 h-4" />
+                  Remind
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsShareOpen(true)}
+                aria-label="Share gig"
+              >
+                <Share className="w-5 h-5" />
+              </Button>
+            </div>
           }
         />
       </PageHeader>
