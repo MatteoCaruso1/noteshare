@@ -87,11 +87,50 @@ export function useCreateGoal() {
       if (error) throw error;
       return data;
     },
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['goals'] });
+      
+      // Snapshot previous value
+      const previousGoals = queryClient.getQueryData(['goals', variables.userId]);
+      
+      // Optimistically add the new goal
+      const optimisticGoal = {
+        id: `temp-${Date.now()}`,
+        user_id: variables.userId,
+        goal_type: variables.goalType,
+        title: variables.title,
+        content: variables.title,
+        description: variables.description || null,
+        target_date: variables.targetDate || null,
+        progress_type: variables.progressType,
+        target_steps: variables.targetSteps ?? 1,
+        target_minutes: variables.targetMinutes ?? 0,
+        current_steps: 0,
+        current_minutes: 0,
+        is_completed: false,
+        completed_at: null,
+        reflection: null,
+        priority: 999,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      queryClient.setQueryData(['goals', variables.userId], (old: Goal[] | undefined) => {
+        return [...(old || []), optimisticGoal as unknown as Goal];
+      });
+      
+      return { previousGoals };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       toast.success('Goal created!');
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousGoals) {
+        queryClient.setQueryData(['goals', variables.userId], context.previousGoals);
+      }
       console.error('Error creating goal:', error);
       toast.error('Failed to create goal');
     },
