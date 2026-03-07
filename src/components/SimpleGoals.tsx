@@ -269,7 +269,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         )}
 
-        {activeGoals.length === 0 && !isAdding && !pendingGoal && !showWeeklyGoal && (
+        {activeGoals.length === 0 && !isAdding && !showWeeklyGoal && (
           <p className="text-sm text-muted-foreground animate-fade-in">No goals yet. Click + to add one.</p>
         )}
       </div>
