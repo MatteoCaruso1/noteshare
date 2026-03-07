@@ -252,7 +252,14 @@ const NoteDetail = () => {
           <section className="space-y-3">
             {/* Comment Input */}
             {profile && (
-              <Card className="p-3 bg-background text-foreground border-border">
+              <Card ref={commentInputRef} className="p-3 bg-background text-foreground border-border">
+                {replyingTo && (
+                  <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                    <Reply className="w-3 h-3" />
+                    <span>Replying to <strong className="text-foreground">{replyingTo.authorName}</strong></span>
+                    <button onClick={cancelReply} className="ml-auto text-muted-foreground hover:text-foreground transition-colors text-xs">✕</button>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <ClickableAvatar
                     profileId={profile.id}
@@ -263,7 +270,7 @@ const NoteDetail = () => {
                   />
                   <div className="flex-1">
                     <MentionInput
-                      placeholder="Post a comment"
+                      placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Post a comment"}
                       value={newComment}
                       onChange={setNewComment}
                       rows={1}
@@ -292,81 +299,32 @@ const NoteDetail = () => {
             {/* Comments List */}
             {commentsLoading ? (
               <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>
-            ) : comments && comments.length > 0 ? (
+            ) : topLevelComments.length > 0 ? (
               <div className="space-y-3">
-                {comments.map((comment) => {
-                  const isCommentOwner = profile?.id === comment.author_id;
-                  return (
-                    <Card key={comment.id} className="p-3 bg-background text-foreground border-border">
-                      <div className="flex gap-3">
-                        <ClickableAvatar
-                          profileId={comment.author?.id || comment.author_id}
-                          avatar={comment.author?.avatar}
-                          name={comment.author?.name}
-                          size="md"
+                {topLevelComments.map((comment) => (
+                  <div key={comment.id}>
+                    <CommentCard
+                      comment={comment}
+                      isOwner={profile?.id === comment.author_id}
+                      onReply={handleReply}
+                      onDelete={handleDeleteComment}
+                      profile={profile}
+                    />
+                    {/* Replies */}
+                    {repliesByParent[comment.id]?.map((reply) => (
+                      <div key={reply.id} className="ml-8 mt-2">
+                        <CommentCard
+                          comment={reply}
+                          isOwner={profile?.id === reply.author_id}
+                          onReply={handleReply}
+                          onDelete={handleDeleteComment}
+                          profile={profile}
+                          isReply
                         />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">{comment.author?.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(comment.created_at), 'MMM d, h:mm a')}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-0.5">
-                              {!isCommentOwner && (
-                                <ReportButton
-                                  itemType="comment"
-                                  itemId={comment.id}
-                                  reportedUserId={comment.author_id}
-                                />
-                              )}
-                              {isCommentOwner && (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This will permanently delete your comment. This action cannot be undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleDeleteComment(comment.id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-sm mb-2">
-                            <CommentText content={comment.content} />
-                          </p>
-                          {comment.audio_url && (
-                            <WaveformPlayer 
-                              src={comment.audio_url} 
-                              title={comment.content !== '🎤 Voice reply' ? comment.content : 'Voice Reply'} 
-                            />
-                          )}
-                        </div>
                       </div>
-                    </Card>
-                  );
-                })}
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : null}
           </section>
