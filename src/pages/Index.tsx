@@ -25,7 +25,7 @@ import { GlintProvider } from '@/contexts/GlintContext';
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
-import { FeedbackPromptDialog, hasFeedbackPromptBeenShown, markFeedbackPromptShown } from '@/components/FeedbackPromptDialog';
+import { FeedbackPromptDialog } from '@/components/FeedbackPromptDialog';
 import { ProUpsellDialog } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 
