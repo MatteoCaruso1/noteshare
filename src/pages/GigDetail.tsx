@@ -238,6 +238,11 @@ const GigDetail = () => {
   const updateGig = useUpdatePromoPost();
   const deleteGig = useDeletePromoPost();
   const createReminder = useCreateGigReminder();
+  const { data: gigComments, isLoading: commentsLoading } = useGigComments(id);
+  const createGigComment = useCreateGigComment();
+  const deleteGigComment = useDeleteGigComment();
+  const [newComment, setNewComment] = useState('');
+  const { useCreateNotification } = require('@/hooks/useNotifications');
 
   // Check where we came from for proper bottom nav highlighting
   const fromFriends = location.state?.fromFriends;
