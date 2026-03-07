@@ -7,7 +7,7 @@ import { PendingGroupInviteCard } from '@/components/PendingGroupInviteCard';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
-import { Bell, AtSign, Users, Waypoints } from 'lucide-react';
+import { Bell, AtSign, Users, Waypoints, Reply } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
