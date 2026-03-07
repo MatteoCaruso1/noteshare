@@ -43,7 +43,9 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
     if (notification.type === 'session_share' || notification.type === 'group_invite') {
       return;
     }
-    if (notification.note_id) {
+    if (notification.gig_id) {
+      navigate(`/gigs/${notification.gig_id}`);
+    } else if (notification.note_id) {
       navigate(`/notes/${notification.note_id}`, { state: { fromFriends: true } });
     }
   };
