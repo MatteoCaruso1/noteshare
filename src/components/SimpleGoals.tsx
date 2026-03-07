@@ -116,7 +116,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const isActive = isAdding || editingId !== null;
   
   // Calculate next goal number (weekly goal comes after custom goals)
-  const weeklyGoalNumber = activeGoals.length + (pendingGoal ? 1 : 0) + 1;
+  const weeklyGoalNumber = activeGoals.length + 1;
 
   // Show loading skeleton with stable min-height to prevent layout shifts
   if (isLoading) {
