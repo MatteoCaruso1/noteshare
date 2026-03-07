@@ -40,6 +40,8 @@ const NoteDetail = () => {
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; authorId: string; authorName: string } | null>(null);
+  const commentInputRef = useRef<HTMLDivElement>(null);
   
   const isOwner = profile?.id === note?.author_id;
   
