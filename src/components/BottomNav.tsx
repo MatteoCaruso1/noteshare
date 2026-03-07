@@ -68,7 +68,22 @@ export function BottomNav() {
   const { data: unreadCount } = useUnreadNotificationCount();
   const { overrideActiveRoute } = useBottomNavOverride();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+
+  // Detect PWA standalone mode vs browser
+  useEffect(() => {
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+      setIsStandalone(standalone);
+    };
+    checkStandalone();
+    const mql = window.matchMedia('(display-mode: standalone)');
+    mql.addEventListener('change', checkStandalone);
+    return () => mql.removeEventListener('change', checkStandalone);
+  }, []);
   
   // Optimistic active route - updates immediately on click before navigation completes
   const [optimisticRoute, setOptimisticRoute] = useState<string | null>(null);
