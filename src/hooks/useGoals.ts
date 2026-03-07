@@ -122,7 +122,15 @@ export function useCreateGoal() {
       
       return { previousGoals };
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Replace optimistic entry with real data to avoid pulsation
+      if (data) {
+        queryClient.setQueryData(['goals', variables.userId], (old: Goal[] | undefined) => {
+          if (!old) return [data as unknown as Goal];
+          return old.map(g => g.id.startsWith('temp-') ? (data as unknown as Goal) : g);
+        });
+      }
+      // Background refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['goals'] });
       toast.success('Goal created!');
     },

@@ -56,7 +56,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const [editText, setEditText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [newGoalText, setNewGoalText] = useState('');
-  const [pendingGoal, setPendingGoal] = useState<string | null>(null);
+  
   
   // Check if weekly goal should be shown
   const showWeeklyGoal = !weeklyLoading && currentWeekGoal && !currentWeekGoal.skipped;
@@ -90,7 +90,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const handleAddGoal = () => {
     if (newGoalText.trim() && activeGoals.length < MAX_GOALS) {
       const goalText = newGoalText.trim();
-      setPendingGoal(goalText);
       setNewGoalText('');
       setIsAdding(false);
       createGoal.mutate({
@@ -98,8 +97,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
         goalType: 'long-term',
         title: goalText,
         progressType: 'checkbox',
-      }, {
-        onSettled: () => setPendingGoal(null),
       });
     }
   };
@@ -119,7 +116,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
   const isActive = isAdding || editingId !== null;
   
   // Calculate next goal number (weekly goal comes after custom goals)
-  const weeklyGoalNumber = activeGoals.length + (pendingGoal ? 1 : 0) + 1;
+  const weeklyGoalNumber = activeGoals.length + 1;
 
   // Show loading skeleton with stable min-height to prevent layout shifts
   if (isLoading) {
@@ -204,17 +201,6 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         ))}
 
-        {/* Optimistic pending goal */}
-        {pendingGoal && (
-          <div className="flex items-start gap-2 opacity-60 animate-fade-in">
-            <span className="w-5 text-muted-foreground text-xs font-semibold flex-shrink-0 flex items-center justify-center pt-0.5">
-              {activeGoals.length + 1}.
-            </span>
-            <span className="text-sm flex-1 whitespace-pre-wrap break-words">
-              {pendingGoal}
-            </span>
-          </div>
-        )}
         
         {isAdding && (
           <div className="flex items-start gap-2 animate-fade-in">
@@ -283,7 +269,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
           </div>
         )}
 
-        {activeGoals.length === 0 && !isAdding && !pendingGoal && !showWeeklyGoal && (
+        {activeGoals.length === 0 && !isAdding && !showWeeklyGoal && (
           <p className="text-sm text-muted-foreground animate-fade-in">No goals yet. Click + to add one.</p>
         )}
       </div>
