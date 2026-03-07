@@ -186,7 +186,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <svg width="12" height="4" className="inline-block">
-                    <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(var(--destructive))" strokeWidth="1.5" strokeDasharray="3 2" />
+                    <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(270 60% 65%)" strokeWidth="1.5" strokeDasharray="3 2" />
                   </svg>
                   <span className="text-[10px] text-muted-foreground">All Time Avg</span>
                 </div>
@@ -228,7 +228,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                     <Line 
                       type="monotone" 
                       dataKey="avgHours" 
-                      stroke="hsl(var(--destructive))" 
+                      stroke="hsl(270 60% 65%)" 
                       strokeWidth={1.5}
                       strokeDasharray="6 3"
                       dot={false}
