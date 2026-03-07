@@ -33,7 +33,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, isLoading: premiumLoading } = usePremium();
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
   // Track page views for analytics
