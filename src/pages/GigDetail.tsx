@@ -444,21 +444,6 @@ const GigDetail = () => {
 
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-          {/* Get Reminded Button - only show for future gigs without reminder set */}
-          {canSetReminder && (
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSetReminder}
-                disabled={createReminder.isPending}
-                className="gap-2"
-              >
-                <Bell className="w-4 h-4" />
-                Get Reminded
-              </Button>
-            </div>
-          )}
           {/* Gig Details Card - show if there's content or owner can edit */}
           {(gig.event_date || gig.description || (gig.links && gig.links.length > 0) || isOwner) && (
             <Card className="p-4 bg-card border-border">
