@@ -416,35 +416,34 @@ const GigDetail = () => {
             ) : undefined
           }
           headerActions={
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsShareOpen(true)}
-              aria-label="Share gig"
-            >
-              <Share className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {canSetReminder && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSetReminder}
+                  disabled={createReminder.isPending}
+                  className="gap-1 text-xs text-muted-foreground h-8 px-2"
+                >
+                  <Bell className="w-4 h-4" />
+                  Remind
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsShareOpen(true)}
+                aria-label="Share gig"
+              >
+                <Share className="w-5 h-5" />
+              </Button>
+            </div>
           }
         />
       </PageHeader>
 
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
-          {/* Get Reminded Button - only show for future gigs without reminder set */}
-          {canSetReminder && (
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSetReminder}
-                disabled={createReminder.isPending}
-                className="gap-2"
-              >
-                <Bell className="w-4 h-4" />
-                Get Reminded
-              </Button>
-            </div>
-          )}
           {/* Gig Details Card - show if there's content or owner can edit */}
           {(gig.event_date || gig.description || (gig.links && gig.links.length > 0) || isOwner) && (
             <Card className="p-4 bg-card border-border">
