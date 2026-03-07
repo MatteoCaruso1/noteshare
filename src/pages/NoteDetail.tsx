@@ -26,6 +26,98 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getSignedUrls } from '@/hooks/useSignedUrl';
 import { useNoteApplause } from '@/hooks/useApplause';
 
+// Extracted CommentCard component for reuse between top-level and reply comments
+function CommentCard({ comment, isOwner, onReply, onDelete, profile, isReply }: {
+  comment: any;
+  isOwner: boolean;
+  onReply: (comment: any) => void;
+  onDelete: (id: string) => void;
+  profile: any;
+  isReply?: boolean;
+}) {
+  return (
+    <Card className={`p-3 bg-background text-foreground border-border ${isReply ? 'border-l-2 border-l-primary/30' : ''}`}>
+      <div className="flex gap-3">
+        <ClickableAvatar
+          profileId={comment.author?.id || comment.author_id}
+          avatar={comment.author?.avatar}
+          name={comment.author?.name}
+          size={isReply ? 'sm' : 'md'}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{comment.author?.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+              </span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              {profile && !isOwner && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-primary"
+                  onClick={() => onReply(comment)}
+                  title="Reply"
+                >
+                  <Reply className="w-3.5 h-3.5" />
+                </Button>
+              )}
+              {!isOwner && (
+                <ReportButton
+                  itemType="comment"
+                  itemId={comment.id}
+                  reportedUserId={comment.author_id}
+                />
+              )}
+              {isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete your comment. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => onDelete(comment.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </div>
+          <p className="text-sm mb-2">
+            <CommentText content={comment.content} />
+          </p>
+          {comment.audio_url && (
+            <WaveformPlayer 
+              src={comment.audio_url} 
+              title={comment.content !== '🎤 Voice reply' ? comment.content : 'Voice Reply'} 
+            />
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 const NoteDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
