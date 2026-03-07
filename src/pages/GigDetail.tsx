@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdatePromoPost, useDeletePromoPost } from '@/hooks/usePromoPosts';
+import { useGigComments, useCreateGigComment, useDeleteGigComment } from '@/hooks/useGigComments';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { NoteCard } from '@/components/NoteCard';
 import { Card } from '@/components/ui/card';
@@ -19,7 +20,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
 import { InlineEditableDescription } from '@/components/shared/InlineEditableDescription';
-import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share, Plus } from 'lucide-react';
+import { ClickableAvatar } from '@/components/ClickableAvatar';
+import { MentionInput, extractMentions } from '@/components/MentionInput';
+import { CommentText } from '@/components/CommentText';
+import { Music2, Calendar, ExternalLink, DollarSign, Trash2, Bell, Share, Plus, SendHorizontal } from 'lucide-react';
 import { format, addDays, addWeeks, isBefore, isAfter } from 'date-fns';
 import { ShareGigSheet } from '@/components/ShareGigSheet';
 import { formatLocalDateTime } from '@/lib/utils';
@@ -234,6 +238,10 @@ const GigDetail = () => {
   const updateGig = useUpdatePromoPost();
   const deleteGig = useDeletePromoPost();
   const createReminder = useCreateGigReminder();
+  const { data: gigComments, isLoading: commentsLoading } = useGigComments(id);
+  const createGigComment = useCreateGigComment();
+  const deleteGigComment = useDeleteGigComment();
+  const [newComment, setNewComment] = useState('');
 
   // Check where we came from for proper bottom nav highlighting
   const fromFriends = location.state?.fromFriends;
@@ -346,6 +354,19 @@ const GigDetail = () => {
 
   // Always use history back to return to the previous page with its state preserved
   const useHistoryBack = true;
+
+  const handleAddGigComment = () => {
+    if (!profile || !id || !newComment.trim() || !gig) return;
+    createGigComment.mutate(
+      { gigId: id, authorId: profile.id, content: newComment, gigOwnerId: gig.author_id },
+      { onSuccess: () => setNewComment('') }
+    );
+  };
+
+  const handleDeleteGigComment = (commentId: string) => {
+    if (!id) return;
+    deleteGigComment.mutate({ commentId, gigId: id });
+  };
 
   const handleAddNote = (data: {
     textContent?: string;
@@ -522,6 +543,112 @@ const GigDetail = () => {
               ) : null}
             </section>
           ) : null}
+
+          {/* Comments Section */}
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">Comments</h2>
+
+            {/* Comment Input */}
+            {profile && (
+              <Card className="p-3 bg-background text-foreground border-border">
+                <div className="flex items-center gap-3">
+                  <ClickableAvatar
+                    profileId={profile.id}
+                    avatar={profile.avatar}
+                    name={profile.name}
+                    size="md"
+                    className="flex-shrink-0"
+                  />
+                  <div className="flex-1">
+                    <MentionInput
+                      placeholder="Post a comment..."
+                      value={newComment}
+                      onChange={setNewComment}
+                      rows={1}
+                      className="resize-none text-sm min-h-[36px] rounded-md border border-input bg-background px-3 py-2 w-full"
+                    />
+                  </div>
+                  <Button
+                    size="icon"
+                    className="h-9 w-9 bg-gradient-primary text-primary-foreground"
+                    onClick={handleAddGigComment}
+                    disabled={createGigComment.isPending || !newComment.trim()}
+                    title="Post comment"
+                  >
+                    <SendHorizontal className="w-4 h-4" />
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {/* Comments List */}
+            {commentsLoading ? (
+              <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>
+            ) : gigComments && gigComments.length > 0 ? (
+              <div className="space-y-3">
+                {gigComments.map((comment) => {
+                  const canDelete = profile?.id === comment.author_id || isOwner;
+                  return (
+                    <Card key={comment.id} className="p-3 bg-background text-foreground border-border">
+                      <div className="flex gap-3">
+                        <ClickableAvatar
+                          profileId={comment.author?.id || comment.author_id}
+                          avatar={comment.author?.avatar}
+                          name={comment.author?.name}
+                          size="md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{comment.author?.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+                              </span>
+                            </div>
+                            {canDelete && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete this comment.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteGigComment(comment.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                          <p className="text-sm">
+                            <CommentText content={comment.content} />
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No comments yet. Be the first!</p>
+            )}
+          </section>
         </main>
       </PageBody>
 

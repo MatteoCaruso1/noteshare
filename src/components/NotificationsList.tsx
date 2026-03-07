@@ -76,6 +76,7 @@ export function NotificationsList({ embedded }: NotificationsListProps = {}) {
       case 'group_invite':
         return <Waypoints className="w-4 h-4 text-primary" />;
       case 'comment_reply':
+      case 'gig_comment':
         return <Reply className="w-4 h-4 text-primary" />;
       default:
         return <AtSign className="w-4 h-4 text-primary" />;
