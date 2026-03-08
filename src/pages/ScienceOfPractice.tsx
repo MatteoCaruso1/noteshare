@@ -96,7 +96,7 @@ const ScienceOfPractice = () => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Target, title: 'Consistency', desc: 'Daily focused practice beats occasional long sessions. Small, regular effort compounds into significant progress.' },
+              { icon: Target, title: 'Consistency', desc: 'Daily, focused practice beats occasional long sessions.' },
               { icon: Brain, title: 'Deliberate Focus', desc: 'Practice specific skills intentionally rather than just playing through pieces. Target your weaknesses directly.' },
               { icon: BookOpen, title: 'Reflection', desc: 'Recording observations after practice helps reinforce learning and reveals patterns you might otherwise miss.' },
               { icon: TrendingUp, title: 'Progress Tracking', desc: 'Seeing improvement over time increases motivation and gives clear direction for future sessions.' },
