@@ -45,7 +45,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState(false);
 
   // Handle OAuth callback and password recovery tokens
   useEffect(() => {
@@ -218,9 +217,9 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
-        // Don't navigate or start onboarding — email confirmation is required first.
-        // The FTUE will trigger automatically when the user confirms and signs in.
-        setSignupSuccess(true);
+        // With email confirmations disabled, signup creates an immediate session.
+        // The onAuthStateChange listener will fire SIGNED_IN and navigate to /.
+        // The FTUE triggers automatically via isNewUser detection in OnboardingContext.
       } else {
         await signIn(email, password, rememberMe);
         // Check for profile redirect (from shared profile link)
@@ -255,34 +254,6 @@ const Auth = () => {
   };
 
   const title = getTitle();
-
-  // Show confirmation screen after email signup
-  if (signupSuccess) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-            <Music className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">Check your email</h2>
-          <p className="text-muted-foreground text-sm">
-            We've sent a confirmation link to <strong className="text-foreground">{email}</strong>. 
-            Click the link to activate your account and start practicing.
-          </p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => {
-              setSignupSuccess(false);
-              setMode('signin');
-            }}
-          >
-            Back to sign in
-          </Button>
-        </Card>
-      </div>
-    );
-  }
 
   // Show loading state while processing OAuth
   if (oauthProcessing) {
