@@ -355,18 +355,28 @@ const Profile = () => {
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Instruments</p>
                   <div className="flex flex-wrap gap-2">
-                    {INSTRUMENTS.map(instrument => (
-                      <Badge 
-                        key={instrument} 
-                        variant={instruments.includes(instrument) ? 'default' : 'secondary'} 
-                        className="cursor-pointer"
-                        data-selected={instruments.includes(instrument) ? "true" : undefined}
-                        onClick={() => toggleInstrument(instrument)}
-                        onTouchEnd={(e) => e.currentTarget.blur()}
-                      >
-                        {instrument}
-                      </Badge>
-                    ))}
+                    {INSTRUMENTS.map(instrument => {
+                      const isSelected = instruments.includes(instrument);
+                      return (
+                        <Badge 
+                          key={instrument} 
+                          variant={isSelected ? 'default' : 'secondary'} 
+                          className="cursor-pointer touch-manipulation select-none [-webkit-tap-highlight-color:transparent]"
+                          data-selected={isSelected ? "true" : undefined}
+                          onClick={() => toggleInstrument(instrument)}
+                          onTouchEnd={(e) => e.currentTarget.blur()}
+                          style={isSelected ? {
+                            backgroundColor: 'hsl(var(--primary))',
+                            color: 'hsl(var(--primary-foreground))',
+                          } : {
+                            backgroundColor: 'hsl(var(--secondary))',
+                            color: 'hsl(var(--secondary-foreground))',
+                          }}
+                        >
+                          {instrument}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
 
