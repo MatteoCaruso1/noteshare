@@ -35,7 +35,6 @@ const GoogleIcon = () => (
 const Auth = () => {
   const { signIn, signUp, resetPassword, user } = useAuth();
   const navigate = useNavigate();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'update-password'>('signin');
   const [email, setEmail] = useState('');
