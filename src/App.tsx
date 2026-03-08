@@ -190,6 +190,7 @@ function AppInner() {
                         </AdminGuard>
                       } />
                       <Route path="/qr" element={<Suspense fallback={null}><QRCodePage /></Suspense>} />
+                      <Route path="/science-of-practice" element={<Suspense fallback={null}><ScienceOfPractice /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />

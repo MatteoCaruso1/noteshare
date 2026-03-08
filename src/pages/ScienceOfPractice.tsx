@@ -195,7 +195,7 @@ const ScienceOfPractice = () => {
           <ul className="space-y-3 mb-10">
             {[
               'Reinforces consistency by making streaks visible',
-              'Builds awareness of what's actually improving',
+              'Builds awareness of what is actually improving',
               'Prevents repeating the same mistakes session after session',
               'Creates long-term visibility into your musical growth',
             ].map((item) => (
