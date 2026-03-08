@@ -29,21 +29,7 @@ const ScienceOfPractice = () => {
 
   return (
     <div className="min-h-screen dark" style={{ background: 'hsl(222 47% 11%)' }}>
-      {/* Top nav bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-4" style={{ background: 'hsl(222 47% 11% / 0.9)', backdropFilter: 'blur(12px)' }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link to="/welcome" className="text-lg font-semibold" style={{ color: 'hsl(210 40% 98%)' }}>
-            noteshare
-          </Link>
-          <Button
-            size="sm"
-            onClick={handleCTA}
-            className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-semibold">
-            
-            Start practicing
-          </Button>
-        </div>
-      </nav>
+      {/* Uses global AppHeader */}
 
       {/* Hero */}
       <section className="relative pt-32 pb-20 px-6 md:px-12">
