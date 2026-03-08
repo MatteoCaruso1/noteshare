@@ -220,15 +220,9 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
-        startOnboarding();
-        // Check for profile redirect (from shared profile link)
-        const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
-        if (profileRedirect) {
-          // Don't navigate yet - onboarding will handle redirect after FTUE
-          navigate('/');
-        } else {
-          navigate('/');
-        }
+        // Don't navigate or start onboarding — email confirmation is required first.
+        // The FTUE will trigger automatically when the user confirms and signs in.
+        setSignupSuccess(true);
       } else {
         await signIn(email, password, rememberMe);
         // Check for profile redirect (from shared profile link)
