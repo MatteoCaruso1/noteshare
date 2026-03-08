@@ -524,7 +524,7 @@ export function PracticeControls() {
             const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
             
             // Resolve focus data: use hook data first, fall back to localStorage cache
-            const focusData = attachFocus ? (currentFocus || readFocusCache()) : null;
+            const focusData = attachFocus ? (currentFocus || readFocusCache(user?.id)) : null;
             
             createNote.mutate(
               {
