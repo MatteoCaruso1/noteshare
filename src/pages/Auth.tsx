@@ -150,7 +150,7 @@ const Auth = () => {
       
       // If signed in and not processing OAuth or updating password, redirect
       if (event === 'SIGNED_IN' && session && !oauthProcessing && mode !== 'update-password') {
-        navigate('/');
+        navigate('/', { replace: true });
       }
     });
 
