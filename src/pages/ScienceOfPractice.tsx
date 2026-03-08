@@ -65,7 +65,7 @@ const ScienceOfPractice = () => {
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-8" style={{ color: 'hsl(210 40% 98%)' }}>
-            Why Most Practice Doesn't Lead to Improvement
+            Why Not All Practice Leads to Improvement
           </h2>
           <p className="text-base leading-relaxed mb-6" style={{ color: 'hsl(215 16% 56%)' }}>
             Many musicians spend hours practicing but still feel stuck. The problem isn't effort — it's the absence of structure. Without a clear approach, practice becomes repetition without growth.
