@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Target, Brain, BookOpen, TrendingUp, Clock, CheckCircle2, Music, Lightbulb } from 'lucide-react';
+import { Target, Brain, BookOpen, TrendingUp, Clock, CheckCircle2, Music, Lightbulb, ClipboardList } from 'lucide-react';
 
 const ScienceOfPractice = () => {
   const { user } = useAuth();
