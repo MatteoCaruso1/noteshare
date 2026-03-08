@@ -190,20 +190,21 @@ export function TodaysFocus() {
   // Helper to update localStorage cache immediately with current text
   const updateLocalCache = useCallback((value: string) => {
     try {
-      const raw = localStorage.getItem(FOCUS_CACHE_KEY);
+      const scopedKey = getFocusCacheKey(user?.id);
+      const raw = localStorage.getItem(scopedKey);
       if (raw) {
         const cached = JSON.parse(raw);
         cached.focus_text = value;
-        localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify(cached));
+        localStorage.setItem(scopedKey, JSON.stringify(cached));
       } else if (focus) {
         // Create cache entry from current focus data with updated text
-        localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify({
+        localStorage.setItem(scopedKey, JSON.stringify({
           ...focus,
           focus_text: value,
         }));
       }
     } catch { /* ignore */ }
-  }, [focus]);
+  }, [focus, user?.id]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {

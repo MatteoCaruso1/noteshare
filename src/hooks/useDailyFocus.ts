@@ -133,7 +133,7 @@ export function useTodaysFocus() {
     staleTime: 30 * 1000, // 30s — ensures cross-device edits sync quickly
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
-    placeholderData: () => readFocusCache(),
+    placeholderData: () => readFocusCache(userId),
   });
 
   // Persist to localStorage whenever fresh data arrives
