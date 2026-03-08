@@ -64,7 +64,7 @@ const ScienceOfPractice = () => {
             Why Not All Practice Leads to Improvement
           </h2>
           <p className="text-base leading-relaxed mb-6" style={{ color: 'hsl(215 16% 56%)' }}>
-            Many musicians spend hours practicing but still feel stuck. The problem isn't effort — it's the absence of structure. Without a clear approach, practice becomes repetition without growth.
+            Many musicians spend hours practicing but still feel stuck. Research from both Florida State University and University of Melbourne tell us that lack of structure and deliberate goal setting are key inhibitors to musical growth. Common issues include...
           </p>
           <ul className="space-y-3 mb-8">
             {[
