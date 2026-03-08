@@ -11,6 +11,7 @@ import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
 import { usePremium } from '@/contexts/PremiumContext';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
