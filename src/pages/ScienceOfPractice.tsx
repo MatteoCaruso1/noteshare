@@ -80,8 +80,7 @@ const ScienceOfPractice = () => {
             ))}
           </ul>
           <p className="text-base leading-relaxed" style={{ color: 'hsl(215 20% 65%)' }}>
-            Improvement in music is rarely about practicing more.<br />
-            It's about practicing with structure and reflection.
+            The research is clear - musicians who set specific practice goals and reflect on sessions improve significantly faster than those who simply play through pieces.
           </p>
         </div>
       </section>
