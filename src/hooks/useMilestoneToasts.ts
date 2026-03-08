@@ -48,8 +48,8 @@ export function useMilestoneToasts() {
           return;
         }
         showMilestoneToast(
-          'First practice logged.',
-          'This is how progress begins.',
+          'First practice logged!',
+          'Your first step to practicing smarter',
         );
         await refreshProfile();
       }
