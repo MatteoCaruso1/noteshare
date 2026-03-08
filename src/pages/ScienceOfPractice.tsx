@@ -57,9 +57,6 @@ const ScienceOfPractice = () => {
             >
               Start tracking your practice
             </Button>
-            <Link to="/welcome" className="text-sm font-medium underline underline-offset-4" style={{ color: 'hsl(198 93% 59%)' }}>
-              Learn about Noteshare
-            </Link>
           </div>
         </div>
       </section>
