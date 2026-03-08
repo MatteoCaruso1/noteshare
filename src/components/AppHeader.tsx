@@ -66,7 +66,7 @@ export function AppHeader() {
   const isOnWelcomePage = location.pathname === '/welcome' || location.pathname === '/science-of-practice' || (location.pathname === '/' && !user);
   
   // Don't show on auth page
-  if (location.pathname === '/auth') {
+  if (location.pathname === '/auth' || location.pathname === '/science-of-practice') {
     return null;
   }
 
