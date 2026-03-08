@@ -259,9 +259,9 @@ const Index = () => {
               {isBootstrapping ? (
                 <>
                   {/* Skeleton placeholders that reserve space during auth bootstrapping */}
-                  <Skeleton className="h-[60px] w-full rounded-lg" />
-                  <Skeleton className="h-[60px] w-full rounded-lg" />
-                  <Skeleton className="h-[120px] w-full rounded-lg" />
+                  <div className="h-[60px] w-full rounded-lg bg-muted/30 animate-pulse" />
+                  <div className="h-[60px] w-full rounded-lg bg-muted/30 animate-pulse" />
+                  <div className="h-[120px] w-full rounded-lg bg-muted/30 animate-pulse" />
                 </>
               ) : (
                 <>
