@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { clearScrollState } from '@/hooks/useScrollRestoration';
 
 // Check if the app is running as a PWA (standalone mode)
 const isStandaloneMode = () => {
