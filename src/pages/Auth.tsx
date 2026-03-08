@@ -79,9 +79,9 @@ const Auth = () => {
             const profileRedirectOAuth = localStorage.getItem('noteshare_profile_redirect');
             if (profileRedirectOAuth) {
               localStorage.removeItem('noteshare_profile_redirect');
-              navigate(`/profile/${profileRedirectOAuth}`);
+              navigate(`/profile/${profileRedirectOAuth}`, { replace: true });
             } else {
-              navigate('/');
+              navigate('/', { replace: true });
             }
             return;
           }
@@ -150,7 +150,7 @@ const Auth = () => {
       
       // If signed in and not processing OAuth or updating password, redirect
       if (event === 'SIGNED_IN' && session && !oauthProcessing && mode !== 'update-password') {
-        navigate('/');
+        navigate('/', { replace: true });
       }
     });
 
@@ -164,7 +164,7 @@ const Auth = () => {
 
   // Redirect if already logged in (but not in password update mode)
   if (user && mode !== 'update-password' && !oauthProcessing) {
-    navigate('/');
+    navigate('/', { replace: true });
     return null;
   }
 
@@ -191,7 +191,7 @@ const Auth = () => {
         toast.error(error.message);
       } else {
         toast.success('Password updated successfully!');
-        navigate('/');
+        navigate('/', { replace: true });
       }
     } catch (error) {
       toast.error('Failed to update password');
@@ -226,9 +226,9 @@ const Auth = () => {
         const profileRedirectLogin = localStorage.getItem('noteshare_profile_redirect');
         if (profileRedirectLogin) {
           localStorage.removeItem('noteshare_profile_redirect');
-          navigate(`/profile/${profileRedirectLogin}`);
+          navigate(`/profile/${profileRedirectLogin}`, { replace: true });
         } else {
-          navigate('/');
+          navigate('/', { replace: true });
         }
       }
     } catch (error) {
