@@ -63,7 +63,7 @@ export function AppHeader() {
   }, [activeSession]);
   
   // Check if on welcome/landing page - include "/" for non-logged-in users
-  const isOnWelcomePage = location.pathname === '/welcome' || (location.pathname === '/' && !user);
+  const isOnWelcomePage = location.pathname === '/welcome' || location.pathname === '/science-of-practice' || (location.pathname === '/' && !user);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
@@ -109,7 +109,30 @@ export function AppHeader() {
               </span>
             </div>
           </Link>
-          
+          {isOnWelcomePage && (
+            <nav className="hidden sm:flex items-center gap-1 ml-6">
+              <Link
+                to="/welcome"
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  location.pathname === '/welcome' || (location.pathname === '/' && !user)
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                to="/science-of-practice"
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  location.pathname === '/science-of-practice'
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Science of Practice
+              </Link>
+            </nav>
+          )}
         </div>
         
         {/* Timer & Streak Indicator - fade out on welcome page, EXEMPT from session focus dimming */}
