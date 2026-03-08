@@ -279,7 +279,7 @@ const ScienceOfPractice = () => {
               },
               {
                 q: 'How can beginners practice more effectively?',
-                a: 'Beginners benefit most from short, structured sessions — even 15–20 minutes — with a clear goal for each one. Breaking practice into small focused blocks, taking brief notes after each session, and reviewing progress weekly helps build strong habits early and prevents the frustration of aimless repetition.',
+                a: 'Beginners benefit most from short, structured sessions, even 15–20 minutes, with a clear goal for each one. Breaking practice into small focused blocks, taking brief notes after each session, and reviewing progress weekly helps build strong habits early and prevents the frustration of aimless repetition.',
               },
             ].map(({ q, a }, i) => (
               <AccordionItem
