@@ -191,7 +191,7 @@ const Auth = () => {
         toast.error(error.message);
       } else {
         toast.success('Password updated successfully!');
-        navigate('/');
+        navigate('/', { replace: true });
       }
     } catch (error) {
       toast.error('Failed to update password');
