@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Target, Brain, BookOpen, TrendingUp, Clock, CheckCircle2, Music, Lightbulb } from 'lucide-react';
+import { Target, Brain, BookOpen, TrendingUp, Clock, CheckCircle2, Music, Lightbulb, ClipboardList } from 'lucide-react';
 
 const ScienceOfPractice = () => {
   const { user } = useAuth();
@@ -228,12 +228,12 @@ const ScienceOfPractice = () => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 text-left">
             {[
-              { icon: Clock, label: 'Log practice sessions with a built-in timer' },
-              { icon: BookOpen, label: 'Write quick practice notes and reflections' },
-              { icon: Target, label: 'Organize daily focus areas' },
+              { icon: Clock, label: 'Log practice sessions' },
+              { icon: BookOpen, label: 'Write practice notes and reflections' },
+              { icon: ClipboardList, label: 'Set musical goals' },
               { icon: TrendingUp, label: 'Track consistency with streaks and stats' },
               { icon: Brain, label: 'Reflect on progress over time' },
-              { icon: Music, label: 'Capture audio and video during practice' },
+              { icon: Music, label: 'Capture audio during practice' },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-start gap-3 p-4 rounded-lg" style={{ background: 'hsl(217 32% 15%)' }}>
                 <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'hsl(198 93% 59%)' }} />
