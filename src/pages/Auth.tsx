@@ -164,7 +164,7 @@ const Auth = () => {
 
   // Redirect if already logged in (but not in password update mode)
   if (user && mode !== 'update-password' && !oauthProcessing) {
-    navigate('/');
+    navigate('/', { replace: true });
     return null;
   }
 
