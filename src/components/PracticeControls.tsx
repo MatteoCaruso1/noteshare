@@ -818,7 +818,7 @@ export function PracticeControls() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text && !readFocusCache(user?.id) ? 'invisible' : ''}`}
+                    className="flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none"
                     data-no-hover-reset
                     onTouchEnd={(e) => { e.currentTarget.blur(); }}
                   >
