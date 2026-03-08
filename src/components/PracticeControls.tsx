@@ -92,7 +92,7 @@ function getTodayLocalDate(): string {
 }
 
 export function PracticeControls() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const queryClient = useQueryClient();
   const { data: activeSession, isPending: isSessionPending } = useActiveSession(profile?.id);
   const { data: projects } = useProjects();
