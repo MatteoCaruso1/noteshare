@@ -415,8 +415,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         description: "Viewing linked projects, gigs, and goals is available for Pro users.",
         action: (
           <button
-            onClick={openPremiumDialog}
-            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            onClick={() => setTimeout(openPremiumDialog, 150)}
+            onTouchEnd={(e) => { e.currentTarget.blur(); }}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground active:bg-primary/90 transition-colors touch-manipulation [-webkit-tap-highlight-color:transparent]"
           >
             See Pro
           </button>
