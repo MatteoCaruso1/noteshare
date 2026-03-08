@@ -212,7 +212,7 @@ const ScienceOfPractice = () => {
             </div>
           </div>
           <p className="text-sm leading-relaxed mt-6" style={{ color: 'hsl(215 16% 50%)' }}>
-            Over weeks and months, a practice log becomes a powerful record of improvement — one that helps you see growth that daily practice can make invisible.
+            Over weeks and months, a practice log becomes a powerful record of improvement.
           </p>
         </div>
       </section>
