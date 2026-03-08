@@ -1,31 +1,69 @@
 
 
-## Problem Diagnosis
+# Per-Audio Privacy Toggle
 
-The bug is in `src/pages/Auth.tsx` lines 220-229. After email signup:
+## Overview
+Add a toggle on each audio file item that lets users mark individual recordings as public or private. Private recordings are hidden from friends even if the post itself is shared. The owner always sees all their own recordings.
 
-```typescript
-await signUp(email, password, name);
-startOnboarding();  // ← triggers FTUE overlay immediately
-navigate('/');       // ← sends user to home, but they're NOT signed in
+## Database Change
+
+Add a `private_audio_indices` column to the `notes` table -- an integer array storing the indices of audio files the user has marked private. This avoids a new table and keeps the data co-located with existing audio arrays.
+
+```sql
+ALTER TABLE public.notes
+ADD COLUMN private_audio_indices integer[] NOT NULL DEFAULT '{}';
 ```
 
-Email signup requires email confirmation, so after `signUp()` succeeds the user has **no session**. But the code immediately starts the onboarding tour and navigates to `/`, which renders the landing page (since there's no auth). The user sees the FTUE overlaid on the landing page, gets navigated around by the spotlight tour without being authenticated, and can never log in because their email isn't confirmed yet.
+No new RLS policies needed -- existing notes UPDATE policy already restricts to owner only.
 
-Google OAuth works because it creates a confirmed session immediately.
+## UI Changes
 
-## Fix
+### 1. Trash button styling (AudioFileItem.tsx)
+- Change from `variant="outline"` to `variant="ghost"` with explicit `border border-border` class and `bg-transparent` to get a white/transparent outline-only look.
 
-**1. `src/pages/Auth.tsx`** — After email signup, do NOT start onboarding or navigate. Instead, show a confirmation screen telling the user to check their email. The `isNewUser` detection in `useAuth` (profile age < 30s on `SIGNED_IN` event) will naturally trigger the FTUE when they confirm and sign in for the first time.
+### 2. Privacy toggle in AudioFileItem
+- Add a new prop `isPrivate: boolean` and `onTogglePrivacy: () => void`
+- Render a compact toggle to the left of the trash button: `Users` icon (public) on left, `Lock` icon (private) on right, with a `Switch` component between them
+- Toast on every flip: "Recording set to private" / "Recording set to public"
 
-- Remove `startOnboarding()` call after signup
-- Remove `navigate('/')` after signup
-- Set a new state `signupSuccess` to show a "Check your email" confirmation UI
-- Change the success toast from "Welcome to Noteshare!" to "Check your email to confirm your account"
+### 3. NoteCard.tsx -- owner viewing
+- When rendering audio files, pass `isPrivate` and `onTogglePrivacy` to `AudioFileItem` (edit mode) or show a small lock icon on `WaveformPlayer` entries (display mode)
+- Create a new mutation hook `useUpdateNotePrivateAudios` that updates `private_audio_indices` on the note
 
-**2. `src/hooks/useAuth.tsx`** — Update the `signUp` toast message to say "Check your email to confirm your account" instead of "Welcome to Noteshare!"
+### 4. NoteCard.tsx -- friend viewing (filtering)
+- When `!isOwner`, filter out audio files whose index is in `note.private_audio_indices` before rendering
+- Also filter the corresponding `audio_file_names` entries
+- This is a pure client-side filter with zero extra queries
 
-**3. `src/contexts/OnboardingContext.tsx`** — Add a guard: only trigger onboarding if user actually has a session (is authenticated). This prevents any edge case where onboarding fires without auth.
+### 5. FriendsFeed / other views
+- The same filtering applies anywhere `NoteCard` is rendered for non-owner notes, since the logic lives inside `NoteCard` itself
 
-These changes are minimal and won't affect the Google OAuth flow, which already works correctly via the `isNewUser` detection path.
+### 6. Hook: useUpdateNotePrivateAudios (in useUpdateNote.ts)
+- Simple mutation: updates `private_audio_indices` on the note
+- Optimistic update on `['note', noteId]` and `['notes']`
+- Invalidates `['notes']`, `['friends-notes']`, `['note']`
+
+## Data Flow
+- `notes.private_audio_indices` stores `[1, 3]` meaning audio at index 1 and 3 are private
+- Default is `[]` (all public)
+- Owner toggles an index: if present, remove it (make public); if absent, add it (make private)
+- Friends see `note.audio_files.filter((_, i) => !privateSet.has(i))`
+
+## Performance
+- No new queries, no new tables, no new RLS policies
+- Single column added to existing `notes` rows (already fetched)
+- Client-side index filtering is O(n) where n = number of audio files per note (typically 1-3)
+- Toggle mutation is a single UPDATE on one row
+
+## Files Modified
+1. `src/components/AudioFileItem.tsx` -- trash button style + privacy toggle UI
+2. `src/hooks/useUpdateNote.ts` -- new `useUpdateNotePrivateAudios` mutation
+3. `src/components/NoteCard.tsx` -- wire toggle for owner, filter for friends
+4. `src/types/index.ts` -- add `private_audio_indices` to Note type (if not auto-generated)
+5. Database migration -- add column
+
+## What Won't Change
+- QuickNoteCapture, AddNoteDialog, GroupPostCapture -- these are pre-save UIs where audio privacy isn't relevant yet (defaults to public)
+- No changes to RLS, storage, or edge functions
+- No changes to how audio files are uploaded or stored
 

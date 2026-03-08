@@ -8,7 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useOnboarding } from '@/contexts/OnboardingContext';
 import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
 
 // Google icon component
@@ -35,7 +34,6 @@ const GoogleIcon = () => (
 
 const Auth = () => {
   const { signIn, signUp, resetPassword, user } = useAuth();
-  const { startOnboarding } = useOnboarding();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'update-password'>('signin');
@@ -47,6 +45,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   // Handle OAuth callback and password recovery tokens
   useEffect(() => {
@@ -219,15 +218,9 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
-        startOnboarding();
-        // Check for profile redirect (from shared profile link)
-        const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
-        if (profileRedirect) {
-          // Don't navigate yet - onboarding will handle redirect after FTUE
-          navigate('/');
-        } else {
-          navigate('/');
-        }
+        // Don't navigate or start onboarding — email confirmation is required first.
+        // The FTUE will trigger automatically when the user confirms and signs in.
+        setSignupSuccess(true);
       } else {
         await signIn(email, password, rememberMe);
         // Check for profile redirect (from shared profile link)
@@ -262,6 +255,34 @@ const Auth = () => {
   };
 
   const title = getTitle();
+
+  // Show confirmation screen after email signup
+  if (signupSuccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 text-center space-y-4">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+            <Music className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Check your email</h2>
+          <p className="text-muted-foreground text-sm">
+            We've sent a confirmation link to <strong className="text-foreground">{email}</strong>. 
+            Click the link to activate your account and start practicing.
+          </p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => {
+              setSignupSuccess(false);
+              setMode('signin');
+            }}
+          >
+            Back to sign in
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   // Show loading state while processing OAuth
   if (oauthProcessing) {

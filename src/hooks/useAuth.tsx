@@ -210,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
 
-    toast.success('Welcome to Noteshare!');
+    toast.success('Check your email to confirm your account');
   };
 
   const signIn = async (email: string, password: string, rememberMe: boolean = true) => {

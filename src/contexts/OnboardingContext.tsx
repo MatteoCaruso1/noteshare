@@ -49,8 +49,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   // Auto-trigger onboarding for truly new users (detected via profile creation time)
+  // Guard: only trigger if user is actually authenticated (has a profile with user_id)
   useEffect(() => {
-    if (isNewUser && profile?.id) {
+    if (isNewUser && profile?.id && profile?.user_id) {
       if (!profile.has_completed_onboarding) {
         console.log('[Onboarding] New user detected, starting onboarding');
         startOnboarding();
