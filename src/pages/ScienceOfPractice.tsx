@@ -88,9 +88,12 @@ const ScienceOfPractice = () => {
       {/* Section 2 — Four Principles */}
       <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-12 text-center" style={{ color: 'hsl(210 40% 98%)' }}>
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-2 text-center" style={{ color: 'hsl(210 40% 98%)' }}>
             Four Principles Behind Effective Practice
           </h2>
+          <p className="text-base mb-12 text-center" style={{ color: 'hsl(215 16% 56%)' }}>
+            Leveraging research insights from Gary E. McPherson — University of Melbourne
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: Target, title: 'Consistency', desc: 'Daily focused practice beats occasional long sessions. Small, regular effort compounds into significant progress.' },
