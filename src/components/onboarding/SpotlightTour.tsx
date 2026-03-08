@@ -99,20 +99,27 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     return false;
   }, [currentTourStep, step]);
 
+  // Aggressively scroll to top — multiple attempts to overcome Safari's async scroll restoration
+  const forceScrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
   useEffect(() => {
     // For final step, navigate to My Practice first and scroll to top
     if (isFinalStep) {
-      const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       if (location.pathname !== '/') {
         setIsNavigating(true);
         navigate('/');
       }
       // Multiple scroll attempts to overcome Safari's async scroll restoration
-      scrollToTop();
-      setTimeout(scrollToTop, 100);
-      setTimeout(scrollToTop, 300);
+      forceScrollToTop();
+      setTimeout(forceScrollToTop, 50);
+      setTimeout(forceScrollToTop, 150);
+      setTimeout(forceScrollToTop, 300);
       setTimeout(() => {
-        scrollToTop();
+        forceScrollToTop();
         setIsNavigating(false);
       }, 500);
       setTargetRect(null);
@@ -124,24 +131,35 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       setIsNavigating(true);
       setIsAnimating(true);
       navigate(currentTourStep.navigateTo);
-      // Scroll to top immediately after navigation to prevent Safari from restoring scroll
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      forceScrollToTop();
       return;
     }
 
     setIsAnimating(true);
     
     let resizeObserver: ResizeObserver | null = null;
+    let retryCount = 0;
+    const maxRetries = 30; // 3 seconds max
     
     // Wait for navigation/DOM to settle, then find the element
     const findElement = () => {
-      // Ensure we're at the top before measuring (Safari can restore scroll asynchronously)
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      // Force scroll to top before every measurement attempt
+      forceScrollToTop();
       
       const found = updateTargetRect();
       if (found && currentTourStep) {
         setIsNavigating(false);
         setTimeout(() => setIsAnimating(false), 350);
+        
+        // Re-measure after a short delay to catch late layout shifts
+        setTimeout(() => {
+          forceScrollToTop();
+          updateTargetRect();
+        }, 200);
+        setTimeout(() => {
+          forceScrollToTop();
+          updateTargetRect();
+        }, 500);
         
         // Watch for layout changes (collapsible opening, content loading)
         const el = document.querySelector(currentTourStep.targetSelector);
@@ -151,15 +169,17 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           });
           resizeObserver.observe(el);
         }
-      } else {
-        // Element not found yet, retry
+      } else if (retryCount < maxRetries) {
+        retryCount++;
         setTimeout(findElement, 100);
       }
     };
 
-    // Use requestAnimationFrame for smoother animation sync
+    // Force scroll to top immediately, then again after a frame, then find element
+    forceScrollToTop();
     requestAnimationFrame(() => {
-      setTimeout(findElement, 100);
+      forceScrollToTop();
+      setTimeout(findElement, 150);
     });
 
     // Update on scroll/resize
@@ -171,7 +191,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       window.removeEventListener('resize', updateTargetRect);
       resizeObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect, forceScrollToTop]);
 
   const handleClick = () => {
     if (isFadingOut) return; // Prevent double-tap during transition
