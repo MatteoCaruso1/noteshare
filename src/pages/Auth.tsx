@@ -79,9 +79,9 @@ const Auth = () => {
             const profileRedirectOAuth = localStorage.getItem('noteshare_profile_redirect');
             if (profileRedirectOAuth) {
               localStorage.removeItem('noteshare_profile_redirect');
-              navigate(`/profile/${profileRedirectOAuth}`);
+              navigate(`/profile/${profileRedirectOAuth}`, { replace: true });
             } else {
-              navigate('/');
+              navigate('/', { replace: true });
             }
             return;
           }
