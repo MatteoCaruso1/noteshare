@@ -55,8 +55,9 @@ export function PracticeTimer({ className }: PracticeTimerProps) {
         description: "Practice Timer is available for Pro users.",
         action: (
           <button
-            onClick={openPremiumDialog}
-            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            onClick={() => setTimeout(openPremiumDialog, 150)}
+            onTouchEnd={(e) => { e.currentTarget.blur(); }}
+            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground active:bg-primary/90 transition-colors touch-manipulation [-webkit-tap-highlight-color:transparent]"
           >
             See Pro
           </button>
