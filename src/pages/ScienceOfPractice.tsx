@@ -40,7 +40,7 @@ const ScienceOfPractice = () => {
             The Science of Effective Music Practice
           </h1>
           <p className="text-xl md:text-2xl leading-relaxed mb-4" style={{ color: 'hsl(215 20% 65%)' }}>
-            Why some musicians improve rapidly while others stay stuck for years.
+            Why some musicians improve rapidly while others stay stuck.
           </p>
           <p className="text-lg leading-relaxed mb-4" style={{ color: 'hsl(215 16% 56%)' }}>
             Effective practice isn't about talent.<br />
