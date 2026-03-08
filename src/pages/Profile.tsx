@@ -383,18 +383,28 @@ const Profile = () => {
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Genres</p>
                   <div className="flex flex-wrap gap-2">
-                    {GENRES.map(genre => (
-                      <Badge 
-                        key={genre} 
-                        variant={genres.includes(genre) ? 'default' : 'secondary'} 
-                        className="cursor-pointer"
-                        data-selected={genres.includes(genre) ? "true" : undefined}
-                        onClick={() => toggleGenre(genre)}
-                        onTouchEnd={(e) => e.currentTarget.blur()}
-                      >
-                        {genre}
-                      </Badge>
-                    ))}
+                    {GENRES.map(genre => {
+                      const isSelected = genres.includes(genre);
+                      return (
+                        <Badge 
+                          key={genre} 
+                          variant={isSelected ? 'default' : 'secondary'} 
+                          className="cursor-pointer touch-manipulation select-none [-webkit-tap-highlight-color:transparent]"
+                          data-selected={isSelected ? "true" : undefined}
+                          onClick={() => toggleGenre(genre)}
+                          onTouchEnd={(e) => e.currentTarget.blur()}
+                          style={isSelected ? {
+                            backgroundColor: 'hsl(var(--primary))',
+                            color: 'hsl(var(--primary-foreground))',
+                          } : {
+                            backgroundColor: 'hsl(var(--secondary))',
+                            color: 'hsl(var(--secondary-foreground))',
+                          }}
+                        >
+                          {genre}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
