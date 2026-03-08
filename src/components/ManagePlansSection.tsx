@@ -84,9 +84,9 @@ export function ManagePlansSection() {
             onClick={handleSwitchPlan}
             variant={isPremium ? 'outline' : 'hero'}
             className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
-            disabled={isLoading}
+            disabled={isLoading || isPortalLoading}
           >
-            {isPremium ? 'Manage Subscription' : 'Upgrade to Pro'}
+            {isPortalLoading ? 'Opening…' : isPremium ? 'Manage Subscription' : 'Upgrade to Pro'}
           </Button>
         )}
 
