@@ -68,10 +68,11 @@ const ScienceOfPractice = () => {
           </p>
           <ul className="space-y-3 mb-8">
             {[
-              'Practicing without a clear goal for the session',
-              'Repeating pieces without focusing on specific weaknesses',
-              'Forgetting what was worked on in previous sessions',
-              'Inconsistent practice habits that prevent compounding progress',
+              'Sitting down to practice without a clear objective',
+              'Practicing what already feels comfortable instead of targeting weaknesses',
+              'Losing track of what was practiced the day before',
+              'Having no way to see improvement over time',
+              'Trying to improve too many things at once in a single session',
             ].map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'hsl(198 93% 59%)' }} />
