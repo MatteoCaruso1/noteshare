@@ -9,20 +9,21 @@ import { toast } from 'sonner';
 
 export function ManagePlansSection() {
   const { isPremium, openPremiumDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   const handleSwitchPlan = async () => {
     if (isPremium) {
-      // Lifetime users shouldn't see this button, but guard anyway
       if (isLifetime) return;
       
-      // Premium subscriber wants to manage - open Stripe portal
+      setIsPortalLoading(true);
       try {
         await openCustomerPortal();
       } catch (error) {
         console.error('Failed to open customer portal:', error);
+        toast.error('Could not open subscription manager. Please try again.');
+        setIsPortalLoading(false);
       }
     } else {
-      // Free user wants to upgrade - open checkout dialog
       openPremiumDialog();
     }
   };
