@@ -47,6 +47,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   // Handle OAuth callback and password recovery tokens
   useEffect(() => {
