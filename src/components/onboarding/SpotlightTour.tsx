@@ -131,15 +131,26 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
     setIsAnimating(true);
     
+    let resizeObserver: ResizeObserver | null = null;
+    
     // Wait for navigation/DOM to settle, then find the element
     const findElement = () => {
       // Ensure we're at the top before measuring (Safari can restore scroll asynchronously)
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       
       const found = updateTargetRect();
-      if (found) {
+      if (found && currentTourStep) {
         setIsNavigating(false);
         setTimeout(() => setIsAnimating(false), 350);
+        
+        // Watch for layout changes (collapsible opening, content loading)
+        const el = document.querySelector(currentTourStep.targetSelector);
+        if (el) {
+          resizeObserver = new ResizeObserver(() => {
+            updateTargetRect();
+          });
+          resizeObserver.observe(el);
+        }
       } else {
         // Element not found yet, retry
         setTimeout(findElement, 100);
@@ -158,6 +169,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     return () => {
       window.removeEventListener('scroll', updateTargetRect, true);
       window.removeEventListener('resize', updateTargetRect);
+      resizeObserver?.disconnect();
     };
   }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect]);
 
