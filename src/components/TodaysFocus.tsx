@@ -59,13 +59,13 @@ export function TodaysFocus() {
     return 0;
   }, []);
 
-  // Initialize text from focus data - only once on initial load
+  // Re-hydrate local UI state from user-scoped cache on auth user changes
   useEffect(() => {
-    if (!isInitialized && focus?.focus_text !== undefined) {
-      setText(focus.focus_text);
-      setIsInitialized(true);
-    }
-  }, [focus?.focus_text, isInitialized]);
+    const cached = readFocusCache(user?.id);
+    setText(cached?.focus_text || '');
+    setIsInitialized(!!cached);
+    setHasChanges(false);
+  }, [user?.id]);
 
   // Sync fresh DB data to local state when it arrives (cross-device sync)
   // Only update if user is NOT actively editing (no pending changes)
