@@ -8,7 +8,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
-import { useCurrentFocusEntry, FOCUS_CACHE_KEY, readFocusCache } from '@/hooks/useDailyFocus';
+import { useCurrentFocusEntry, readFocusCache } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';

@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useTodaysFocus, FOCUS_CACHE_KEY } from '@/hooks/useDailyFocus';
+import { useTodaysFocus, readFocusCache, getFocusCacheKey } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
 import { usePremium } from '@/contexts/PremiumContext';
