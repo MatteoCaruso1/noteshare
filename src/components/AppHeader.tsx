@@ -119,7 +119,7 @@ export function AppHeader() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Science of Practice
+                Science of Effective Practice
               </Link>
             </nav>
           )}
