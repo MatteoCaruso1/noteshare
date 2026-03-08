@@ -130,6 +130,7 @@ serve(async (req) => {
       ],
       mode: "payment",
       ui_mode: "embedded",
+      redirect_on_completion: "if_required",
       return_url: `${origin}/profile?lifetime=success&session_id={CHECKOUT_SESSION_ID}`,
       payment_method_types: ["card"],
       allow_promotion_codes: true,
