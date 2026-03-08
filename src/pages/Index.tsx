@@ -11,6 +11,7 @@ import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
 import { usePremium } from '@/contexts/PremiumContext';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
 import { Timeline } from '@/components/Timeline';
@@ -255,20 +256,31 @@ const Index = () => {
             
             {/* Wrap focus cards in section for CSS targeting - session-focus-section for :has() fallback */}
             <section className="space-y-4 session-focus-section">
-              {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
-              {/* These cards get elevated z-index during active session via SessionFocusOverlay context */}
-              <div data-tour="practice-capture" className="relative session-focus-card">
-                <PracticeControls />
-              </div>
-              <div className="session-focus-card">
-                <QuickNoteCapture />
-              </div>
+              {isBootstrapping ? (
+                <>
+                  {/* Skeleton placeholders that reserve space during auth bootstrapping */}
+                  <Skeleton className="h-[60px] w-full rounded-lg" />
+                  <Skeleton className="h-[60px] w-full rounded-lg" />
+                  <Skeleton className="h-[120px] w-full rounded-lg" />
+                </>
+              ) : (
+                <>
+                  {/* Practice Controls (Collapsible) + Quick Note Capture - wrapped for tour */}
+                  {/* These cards get elevated z-index during active session via SessionFocusOverlay context */}
+                  <div data-tour="practice-capture" className="relative session-focus-card">
+                    <PracticeControls />
+                  </div>
+                  <div className="session-focus-card">
+                    <QuickNoteCapture />
+                  </div>
 
-              {/* Ongoing Focus - Practice Board */}
-              {profile && (
-                <div data-tour="practice-board" className="session-focus-card">
-                  <TodaysFocus />
-                </div>
+                  {/* Ongoing Focus - Practice Board */}
+                  {profile && (
+                    <div data-tour="practice-board" className="session-focus-card">
+                      <TodaysFocus />
+                    </div>
+                  )}
+                </>
               )}
             </section>
           </GlintProvider>
