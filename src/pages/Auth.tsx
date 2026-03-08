@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useOnboarding } from '@/contexts/OnboardingContext';
+import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
 import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
 
 // Google icon component
