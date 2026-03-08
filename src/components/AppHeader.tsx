@@ -113,7 +113,7 @@ export function AppHeader() {
             <nav className="hidden sm:flex items-center gap-1 ml-6">
               <Link
                 to="/science-of-practice"
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
                   location.pathname === '/science-of-practice'
                     ? 'text-foreground font-medium'
                     : 'text-muted-foreground hover:text-foreground'
