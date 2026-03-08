@@ -20,24 +20,15 @@ const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
+  const { user } = useAuth();
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   const { toast: structuredToast } = useToast();
-  const [text, setText] = useState(() => {
-    try {
-      const raw = localStorage.getItem(FOCUS_CACHE_KEY);
-      if (raw) return (JSON.parse(raw) as { focus_text: string }).focus_text || '';
-    } catch {}
-    return '';
-  });
+  const [text, setText] = useState(() => readFocusCache(user?.id)?.focus_text || '');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(() => {
-    try {
-      return !!localStorage.getItem(FOCUS_CACHE_KEY);
-    } catch { return false; }
-  });
+  const [isInitialized, setIsInitialized] = useState(() => !!readFocusCache(user?.id));
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   // isRestoring removed — CSS grid mirror approach makes it unnecessary
   const [isOpen, setIsOpen] = useState(() => {
