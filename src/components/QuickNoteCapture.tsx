@@ -47,7 +47,7 @@ function getTodayLocalDate(): string {
 }
 
 export function QuickNoteCapture() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { data: projects } = useProjects();
   const { data: goals } = useGoals(profile?.id);
   const { data: gigs } = useMyPromoPosts(profile?.id);
