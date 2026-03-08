@@ -217,9 +217,9 @@ const Auth = () => {
         setMode('signin');
       } else if (mode === 'signup') {
         await signUp(email, password, name);
-        // Don't navigate or start onboarding — email confirmation is required first.
-        // The FTUE will trigger automatically when the user confirms and signs in.
-        setSignupSuccess(true);
+        // With email confirmations disabled, signup creates an immediate session.
+        // The onAuthStateChange listener will fire SIGNED_IN and navigate to /.
+        // The FTUE triggers automatically via isNewUser detection in OnboardingContext.
       } else {
         await signIn(email, password, rememberMe);
         // Check for profile redirect (from shared profile link)
