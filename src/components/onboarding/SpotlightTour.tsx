@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { clearScrollState } from '@/hooks/useScrollRestoration';
 
 // Check if the app is running as a PWA (standalone mode)
 const isStandaloneMode = () => {
@@ -107,6 +108,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   }, []);
 
   useEffect(() => {
+    // Clear saved scroll positions so PageLayout doesn't fight our scroll-to-top
+    clearScrollState('index-timeline');
+    clearScrollState('index-feed');
+
     // For final step, navigate to My Practice first and scroll to top
     if (isFinalStep) {
       if (location.pathname !== '/') {
