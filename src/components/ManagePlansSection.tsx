@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePremium } from '@/contexts/PremiumContext';
 import { format } from 'date-fns';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function ManagePlansSection() {
   const { isPremium, openPremiumDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();

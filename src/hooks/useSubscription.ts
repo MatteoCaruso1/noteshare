@@ -240,8 +240,8 @@ export function useSubscription() {
       if (error) throw error;
       if (!data?.url) throw new Error('No portal URL returned');
 
-      // Open Stripe portal in new tab
-      window.open(data.url, '_blank');
+      // Navigate in same tab (window.open gets blocked on mobile Safari)
+      window.location.href = data.url;
     } catch (err) {
       console.error('Error opening customer portal:', err);
       throw err;
