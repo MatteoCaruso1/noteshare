@@ -193,6 +193,7 @@ serve(async (req) => {
       ],
       mode: "subscription",
       ui_mode: "embedded",
+      redirect_on_completion: "if_required",
       subscription_data: shouldOfferTrial 
         ? { trial_period_days: TRIAL_DAYS }
         : {},
