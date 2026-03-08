@@ -210,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
 
-    toast.success('Welcome to noteshare!');
+    // No toast here — the onboarding welcome modal handles the greeting
   };
 
   const signIn = async (email: string, password: string, rememberMe: boolean = true) => {
