@@ -201,8 +201,7 @@ const ScienceOfPractice = () => {
               {[
                 { label: 'Date', value: 'March 8, 2026' },
                 { label: 'Duration', value: '55 minutes' },
-                { label: 'Focus areas', value: 'Scale patterns, chord voicings, sight reading' },
-                { label: 'Notes', value: 'Made progress on diminished patterns. Chord voicings still need work at tempo.' },
+                { label: 'Focus areas', value: 'Scale patterns (20 min), chord voicings (20 min), sight reading (15 min)' },
                 { label: 'Next session', value: 'Continue chord voicings with metronome at 80 bpm' },
               ].map(({ label, value }) => (
                 <div key={label} className="px-6 py-3 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4" style={{ borderColor: 'hsl(215 19% 22%)' }}>
