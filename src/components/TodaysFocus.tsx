@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react
 import { useTodaysFocus, readFocusCache, getFocusCacheKey } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
+import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
