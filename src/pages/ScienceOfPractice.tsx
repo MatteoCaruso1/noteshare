@@ -42,10 +42,6 @@ const ScienceOfPractice = () => {
           <p className="text-xl md:text-2xl leading-relaxed mb-4" style={{ color: 'hsl(215 20% 65%)' }}>
             Why some musicians improve rapidly while others stay stuck.
           </p>
-          <p className="text-lg leading-relaxed mb-4" style={{ color: 'hsl(215 16% 56%)' }}>
-            Effective practice isn't about talent.<br />
-            It's about structure, feedback, and consistency.
-          </p>
           <p className="text-base leading-relaxed mb-10" style={{ color: 'hsl(215 16% 50%)' }}>
             This guide explains the core principles behind effective music practice and how musicians can structure their practice sessions to improve more efficiently.
           </p>
