@@ -114,7 +114,7 @@ const Index = () => {
       })();
     }
   }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
-
+import { Skeleton } from '@/components/ui/skeleton';
 
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
   const isBootstrapping = authLoading || (!!user && !profile);
