@@ -5,7 +5,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
-import { useCurrentFocusEntry, FOCUS_CACHE_KEY, readFocusCache } from '@/hooks/useDailyFocus';
+import { useCurrentFocusEntry, readFocusCache } from '@/hooks/useDailyFocus';
 import { useActiveSession } from '@/hooks/useSessions';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
@@ -47,7 +47,7 @@ function getTodayLocalDate(): string {
 }
 
 export function QuickNoteCapture() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { data: projects } = useProjects();
   const { data: goals } = useGoals(profile?.id);
   const { data: gigs } = useMyPromoPosts(profile?.id);
@@ -171,7 +171,7 @@ export function QuickNoteCapture() {
     const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
     
     // Resolve focus data: use hook data first, fall back to localStorage cache
-    const focusData = attachFocus ? (currentFocus || readFocusCache()) : null;
+    const focusData = attachFocus ? (currentFocus || readFocusCache(user?.id)) : null;
     
     createNote.mutate(
       {
@@ -301,7 +301,7 @@ export function QuickNoteCapture() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text && !localStorage.getItem(FOCUS_CACHE_KEY) ? 'invisible' : ''}`}
+                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text && !readFocusCache(user?.id) ? 'invisible' : ''}`}
                     data-no-hover-reset
                     onTouchEnd={(e) => { e.currentTarget.blur(); }}
                   >

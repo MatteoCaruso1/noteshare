@@ -14,15 +14,43 @@ interface DailyFocus {
 
 export const FOCUS_CACHE_KEY = 'noteshare_focus_cache';
 
-export function readFocusCache(): DailyFocus | null {
+export function getFocusCacheKey(userId?: string | null): string {
+  return userId ? `${FOCUS_CACHE_KEY}:${userId}` : FOCUS_CACHE_KEY;
+}
+
+export function readFocusCache(userId?: string | null): DailyFocus | null {
   try {
-    const raw = localStorage.getItem(FOCUS_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    // Validate it has the required id field
-    if (parsed && typeof parsed === 'object' && parsed.id) {
-      return parsed as DailyFocus;
+    const scopedKey = getFocusCacheKey(userId);
+    const scopedRaw = localStorage.getItem(scopedKey);
+    if (scopedRaw) {
+      const scopedParsed = JSON.parse(scopedRaw);
+      if (scopedParsed && typeof scopedParsed === 'object' && scopedParsed.id) {
+        return scopedParsed as DailyFocus;
+      }
     }
+
+    // Backward compatibility for legacy global cache key.
+    // Only reuse it when it belongs to the current user, then migrate it.
+    const legacyRaw = localStorage.getItem(FOCUS_CACHE_KEY);
+    if (!legacyRaw) return null;
+
+    const legacyParsed = JSON.parse(legacyRaw);
+    if (!legacyParsed || typeof legacyParsed !== 'object' || !legacyParsed.id) {
+      return null;
+    }
+
+    const cacheOwner = legacyParsed.user_id as string | undefined;
+    if (userId && cacheOwner === userId) {
+      localStorage.setItem(scopedKey, legacyRaw);
+      localStorage.removeItem(FOCUS_CACHE_KEY);
+      return legacyParsed as DailyFocus;
+    }
+
+    // Prevent cross-account leakage from stale legacy cache.
+    if (userId && cacheOwner && cacheOwner !== userId) {
+      localStorage.removeItem(FOCUS_CACHE_KEY);
+    }
+
     return null;
   } catch {
     return null;
@@ -31,7 +59,7 @@ export function readFocusCache(): DailyFocus | null {
 
 function writeFocusCache(focus: DailyFocus) {
   try {
-    localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify({
+    localStorage.setItem(getFocusCacheKey(focus.user_id), JSON.stringify({
       id: focus.id,
       user_id: focus.user_id,
       focus_date: focus.focus_date,
@@ -39,6 +67,8 @@ function writeFocusCache(focus: DailyFocus) {
       created_at: focus.created_at,
       updated_at: focus.updated_at,
     }));
+    // Remove legacy cache key after successful scoped write.
+    localStorage.removeItem(FOCUS_CACHE_KEY);
   } catch { /* quota exceeded — ignore */ }
 }
 
@@ -103,7 +133,7 @@ export function useTodaysFocus() {
     staleTime: 30 * 1000, // 30s — ensures cross-device edits sync quickly
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
-    placeholderData: () => readFocusCache(),
+    placeholderData: () => readFocusCache(userId),
   });
 
   // Persist to localStorage whenever fresh data arrives

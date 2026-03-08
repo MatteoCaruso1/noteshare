@@ -8,7 +8,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useGoals } from '@/hooks/useGoals';
 import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
-import { useCurrentFocusEntry, FOCUS_CACHE_KEY, readFocusCache } from '@/hooks/useDailyFocus';
+import { useCurrentFocusEntry, readFocusCache } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
@@ -92,7 +92,7 @@ function getTodayLocalDate(): string {
 }
 
 export function PracticeControls() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const queryClient = useQueryClient();
   const { data: activeSession, isPending: isSessionPending } = useActiveSession(profile?.id);
   const { data: projects } = useProjects();
@@ -524,7 +524,7 @@ export function PracticeControls() {
             const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
             
             // Resolve focus data: use hook data first, fall back to localStorage cache
-            const focusData = attachFocus ? (currentFocus || readFocusCache()) : null;
+            const focusData = attachFocus ? (currentFocus || readFocusCache(user?.id)) : null;
             
             createNote.mutate(
               {
@@ -818,7 +818,7 @@ export function PracticeControls() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text && !localStorage.getItem(FOCUS_CACHE_KEY) ? 'invisible' : ''}`}
+                    className={`flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none ${!currentFocus?.focus_text && !readFocusCache(user?.id) ? 'invisible' : ''}`}
                     data-no-hover-reset
                     onTouchEnd={(e) => { e.currentTarget.blur(); }}
                   >

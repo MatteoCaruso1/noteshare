@@ -1,7 +1,8 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useTodaysFocus, FOCUS_CACHE_KEY } from '@/hooks/useDailyFocus';
+import { useTodaysFocus, readFocusCache, getFocusCacheKey } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
+import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
@@ -19,24 +20,15 @@ const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
+  const { user } = useAuth();
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   const { toast: structuredToast } = useToast();
-  const [text, setText] = useState(() => {
-    try {
-      const raw = localStorage.getItem(FOCUS_CACHE_KEY);
-      if (raw) return (JSON.parse(raw) as { focus_text: string }).focus_text || '';
-    } catch {}
-    return '';
-  });
+  const [text, setText] = useState(() => readFocusCache(user?.id)?.focus_text || '');
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(() => {
-    try {
-      return !!localStorage.getItem(FOCUS_CACHE_KEY);
-    } catch { return false; }
-  });
+  const [isInitialized, setIsInitialized] = useState(() => !!readFocusCache(user?.id));
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   // isRestoring removed — CSS grid mirror approach makes it unnecessary
   const [isOpen, setIsOpen] = useState(() => {
@@ -67,13 +59,13 @@ export function TodaysFocus() {
     return 0;
   }, []);
 
-  // Initialize text from focus data - only once on initial load
+  // Re-hydrate local UI state from user-scoped cache on auth user changes
   useEffect(() => {
-    if (!isInitialized && focus?.focus_text !== undefined) {
-      setText(focus.focus_text);
-      setIsInitialized(true);
-    }
-  }, [focus?.focus_text, isInitialized]);
+    const cached = readFocusCache(user?.id);
+    setText(cached?.focus_text || '');
+    setIsInitialized(!!cached);
+    setHasChanges(false);
+  }, [user?.id]);
 
   // Sync fresh DB data to local state when it arrives (cross-device sync)
   // Only update if user is NOT actively editing (no pending changes)
@@ -198,20 +190,21 @@ export function TodaysFocus() {
   // Helper to update localStorage cache immediately with current text
   const updateLocalCache = useCallback((value: string) => {
     try {
-      const raw = localStorage.getItem(FOCUS_CACHE_KEY);
+      const scopedKey = getFocusCacheKey(user?.id);
+      const raw = localStorage.getItem(scopedKey);
       if (raw) {
         const cached = JSON.parse(raw);
         cached.focus_text = value;
-        localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify(cached));
+        localStorage.setItem(scopedKey, JSON.stringify(cached));
       } else if (focus) {
         // Create cache entry from current focus data with updated text
-        localStorage.setItem(FOCUS_CACHE_KEY, JSON.stringify({
+        localStorage.setItem(scopedKey, JSON.stringify({
           ...focus,
           focus_text: value,
         }));
       }
     } catch { /* ignore */ }
-  }, [focus]);
+  }, [focus, user?.id]);
 
   // Auto-save with debounce
   const handleTextChange = (value: string) => {
