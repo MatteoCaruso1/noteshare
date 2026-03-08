@@ -112,16 +112,6 @@ export function AppHeader() {
           {isOnWelcomePage && (
             <nav className="hidden sm:flex items-center gap-1 ml-6">
               <Link
-                to="/welcome"
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  location.pathname === '/welcome' || (location.pathname === '/' && !user)
-                    ? 'text-foreground font-medium'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Home
-              </Link>
-              <Link
                 to="/science-of-practice"
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                   location.pathname === '/science-of-practice'
