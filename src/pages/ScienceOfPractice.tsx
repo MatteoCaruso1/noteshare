@@ -241,13 +241,6 @@ const ScienceOfPractice = () => {
               </div>
             ))}
           </div>
-          <Button
-            size="lg"
-            onClick={handleCTA}
-            className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-bold px-8 shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          >
-            Start tracking your practice
-          </Button>
         </div>
       </section>
 
