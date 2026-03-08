@@ -4,23 +4,26 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePremium } from '@/contexts/PremiumContext';
 import { format } from 'date-fns';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function ManagePlansSection() {
   const { isPremium, openPremiumDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   const handleSwitchPlan = async () => {
     if (isPremium) {
-      // Lifetime users shouldn't see this button, but guard anyway
       if (isLifetime) return;
       
-      // Premium subscriber wants to manage - open Stripe portal
+      setIsPortalLoading(true);
       try {
         await openCustomerPortal();
       } catch (error) {
         console.error('Failed to open customer portal:', error);
+        toast.error('Could not open subscription manager. Please try again.');
+        setIsPortalLoading(false);
       }
     } else {
-      // Free user wants to upgrade - open checkout dialog
       openPremiumDialog();
     }
   };
@@ -81,9 +84,9 @@ export function ManagePlansSection() {
             onClick={handleSwitchPlan}
             variant={isPremium ? 'outline' : 'hero'}
             className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
-            disabled={isLoading}
+            disabled={isLoading || isPortalLoading}
           >
-            {isPremium ? 'Manage Subscription' : 'Upgrade to Pro'}
+            {isPortalLoading ? 'Opening…' : isPremium ? 'Manage Subscription' : 'Upgrade to Pro'}
           </Button>
         )}
 
