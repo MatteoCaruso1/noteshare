@@ -170,14 +170,14 @@ const ScienceOfPractice = () => {
             Why Tracking Your Practice Works
           </h2>
           <p className="text-base leading-relaxed mb-6" style={{ color: 'hsl(215 16% 56%)' }}>
-            Tracking practice sessions creates a feedback loop that accelerates learning. When you log what you worked on, you build awareness of patterns that would otherwise remain invisible.
+            Tracking practice sessions creates a powerful feedback loop. When you write down what you worked on, practice becomes more intentional, and progress becomes easier to see.
           </p>
           <ul className="space-y-3 mb-10">
             {[
-              'Reinforces consistency by making streaks visible',
-              'Builds awareness of what is actually improving',
-              'Prevents repeating the same mistakes session after session',
-              'Creates long-term visibility into your musical growth',
+              'Forces intentional practice',
+              'Drives accountability to show up everyday',
+              'Builds a record of your work',
+              'Reveals to you what\'s actually improving',
             ].map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <CheckCircle2 className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: 'hsl(198 93% 59%)' }} />
