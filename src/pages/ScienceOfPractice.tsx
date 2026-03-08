@@ -320,15 +320,16 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 md:px-12 border-t" style={{ borderColor: 'hsl(215 19% 22%)' }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link to="/welcome" className="text-sm" style={{ color: 'hsl(215 16% 46%)' }}>
-            noteshare
-          </Link>
-          <span className="text-xs" style={{ color: 'hsl(215 16% 36%)' }}>
-            © {new Date().getFullYear()} Noteshare
-          </span>
-        </div>
+      <footer className="relative z-10 border-t border-border/20 bg-background px-6 py-4">
+        <p className="text-center text-xs text-muted-foreground/60 leading-relaxed flex flex-wrap justify-center gap-x-1">
+          <span>Noteshare</span>
+          <span>—</span>
+          <span>Practice Smarter</span>
+          <span>—</span>
+          <span>Contact: notesharemusic@gmail.com</span>
+          <span>—</span>
+          <span>© 2026 Noteshare</span>
+        </p>
       </footer>
 
       {/* JSON-LD structured data */}
