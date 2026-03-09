@@ -93,7 +93,7 @@ export function AppHeader() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
       <div className={`flex h-12 items-center justify-between px-4 ${isOnWelcomePage ? 'w-full' : 'container'}`}>
         <div className="flex items-center gap-3">
-          <Link to="/welcome" className="flex items-center gap-2">
+          <Link to="/welcome" className="flex items-center gap-2 hover:underline decoration-foreground underline-offset-2">
             <Music className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">
