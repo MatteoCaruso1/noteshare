@@ -86,11 +86,9 @@ export default function Pricing() {
                 <span className="text-3xl font-bold text-foreground">$9.99</span>
                 <span className="text-sm text-muted-foreground">CAD lifetime</span>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                or <span className="text-foreground font-medium">$1.99</span>{' '}
-                <span className="text-muted-foreground">CAD / month</span>
+              <p className="text-xs text-muted-foreground mt-1">
+                or <span className="text-foreground font-medium">$1.99</span> / mo · <span className="text-primary">free trial included</span>
               </p>
-              <p className="text-xs text-primary mt-1">Free trial included</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
               {allFeatures.map((f) => (
