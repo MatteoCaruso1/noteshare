@@ -130,7 +130,7 @@ export function AppHeader() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Pricing
+                Product Tiers
               </Link>
             </nav>
           )}
