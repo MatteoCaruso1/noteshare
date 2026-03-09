@@ -110,20 +110,21 @@ export function AppHeader() {
             </div>
           </Link>
           {isOnWelcomePage && (
-            <nav className="hidden sm:flex items-center gap-1 ml-6">
+            <nav className="flex items-center gap-1 ml-2 sm:ml-6">
               <Link
                 to="/science-of-practice"
-                className={`px-3 py-1.5 text-xs rounded-md transition-colors hover:underline ${
+                className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline whitespace-nowrap ${
                   location.pathname === '/science-of-practice'
                     ? 'text-foreground font-medium'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Science of Effective Practice
+                <span className="sm:hidden">Practice</span>
+                <span className="hidden sm:inline">Science of Effective Practice</span>
               </Link>
               <Link
                 to="/pricing"
-                className={`px-3 py-1.5 text-xs rounded-md transition-colors hover:underline ${
+                className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline ${
                   location.pathname === '/pricing'
                     ? 'text-foreground font-medium'
                     : 'text-muted-foreground hover:text-foreground'
