@@ -72,7 +72,7 @@ export default function Pricing() {
               className="w-full font-bold"
               onClick={handleFree}
             >
-              Start for free
+              Start Practicing
             </Button>
           </div>
 
