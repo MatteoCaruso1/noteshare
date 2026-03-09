@@ -129,7 +129,7 @@ const ScienceOfPractice = () => {
             A Simple Structure for Practice Sessions
           </h2>
           <p className="text-base leading-relaxed mb-10" style={{ color: 'hsl(215 16% 56%)' }}>
-            Effective practice sessions often follow a consistent structure. Having a framework removes decision fatigue and ensures each session has purpose.
+            Effective practice sessions follow a consistent structure. Having a framework removes decision fatigue and ensures each session has purpose.
           </p>
           <div
             className="rounded-xl p-8 border mb-8"
