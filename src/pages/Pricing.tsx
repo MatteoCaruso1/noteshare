@@ -28,8 +28,8 @@ const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 export default function Pricing() {
   const navigate = useNavigate();
 
-  const handleFree = () => navigate('/auth');
-  const handlePro = () => navigate('/auth');
+  const handleFree = () => navigate('/auth?from=pricing');
+  const handlePro = () => navigate('/auth?from=pricing');
 
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
