@@ -59,7 +59,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 1 — The Hidden Problem */}
-      <section className="py-20 px-6 md:px-12">
+      <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-8" style={{ color: 'hsl(210 40% 98%)' }}>
             Why Not All Practice Leads to Improvement
