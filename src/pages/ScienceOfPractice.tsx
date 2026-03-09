@@ -226,7 +226,7 @@ const ScienceOfPractice = () => {
           <p className="text-base leading-relaxed mb-10 max-w-2xl mx-auto" style={{ color: 'hsl(215 16% 56%)' }}>
             Noteshare was designed specifically to support these practice principles. It gives musicians a dedicated space to log sessions, capture ideas, and track consistency.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 text-left">
             {[
               { icon: Clock, label: 'Log practice sessions' },
               { icon: BookOpen, label: 'Write practice notes and reflections' },
