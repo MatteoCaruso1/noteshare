@@ -93,9 +93,9 @@ export default function Pricing() {
               <p className="text-xs text-primary mt-1">Free trial included</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
-              {proFeatures.map((f, i) => (
-                <li key={f} className={`flex items-start gap-2 text-sm ${i === 0 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-                  {i > 0 && <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />}
+              {allFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
                   <span>{f}</span>
                 </li>
               ))}
