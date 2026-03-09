@@ -88,7 +88,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 2 — Four Principles */}
-      <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
+      <section className="py-14 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-3 text-center" style={{ color: 'hsl(210 40% 98%)' }}>
             Four Principles Behind Effective Practice
