@@ -59,7 +59,7 @@ const routeScrollKeys: Record<string, string> = {
 };
 
 // Routes where BottomNav should be hidden
-const hiddenRoutes = ['/welcome', '/auth', '/science-of-practice'];
+const hiddenRoutes = ['/welcome', '/auth', '/science-of-practice', '/pricing'];
 
 export function BottomNav() {
   const location = useLocation();
