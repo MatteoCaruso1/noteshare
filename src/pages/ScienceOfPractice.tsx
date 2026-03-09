@@ -165,7 +165,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 4 — Why Tracking Works */}
-      <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
+      <section className="py-14 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-6" style={{ color: 'hsl(210 40% 98%)' }}>
             Why Tracking Your Practice Works
