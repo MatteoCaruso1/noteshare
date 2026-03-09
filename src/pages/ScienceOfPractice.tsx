@@ -88,7 +88,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 2 — Four Principles */}
-      <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
+      <section className="py-14 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-3 text-center" style={{ color: 'hsl(210 40% 98%)' }}>
             Four Principles Behind Effective Practice
@@ -123,7 +123,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 3 — Practice Framework */}
-      <section className="py-20 px-6 md:px-12">
+      <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-6" style={{ color: 'hsl(210 40% 98%)' }}>
             A Simple Structure for Practice Sessions
@@ -165,7 +165,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 4 — Why Tracking Works */}
-      <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
+      <section className="py-14 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-6" style={{ color: 'hsl(210 40% 98%)' }}>
             Why Tracking Your Practice Works
@@ -219,7 +219,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 5 — Noteshare */}
-      <section className="py-20 px-6 md:px-12">
+      <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-6" style={{ color: 'hsl(210 40% 98%)' }}>
             Practice Smarter With Noteshare
@@ -246,7 +246,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 6 — FAQ */}
-      <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
+      <section className="py-14 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-10" style={{ color: 'hsl(210 40% 98%)' }}>
             Common Questions About Music Practice
