@@ -4,7 +4,7 @@ import { Check, X } from 'lucide-react';
 
 const freeIncludedFeatures = [
 'Practice session logging',
-'Audio & image capture',
+'Audio capture during sessions',
 'Practice timeline & history',
 'Practice streaks',
 'Friends feed & sharing',
