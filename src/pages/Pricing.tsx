@@ -82,12 +82,13 @@ export default function Pricing() {
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
             <h2 className="text-lg font-semibold text-foreground mb-1 relative z-10">Pro</h2>
             <div className="relative z-10 mb-6">
-              <div className="flex items-baseline gap-1">
+              <div className="flex items-baseline gap-1 flex-wrap">
                 <span className="text-3xl font-bold text-foreground">$9.99</span>
                 <span className="text-sm text-muted-foreground">CAD lifetime</span>
+                <span className="text-[10px] text-primary ml-1">· free trial included</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                or <span className="text-foreground font-medium">$1.99</span> / mo · <span className="text-primary">free trial included</span>
+                or <span className="text-foreground font-medium">$1.99</span> / mo
               </p>
             </div>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
