@@ -106,6 +106,22 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [initialized, setInitialized] = useState(false);
 
+  // Refs to track current values for visibilitychange/pagehide flush
+  const noteTextRef = useRef(noteText);
+  const audioFilesRef = useRef(audioFiles);
+  const imageFilesRef = useRef(imageFiles);
+  const tagsRef = useRef(tags);
+  const selectedProjectIdRef = useRef(selectedProjectId);
+  const selectedLinkRef = useRef(selectedLink);
+  const visibilityRef = useRef(visibility);
+  noteTextRef.current = noteText;
+  audioFilesRef.current = audioFiles;
+  imageFilesRef.current = imageFiles;
+  tagsRef.current = tags;
+  selectedProjectIdRef.current = selectedProjectId;
+  selectedLinkRef.current = selectedLink;
+  visibilityRef.current = visibility;
+
   // Wrapper for setAudioFiles that also saves immediately to localStorage
   const setAudioFiles = useCallback((files: AudioFileWithName[] | ((prev: AudioFileWithName[]) => AudioFileWithName[])) => {
     setAudioFilesState(prev => {
