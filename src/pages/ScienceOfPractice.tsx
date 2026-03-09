@@ -246,7 +246,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 6 — FAQ */}
-      <section className="py-20 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
+      <section className="py-14 px-6 md:px-12" style={{ background: 'hsl(217 32% 14%)' }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-10" style={{ color: 'hsl(210 40% 98%)' }}>
             Common Questions About Music Practice
