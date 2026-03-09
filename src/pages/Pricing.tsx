@@ -105,7 +105,7 @@ export default function Pricing() {
               className="w-full relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02] group z-10"
               onClick={handlePro}
             >
-              <span className="relative z-10">Upgrade to Pro</span>
+              <span className="relative z-10">Start Practicing</span>
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
             </Button>
           </div>
