@@ -106,6 +106,22 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
   const [visibility, setVisibility] = useState<'private' | 'friends'>('friends');
   const [initialized, setInitialized] = useState(false);
 
+  // Refs to track current values for visibilitychange/pagehide flush
+  const noteTextRef = useRef(noteText);
+  const audioFilesRef = useRef(audioFiles);
+  const imageFilesRef = useRef(imageFiles);
+  const tagsRef = useRef(tags);
+  const selectedProjectIdRef = useRef(selectedProjectId);
+  const selectedLinkRef = useRef(selectedLink);
+  const visibilityRef = useRef(visibility);
+  noteTextRef.current = noteText;
+  audioFilesRef.current = audioFiles;
+  imageFilesRef.current = imageFiles;
+  tagsRef.current = tags;
+  selectedProjectIdRef.current = selectedProjectId;
+  selectedLinkRef.current = selectedLink;
+  visibilityRef.current = visibility;
+
   // Wrapper for setAudioFiles that also saves immediately to localStorage
   const setAudioFiles = useCallback((files: AudioFileWithName[] | ((prev: AudioFileWithName[]) => AudioFileWithName[])) => {
     setAudioFilesState(prev => {
@@ -139,6 +155,48 @@ export function usePersistentNoteState(key: string, profileId: string | undefine
       isMountedRef.current = false;
     };
   }, []);
+
+  // Flush state to localStorage when app goes to background (iOS kills tabs without warning)
+  useEffect(() => {
+    if (!profileId || !initialized) return;
+    
+    const flushToStorage = () => {
+      if (document.visibilityState === 'hidden') {
+        const state: PersistentNoteState = {
+          noteText: noteTextRef.current,
+          audioFiles: audioFilesRef.current,
+          imageFiles: imageFilesRef.current,
+          tags: tagsRef.current,
+          selectedProjectId: selectedProjectIdRef.current,
+          selectedLink: selectedLinkRef.current,
+          visibility: visibilityRef.current,
+        };
+        const hasContent = state.noteText || state.audioFiles.length > 0 || state.imageFiles.length > 0;
+        if (hasContent) {
+          saveStateToStorage(storageKey, state);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', flushToStorage);
+    window.addEventListener('pagehide', () => {
+      const state: PersistentNoteState = {
+        noteText: noteTextRef.current,
+        audioFiles: audioFilesRef.current,
+        imageFiles: imageFilesRef.current,
+        tags: tagsRef.current,
+        selectedProjectId: selectedProjectIdRef.current,
+        selectedLink: selectedLinkRef.current,
+        visibility: visibilityRef.current,
+      };
+      const hasContent = state.noteText || state.audioFiles.length > 0 || state.imageFiles.length > 0;
+      if (hasContent) {
+        saveStateToStorage(storageKey, state);
+      }
+    });
+    return () => {
+      document.removeEventListener('visibilitychange', flushToStorage);
+    };
+  }, [profileId, initialized, storageKey]);
 
   // Load from localStorage on mount
   useEffect(() => {

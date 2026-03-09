@@ -137,13 +137,28 @@ export function useTodaysFocus() {
   });
 
   // Persist to localStorage whenever fresh data arrives
+  // BUT: don't overwrite local cache if it has unsaved edits (newer than DB)
   const freshData = query.data;
   const isPlaceholder = query.isPlaceholderData;
   useEffect(() => {
     if (freshData && !isPlaceholder && freshData.focus_text !== undefined) {
-      writeFocusCache(freshData as DailyFocus);
+      // Check if local cache has content that differs from DB
+      // If so, the local cache is likely newer (unsaved edit from before iOS killed the tab)
+      const existingCache = readFocusCache(userId);
+      if (existingCache && existingCache.focus_text !== freshData.focus_text) {
+        // Local cache differs from DB — local is potentially newer (unsaved edits)
+        // Only overwrite if DB data is actually newer (updated_at comparison)
+        const dbUpdated = new Date(freshData.updated_at).getTime();
+        const cacheUpdated = new Date(existingCache.updated_at).getTime();
+        if (dbUpdated > cacheUpdated) {
+          writeFocusCache(freshData as DailyFocus);
+        }
+        // Otherwise keep local cache (it has unsaved changes)
+      } else {
+        writeFocusCache(freshData as DailyFocus);
+      }
     }
-  }, [freshData, isPlaceholder]);
+  }, [freshData, isPlaceholder, userId]);
 
   // Upsert today's focus
   const updateFocus = useMutation({
