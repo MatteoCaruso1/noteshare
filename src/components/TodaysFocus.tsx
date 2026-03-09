@@ -188,6 +188,7 @@ export function TodaysFocus() {
   }, [isOpen, autosizeTextarea]);
 
   // Helper to update localStorage cache immediately with current text
+  // Updates updated_at to current time so stale DB data won't overwrite it
   const updateLocalCache = useCallback((value: string) => {
     try {
       const scopedKey = getFocusCacheKey(user?.id);
@@ -195,12 +196,14 @@ export function TodaysFocus() {
       if (raw) {
         const cached = JSON.parse(raw);
         cached.focus_text = value;
+        cached.updated_at = new Date().toISOString();
         localStorage.setItem(scopedKey, JSON.stringify(cached));
       } else if (focus) {
         // Create cache entry from current focus data with updated text
         localStorage.setItem(scopedKey, JSON.stringify({
           ...focus,
           focus_text: value,
+          updated_at: new Date().toISOString(),
         }));
       }
     } catch { /* ignore */ }
