@@ -219,7 +219,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 5 — Noteshare */}
-      <section className="py-20 px-6 md:px-12">
+      <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-6" style={{ color: 'hsl(210 40% 98%)' }}>
             Practice Smarter With Noteshare
