@@ -33,10 +33,13 @@ export default function Pricing() {
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10 pt-12">
       {/* Hero */}
-      <section className="px-6 md:px-12 pt-20 pb-10 text-center">
+      <section className="px-6 md:px-12 pt-20 pb-4 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
           Simple Pricing
         </h1>
+        <p className="text-base text-muted-foreground mt-4 max-w-xl mx-auto leading-relaxed">
+          Start for free. Upgrade when you want deeper tools to track your progress.
+        </p>
       </section>
 
       {/* Cards */}
@@ -45,10 +48,9 @@ export default function Pricing() {
           {/* Free */}
           <div className="rounded-xl border border-border/40 p-6 md:p-8 flex flex-col" style={{ background: 'hsl(217 32% 12%)' }}>
             <h2 className="text-lg font-semibold text-foreground mb-1">Free</h2>
-            <div className="flex items-baseline gap-1 mb-3">
+            <div className="flex items-baseline gap-1 mb-6">
               <span className="text-3xl font-bold text-foreground">$0</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">For musicians starting their practice journey.</p>
             <ul className="space-y-3 mb-8 flex-1">
               {freeFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -72,20 +74,17 @@ export default function Pricing() {
             {/* Subtle glow */}
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
             <h2 className="text-lg font-semibold text-foreground mb-1 relative z-10">Pro</h2>
-            <div className="relative z-10 mb-3">
+            <div className="relative z-10 mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-foreground">$1.99</span>
-                <span className="text-sm text-muted-foreground">CAD / month</span>
+                <span className="text-3xl font-bold text-foreground">$9.99</span>
+                <span className="text-sm text-muted-foreground">CAD lifetime</span>
               </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                or <span className="text-foreground font-medium">$1.99</span>{' '}
+                <span className="text-muted-foreground">CAD / month</span>
+              </p>
               <p className="text-xs text-primary mt-1">Free trial included</p>
-              <div className="mt-3 pt-3 border-t border-border/30">
-                <p className="text-sm text-muted-foreground">
-                  or <span className="text-foreground font-medium">Lifetime access</span>{' '}
-                  <span className="text-xs text-muted-foreground">(one-time purchase, CAD)</span>
-                </p>
-              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-6 relative z-10">Unlock the full practice toolkit.</p>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
               {proFeatures.map((f, i) => (
                 <li key={f} className={`flex items-start gap-2 text-sm ${i === 0 ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
