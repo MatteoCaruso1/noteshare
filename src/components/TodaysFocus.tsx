@@ -252,6 +252,35 @@ export function TodaysFocus() {
     };
   }, []);
 
+  // Flush pending save immediately when app goes to background (iOS kills tabs without running cleanup effects)
+  useEffect(() => {
+    const flushOnBackground = () => {
+      if (document.visibilityState === 'hidden' && hasChangesRef.current) {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+          saveTimeoutRef.current = null;
+        }
+        updateFocus(textRef.current);
+        hasChangesRef.current = false;
+      }
+    };
+    document.addEventListener('visibilitychange', flushOnBackground);
+    // pagehide is more reliable on iOS Safari/PWA
+    window.addEventListener('pagehide', () => {
+      if (hasChangesRef.current) {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+          saveTimeoutRef.current = null;
+        }
+        updateFocus(textRef.current);
+        hasChangesRef.current = false;
+      }
+    });
+    return () => {
+      document.removeEventListener('visibilitychange', flushOnBackground);
+    };
+  }, [updateFocus]);
+
   // Rich text helpers
   const getLineInfo = useCallback(() => {
     const textarea = textareaRef.current;
