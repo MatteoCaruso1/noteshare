@@ -113,13 +113,23 @@ export function AppHeader() {
             <nav className="hidden sm:flex items-center gap-1 ml-6">
               <Link
                 to="/science-of-practice"
-                className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs rounded-md transition-colors hover:underline ${
                   location.pathname === '/science-of-practice'
                     ? 'text-foreground font-medium'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Science of Effective Practice
+              </Link>
+              <Link
+                to="/pricing"
+                className={`px-3 py-1.5 text-xs rounded-md transition-colors hover:underline ${
+                  location.pathname === '/pricing'
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Pricing
               </Link>
             </nav>
           )}
