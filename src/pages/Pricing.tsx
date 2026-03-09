@@ -35,7 +35,7 @@ export default function Pricing() {
       {/* Hero */}
       <section className="px-6 md:px-12 pt-20 pb-1 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
-          Simple Pricing
+          Simple Product Tiers
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-2xl mx-auto leading-relaxed">
           Start for free. Upgrade for advanced practice tools and deeper progress insights.
