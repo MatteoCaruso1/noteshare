@@ -27,8 +27,8 @@ const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 export default function Pricing() {
   const navigate = useNavigate();
 
-  const handleFree = () => navigate('/auth?from=pricing');
-  const handlePro = () => navigate('/auth?from=pricing');
+  const handleFree = () => { window.scrollTo(0, 0); navigate('/auth?from=pricing'); };
+  const handlePro = () => { window.scrollTo(0, 0); navigate('/auth?from=pricing'); };
 
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
