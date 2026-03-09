@@ -1,28 +1,29 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
-const freeFeatures = [
-  'Unlimited practice notes',
-  'Audio & image capture',
+const freeIncludedFeatures = [
   'Practice session logging',
+  'Audio & image capture',
   'Practice timeline & history',
   'Practice streaks',
   'Friends feed & sharing',
-  'Projects & folders',
-  'Daily practice focus',
+  'Practice to-do lists',
+  'Musical groups',
 ];
 
-const proFeatures = [
-  'Everything in Free, plus:',
-  'Metronome & practice timer',
-  'Goal setting & tracking',
-  'Log past / offline sessions',
-  'Save practice lists to backlog',
+const proOnlyFeatures = [
   'Advanced practice stats',
-  'Calendar heatmap',
+  'Log past / offline sessions',
+  'Goal setting & tracking',
+  'Projects & folders',
+  'Metronome & practice timer',
+  'Custom themes',
+  'Backlog practice to-do lists',
   'Priority support',
 ];
+
+const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 
 export default function Pricing() {
   const navigate = useNavigate();
