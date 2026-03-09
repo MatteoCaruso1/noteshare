@@ -53,9 +53,15 @@ export default function Pricing() {
               <span className="text-3xl font-bold text-foreground">$0</span>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
-              {freeFeatures.map((f) => (
+              {freeIncludedFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
+                  <span>{f}</span>
+                </li>
+              ))}
+              {proOnlyFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground/50">
+                  <X className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground/50" />
                   <span>{f}</span>
                 </li>
               ))}
