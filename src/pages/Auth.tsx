@@ -275,7 +275,14 @@ const Auth = () => {
         {/* Back to landing button */}
         <button
           type="button"
-          onClick={() => mode === 'signin' ? navigate(searchParams.get('from') === 'pricing' ? '/pricing' : '/welcome') : setMode('signin')}
+          onClick={() => {
+            const from = searchParams.get('from');
+            if (mode === 'signin') {
+              navigate(from === 'pricing' ? '/pricing' : from === 'science' ? '/science-of-practice' : '/welcome');
+            } else {
+              setMode('signin');
+            }
+          }}
           className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm"
         >
           <ArrowLeft className="w-4 h-4" />

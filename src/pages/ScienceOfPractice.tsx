@@ -24,7 +24,8 @@ const ScienceOfPractice = () => {
   }, []);
 
   const handleCTA = () => {
-    navigate(user ? '/' : '/auth');
+    window.scrollTo(0, 0);
+    navigate(user ? '/' : '/auth?from=science');
   };
 
   return (
