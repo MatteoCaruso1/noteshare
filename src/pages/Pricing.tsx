@@ -19,8 +19,7 @@ const proOnlyFeatures = [
 'Organize sessions using folders & gigs',
 'Metronome & practice timer',
 'Custom themes',
-'Backlog practice to-do lists',
-'Priority support'];
+'Backlog practice to-do lists'];
 
 
 const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
