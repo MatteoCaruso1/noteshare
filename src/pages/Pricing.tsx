@@ -3,25 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
 
 const freeIncludedFeatures = [
-  'Practice session logging',
-  'Audio & image capture',
-  'Practice timeline & history',
-  'Practice streaks',
-  'Friends feed & sharing',
-  'Practice to-do lists',
-  'Musical groups',
-];
+'Practice session logging',
+'Audio & image capture',
+'Practice timeline & history',
+'Practice streaks',
+'Friends feed & sharing',
+'Practice to-do lists',
+'Musical groups'];
+
 
 const proOnlyFeatures = [
-  'Advanced practice stats',
-  'Log past / offline sessions',
-  'Goal setting & tracking',
-  'Projects & folders',
-  'Metronome & practice timer',
-  'Custom themes',
-  'Backlog practice to-do lists',
-  'Priority support',
-];
+'Advanced practice stats',
+'Log past / offline sessions',
+'Goal setting & tracking',
+'Projects & folders',
+'Metronome & practice timer',
+'Custom themes',
+'Backlog practice to-do lists',
+'Priority support'];
+
 
 const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 
@@ -53,25 +53,25 @@ export default function Pricing() {
               <span className="text-3xl font-bold text-foreground">$0</span>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
-              {freeIncludedFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+              {freeIncludedFeatures.map((f) =>
+              <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
                   <span>{f}</span>
                 </li>
-              ))}
-              {proOnlyFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground/50">
+              )}
+              {proOnlyFeatures.map((f) =>
+              <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground/50">
                   <X className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground/50" />
                   <span>{f}</span>
                 </li>
-              ))}
+              )}
             </ul>
             <Button
               size="lg"
               variant="outline"
               className="w-full font-bold"
-              onClick={handleFree}
-            >
+              onClick={handleFree}>
+              
               Start Practicing
             </Button>
           </div>
@@ -85,25 +85,25 @@ export default function Pricing() {
               <div className="flex items-baseline gap-1 flex-wrap">
                 <span className="text-3xl font-bold text-foreground">$9.99</span>
                 <span className="text-sm text-muted-foreground">CAD lifetime</span>
-                <span className="text-[10px] text-primary ml-1">· free trial included</span>
+                <span className="text-[10px] text-primary ml-1">(or $1.99 / mo. with trial)</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 or <span className="text-foreground font-medium">$1.99</span> / mo
               </p>
             </div>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
-              {allFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+              {allFeatures.map((f) =>
+              <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
                   <span>{f}</span>
                 </li>
-              ))}
+              )}
             </ul>
             <Button
               size="lg"
               className="w-full relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02] group z-10"
-              onClick={handlePro}
-            >
+              onClick={handlePro}>
+              
               <span className="relative z-10">Start Practicing</span>
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
             </Button>
@@ -125,6 +125,6 @@ export default function Pricing() {
           <span>© 2026 Noteshare</span>
         </p>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
