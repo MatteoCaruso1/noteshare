@@ -33,7 +33,7 @@ export default function Pricing() {
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
       {/* Hero */}
-      <section className="px-6 md:px-12 pt-10 pb-1 text-center">
+      <section className="px-6 md:px-12 pt-16 pb-1 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
           Simple Pricing
         </h1>
