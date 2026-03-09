@@ -31,7 +31,7 @@ const ScienceOfPractice = () => {
   return (
     <div className="min-h-screen dark" style={{ background: 'hsl(222 47% 11%)' }}>
       {/* Hero */}
-      <section className="relative pt-20 pb-20 px-6 md:px-12">
+      <section className="relative pt-20 pb-12 px-6 md:px-12">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/4 -left-32 w-[600px] h-[600px] rounded-full blur-[120px]" style={{ background: 'hsl(198 93% 59% / 0.06)' }} />
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px]" style={{ background: 'hsl(198 93% 59% / 0.04)' }} />
@@ -59,7 +59,7 @@ const ScienceOfPractice = () => {
       </section>
 
       {/* Section 1 — The Hidden Problem */}
-      <section className="py-20 px-6 md:px-12">
+      <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-8" style={{ color: 'hsl(210 40% 98%)' }}>
             Why Not All Practice Leads to Improvement
