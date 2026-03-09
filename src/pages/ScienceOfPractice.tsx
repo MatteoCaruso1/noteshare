@@ -43,15 +43,6 @@ const ScienceOfPractice = () => {
           <p className="text-xl md:text-2xl leading-relaxed mb-4" style={{ color: 'hsl(215 20% 65%)' }}>
             Why some musicians improve rapidly while others stay stuck.
           </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Button
-              size="lg"
-              onClick={handleCTA}
-              className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-bold px-8 shadow-lg transition-all duration-200 hover:scale-[1.02]"
-            >
-              Start tracking your practice
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -238,6 +229,15 @@ const ScienceOfPractice = () => {
                 <span className="text-sm" style={{ color: 'hsl(210 40% 90%)' }}>{label}</span>
               </div>
             ))}
+          </div>
+          <div className="mt-10">
+            <Button
+              size="lg"
+              onClick={handleCTA}
+              className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-bold px-8 shadow-lg transition-all duration-200 hover:scale-[1.02]"
+            >
+              Start tracking your practice
+            </Button>
           </div>
         </div>
       </section>
