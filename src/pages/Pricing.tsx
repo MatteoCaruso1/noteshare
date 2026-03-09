@@ -34,14 +34,9 @@ export default function Pricing() {
     <div className="bg-transparent flex flex-col min-h-screen relative z-10 pt-12">
       {/* Hero */}
       <section className="px-6 md:px-12 pt-20 pb-10 text-center">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground mb-4">
-          Simple pricing for musicians
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
+          Simple Pricing
         </h1>
-        <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-          Start tracking your practice for free.
-          <br className="hidden sm:block" />
-          Upgrade when you want deeper insights into your progress.
-        </p>
       </section>
 
       {/* Cards */}
