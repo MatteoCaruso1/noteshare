@@ -33,17 +33,17 @@ export default function Pricing() {
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
       {/* Hero */}
-      <section className="px-6 md:px-12 pt-6 pb-2 text-center">
+      <section className="px-6 md:px-12 pt-2 pb-1 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
           Simple Pricing
         </h1>
-        <p className="text-base text-muted-foreground mt-3 max-w-xl mx-auto leading-relaxed">
+        <p className="text-base text-muted-foreground mt-2 max-w-xl mx-auto leading-relaxed">
           Start for free. Upgrade for advanced practice tools and deeper progress insights.
         </p>
       </section>
 
       {/* Cards */}
-      <section className="flex-1 px-6 md:px-12 pb-20 pt-8">
+      <section className="flex-1 px-6 md:px-12 pb-20 pt-4">
         <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Free */}
           <div className="rounded-xl border border-border/40 p-6 md:p-8 flex flex-col" style={{ background: 'hsl(217 32% 12%)' }}>
