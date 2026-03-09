@@ -31,14 +31,14 @@ export default function Pricing() {
   const handlePro = () => navigate('/auth');
 
   return (
-    <div className="bg-transparent flex flex-col min-h-screen relative z-10 pt-12">
+    <div className="bg-transparent flex flex-col min-h-screen relative z-10">
       {/* Hero */}
-      <section className="px-6 md:px-12 pt-20 pb-4 text-center">
+      <section className="px-6 md:px-12 pt-6 pb-2 text-center">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
           Simple Pricing
         </h1>
-        <p className="text-base text-muted-foreground mt-4 max-w-xl mx-auto leading-relaxed">
-          Start for free. Upgrade when you want deeper tools to track your progress.
+        <p className="text-base text-muted-foreground mt-3 max-w-xl mx-auto leading-relaxed">
+          Start for free. Upgrade for advanced practice tools and deeper progress insights.
         </p>
       </section>
 
