@@ -482,99 +482,124 @@ export function PracticeControls() {
   };
 
   const handleSaveNoteAndEndSession = (sessionTitle?: string, customDurationMinutes?: number, playingWithIds?: string[], focusLevel?: number) => {
-    if (activeSession) {
-      // Calculate session duration in minutes (accounting for paused time)
-      const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
-      const pausedMs = activeSession.paused_duration_ms || 0;
-      // If currently paused, add the current pause duration
-      const currentPauseMs = activeSession.paused_at 
-        ? Date.now() - new Date(activeSession.paused_at).getTime() 
-        : 0;
-      const activeDurationMs = totalElapsedMs - pausedMs - currentPauseMs;
-      const sessionDurationMinutes = customDurationMinutes ?? Math.floor(activeDurationMs / 60000);
+    if (!activeSession) {
+      console.error('[PracticeControls] No active session found when trying to save - aborting');
+      toast.error('Session not found. Please try again.');
+      return;
+    }
 
-      // Check daily limit before creating note (session can still be ended)
-      if (hasReachedLimit) {
-        endSession.mutate(
-          { sessionId: activeSession.id, userId: profile.id, collaboratorIds: playingWithIds, customDurationMinutes },
-          {
-            onSuccess: () => {
-              clearState();
-              setPrivateAudioIndices([]);
-              clearSessionSettings();
-              setShowEndSessionDialog(false);
-              setManuallyCollapsed(true);
-              toast.error('Session ended but note not saved - daily limit reached. Get Pro for unlimited notes.');
-            },
-          }
-        );
-        return;
-      }
+    // CRITICAL: Capture session ID and all closure values NOW, before any async/mutation
+    // work that could cause React to re-render and lose the activeSession reference.
+    // This prevents a race condition where endSession.onMutate optimistically sets
+    // activeSession to null, causing the onSuccess closure to lose the session ID.
+    const capturedSessionId = activeSession.id;
+    const capturedNoteText = noteText;
+    const capturedAudioFiles = [...audioFiles];
+    const capturedImageFiles = [...imageFiles];
+    const capturedTags = [...tags];
+    const capturedSelectedLink = selectedLink;
+    const capturedVisibility = visibility;
+    const capturedAttachFocus = attachFocus;
+    const capturedPrivateAudioIndices = [...privateAudioIndices];
 
-      // Build notes summary with optional session title
-      const notesSummary = sessionTitle || undefined;
+    // Calculate session duration in minutes (accounting for paused time)
+    const totalElapsedMs = Date.now() - new Date(activeSession.started_at).getTime();
+    const pausedMs = activeSession.paused_duration_ms || 0;
+    // If currently paused, add the current pause duration
+    const currentPauseMs = activeSession.paused_at 
+      ? Date.now() - new Date(activeSession.paused_at).getTime() 
+      : 0;
+    const activeDurationMs = totalElapsedMs - pausedMs - currentPauseMs;
+    const sessionDurationMinutes = customDurationMinutes ?? Math.floor(activeDurationMs / 60000);
 
+    // Check daily limit before creating note (session can still be ended)
+    if (hasReachedLimit) {
       endSession.mutate(
-        { sessionId: activeSession.id, userId: profile.id, notesSummary, collaboratorIds: playingWithIds, customDurationMinutes },
+        { sessionId: capturedSessionId, userId: profile.id, collaboratorIds: playingWithIds, customDurationMinutes },
         {
-        onSuccess: () => {
-            // Determine projectId, goalId, and gigId based on selectedLink
-            const projectId = selectedLink?.type === 'project' ? selectedLink.id : undefined;
-            const goalId = selectedLink?.type === 'goal' ? selectedLink.id : undefined;
-            const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
-            
-            // Resolve focus data: use hook data first, fall back to localStorage cache
-            const focusData = attachFocus ? (currentFocus || readFocusCache(user?.id)) : null;
-            
-            createNote.mutate(
-              {
-                authorId: profile.id,
-                textContent: noteText || undefined,
-                audioFiles: audioFiles.map(a => a.url),
-                audioFileNames: audioFiles.map(a => a.name),
-                imageFiles,
-                tags: (() => {
-                  // Append focus level tag if set, replacing any existing F= tag
-                  const filtered = tags.filter(t => !/^F=[1-5]$/.test(t));
-                  if (focusLevel && focusLevel >= 1 && focusLevel <= 5) {
-                    filtered.push(`F=${focusLevel}`);
-                  }
-                  return filtered;
-                })(),
-                sessionId: activeSession.id,
-                projectId,
-                goalId,
-                gigId,
-                 visibility,
-                 focusEntryId: focusData ? focusData.id : undefined,
-                 focusDate: focusData ? getTodayLocalDate() : undefined,
-                 focusTextSnapshot: focusData ? focusData.focus_text : undefined,
-                 privateAudioIndices,
-              },
-              {
-                onSuccess: (newNote) => {
-                  incrementCount(); // Update local count optimistically
-                  
-                  // Share with selected friends if any
-                  if (playingWithIds && playingWithIds.length > 0 && newNote?.id) {
-                    createNoteShares.mutate({
-                      noteId: newNote.id,
-                      sharedWithIds: playingWithIds,
-                    });
-                  }
-                  
-                   clearState();
-                   setPrivateAudioIndices([]);
-                  clearSessionSettings();
-                  setShowEndSessionDialog(false);
-                  setManuallyCollapsed(true);
-                },
-              }
-            );
+          onSuccess: () => {
+            clearState();
+            setPrivateAudioIndices([]);
+            clearSessionSettings();
+            setShowEndSessionDialog(false);
+            setManuallyCollapsed(true);
+            toast.error('Session ended but note not saved - daily limit reached. Get Pro for unlimited notes.');
           },
         }
       );
+      return;
     }
+
+    // Build notes summary with optional session title
+    const notesSummary = sessionTitle || undefined;
+
+    endSession.mutate(
+      { sessionId: capturedSessionId, userId: profile.id, notesSummary, collaboratorIds: playingWithIds, customDurationMinutes },
+      {
+        onSuccess: () => {
+          // Determine projectId, goalId, and gigId based on captured selectedLink
+          const projectId = capturedSelectedLink?.type === 'project' ? capturedSelectedLink.id : undefined;
+          const goalId = capturedSelectedLink?.type === 'goal' ? capturedSelectedLink.id : undefined;
+          const gigId = capturedSelectedLink?.type === 'gig' ? capturedSelectedLink.id : undefined;
+          
+          // Resolve focus data: use hook data first, fall back to localStorage cache
+          const focusData = capturedAttachFocus ? (currentFocus || readFocusCache(user?.id)) : null;
+
+          // CRITICAL: Validate capturedSessionId before creating note
+          if (!capturedSessionId) {
+            console.error('[PracticeControls] capturedSessionId is null in onSuccess - this should never happen');
+            toast.error('Error saving session note. Please log it manually.');
+            return;
+          }
+          
+          createNote.mutate(
+            {
+              authorId: profile.id,
+              textContent: capturedNoteText || undefined,
+              audioFiles: capturedAudioFiles.map(a => a.url),
+              audioFileNames: capturedAudioFiles.map(a => a.name),
+              imageFiles: capturedImageFiles,
+              tags: (() => {
+                // Append focus level tag if set, replacing any existing F= tag
+                const filtered = capturedTags.filter(t => !/^F=[1-5]$/.test(t));
+                if (focusLevel && focusLevel >= 1 && focusLevel <= 5) {
+                  filtered.push(`F=${focusLevel}`);
+                }
+                return filtered;
+              })(),
+              sessionId: capturedSessionId,
+              projectId,
+              goalId,
+              gigId,
+              visibility: capturedVisibility,
+              focusEntryId: focusData ? focusData.id : undefined,
+              focusDate: focusData ? getTodayLocalDate() : undefined,
+              focusTextSnapshot: focusData ? focusData.focus_text : undefined,
+              privateAudioIndices: capturedPrivateAudioIndices,
+            },
+            {
+              onSuccess: (newNote) => {
+                incrementCount(); // Update local count optimistically
+                
+                // Share with selected friends if any
+                if (playingWithIds && playingWithIds.length > 0 && newNote?.id) {
+                  createNoteShares.mutate({
+                    noteId: newNote.id,
+                    sharedWithIds: playingWithIds,
+                  });
+                }
+                
+                clearState();
+                setPrivateAudioIndices([]);
+                clearSessionSettings();
+                setShowEndSessionDialog(false);
+                setManuallyCollapsed(true);
+              },
+            }
+          );
+        },
+      }
+    );
   };
 
   // Calculate active session duration (excluding paused time)
