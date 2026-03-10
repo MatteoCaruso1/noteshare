@@ -225,9 +225,40 @@ function AccountFunnelCard({ funnel, days }: { funnel: NonNullable<ReturnType<ty
   );
 }
 
+interface DrilldownUser { name: string; username: string; }
+interface DrilldownData { date: string; viewers: DrilldownUser[]; creators: DrilldownUser[]; }
+
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
   const { data, isLoading, error } = useAnalytics(days);
+  const [drilldown, setDrilldown] = useState<DrilldownData | null>(null);
+  const [drilldownLoading, setDrilldownLoading] = useState(false);
+
+  const handleActivationChartClick = useCallback(async (chartData: any) => {
+    if (!chartData?.activePayload?.[0]?.payload?.date) return;
+    const date = chartData.activePayload[0].payload.date;
+    setDrilldownLoading(true);
+    setDrilldown(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-analytics?drilldown_date=${date}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setDrilldown(data);
+      }
+    } catch (e) {
+      console.error('Drilldown fetch error:', e);
+    } finally {
+      setDrilldownLoading(false);
+    }
+  }, []);
 
   if (isLoading) {
     return (
