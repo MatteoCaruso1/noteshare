@@ -366,20 +366,6 @@ const AdminAnalytics = () => {
     rate: item.rate,
   }));
 
-  // Day 7 retention chart data - filter to only show cohorts that have reached day 7
-  const retentionChartData = data.day7Retention.dailyRates
-    .filter((item) => {
-      const cohortDate = new Date(item.date);
-      const today = new Date();
-      const daysSinceCohort = Math.floor((today.getTime() - cohortDate.getTime()) / (1000 * 60 * 60 * 24));
-      return daysSinceCohort >= 7 && item.cohortSize > 0;
-    })
-    .map((item) => ({
-      date: item.date,
-      cohortSize: item.cohortSize,
-      retained: item.retained,
-      rate: item.rate,
-    }));
 
   const formatXAxis = (dateStr: string) => {
     try {
