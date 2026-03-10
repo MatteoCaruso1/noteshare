@@ -144,6 +144,7 @@ export function PracticeControls() {
   } = usePersistentNoteState('practice_session', profile?.id);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
+  const videoBlobRef = useRef<Blob | null>(null);
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
