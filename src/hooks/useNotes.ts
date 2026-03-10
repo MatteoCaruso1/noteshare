@@ -296,6 +296,17 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusTextSnapshot?: string;
       privateAudioIndices?: number[];
     }) => {
+      // SAFETY CHECK: If tags contain a focus level (F=N), this was likely from
+      // EndSessionDialog and MUST have a sessionId. Log a warning if it doesn't.
+      const hasFocusTag = tags.some(t => /^F=[1-5]$/.test(t));
+      if (hasFocusTag && !sessionId) {
+        console.error(
+          '[useCreateNote] CRITICAL: Note has focus level tag but no sessionId!',
+          'This indicates a race condition in the session save flow.',
+          { authorId, tags, sessionId }
+        );
+      }
+
       const { data, error } = await supabase
         .from('notes')
         .insert({
