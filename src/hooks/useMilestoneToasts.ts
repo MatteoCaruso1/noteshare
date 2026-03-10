@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { isOnboardingActive } from '@/contexts/OnboardingContext';
 
 /**
  * Provides one-time milestone toast triggers for:

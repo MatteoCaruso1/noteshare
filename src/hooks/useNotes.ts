@@ -341,7 +341,9 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       // Invalidate daily note count so limit is enforced across all components
       queryClient.invalidateQueries({ queryKey: ['daily-note-count'] });
       // Show appropriate message based on whether this is a session note
-      toast.success(variables.sessionId ? 'Practice session saved' : 'Note saved!');
+      if (!isOnboardingActive) {
+        toast.success(variables.sessionId ? 'Practice session saved' : 'Note saved!');
+      }
       
       // If callback provided, fetch total note count and call it
       if (onNoteCreated && profile?.id) {
