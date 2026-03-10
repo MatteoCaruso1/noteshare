@@ -144,7 +144,14 @@ export function AppHeader() {
               className="bg-primary text-primary-foreground hover:bg-primary/90 text-[11px] px-3 py-1 h-8 font-medium"
               onClick={() => {
                 window.scrollTo(0, 0);
-                navigate(user ? '/' : '/auth');
+                if (user) {
+                  navigate('/');
+                } else {
+                  const from = location.pathname === '/pricing' ? 'pricing' 
+                    : location.pathname === '/science-of-practice' ? 'science' 
+                    : undefined;
+                  navigate(from ? `/auth?from=${from}` : '/auth');
+                }
               }}
             >
               Start practicing
