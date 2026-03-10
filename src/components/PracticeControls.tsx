@@ -846,6 +846,7 @@ export function PracticeControls() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
+                    data-tour="link-to-list"
                     className="flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none"
                     data-no-hover-reset
                     onTouchEnd={(e) => { e.currentTarget.blur(); }}
