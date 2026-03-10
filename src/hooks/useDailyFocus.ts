@@ -86,6 +86,12 @@ export function useTodaysFocus() {
   const userId = user?.id;
   const queryClient = useQueryClient();
 
+  // Keep a ref so the mutation can still identify the user during sign-out
+  const userIdRef = useRef(userId);
+  useEffect(() => {
+    if (userId) userIdRef.current = userId;
+  }, [userId]);
+
   // Fetch today's focus entry, or the most recent one if today doesn't exist
   const query = useQuery({
     queryKey: ['daily-focus', userId],
