@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { isOnboardingActive } from '@/contexts/OnboardingContext';
 
 /**
  * Provides one-time milestone toast triggers for:
@@ -47,10 +48,12 @@ export function useMilestoneToasts() {
           claimingFirstNote.current = false;
           return;
         }
-        showMilestoneToast(
-          'First practice logged!',
-          'Your first step to practicing smarter',
-        );
+        if (!isOnboardingActive) {
+          showMilestoneToast(
+            'First practice logged!',
+            'Your first step to practicing smarter',
+          );
+        }
         await refreshProfile();
       }
 
