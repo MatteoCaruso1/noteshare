@@ -656,6 +656,7 @@ export function PracticeControls() {
         <CollapsibleTrigger asChild>
           {/* Glint effect disabled but kept for potential future use: add `glint ${isPaused ? 'glint-paused' : ''}` to className and style={glintStyle} */}
           <button 
+            data-tour="practice-start-btn"
             className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
           >
             <div className="flex items-center gap-2">
