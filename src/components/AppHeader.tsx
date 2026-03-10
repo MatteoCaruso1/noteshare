@@ -136,71 +136,81 @@ export function AppHeader() {
           )}
         </div>
         
-        {/* Timer & Streak Indicator - fade out on welcome page, EXEMPT from session focus dimming */}
-        <div 
-          className={`flex items-center gap-2 transition-opacity duration-700 session-focus-exempt ${
-            isOnWelcomePage ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}
-        >
-          {/* Session Timer Indicator - moved to right side */}
-          {user && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
-                    isSessionActive 
-                      ? 'bg-primary/15 text-primary hover:bg-primary/25 cursor-pointer' 
-                      : 'text-muted-foreground/40 cursor-default'
-                  }`}
-                  disabled={!isSessionActive}
-                >
-                  <div className="relative">
-                    <Clock className="h-4 w-4" />
-                    {isSessionActive && (
-                      <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
+        {/* Right side: CTA on welcome pages, Timer & Streak on app pages */}
+        {isOnWelcomePage ? (
+          <div className="hidden sm:flex items-center">
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium"
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate(user ? '/' : '/auth');
+              }}
+            >
+              Start Practicing
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 transition-opacity duration-700 session-focus-exempt opacity-100">
+            {user && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
+                      isSessionActive 
+                        ? 'bg-primary/15 text-primary hover:bg-primary/25 cursor-pointer' 
+                        : 'text-muted-foreground/40 cursor-default'
+                    }`}
+                    disabled={!isSessionActive}
+                  >
+                    <div className="relative">
+                      <Clock className="h-4 w-4" />
+                      {isSessionActive && (
+                        <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-green-500 recording-pulse'}`} />
+                      )}
+                    </div>
+                    <span className={`text-xs font-mono ${isSessionActive && !isPaused ? 'timer-tick' : ''}`}>
+                      {elapsed}
+                    </span>
+                    {isPaused && (
+                      <Pause className="h-3 w-3 text-amber-500" />
                     )}
-                  </div>
-                  <span className={`text-xs font-mono ${isSessionActive && !isPaused ? 'timer-tick' : ''}`}>
-                    {elapsed}
-                  </span>
-                  {isPaused && (
-                    <Pause className="h-3 w-3 text-amber-500" />
-                  )}
-                </button>
-              </PopoverTrigger>
-              {isSessionActive && (
-                <PopoverContent className="w-48 p-3" align="end">
-                  <div className="space-y-3">
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground mb-1">Session Active</p>
-                      <p className="text-lg font-mono font-semibold text-primary">{elapsed}</p>
+                  </button>
+                </PopoverTrigger>
+                {isSessionActive && (
+                  <PopoverContent className="w-48 p-3" align="end">
+                    <div className="space-y-3">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1">Session Active</p>
+                        <p className="text-lg font-mono font-semibold text-primary">{elapsed}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs"
+                          onClick={() => navigate('/')}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="flex-1 text-xs gap-1"
+                          onClick={handleEndSession}
+                        >
+                          <Square className="w-3 h-3" />
+                          End
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-xs"
-                        onClick={() => navigate('/')}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="flex-1 text-xs gap-1"
-                        onClick={handleEndSession}
-                      >
-                        <Square className="w-3 h-3" />
-                        End
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              )}
-            </Popover>
-          )}
-          {user && <StreakIndicator />}
-        </div>
+                  </PopoverContent>
+                )}
+              </Popover>
+            )}
+            {user && <StreakIndicator />}
+          </div>
+        )}
       </div>
     </header>
   );
