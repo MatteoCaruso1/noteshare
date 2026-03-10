@@ -270,6 +270,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       videoFiles = [],
       tags = [],
       sessionId,
+      isSessionNote,
       projectId,
       goalId,
       gigId,
@@ -287,6 +288,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       videoFiles?: string[];
       tags?: string[];
       sessionId?: string;
+      isSessionNote?: boolean;
       projectId?: string;
       goalId?: string;
       gigId?: string;
@@ -296,15 +298,13 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusTextSnapshot?: string;
       privateAudioIndices?: number[];
     }) => {
-      // SAFETY CHECK: If tags contain a focus level (F=N), this was likely from
-      // EndSessionDialog and MUST have a sessionId. Log a warning if it doesn't.
-      const hasFocusTag = tags.some(t => /^F=[1-5]$/.test(t));
-      if (hasFocusTag && !sessionId) {
-        console.error(
-          '[useCreateNote] CRITICAL: Note has focus level tag but no sessionId!',
-          'This indicates a race condition in the session save flow.',
-          { authorId, tags, sessionId }
-        );
+      // SAFETY CHECK: If this was explicitly marked as a session note (from PracticeControls),
+      // it MUST have a sessionId. If it doesn't, a race condition stripped it.
+      // Throw to prevent saving a broken note that loses practice time stats.
+      if (isSessionNote && !sessionId) {
+        const errorMsg = '[useCreateNote] CRITICAL: isSessionNote=true but no sessionId. Race condition detected.';
+        console.error(errorMsg, { authorId, tags, sessionId });
+        throw new Error('Session save failed — session ID was lost. Please try logging this as a past session.');
       }
 
       const { data, error } = await supabase

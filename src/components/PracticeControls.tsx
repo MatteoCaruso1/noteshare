@@ -568,6 +568,7 @@ export function PracticeControls() {
                 return filtered;
               })(),
               sessionId: capturedSessionId,
+              isSessionNote: true,
               projectId,
               goalId,
               gigId,
