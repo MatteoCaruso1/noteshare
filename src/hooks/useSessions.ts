@@ -506,21 +506,19 @@ export function useLogOfflineSession() {
 
       if (sessionError) throw sessionError;
 
-      // Create a note for this session if there's content
-      if (noteText || (tags && tags.length > 0)) {
-        const { error: noteError } = await supabase
-          .from('notes')
-          .insert({
-            author_id: userId,
-            session_id: session.id,
-            text_content: noteText,
-            tags: tags || [],
-            visibility: 'friends',
-            created_at: startedAt.toISOString(),
-          });
+      // Always create a note for the session (even if empty) so it appears on the timeline
+      const { error: noteError } = await supabase
+        .from('notes')
+        .insert({
+          author_id: userId,
+          session_id: session.id,
+          text_content: noteText || null,
+          tags: tags || [],
+          visibility: 'friends',
+          created_at: startedAt.toISOString(),
+        });
 
-        if (noteError) throw noteError;
-      }
+      if (noteError) throw noteError;
 
       return session as PracticeSession;
     },
