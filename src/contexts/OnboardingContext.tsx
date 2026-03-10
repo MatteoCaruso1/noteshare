@@ -13,6 +13,9 @@ interface OnboardingContextType {
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
+// Global flag accessible outside React tree (e.g. from hooks like useSessions)
+export let isOnboardingActive = false;
+
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { profile, isNewUser, clearNewUserFlag } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
