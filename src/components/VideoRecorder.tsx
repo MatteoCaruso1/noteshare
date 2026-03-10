@@ -90,6 +90,7 @@ export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecor
         setVideoBlob(blob);
         setPreviewUrl(url);
         setState('ready');
+        onVideoReady?.(blob);
         console.log(`[VideoRecorder] Recorded ${(blob.size / 1024).toFixed(0)}KB, type: ${blob.type}`);
       };
 
