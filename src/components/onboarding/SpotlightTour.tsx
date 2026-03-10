@@ -376,7 +376,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           <div className="fixed inset-0 bg-black/75 transition-opacity duration-300" />
         )
       ) : (
-        <div className="fixed inset-0 bg-black/75 transition-opacity duration-300" />
+        <div className="fixed inset-0 bg-background transition-opacity duration-300" />
       )}
 
       {/* Highlight border */}
