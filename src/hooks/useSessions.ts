@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PracticeSession } from '@/types';
+import { isOnboardingActive } from '@/contexts/OnboardingContext';
 
 const ACTIVE_SESSION_STORAGE_KEY = 'noteshare_active_session';
 
