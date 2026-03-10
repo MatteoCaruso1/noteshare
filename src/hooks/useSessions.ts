@@ -208,7 +208,9 @@ export function useStartSession() {
       // Persist real session to localStorage
       persistActiveSession(data, userId);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      toast.success('Practice session started!');
+      if (!isOnboardingActive) {
+        toast.success('Practice session started!');
+      }
     },
     onError: (error, variables, context) => {
       // Rollback on error

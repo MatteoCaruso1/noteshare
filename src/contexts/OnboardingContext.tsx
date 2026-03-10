@@ -34,6 +34,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
     setShowOnboarding(false);
     setCurrentStep(0);
+    isOnboardingActive = false;
     clearNewUserFlag();
     
     // Check for profile redirect (from shared profile link signup flow)
