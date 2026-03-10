@@ -889,6 +889,7 @@ export type Database = {
           created_at: string
           from_user_id: string | null
           gig_id: string | null
+          group_id: string | null
           id: string
           note_id: string | null
           read: boolean | null
@@ -900,6 +901,7 @@ export type Database = {
           created_at?: string
           from_user_id?: string | null
           gig_id?: string | null
+          group_id?: string | null
           id?: string
           note_id?: string | null
           read?: boolean | null
@@ -911,6 +913,7 @@ export type Database = {
           created_at?: string
           from_user_id?: string | null
           gig_id?: string | null
+          group_id?: string | null
           id?: string
           note_id?: string | null
           read?: boolean | null
@@ -930,6 +933,13 @@ export type Database = {
             columns: ["gig_id"]
             isOneToOne: false
             referencedRelation: "promo_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
             referencedColumns: ["id"]
           },
           {
