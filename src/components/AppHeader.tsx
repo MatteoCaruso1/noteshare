@@ -141,13 +141,13 @@ export function AppHeader() {
           <div className="hidden sm:flex items-center">
             <Button
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-medium"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 text-[11px] px-3 py-1 h-8 font-medium"
               onClick={() => {
                 window.scrollTo(0, 0);
                 navigate(user ? '/' : '/auth');
               }}
             >
-              Start Practicing
+              Start practicing
             </Button>
           </div>
         ) : (
