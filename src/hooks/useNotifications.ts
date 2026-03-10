@@ -9,6 +9,7 @@ export interface Notification {
   content: string;
   note_id: string | null;
   from_user_id: string | null;
+  group_id: string | null;
   read: boolean;
   created_at: string;
   from_user?: {
