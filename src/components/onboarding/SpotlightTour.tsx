@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Music } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
 
 interface TourStep {
@@ -18,27 +17,22 @@ interface TourStep {
 }
 
 const tourSteps: TourStep[] = [
-  // Steps 1-3: Informational highlights
   {
     targetSelector: '[data-tour="practice-start-btn"]',
-    message: 'Start your practice sessions here',
-    subMessage: 'Track your time, record clips, and take notes',
+    message: 'Start practice sessions here',
     position: 'bottom',
   },
   {
     targetSelector: '[data-tour="practice-board"]',
-    message: 'Plan your practice priorities',
-    subMessage: 'Your daily practice to-do list',
+    message: 'Your daily practice to-do list',
     position: 'bottom',
   },
   {
     targetSelector: '[data-tour="timeline"]',
-    message: 'View your practice history',
-    subMessage: 'All your sessions and notes appear here',
+    message: 'Your practice history lives here',
     position: 'top',
     excludeBottomNav: true,
   },
-  // Steps 4-5: Interactive - start a session
   {
     targetSelector: '[data-tour="practice-start-btn"]',
     message: 'Tap to open!',
@@ -55,18 +49,15 @@ const tourSteps: TourStep[] = [
     waitForSelector: '[data-tour="session-textarea"]',
     elevateParent: true,
   },
-  // Steps 6-8: Informational during active session
   {
     targetSelector: '[data-tour="session-textarea"]',
     message: 'Write what you\'re practicing',
-    subMessage: 'Add notes, checklists, or a practice plan',
     position: 'bottom',
     elevateParent: true,
   },
   {
     targetSelector: '[data-tour="audio-recorder"]',
     message: 'Record audio clips',
-    subMessage: 'Capture ideas during your session',
     position: 'top',
     elevateParent: true,
   },
@@ -76,7 +67,6 @@ const tourSteps: TourStep[] = [
     position: 'top',
     elevateParent: true,
   },
-  // Step 9: Interactive - end session
   {
     targetSelector: '[data-tour="end-session-btn"]',
     message: 'Tap to save your session!',
@@ -85,11 +75,9 @@ const tourSteps: TourStep[] = [
     waitForSelector: '[data-tour="save-session-btn"]',
     elevateParent: true,
   },
-  // Step 10: Interactive - save in dialog
   {
     targetSelector: '[data-tour="save-session-btn"]',
     message: 'Review and save!',
-    subMessage: 'Set your focus level, add who you practiced with, and more',
     position: 'top',
     interactive: true,
     waitForRemoval: '[data-tour="save-session-btn"]',
@@ -97,6 +85,9 @@ const tourSteps: TourStep[] = [
 ];
 
 const FINAL_STEP = tourSteps.length + 1;
+
+const TRANSITION_DURATION = 350;
+const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 interface SpotlightTourProps {
   step: number;
@@ -106,7 +97,7 @@ interface SpotlightTourProps {
 
 export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -114,7 +105,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   const onNextRef = useRef(onNext);
   const onCompleteRef = useRef(onComplete);
   
-  // Keep refs in sync without triggering effects
   onNextRef.current = onNext;
   onCompleteRef.current = onComplete;
 
@@ -133,7 +123,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const elevateElement = useCallback((element: HTMLElement, tourStep: TourStep) => {
     cleanupElevation();
-
     const shouldElevate = tourStep.interactive || tourStep.elevateParent;
     if (!shouldElevate) return;
 
@@ -152,7 +141,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         parent = parent.parentElement;
         depth++;
       }
-      // Also elevate the session-focus-card itself
       if (parent && parent.classList.contains('session-focus-card')) {
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
@@ -161,27 +149,19 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     }
   }, [cleanupElevation]);
 
-  const updateTargetRect = useCallback(() => {
-    if (currentTourStep) {
-      const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement | null;
-      if (element) {
-        let rect = element.getBoundingClientRect();
-        // If excludeBottomNav, clip the highlight to stop above the bottom nav
-        if (currentTourStep.excludeBottomNav) {
-          const bottomNav = document.querySelector('[data-tour="bottom-nav"]') as HTMLElement | null;
-          if (bottomNav) {
-            const navTop = bottomNav.getBoundingClientRect().top;
-            const clippedHeight = Math.max(0, navTop - rect.top);
-            rect = new DOMRect(rect.left, rect.top, rect.width, clippedHeight);
-          }
-        }
-        setTargetRect(rect);
-        elevateElement(element, currentTourStep);
-        return true;
+  const getRectForStep = useCallback((tourStep: TourStep): DOMRect | null => {
+    const element = document.querySelector(tourStep.targetSelector) as HTMLElement | null;
+    if (!element) return null;
+    let rect = element.getBoundingClientRect();
+    if (tourStep.excludeBottomNav) {
+      const bottomNav = document.querySelector('[data-tour="bottom-nav"]') as HTMLElement | null;
+      if (bottomNav) {
+        const navTop = bottomNav.getBoundingClientRect().top;
+        rect = new DOMRect(rect.left, rect.top, rect.width, Math.max(0, navTop - rect.top));
       }
     }
-    return false;
-  }, [currentTourStep, elevateElement]);
+    return rect;
+  }, []);
 
   const forceScrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -195,24 +175,19 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
     if (isFinalStep) {
       cleanupElevation();
-      if (location.pathname !== '/') {
-        navigate('/');
-      }
+      setTooltipVisible(false);
+      if (location.pathname !== '/') navigate('/');
       forceScrollToTop();
       setTimeout(forceScrollToTop, 50);
-      setTimeout(forceScrollToTop, 150);
       setTargetRect(null);
       return;
     }
 
     if (!currentTourStep) return;
+    if (location.pathname !== '/') navigate('/');
 
-    if (location.pathname !== '/') {
-      navigate('/');
-    }
-
-    setIsAnimating(true);
-    setTargetRect(null);
+    // Phase 1: fade out tooltip
+    setTooltipVisible(false);
 
     let resizeObserver: ResizeObserver | null = null;
     let waitObserver: MutationObserver | null = null;
@@ -220,77 +195,86 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     const maxRetries = 50;
     let cancelled = false;
 
-    const findElement = () => {
+    const findAndHighlight = () => {
       if (cancelled) return;
       forceScrollToTop();
-      const found = updateTargetRect();
-      if (found) {
-        setTimeout(() => { if (!cancelled) setIsAnimating(false); }, 300);
-        setTimeout(() => { if (!cancelled) { forceScrollToTop(); updateTargetRect(); } }, 200);
-        setTimeout(() => { if (!cancelled) { forceScrollToTop(); updateTargetRect(); } }, 500);
+      const rect = getRectForStep(currentTourStep);
+      if (rect) {
+        const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement;
+        if (element) elevateElement(element, currentTourStep);
 
+        // Update rect — CSS transition on the highlight handles smooth movement
+        setTargetRect(rect);
+
+        // Phase 2: fade in tooltip after highlight has moved
+        setTimeout(() => {
+          if (!cancelled) {
+            forceScrollToTop();
+            // Re-measure after scroll
+            const freshRect = getRectForStep(currentTourStep);
+            if (freshRect) setTargetRect(freshRect);
+            setTooltipVisible(true);
+          }
+        }, TRANSITION_DURATION + 50);
+
+        // Keep position accurate
         const el = document.querySelector(currentTourStep.targetSelector);
         if (el) {
-          resizeObserver = new ResizeObserver(() => { if (!cancelled) updateTargetRect(); });
+          resizeObserver = new ResizeObserver(() => {
+            if (!cancelled) {
+              const r = getRectForStep(currentTourStep);
+              if (r) setTargetRect(r);
+            }
+          });
           resizeObserver.observe(el);
         }
 
-        // For interactive steps, watch for completion condition
+        // Interactive step watchers
         if (currentTourStep.interactive && (currentTourStep.waitForSelector || currentTourStep.waitForRemoval)) {
           waitObserver = new MutationObserver(() => {
             if (cancelled) return;
-            if (currentTourStep.waitForSelector) {
-              const target = document.querySelector(currentTourStep.waitForSelector);
-              if (target) {
-                waitObserver?.disconnect();
-                setTimeout(() => {
-                  if (!cancelled) {
-                    cleanupElevation();
-                    onNextRef.current();
-                  }
-                }, 400);
-              }
+            if (currentTourStep.waitForSelector && document.querySelector(currentTourStep.waitForSelector)) {
+              waitObserver?.disconnect();
+              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, 300);
             }
-            if (currentTourStep.waitForRemoval) {
-              const target = document.querySelector(currentTourStep.waitForRemoval);
-              if (!target) {
-                waitObserver?.disconnect();
-                setTimeout(() => {
-                  if (!cancelled) {
-                    cleanupElevation();
-                    onNextRef.current();
-                  }
-                }, 400);
-              }
+            if (currentTourStep.waitForRemoval && !document.querySelector(currentTourStep.waitForRemoval)) {
+              waitObserver?.disconnect();
+              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, 300);
             }
           });
           waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
         }
       } else if (retryCount < maxRetries) {
         retryCount++;
-        setTimeout(findElement, 100);
+        setTimeout(findAndHighlight, 100);
       }
     };
 
     forceScrollToTop();
-    requestAnimationFrame(() => {
-      forceScrollToTop();
-      setTimeout(findElement, 150);
-    });
+    // Small delay to let fade-out complete before moving highlight
+    const startDelay = setTimeout(() => {
+      if (!cancelled) findAndHighlight();
+    }, 120);
 
-    const handleScroll = () => { if (!cancelled) updateTargetRect(); };
-    const handleResize = () => { if (!cancelled) updateTargetRect(); };
+    const handleScroll = () => {
+      if (!cancelled && currentTourStep) {
+        const r = getRectForStep(currentTourStep);
+        if (r) setTargetRect(r);
+      }
+    };
+    const handleResize = handleScroll;
     window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleResize);
 
     return () => {
       cancelled = true;
+      clearTimeout(startDelay);
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleResize);
       resizeObserver?.disconnect();
       waitObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect, forceScrollToTop, cleanupElevation]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, forceScrollToTop, cleanupElevation, elevateElement]);
 
   useEffect(() => {
     return () => cleanupElevation();
@@ -298,10 +282,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const handleOverlayClick = () => {
     if (isFadingOut) return;
-    // Interactive steps: ignore overlay clicks, user must tap the element
     if (currentTourStep?.interactive) return;
 
     setIsFadingOut(true);
+    setTooltipVisible(false);
     setTimeout(() => {
       setIsFadingOut(false);
       if (isFinalStep) {
@@ -315,29 +299,27 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const getTooltipStyle = (): React.CSSProperties => {
     if (!targetRect || !currentTourStep) return { top: '40%', left: '50%', transform: 'translateX(-50%)' };
-    const padding = 16;
+    const padding = 14;
     const position = currentTourStep.position || 'bottom';
 
-    switch (position) {
-      case 'top':
-        return {
-          bottom: window.innerHeight - targetRect.top + padding,
-          left: '50%',
-          transform: 'translateX(-50%)',
-        };
-      case 'bottom':
-      default:
-        return {
-          top: targetRect.bottom + padding,
-          left: '50%',
-          transform: 'translateX(-50%)',
-        };
+    if (position === 'top') {
+      return {
+        bottom: window.innerHeight - targetRect.top + padding,
+        left: '50%',
+        transform: 'translateX(-50%)',
+      };
     }
+    return {
+      top: targetRect.bottom + padding,
+      left: '50%',
+      transform: 'translateX(-50%)',
+    };
   };
 
   const isSaveDialogStep = currentTourStep?.targetSelector === '[data-tour="save-session-btn"]';
-
   const isInteractive = currentTourStep?.interactive;
+
+  const transStyle = `all ${TRANSITION_DURATION}ms ${EASE}`;
 
   const content = (
     <div
@@ -345,68 +327,60 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       style={{ pointerEvents: isInteractive ? 'none' : 'auto' }}
       onClick={handleOverlayClick}
     >
-      {/* Dark overlay - always visible */}
+      {/* Dark overlay */}
       {!isFinalStep ? (
-        <>
-          {targetRect ? (
-            <svg className="fixed inset-0 w-full h-full pointer-events-none">
-              <defs>
-                <mask id="spotlight-mask">
-                  <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                  <rect
-                    x={targetRect.left - 8}
-                    y={targetRect.top - 8}
-                    width={targetRect.width + 16}
-                    height={targetRect.height + 16}
-                    rx="12"
-                    fill="black"
-                    style={{
-                      transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      opacity: isAnimating ? 0 : 1,
-                    }}
-                  />
-                </mask>
-              </defs>
-              <rect
-                x="0"
-                y="0"
-                width="100%"
-                height="100%"
-                fill={isSaveDialogStep ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.8)"}
-                mask="url(#spotlight-mask)"
-              />
-            </svg>
-          ) : (
-            <div className="fixed inset-0 bg-black/80" />
-          )}
-        </>
+        targetRect ? (
+          <svg className="fixed inset-0 w-full h-full pointer-events-none">
+            <defs>
+              <mask id="spotlight-mask">
+                <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                <rect
+                  x={targetRect.left - 8}
+                  y={targetRect.top - 8}
+                  width={targetRect.width + 16}
+                  height={targetRect.height + 16}
+                  rx="12"
+                  fill="black"
+                  style={{ transition: transStyle }}
+                />
+              </mask>
+            </defs>
+            <rect
+              x="0" y="0" width="100%" height="100%"
+              fill={isSaveDialogStep ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.75)"}
+              mask="url(#spotlight-mask)"
+              style={{ transition: `fill ${TRANSITION_DURATION}ms ${EASE}` }}
+            />
+          </svg>
+        ) : (
+          <div className="fixed inset-0 bg-black/75 transition-opacity duration-300" />
+        )
       ) : (
-        <div className="fixed inset-0 bg-black/80" />
+        <div className="fixed inset-0 bg-black/75 transition-opacity duration-300" />
       )}
 
-      {/* Highlighted element border */}
+      {/* Highlight border */}
       {targetRect && !isFinalStep && (
         <div
-          className="fixed rounded-xl border-2 border-primary pointer-events-none"
+          className="fixed rounded-xl border-2 border-primary/80 pointer-events-none"
           style={{
             left: targetRect.left - 8,
             top: targetRect.top - 8,
             width: targetRect.width + 16,
             height: targetRect.height + 16,
-            transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: (isAnimating || isFadingOut) ? 0 : 1,
-            transform: (isAnimating || isFadingOut) ? 'scale(0.95)' : 'scale(1)',
+            transition: transStyle,
+            opacity: isFadingOut ? 0 : 1,
             zIndex: 102,
           }}
         />
       )}
 
-      {/* Tooltip / Message */}
+      {/* Tooltip */}
       {isFinalStep ? (
         <div
           className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center"
           style={{
-            transition: 'opacity 250ms ease-in-out',
+            transition: `opacity 300ms ease`,
             opacity: isFadingOut ? 0 : 1,
           }}
         >
@@ -417,8 +391,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             <p className="text-2xl font-semibold text-foreground mb-4">
               Happy practicing!
             </p>
-            <p className="text-lg text-muted-foreground mb-8">
-              Have fun exploring all Noteshare has to offer
+            <p className="text-base text-muted-foreground mb-8">
+              Explore everything Noteshare has to offer
             </p>
             <p className="text-sm text-muted-foreground/60">
               Tap anywhere to continue
@@ -427,31 +401,30 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         </div>
       ) : currentTourStep && (
         <div
-          className="fixed max-w-xs px-4 py-3 bg-card border border-border rounded-xl shadow-lg pointer-events-none"
+          className="fixed max-w-[260px] px-4 py-3 bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-lg pointer-events-none"
           style={{
             ...getTooltipStyle(),
-            transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: (isAnimating || isFadingOut) ? 0 : 1,
-            transform: `translateX(-50%) ${isAnimating ? 'translateY(8px)' : 'translateY(0)'}`,
+            transition: `opacity ${TRANSITION_DURATION}ms ease, transform ${TRANSITION_DURATION}ms ${EASE}`,
+            opacity: (tooltipVisible && !isFadingOut) ? 1 : 0,
+            transform: `translateX(-50%) translateY(${tooltipVisible && !isFadingOut ? '0' : '6px'})`,
             zIndex: 103,
           }}
         >
-          <p className="text-sm text-foreground text-center font-medium">
+          <p className="text-sm text-foreground text-center font-medium leading-snug">
             {currentTourStep.message}
           </p>
           {currentTourStep.subMessage && (
-            <p className="text-xs text-muted-foreground text-center mt-1">
+            <p className="text-xs text-muted-foreground text-center mt-1 leading-snug">
               {currentTourStep.subMessage}
             </p>
           )}
           {!currentTourStep.interactive && (
-            <p className="text-xs text-muted-foreground/60 text-center mt-2">
-              Tap anywhere to continue
+            <p className="text-[11px] text-muted-foreground/50 text-center mt-1.5">
+              Tap to continue
             </p>
           )}
         </div>
       )}
-
     </div>
   );
 
