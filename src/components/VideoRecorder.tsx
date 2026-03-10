@@ -31,6 +31,11 @@ export function VideoRecorder({ className, onDiscard }: VideoRecorderProps & { o
     };
   }, []);
 
+  // Auto-start recording on mount
+  useEffect(() => {
+    startRecording();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const stopTracks = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
