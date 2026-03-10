@@ -24,6 +24,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const startOnboarding = () => {
     setCurrentStep(0);
     setShowOnboarding(true);
+    isOnboardingActive = true;
   };
 
   const completeOnboarding = () => {
