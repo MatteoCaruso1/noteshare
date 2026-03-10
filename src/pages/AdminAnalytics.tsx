@@ -489,6 +489,89 @@ const AdminAnalytics = () => {
         {/* Account Funnel */}
         {data.accountFunnel && <AccountFunnelCard funnel={data.accountFunnel} days={days} />}
 
+        {/* Recent Accounts - right under funnel */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              Recent Accounts (Last 30 Days)
+            </CardTitle>
+            <CardDescription>
+              {accountsLoading ? 'Loading...' : `${recentAccounts.length} accounts created`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {accountsLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-3 mb-4">
+                  <Select value={filterHasNotes} onValueChange={(v) => setFilterHasNotes(v as 'all' | 'yes' | 'no')}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Has Notes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Notes</SelectItem>
+                      <SelectItem value="yes">Has Notes</SelectItem>
+                      <SelectItem value="no">No Notes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterFriends} onValueChange={(v) => setFilterFriends(v as 'all' | '0' | '1+')}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Friends" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Friends</SelectItem>
+                      <SelectItem value="0">0 Friends</SelectItem>
+                      <SelectItem value="1+">1+ Friends</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="overflow-auto max-h-[500px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Has Notes</TableHead>
+                        <TableHead>Friends</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {recentAccounts
+                        .filter(a => {
+                          if (filterHasNotes === 'yes' && !a.has_logged_first_note) return false;
+                          if (filterHasNotes === 'no' && a.has_logged_first_note) return false;
+                          if (filterFriends === '0' && a.friendCount > 0) return false;
+                          if (filterFriends === '1+' && a.friendCount === 0) return false;
+                          return true;
+                        })
+                        .map((account) => (
+                        <TableRow key={account.id}>
+                          <TableCell className="font-medium">{account.name}</TableCell>
+                          <TableCell className="text-muted-foreground">@{account.username}</TableCell>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {format(parseISO(account.created_at), 'MMM d, yyyy h:mm a')}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={account.has_logged_first_note ? 'default' : 'secondary'}>
+                              {account.has_logged_first_note ? 'Yes' : 'No'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">{account.friendCount}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
       {/* Metric 1: Note-activated Users Chart */}
       <Card className="mb-8">
         <CardHeader>
