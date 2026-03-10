@@ -7,9 +7,11 @@ const MAX_DURATION = 30; // seconds
 
 interface VideoRecorderProps {
   className?: string;
+  onDiscard?: () => void;
+  onVideoReady?: (blob: Blob) => void;
 }
 
-export function VideoRecorder({ className, onDiscard }: VideoRecorderProps & { onDiscard?: () => void }) {
+export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecorderProps) {
   const [state, setState] = useState<'idle' | 'recording' | 'ready'>('idle');
   const [elapsed, setElapsed] = useState(0);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
