@@ -51,7 +51,7 @@ const tourSteps: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="session-textarea"]',
-    message: 'Write what you\'re practicing',
+    message: 'You can write what you\'re practicing',
     position: 'bottom',
     elevateParent: true,
   },
