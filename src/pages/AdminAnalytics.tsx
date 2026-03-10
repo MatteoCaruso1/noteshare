@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone, Filter } from 'lucide-react';
+import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone, Filter, Trash2, UserCheck } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
@@ -228,11 +230,39 @@ function AccountFunnelCard({ funnel, days }: { funnel: NonNullable<ReturnType<ty
 interface DrilldownUser { name: string; username: string; }
 interface DrilldownData { date: string; viewers: DrilldownUser[]; creators: DrilldownUser[]; }
 
+interface RecentAccount {
+  id: string;
+  user_id: string | null;
+  name: string;
+  username: string;
+  created_at: string;
+  has_logged_first_note: boolean;
+  instruments: string[] | null;
+}
+
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
   const { data, isLoading, error } = useAnalytics(days);
   const [drilldown, setDrilldown] = useState<DrilldownData | null>(null);
   const [drilldownLoading, setDrilldownLoading] = useState(false);
+  const [recentAccounts, setRecentAccounts] = useState<RecentAccount[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentAccounts = async () => {
+      setAccountsLoading(true);
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data: accounts } = await supabase
+        .from('profiles')
+        .select('id, user_id, name, username, created_at, has_logged_first_note, instruments')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false });
+      setRecentAccounts(accounts || []);
+      setAccountsLoading(false);
+    };
+    fetchRecentAccounts();
+  }, []);
 
   const handleActivationChartClick = useCallback(async (chartData: any) => {
     if (!chartData?.activePayload?.[0]?.payload?.date) return;
@@ -753,6 +783,59 @@ const AdminAnalytics = () => {
           <Badge variant="outline">{user.mobilePercent}% mobile ({user.mobileCount}/{user.totalCount})</Badge>
         )}
       />
+
+      {/* Recent Accounts */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserCheck className="w-5 h-5" />
+            Recent Accounts (Last 30 Days)
+          </CardTitle>
+          <CardDescription>
+            {accountsLoading ? 'Loading...' : `${recentAccounts.length} accounts created`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {accountsLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="overflow-auto max-h-[500px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Has Notes</TableHead>
+                    <TableHead>Instruments</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentAccounts.map((account) => (
+                    <TableRow key={account.id}>
+                      <TableCell className="font-medium">{account.name}</TableCell>
+                      <TableCell className="text-muted-foreground">@{account.username}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">
+                        {format(parseISO(account.created_at), 'MMM d, yyyy h:mm a')}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={account.has_logged_first_note ? 'default' : 'secondary'}>
+                          {account.has_logged_first_note ? 'Yes' : 'No'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {account.instruments?.length ? account.instruments.join(', ') : '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       </div>
     </div>
