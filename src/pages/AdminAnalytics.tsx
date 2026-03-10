@@ -366,20 +366,6 @@ const AdminAnalytics = () => {
     rate: item.rate,
   }));
 
-  // Day 7 retention chart data - filter to only show cohorts that have reached day 7
-  const retentionChartData = data.day7Retention.dailyRates
-    .filter((item) => {
-      const cohortDate = new Date(item.date);
-      const today = new Date();
-      const daysSinceCohort = Math.floor((today.getTime() - cohortDate.getTime()) / (1000 * 60 * 60 * 24));
-      return daysSinceCohort >= 7 && item.cohortSize > 0;
-    })
-    .map((item) => ({
-      date: item.date,
-      cohortSize: item.cohortSize,
-      retained: item.retained,
-      rate: item.rate,
-    }));
 
   const formatXAxis = (dateStr: string) => {
     try {
@@ -422,8 +408,8 @@ const AdminAnalytics = () => {
           </Select>
         </div>
 
-        {/* Engagement Metric Cards (Row 1) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* Engagement Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <MetricCard
             icon={<Users className="w-4 h-4" />}
             title="Note-activated Users (Today)"
@@ -441,49 +427,12 @@ const AdminAnalytics = () => {
           />
 
           <MetricCard
-            icon={<RefreshCw className="w-4 h-4" />}
-            title="Day 7 Retention"
-            definition={METRIC_DEFINITIONS.day7Retention}
-            value={data.day7Retention.today.rate !== null ? `${data.day7Retention.today.rate}%` : 'N/A'}
-            subtitle={data.day7Retention.today.cohortSize > 0 
-              ? `${data.day7Retention.today.retained} of ${data.day7Retention.today.cohortSize} users returned`
-              : 'No cohort from 7 days ago'}
-          />
-        </div>
-
-        {/* Subscription Metric Cards (Row 2) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <MetricCard
             icon={<CreditCard className="w-4 h-4" />}
             title="Active Premium"
             definition={METRIC_DEFINITIONS.activePremium}
             value={data.paidConversion.totalActive}
             subtitle={`${data.paidConversion.inTrial} trial, ${data.paidConversion.actuallyPaying} paying`}
           />
-
-          <MetricCard
-            icon={<Repeat className="w-4 h-4" />}
-            title="Trial → Paid (7 days)"
-            definition={METRIC_DEFINITIONS.trialToPaid}
-            value={data.trialToPaidRate.trialsEndedLast7Days > 0 ? `${data.trialToPaidRate.rate}%` : 'N/A'}
-            subtitle={data.trialToPaidRate.trialsEndedLast7Days > 0
-              ? `${data.trialToPaidRate.converted} of ${data.trialToPaidRate.trialsEndedLast7Days} converted`
-              : 'No trials ended in last 7 days'}
-          />
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Data Range</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-semibold">
-                {data.metadata.startDate && formatTooltipLabel(data.metadata.startDate)}
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Updated: {format(parseISO(data.metadata.generatedAt), 'h:mm a')}
-              </p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Account Funnel */}
@@ -757,89 +706,6 @@ const AdminAnalytics = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <RefreshCw className="w-5 h-5" />
-            Day 7 Core Retention
-          </CardTitle>
-          <CardDescription>
-            Users who created their first Note and returned 7 days later
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {retentionChartData.length > 0 ? (
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={retentionChartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={formatXAxis}
-                    className="text-xs"
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    allowDecimals={false} 
-                    className="text-xs"
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    tickFormatter={(value) => `${value}%`}
-                    className="text-xs"
-                    domain={[0, 100]}
-                  />
-                  <Tooltip 
-                    labelFormatter={(dateStr) => `Cohort: ${formatTooltipLabel(dateStr)}`}
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number, name: string) => {
-                      if (name === 'Retention Rate') return [`${value}%`, name];
-                      return [value, name];
-                    }}
-                  />
-                  <Legend />
-                  <Bar 
-                    yAxisId="left"
-                    dataKey="cohortSize" 
-                    fill="hsl(var(--muted))"
-                    name="Cohort Size"
-                  />
-                  <Bar 
-                    yAxisId="left"
-                    dataKey="retained" 
-                    fill="hsl(var(--primary))"
-                    name="Retained"
-                  />
-                  <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="rate" 
-                    stroke="hsl(var(--chart-2))"
-                    strokeWidth={2}
-                    dot={true}
-                    name="Retention Rate"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-[200px] flex items-center justify-center">
-              <p className="text-muted-foreground text-center">
-                No retention data available yet.<br />
-                Cohorts need 7+ days to measure retention.
-              </p>
-            </div>
-          )}
-          <p className="text-sm text-muted-foreground mt-4 text-center">
-            X-axis shows cohort date (when users created their first Note). Each bar shows if they returned 7 days later.
-          </p>
-        </CardContent>
-      </Card>
 
       {/* Premium Users List */}
       <UserList<PremiumUser>
