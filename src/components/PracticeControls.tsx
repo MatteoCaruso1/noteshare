@@ -582,13 +582,22 @@ export function PracticeControls() {
             },
             {
               onSuccess: (newNote) => {
-                incrementCount(); // Update local count optimistically
+                incrementCount();
                 
                 // Share with selected friends if any
                 if (playingWithIds && playingWithIds.length > 0 && newNote?.id) {
                   createNoteShares.mutate({
                     noteId: newNote.id,
                     sharedWithIds: playingWithIds,
+                  });
+                }
+
+                // Upload video if one was recorded (non-blocking)
+                if (videoBlobRef.current && newNote?.id && user?.id) {
+                  const blob = videoBlobRef.current;
+                  videoBlobRef.current = null;
+                  uploadNoteVideo(blob, user.id, newNote.id).then(path => {
+                    if (!path) sonnerToast.error('Video upload failed.');
                   });
                 }
                 
