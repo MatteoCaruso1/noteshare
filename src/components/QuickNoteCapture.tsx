@@ -355,6 +355,8 @@ export function QuickNoteCapture() {
                   <AudioRecorder 
                     onRecorded={handleAudioRecorded} 
                     onRecordingChange={setIsRecordingAudio}
+                    onVideoReady={(blob) => { videoBlobRef.current = blob; }}
+                    onVideoDiscarded={() => { videoBlobRef.current = null; }}
                     userId={profile.id}
                     className="w-full" 
                   />
