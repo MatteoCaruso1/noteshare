@@ -367,7 +367,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Days Practiced</p>
                     </div>
                     <div className="flex flex-col items-center text-center">
-                      <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{pct}%</p>
+                      <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${pct > 70 ? 'text-green-500' : pct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{pct}%</p>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">of Days Practiced</p>
                     </div>
                   </>
