@@ -24,6 +24,8 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recordingSize, setRecordingSize] = useState(0);
+  const [videoRecording, setVideoRecording] = useState(false);
+  const videoRecorderRef = useRef<{ start: () => void } | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
