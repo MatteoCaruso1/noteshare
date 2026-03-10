@@ -74,6 +74,7 @@ export function QuickNoteCapture() {
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
+  const videoBlobRef = useRef<Blob | null>(null);
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
