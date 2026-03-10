@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser } from '@/hooks/useAnalytics';
+import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -223,9 +225,40 @@ function AccountFunnelCard({ funnel, days }: { funnel: NonNullable<ReturnType<ty
   );
 }
 
+interface DrilldownUser { name: string; username: string; }
+interface DrilldownData { date: string; viewers: DrilldownUser[]; creators: DrilldownUser[]; }
+
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
   const { data, isLoading, error } = useAnalytics(days);
+  const [drilldown, setDrilldown] = useState<DrilldownData | null>(null);
+  const [drilldownLoading, setDrilldownLoading] = useState(false);
+
+  const handleActivationChartClick = useCallback(async (chartData: any) => {
+    if (!chartData?.activePayload?.[0]?.payload?.date) return;
+    const date = chartData.activePayload[0].payload.date;
+    setDrilldownLoading(true);
+    setDrilldown(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-analytics?drilldown_date=${date}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setDrilldown(data);
+      }
+    } catch (e) {
+      console.error('Drilldown fetch error:', e);
+    } finally {
+      setDrilldownLoading(false);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -457,13 +490,13 @@ const AdminAnalytics = () => {
             User Note-activation Rate
           </CardTitle>
           <CardDescription>
-            Percentage of Practice page viewers who created a Note
+            Percentage of Practice page viewers who created a Note · Click a data point to see who
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activationRateChartData}>
+              <AreaChart data={activationRateChartData} onClick={handleActivationChartClick} style={{ cursor: 'pointer' }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis 
                   dataKey="date" 
@@ -528,7 +561,58 @@ const AdminAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Metric 3: Day 7 Retention Chart */}
+      {/* Activation Rate Drilldown Dialog */}
+      <Dialog open={!!drilldown || drilldownLoading} onOpenChange={(open) => { if (!open) { setDrilldown(null); setDrilldownLoading(false); } }}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {drilldown ? format(parseISO(drilldown.date), 'MMMM d, yyyy') : 'Loading...'}
+            </DialogTitle>
+            <DialogDescription>
+              Viewers & Note Creators for this day
+            </DialogDescription>
+          </DialogHeader>
+          {drilldownLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : drilldown && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Viewers ({drilldown.viewers.length})
+                </h4>
+                <div className="space-y-1">
+                  {drilldown.viewers.map((u, i) => (
+                    <div key={i} className="text-sm flex items-center justify-between py-1 px-2 rounded-md bg-muted/50">
+                      <span>{u.name}</span>
+                      <span className="text-muted-foreground text-xs">@{u.username}</span>
+                    </div>
+                  ))}
+                  {drilldown.viewers.length === 0 && <p className="text-sm text-muted-foreground">No viewers</p>}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-primary mb-2 flex items-center gap-2">
+                  <Music className="w-4 h-4" />
+                  Note Creators ({drilldown.creators.length})
+                </h4>
+                <div className="space-y-1">
+                  {drilldown.creators.map((u, i) => (
+                    <div key={i} className="text-sm flex items-center justify-between py-1 px-2 rounded-md bg-primary/10">
+                      <span>{u.name}</span>
+                      <span className="text-muted-foreground text-xs">@{u.username}</span>
+                    </div>
+                  ))}
+                  {drilldown.creators.length === 0 && <p className="text-sm text-muted-foreground">No creators</p>}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
