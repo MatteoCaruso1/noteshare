@@ -73,7 +73,6 @@ const tourSteps: TourStep[] = [
   {
     targetSelector: '[data-tour="link-to-list"]',
     message: 'Link to your Practice List',
-    subMessage: 'Toggle this to attach your session to today\'s list',
     position: 'top',
     elevateParent: true,
   },
