@@ -166,7 +166,16 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     if (currentTourStep) {
       const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement | null;
       if (element) {
-        const rect = element.getBoundingClientRect();
+        let rect = element.getBoundingClientRect();
+        // If excludeBottomNav, clip the highlight to stop above the bottom nav
+        if (currentTourStep.excludeBottomNav) {
+          const bottomNav = document.querySelector('[data-tour="bottom-nav"]') as HTMLElement | null;
+          if (bottomNav) {
+            const navTop = bottomNav.getBoundingClientRect().top;
+            const clippedHeight = Math.max(0, navTop - rect.top);
+            rect = new DOMRect(rect.left, rect.top, rect.width, clippedHeight);
+          }
+        }
         setTargetRect(rect);
         elevateElement(element, currentTourStep);
         return true;
