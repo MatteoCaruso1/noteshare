@@ -9,6 +9,7 @@ import { ShareCalendarSheet } from './ShareCalendarSheet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PracticeStatsProps {
   profileId: string;
@@ -16,6 +17,7 @@ interface PracticeStatsProps {
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { profile } = useAuth();
+  const isMobile = useIsMobile();
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [showShareCalendar, setShowShareCalendar] = useState(false);
@@ -195,12 +197,12 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis 
+                     <XAxis 
                       dataKey="week" 
                       tick={{ fontSize: 10 }} 
                       className="text-muted-foreground"
                       tickLine={false}
-                      interval={0}
+                      interval={isMobile ? 1 : 0}
                     />
                     <YAxis 
                       tick={{ fontSize: 10 }} 
@@ -397,7 +399,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   tick={{ fontSize: 10 }}
                   className="text-muted-foreground"
                   tickLine={false}
-                  interval={0}
+                  interval={isMobile ? 1 : 0}
                 />
                 <YAxis
                   domain={[0, 5]}
