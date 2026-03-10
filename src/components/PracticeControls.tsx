@@ -945,11 +945,13 @@ export function PracticeControls() {
           {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
             {/* Audio Recorder - when recording, shows stop + timer; otherwise mic button */}
-            <AudioRecorder 
-              onRecorded={handleAudioRecorded} 
-              onRecordingChange={setIsRecordingAudio}
-              className={isRecordingAudio ? 'shrink-0' : 'flex-1'}
-            />
+            <div data-tour="audio-recorder" className={isRecordingAudio ? 'shrink-0' : 'flex-1'}>
+              <AudioRecorder 
+                onRecorded={handleAudioRecorded} 
+                onRecordingChange={setIsRecordingAudio}
+                className="w-full"
+              />
+            </div>
             
             {/* Pause/Resume button - disabled during recording */}
             <Button
