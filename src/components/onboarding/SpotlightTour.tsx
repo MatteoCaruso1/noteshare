@@ -35,6 +35,7 @@ const tourSteps: TourStep[] = [
     message: 'View your practice history',
     subMessage: 'All your sessions and notes appear here',
     position: 'top',
+    excludeBottomNav: true,
   },
   // Steps 4-5: Interactive - start a session
   {
