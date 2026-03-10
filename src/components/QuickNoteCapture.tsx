@@ -194,8 +194,18 @@ export function QuickNoteCapture() {
         focusTextSnapshot: focusData ? focusData.focus_text : undefined,
       },
       {
-        onSuccess: () => {
-          incrementCount(); // Update local count optimistically
+        onSuccess: async (newNote) => {
+          incrementCount();
+          
+          // Upload video if one was recorded (non-blocking)
+          if (videoBlobRef.current && newNote?.id && user?.id) {
+            const blob = videoBlobRef.current;
+            videoBlobRef.current = null;
+            uploadNoteVideo(blob, user.id, newNote.id).then(path => {
+              if (!path) toast.error('Video upload failed.');
+            });
+          }
+          
           clearState();
           setPrivateAudioIndices([]);
           setIsOpen(false);
