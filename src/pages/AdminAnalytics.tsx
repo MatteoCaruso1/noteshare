@@ -490,7 +490,7 @@ const AdminAnalytics = () => {
             User Note-activation Rate
           </CardTitle>
           <CardDescription>
-            Percentage of Practice page viewers who created a Note
+            Percentage of Practice page viewers who created a Note · Click a data point to see who
           </CardDescription>
         </CardHeader>
         <CardContent>
