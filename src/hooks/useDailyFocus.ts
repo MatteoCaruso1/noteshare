@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -86,6 +86,12 @@ export function useTodaysFocus() {
   const userId = user?.id;
   const queryClient = useQueryClient();
 
+  // Keep a ref so the mutation can still identify the user during sign-out
+  const userIdRef = useRef(userId);
+  useEffect(() => {
+    if (userId) userIdRef.current = userId;
+  }, [userId]);
+
   // Fetch today's focus entry, or the most recent one if today doesn't exist
   const query = useQuery({
     queryKey: ['daily-focus', userId],
@@ -163,7 +169,8 @@ export function useTodaysFocus() {
   // Upsert today's focus
   const updateFocus = useMutation({
     mutationFn: async (focusText: string) => {
-      if (!userId) throw new Error('Not authenticated');
+      const effectiveUserId = userId || userIdRef.current;
+      if (!effectiveUserId) throw new Error('Not authenticated');
 
       const today = getLocalDateString();
 
@@ -171,7 +178,7 @@ export function useTodaysFocus() {
         .from('daily_focus')
         .upsert(
           {
-            user_id: userId,
+            user_id: effectiveUserId,
             focus_date: today,
             focus_text: focusText,
           },

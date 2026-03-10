@@ -241,6 +241,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear remember me flags first
     localStorage.removeItem('noteshare_remember_me');
     sessionStorage.removeItem('noteshare_session_active');
+
+    // Flush pending saves (e.g. Practice List) while session is still valid
+    window.dispatchEvent(new CustomEvent('noteshare:before-signout'));
     
     try {
       const { error } = await supabase.auth.signOut();
