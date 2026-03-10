@@ -115,6 +115,7 @@ export function VideoRecorder({ className, onDiscard }: VideoRecorderProps & { o
     } catch (err) {
       console.error('[VideoRecorder] Permission error:', err);
       toast.error('Camera access required to record video.');
+      onDiscard?.();
     }
   }, [stopTracks, previewUrl]);
 
