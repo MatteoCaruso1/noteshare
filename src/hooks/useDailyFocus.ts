@@ -169,7 +169,8 @@ export function useTodaysFocus() {
   // Upsert today's focus
   const updateFocus = useMutation({
     mutationFn: async (focusText: string) => {
-      if (!userId) throw new Error('Not authenticated');
+      const effectiveUserId = userId || userIdRef.current;
+      if (!effectiveUserId) throw new Error('Not authenticated');
 
       const today = getLocalDateString();
 
