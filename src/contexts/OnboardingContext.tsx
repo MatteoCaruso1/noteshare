@@ -13,6 +13,9 @@ interface OnboardingContextType {
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
+// Global flag accessible outside React tree (e.g. from hooks like useSessions)
+export let isOnboardingActive = false;
+
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { profile, isNewUser, clearNewUserFlag } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -21,6 +24,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const startOnboarding = () => {
     setCurrentStep(0);
     setShowOnboarding(true);
+    isOnboardingActive = true;
   };
 
   const completeOnboarding = () => {
@@ -30,6 +34,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }
     setShowOnboarding(false);
     setCurrentStep(0);
+    isOnboardingActive = false;
     clearNewUserFlag();
     
     // Check for profile redirect (from shared profile link signup flow)

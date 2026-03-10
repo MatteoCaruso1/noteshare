@@ -117,6 +117,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     elevatedElementsRef.current.forEach(el => {
       el.style.removeProperty('position');
       el.style.removeProperty('z-index');
+      el.style.removeProperty('pointer-events');
     });
     elevatedElementsRef.current = [];
   }, []);
@@ -128,6 +129,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
     element.style.position = 'relative';
     element.style.zIndex = '101';
+    // Only the target element should be clickable during interactive steps
+    if (tourStep.interactive) {
+      element.style.pointerEvents = 'auto';
+    }
     elevatedElementsRef.current.push(element);
 
     if (tourStep.elevateParent) {
@@ -137,6 +142,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         if (parent.classList.contains('session-focus-card') || parent.tagName === 'MAIN') break;
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
+        // Block clicks on parent containers so only the target is interactive
+        if (tourStep.interactive) {
+          parent.style.pointerEvents = 'none';
+        }
         elevatedElementsRef.current.push(parent);
         parent = parent.parentElement;
         depth++;
@@ -144,6 +153,9 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       if (parent && parent.classList.contains('session-focus-card')) {
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
+        if (tourStep.interactive) {
+          parent.style.pointerEvents = 'none';
+        }
         elevatedElementsRef.current.push(parent);
       }
     }
