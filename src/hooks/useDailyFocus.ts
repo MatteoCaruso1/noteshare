@@ -178,7 +178,7 @@ export function useTodaysFocus() {
         .from('daily_focus')
         .upsert(
           {
-            user_id: userId,
+            user_id: effectiveUserId,
             focus_date: today,
             focus_text: focusText,
           },

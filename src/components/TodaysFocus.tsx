@@ -257,19 +257,7 @@ export function TodaysFocus() {
 
   // Flush pending save immediately when app goes to background (iOS kills tabs without running cleanup effects)
   useEffect(() => {
-    const flushOnBackground = () => {
-      if (document.visibilityState === 'hidden' && hasChangesRef.current) {
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-          saveTimeoutRef.current = null;
-        }
-        updateFocus(textRef.current);
-        hasChangesRef.current = false;
-      }
-    };
-    document.addEventListener('visibilitychange', flushOnBackground);
-    // pagehide is more reliable on iOS Safari/PWA
-    window.addEventListener('pagehide', () => {
+    const flushPendingSave = () => {
       if (hasChangesRef.current) {
         if (saveTimeoutRef.current) {
           clearTimeout(saveTimeoutRef.current);
@@ -278,9 +266,27 @@ export function TodaysFocus() {
         updateFocus(textRef.current);
         hasChangesRef.current = false;
       }
-    });
+    };
+
+    const flushOnBackground = () => {
+      if (document.visibilityState === 'hidden') {
+        flushPendingSave();
+      }
+    };
+
+    // Flush before sign-out while session is still valid
+    const handleBeforeSignout = () => {
+      flushPendingSave();
+    };
+
+    document.addEventListener('visibilitychange', flushOnBackground);
+    // pagehide is more reliable on iOS Safari/PWA
+    window.addEventListener('pagehide', flushPendingSave);
+    window.addEventListener('noteshare:before-signout', handleBeforeSignout);
     return () => {
       document.removeEventListener('visibilitychange', flushOnBackground);
+      window.removeEventListener('pagehide', flushPendingSave);
+      window.removeEventListener('noteshare:before-signout', handleBeforeSignout);
     };
   }, [updateFocus]);
 
