@@ -881,7 +881,7 @@ export function PracticeControls() {
 
           {/* Text Content - with list formatting support */}
           {/* Larger textarea during active sessions for focus */}
-          <div className="mb-4">
+          <div className="mb-4" data-tour="session-textarea">
             <RichTextarea
               placeholder="What are you practicing this session?"
               value={noteText}
