@@ -399,7 +399,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   tick={{ fontSize: 10 }}
                   className="text-muted-foreground"
                   tickLine={false}
-                  interval={0}
+                  interval={isMobile ? 1 : 0}
                 />
                 <YAxis
                   domain={[0, 5]}
