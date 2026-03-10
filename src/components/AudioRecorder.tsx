@@ -15,11 +15,13 @@ import { VideoRecorder, VideoRecordButton } from '@/components/VideoRecorder';
 interface AudioRecorderProps {
   onRecorded: (blob: Blob, duration: number, backupId?: string) => void;
   onRecordingChange?: (isRecording: boolean) => void;
+  onVideoReady?: (blob: Blob) => void;
+  onVideoDiscarded?: () => void;
   userId?: string;
   className?: string;
 }
 
-export function AudioRecorder({ onRecorded, onRecordingChange, userId, className }: AudioRecorderProps) {
+export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onVideoDiscarded, userId, className }: AudioRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
