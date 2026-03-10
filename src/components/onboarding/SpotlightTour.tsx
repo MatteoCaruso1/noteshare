@@ -266,7 +266,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     };
 
     forceScrollToTop();
-    // Small delay to let fade-out complete before moving highlight
+    // Small delay to let fade-out complete before moving highlight (skip for instant steps)
+    const entryDelay = currentTourStep.instantEntry ? 0 : 120;
     const startDelay = setTimeout(() => {
       if (!cancelled) findAndHighlight();
     }, 120);
