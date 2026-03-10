@@ -250,7 +250,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             if (cancelled) return;
             if (currentTourStep.waitForSelector && document.querySelector(currentTourStep.waitForSelector)) {
               waitObserver?.disconnect();
-              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, 300);
+              // Check if the NEXT step has instantEntry — if so, advance immediately
+              const nextStepIndex = step; // step is 1-indexed, so tourSteps[step] is the next step
+              const nextStep = tourSteps[nextStepIndex];
+              const advanceDelay = nextStep?.instantEntry ? 0 : 300;
+              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, advanceDelay);
             }
             if (currentTourStep.waitForRemoval && !document.querySelector(currentTourStep.waitForRemoval)) {
               waitObserver?.disconnect();
