@@ -188,8 +188,13 @@ export function VideoRecorder({ className, onDiscard }: VideoRecorderProps & { o
     );
   }
 
-  // idle — just the button, rendered by parent
-  return null;
+  // idle — starting up, show nothing (auto-start fires)
+  return (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Video className="w-4 h-4 animate-pulse" />
+      <span>Starting camera…</span>
+    </div>
+  );
 }
 
 export function VideoRecordButton({ onPress, disabled }: { onPress: () => void; disabled?: boolean }) {
