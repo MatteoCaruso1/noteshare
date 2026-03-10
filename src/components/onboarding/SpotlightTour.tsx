@@ -10,14 +10,14 @@ interface TourStep {
   message: string;
   subMessage?: string;
   position?: 'top' | 'bottom';
-  interactive?: boolean; // If true, user must click the actual element
-  waitForSelector?: string; // Wait for this selector to appear before auto-advancing
-  waitForRemoval?: string; // Wait for this selector to disappear before auto-advancing
-  elevateParent?: boolean; // Elevate parent container too (for elements inside clipped containers)
+  interactive?: boolean;
+  waitForSelector?: string;
+  waitForRemoval?: string;
+  elevateParent?: boolean;
 }
 
 const tourSteps: TourStep[] = [
-  // Steps 1-3: Informational highlights (tap anywhere to continue)
+  // Steps 1-3: Informational highlights
   {
     targetSelector: '[data-tour="practice-start-btn"]',
     message: 'Start your practice sessions here',
@@ -43,6 +43,7 @@ const tourSteps: TourStep[] = [
     position: 'bottom',
     interactive: true,
     waitForSelector: '[data-tour="start-live-btn"]',
+    elevateParent: true,
   },
   {
     targetSelector: '[data-tour="start-live-btn"]',
@@ -52,7 +53,7 @@ const tourSteps: TourStep[] = [
     waitForSelector: '[data-tour="session-textarea"]',
     elevateParent: true,
   },
-  // Steps 6-8: Informational highlights during active session
+  // Steps 6-8: Informational during active session
   {
     targetSelector: '[data-tour="session-textarea"]',
     message: 'Write what you\'re practicing',
@@ -94,10 +95,10 @@ const tourSteps: TourStep[] = [
   },
 ];
 
-const FINAL_STEP = tourSteps.length + 1; // step 11
+const FINAL_STEP = tourSteps.length + 1;
 
 interface SpotlightTourProps {
-  step: number; // 1-11
+  step: number;
   onNext: () => void;
   onComplete: () => void;
 }
@@ -109,13 +110,18 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   const navigate = useNavigate();
   const location = useLocation();
   const elevatedElementsRef = useRef<HTMLElement[]>([]);
+  const onNextRef = useRef(onNext);
+  const onCompleteRef = useRef(onComplete);
+  
+  // Keep refs in sync without triggering effects
+  onNextRef.current = onNext;
+  onCompleteRef.current = onComplete;
 
   const isFinalStep = step === FINAL_STEP;
   const currentTourStep = !isFinalStep && step >= 1 && step <= tourSteps.length
     ? tourSteps[step - 1]
     : null;
 
-  // Clean up elevated elements
   const cleanupElevation = useCallback(() => {
     elevatedElementsRef.current.forEach(el => {
       el.style.removeProperty('position');
@@ -124,35 +130,17 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     elevatedElementsRef.current = [];
   }, []);
 
-  // Elevate target element above overlay for interactive steps
   const elevateElement = useCallback((element: HTMLElement, tourStep: TourStep) => {
     cleanupElevation();
-    
-    if (tourStep.interactive) {
-      element.style.position = 'relative';
-      element.style.zIndex = '101';
-      elevatedElementsRef.current.push(element);
 
-      if (tourStep.elevateParent) {
-        // Walk up to find a meaningful container (the Card or similar)
-        let parent = element.parentElement;
-        let depth = 0;
-        while (parent && depth < 8) {
-          // Stop at the session-focus-card or card-level container
-          if (parent.classList.contains('session-focus-card') || parent.tagName === 'MAIN') break;
-          parent.style.position = 'relative';
-          parent.style.zIndex = '101';
-          elevatedElementsRef.current.push(parent);
-          parent = parent.parentElement;
-          depth++;
-        }
-      }
-    } else if (tourStep.elevateParent) {
-      // For informational steps inside clipped containers, still elevate parents
-      // so the element is visible above the overlay
-      element.style.position = 'relative';
-      element.style.zIndex = '101';
-      elevatedElementsRef.current.push(element);
+    const shouldElevate = tourStep.interactive || tourStep.elevateParent;
+    if (!shouldElevate) return;
+
+    element.style.position = 'relative';
+    element.style.zIndex = '101';
+    elevatedElementsRef.current.push(element);
+
+    if (tourStep.elevateParent) {
       let parent = element.parentElement;
       let depth = 0;
       while (parent && depth < 8) {
@@ -162,6 +150,12 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         elevatedElementsRef.current.push(parent);
         parent = parent.parentElement;
         depth++;
+      }
+      // Also elevate the session-focus-card itself
+      if (parent && parent.classList.contains('session-focus-card')) {
+        parent.style.position = 'relative';
+        parent.style.zIndex = '101';
+        elevatedElementsRef.current.push(parent);
       }
     }
   }, [cleanupElevation]);
@@ -185,7 +179,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     document.body.scrollTop = 0;
   }, []);
 
-  // Main effect: find element, watch for changes, handle waits
   useEffect(() => {
     clearScrollState('index-timeline');
     clearScrollState('index-feed');
@@ -204,45 +197,47 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
     if (!currentTourStep) return;
 
-    // Ensure we're on home page for all steps
     if (location.pathname !== '/') {
       navigate('/');
     }
 
     setIsAnimating(true);
+    setTargetRect(null);
 
     let resizeObserver: ResizeObserver | null = null;
     let waitObserver: MutationObserver | null = null;
     let retryCount = 0;
-    const maxRetries = 50; // 5 seconds max
+    const maxRetries = 50;
+    let cancelled = false;
 
     const findElement = () => {
+      if (cancelled) return;
       forceScrollToTop();
       const found = updateTargetRect();
       if (found) {
-        setTimeout(() => setIsAnimating(false), 300);
-
-        // Re-measure after layout settles
-        setTimeout(() => { forceScrollToTop(); updateTargetRect(); }, 200);
-        setTimeout(() => { forceScrollToTop(); updateTargetRect(); }, 500);
+        setTimeout(() => { if (!cancelled) setIsAnimating(false); }, 300);
+        setTimeout(() => { if (!cancelled) { forceScrollToTop(); updateTargetRect(); } }, 200);
+        setTimeout(() => { if (!cancelled) { forceScrollToTop(); updateTargetRect(); } }, 500);
 
         const el = document.querySelector(currentTourStep.targetSelector);
         if (el) {
-          resizeObserver = new ResizeObserver(() => updateTargetRect());
+          resizeObserver = new ResizeObserver(() => { if (!cancelled) updateTargetRect(); });
           resizeObserver.observe(el);
         }
 
-        // For interactive steps, watch for the waitFor condition
+        // For interactive steps, watch for completion condition
         if (currentTourStep.interactive && (currentTourStep.waitForSelector || currentTourStep.waitForRemoval)) {
           waitObserver = new MutationObserver(() => {
+            if (cancelled) return;
             if (currentTourStep.waitForSelector) {
               const target = document.querySelector(currentTourStep.waitForSelector);
               if (target) {
                 waitObserver?.disconnect();
-                // Small delay to let UI settle
                 setTimeout(() => {
-                  cleanupElevation();
-                  onNext();
+                  if (!cancelled) {
+                    cleanupElevation();
+                    onNextRef.current();
+                  }
                 }, 400);
               }
             }
@@ -251,8 +246,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
               if (!target) {
                 waitObserver?.disconnect();
                 setTimeout(() => {
-                  cleanupElevation();
-                  onNext();
+                  if (!cancelled) {
+                    cleanupElevation();
+                    onNextRef.current();
+                  }
                 }, 400);
               }
             }
@@ -271,41 +268,43 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       setTimeout(findElement, 150);
     });
 
-    window.addEventListener('scroll', updateTargetRect, true);
-    window.addEventListener('resize', updateTargetRect);
+    const handleScroll = () => { if (!cancelled) updateTargetRect(); };
+    const handleResize = () => { if (!cancelled) updateTargetRect(); };
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('scroll', updateTargetRect, true);
-      window.removeEventListener('resize', updateTargetRect);
+      cancelled = true;
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
       resizeObserver?.disconnect();
       waitObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect, forceScrollToTop, cleanupElevation, onNext]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect, forceScrollToTop, cleanupElevation]);
 
-  // Cleanup elevation on unmount
   useEffect(() => {
     return () => cleanupElevation();
   }, [cleanupElevation]);
 
   const handleOverlayClick = () => {
     if (isFadingOut) return;
-    // For interactive steps, don't advance on overlay click
+    // Interactive steps: ignore overlay clicks, user must tap the element
     if (currentTourStep?.interactive) return;
-    
+
     setIsFadingOut(true);
     setTimeout(() => {
       setIsFadingOut(false);
       if (isFinalStep) {
-        onComplete();
+        onCompleteRef.current();
       } else {
         cleanupElevation();
-        onNext();
+        onNextRef.current();
       }
     }, 250);
   };
 
   const getTooltipStyle = (): React.CSSProperties => {
-    if (!targetRect || !currentTourStep) return {};
+    if (!targetRect || !currentTourStep) return { top: '40%', left: '50%', transform: 'translateX(-50%)' };
     const padding = 16;
     const position = currentTourStep.position || 'bottom';
 
@@ -317,11 +316,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           transform: 'translateX(-50%)',
         };
       case 'bottom':
-        return {
-          top: targetRect.bottom + padding,
-          left: '50%',
-          transform: 'translateX(-50%)',
-        };
       default:
         return {
           top: targetRect.bottom + padding,
@@ -331,57 +325,50 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     }
   };
 
-  // For the save-session step (step 10), render a lighter overlay since the dialog handles its own
   const isSaveDialogStep = currentTourStep?.targetSelector === '[data-tour="save-session-btn"]';
 
   const content = (
     <div
       className="fixed inset-0 z-[100]"
       onClick={handleOverlayClick}
-      style={{ pointerEvents: currentTourStep?.interactive ? 'none' : 'auto' }}
     >
-      {/* Overlay with spotlight cutout */}
-      {targetRect && !isFinalStep ? (
+      {/* Dark overlay - always visible */}
+      {!isFinalStep ? (
         <>
-          <svg className="fixed inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
-            <defs>
-              <mask id="spotlight-mask">
-                <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                <rect
-                  x={targetRect.left - 8}
-                  y={targetRect.top - 8}
-                  width={targetRect.width + 16}
-                  height={targetRect.height + 16}
-                  rx="12"
-                  fill="black"
-                  style={{
-                    transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-                    opacity: isAnimating ? 0 : 1,
-                  }}
-                />
-              </mask>
-            </defs>
-            <rect
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-              fill={isSaveDialogStep ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.8)"}
-              mask="url(#spotlight-mask)"
-              style={{ transition: 'opacity 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-            />
-          </svg>
-          {/* Overlay click catcher for non-interactive steps */}
-          {!currentTourStep?.interactive && (
-            <div
-              className="fixed inset-0"
-              style={{ pointerEvents: 'auto' }}
-              onClick={handleOverlayClick}
-            />
+          {targetRect ? (
+            <svg className="fixed inset-0 w-full h-full pointer-events-none">
+              <defs>
+                <mask id="spotlight-mask">
+                  <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                  <rect
+                    x={targetRect.left - 8}
+                    y={targetRect.top - 8}
+                    width={targetRect.width + 16}
+                    height={targetRect.height + 16}
+                    rx="12"
+                    fill="black"
+                    style={{
+                      transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      opacity: isAnimating ? 0 : 1,
+                    }}
+                  />
+                </mask>
+              </defs>
+              <rect
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                fill={isSaveDialogStep ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.8)"}
+                mask="url(#spotlight-mask)"
+              />
+            </svg>
+          ) : (
+            <div className="fixed inset-0 bg-black/80" />
           )}
         </>
       ) : (
-        <div className="fixed inset-0 bg-black/80" style={{ pointerEvents: 'auto' }} onClick={handleOverlayClick} />
+        <div className="fixed inset-0 bg-black/80" />
       )}
 
       {/* Highlighted element border */}
@@ -408,9 +395,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           style={{
             transition: 'opacity 250ms ease-in-out',
             opacity: isFadingOut ? 0 : 1,
-            pointerEvents: 'auto',
           }}
-          onClick={handleOverlayClick}
         >
           <div className="animate-scale-in">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-6">
@@ -427,7 +412,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             </p>
           </div>
         </div>
-      ) : targetRect && currentTourStep && (
+      ) : currentTourStep && (
         <div
           className="fixed max-w-xs px-4 py-3 bg-card border border-border rounded-xl shadow-lg pointer-events-none"
           style={{
