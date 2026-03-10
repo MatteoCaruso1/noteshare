@@ -1,61 +1,103 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
 
-// Check if the app is running as a PWA (standalone mode)
-const isStandaloneMode = () => {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(display-mode: standalone)').matches || 
-         (window.navigator as any).standalone === true;
-};
-
 interface TourStep {
   targetSelector: string;
   message: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
-  navigateTo?: string; // Route to navigate to before showing this step
+  subMessage?: string;
+  position?: 'top' | 'bottom';
+  interactive?: boolean; // If true, user must click the actual element
+  waitForSelector?: string; // Wait for this selector to appear before auto-advancing
+  waitForRemoval?: string; // Wait for this selector to disappear before auto-advancing
+  elevateParent?: boolean; // Elevate parent container too (for elements inside clipped containers)
 }
 
 const tourSteps: TourStep[] = [
+  // Steps 1-3: Informational highlights (tap anywhere to continue)
   {
-    targetSelector: '[data-tour="practice-capture"]',
-    message: 'Record your practice with Practice Sessions or Quick Notes',
+    targetSelector: '[data-tour="practice-start-btn"]',
+    message: 'Start your practice sessions here',
+    subMessage: 'Track your time, record clips, and take notes',
     position: 'bottom',
   },
   {
     targetSelector: '[data-tour="practice-board"]',
-    message: 'Manage your practice priorities with the Practice List',
+    message: 'Plan your practice priorities',
+    subMessage: 'Your daily practice to-do list',
     position: 'bottom',
   },
   {
     targetSelector: '[data-tour="timeline"]',
     message: 'View your practice history',
+    subMessage: 'All your sessions and notes appear here',
     position: 'top',
   },
+  // Steps 4-5: Interactive - start a session
   {
-    targetSelector: '[data-tour="friends-nav"]',
-    message: "See what your friends are practicing!",
+    targetSelector: '[data-tour="practice-start-btn"]',
+    message: 'Tap to open!',
+    position: 'bottom',
+    interactive: true,
+    waitForSelector: '[data-tour="start-live-btn"]',
+  },
+  {
+    targetSelector: '[data-tour="start-live-btn"]',
+    message: 'Start a live session!',
+    position: 'bottom',
+    interactive: true,
+    waitForSelector: '[data-tour="session-textarea"]',
+    elevateParent: true,
+  },
+  // Steps 6-8: Informational highlights during active session
+  {
+    targetSelector: '[data-tour="session-textarea"]',
+    message: 'Write what you\'re practicing',
+    subMessage: 'Add notes, checklists, or a practice plan',
+    position: 'bottom',
+    elevateParent: true,
+  },
+  {
+    targetSelector: '[data-tour="audio-recorder"]',
+    message: 'Record audio clips',
+    subMessage: 'Capture ideas during your session',
     position: 'top',
+    elevateParent: true,
   },
   {
-    targetSelector: '[data-tour="friends-list"]',
-    message: 'View your friends and add new ones here!',
-    position: 'bottom',
-    navigateTo: '/friends',
+    targetSelector: '[data-tour="link-to-list"]',
+    message: 'Link to your Practice List',
+    subMessage: 'Toggle this to attach your session to today\'s list',
+    position: 'top',
+    elevateParent: true,
   },
+  // Step 9: Interactive - end session
   {
-    targetSelector: '[data-tour="help-tips"]',
-    message: 'Learn how to best leverage Noteshare using the tips button',
-    position: 'bottom',
-    navigateTo: '/profile',
+    targetSelector: '[data-tour="end-session-btn"]',
+    message: 'Tap to save your session!',
+    position: 'top',
+    interactive: true,
+    waitForSelector: '[data-tour="save-session-btn"]',
+    elevateParent: true,
+  },
+  // Step 10: Interactive - save in dialog
+  {
+    targetSelector: '[data-tour="save-session-btn"]',
+    message: 'Review and save!',
+    subMessage: 'Set your focus level, add who you practiced with, and more',
+    position: 'top',
+    interactive: true,
+    waitForRemoval: '[data-tour="save-session-btn"]',
   },
 ];
 
+const FINAL_STEP = tourSteps.length + 1; // step 11
+
 interface SpotlightTourProps {
-  step: number; // 1-6 (step 6 is the final message)
+  step: number; // 1-11
   onNext: () => void;
   onComplete: () => void;
 }
@@ -63,116 +105,159 @@ interface SpotlightTourProps {
 export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const elevatedElementsRef = useRef<HTMLElement[]>([]);
 
-  const isFinalStep = step === 7;
-  const currentTourStep = !isFinalStep ? tourSteps[step - 1] : null;
+  const isFinalStep = step === FINAL_STEP;
+  const currentTourStep = !isFinalStep && step >= 1 && step <= tourSteps.length
+    ? tourSteps[step - 1]
+    : null;
+
+  // Clean up elevated elements
+  const cleanupElevation = useCallback(() => {
+    elevatedElementsRef.current.forEach(el => {
+      el.style.removeProperty('position');
+      el.style.removeProperty('z-index');
+    });
+    elevatedElementsRef.current = [];
+  }, []);
+
+  // Elevate target element above overlay for interactive steps
+  const elevateElement = useCallback((element: HTMLElement, tourStep: TourStep) => {
+    cleanupElevation();
+    
+    if (tourStep.interactive) {
+      element.style.position = 'relative';
+      element.style.zIndex = '101';
+      elevatedElementsRef.current.push(element);
+
+      if (tourStep.elevateParent) {
+        // Walk up to find a meaningful container (the Card or similar)
+        let parent = element.parentElement;
+        let depth = 0;
+        while (parent && depth < 8) {
+          // Stop at the session-focus-card or card-level container
+          if (parent.classList.contains('session-focus-card') || parent.tagName === 'MAIN') break;
+          parent.style.position = 'relative';
+          parent.style.zIndex = '101';
+          elevatedElementsRef.current.push(parent);
+          parent = parent.parentElement;
+          depth++;
+        }
+      }
+    } else if (tourStep.elevateParent) {
+      // For informational steps inside clipped containers, still elevate parents
+      // so the element is visible above the overlay
+      element.style.position = 'relative';
+      element.style.zIndex = '101';
+      elevatedElementsRef.current.push(element);
+      let parent = element.parentElement;
+      let depth = 0;
+      while (parent && depth < 8) {
+        if (parent.classList.contains('session-focus-card') || parent.tagName === 'MAIN') break;
+        parent.style.position = 'relative';
+        parent.style.zIndex = '101';
+        elevatedElementsRef.current.push(parent);
+        parent = parent.parentElement;
+        depth++;
+      }
+    }
+  }, [cleanupElevation]);
 
   const updateTargetRect = useCallback(() => {
     if (currentTourStep) {
-      const element = document.querySelector(currentTourStep.targetSelector);
+      const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement | null;
       if (element) {
         const rect = element.getBoundingClientRect();
-        
-        // For the timeline step (step 3), limit height on Safari mobile web (non-PWA)
-        // to prevent the highlight from extending into the bottom nav area
-        if (step === 3 && !isStandaloneMode()) {
-          // Bottom nav is roughly 80px high, add some buffer
-          const bottomNavHeight = 88;
-          const maxBottom = window.innerHeight - bottomNavHeight;
-          
-          if (rect.bottom > maxBottom) {
-            // Create a modified rect that doesn't extend into the nav area
-            const clampedHeight = Math.max(0, maxBottom - rect.top);
-            const modifiedRect = new DOMRect(rect.x, rect.y, rect.width, clampedHeight);
-            setTargetRect(modifiedRect);
-            return true;
-          }
-        }
-        
         setTargetRect(rect);
+        elevateElement(element, currentTourStep);
         return true;
       }
     }
     return false;
-  }, [currentTourStep, step]);
+  }, [currentTourStep, elevateElement]);
 
-  // Aggressively scroll to top — multiple attempts to overcome Safari's async scroll restoration
   const forceScrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, []);
 
+  // Main effect: find element, watch for changes, handle waits
   useEffect(() => {
-    // Clear saved scroll positions so PageLayout doesn't fight our scroll-to-top
     clearScrollState('index-timeline');
     clearScrollState('index-feed');
 
-    // For final step, navigate to My Practice first and scroll to top
     if (isFinalStep) {
+      cleanupElevation();
       if (location.pathname !== '/') {
-        setIsNavigating(true);
         navigate('/');
       }
-      // Multiple scroll attempts to overcome Safari's async scroll restoration
       forceScrollToTop();
       setTimeout(forceScrollToTop, 50);
       setTimeout(forceScrollToTop, 150);
-      setTimeout(forceScrollToTop, 300);
-      setTimeout(() => {
-        forceScrollToTop();
-        setIsNavigating(false);
-      }, 500);
       setTargetRect(null);
       return;
     }
 
-    // Check if we need to navigate to a different page
-    if (currentTourStep?.navigateTo && location.pathname !== currentTourStep.navigateTo) {
-      setIsNavigating(true);
-      setIsAnimating(true);
-      navigate(currentTourStep.navigateTo);
-      forceScrollToTop();
-      return;
+    if (!currentTourStep) return;
+
+    // Ensure we're on home page for all steps
+    if (location.pathname !== '/') {
+      navigate('/');
     }
 
     setIsAnimating(true);
-    
+
     let resizeObserver: ResizeObserver | null = null;
+    let waitObserver: MutationObserver | null = null;
     let retryCount = 0;
-    const maxRetries = 30; // 3 seconds max
-    
-    // Wait for navigation/DOM to settle, then find the element
+    const maxRetries = 50; // 5 seconds max
+
     const findElement = () => {
-      // Force scroll to top before every measurement attempt
       forceScrollToTop();
-      
       const found = updateTargetRect();
-      if (found && currentTourStep) {
-        setIsNavigating(false);
-        setTimeout(() => setIsAnimating(false), 350);
-        
-        // Re-measure after a short delay to catch late layout shifts
-        setTimeout(() => {
-          forceScrollToTop();
-          updateTargetRect();
-        }, 200);
-        setTimeout(() => {
-          forceScrollToTop();
-          updateTargetRect();
-        }, 500);
-        
-        // Watch for layout changes (collapsible opening, content loading)
+      if (found) {
+        setTimeout(() => setIsAnimating(false), 300);
+
+        // Re-measure after layout settles
+        setTimeout(() => { forceScrollToTop(); updateTargetRect(); }, 200);
+        setTimeout(() => { forceScrollToTop(); updateTargetRect(); }, 500);
+
         const el = document.querySelector(currentTourStep.targetSelector);
         if (el) {
-          resizeObserver = new ResizeObserver(() => {
-            updateTargetRect();
-          });
+          resizeObserver = new ResizeObserver(() => updateTargetRect());
           resizeObserver.observe(el);
+        }
+
+        // For interactive steps, watch for the waitFor condition
+        if (currentTourStep.interactive && (currentTourStep.waitForSelector || currentTourStep.waitForRemoval)) {
+          waitObserver = new MutationObserver(() => {
+            if (currentTourStep.waitForSelector) {
+              const target = document.querySelector(currentTourStep.waitForSelector);
+              if (target) {
+                waitObserver?.disconnect();
+                // Small delay to let UI settle
+                setTimeout(() => {
+                  cleanupElevation();
+                  onNext();
+                }, 400);
+              }
+            }
+            if (currentTourStep.waitForRemoval) {
+              const target = document.querySelector(currentTourStep.waitForRemoval);
+              if (!target) {
+                waitObserver?.disconnect();
+                setTimeout(() => {
+                  cleanupElevation();
+                  onNext();
+                }, 400);
+              }
+            }
+          });
+          waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
         }
       } else if (retryCount < maxRetries) {
         retryCount++;
@@ -180,14 +265,12 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       }
     };
 
-    // Force scroll to top immediately, then again after a frame, then find element
     forceScrollToTop();
     requestAnimationFrame(() => {
       forceScrollToTop();
       setTimeout(findElement, 150);
     });
 
-    // Update on scroll/resize
     window.addEventListener('scroll', updateTargetRect, true);
     window.addEventListener('resize', updateTargetRect);
 
@@ -195,26 +278,34 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       window.removeEventListener('scroll', updateTargetRect, true);
       window.removeEventListener('resize', updateTargetRect);
       resizeObserver?.disconnect();
+      waitObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect, forceScrollToTop]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, updateTargetRect, forceScrollToTop, cleanupElevation, onNext]);
 
-  const handleClick = () => {
-    if (isFadingOut) return; // Prevent double-tap during transition
+  // Cleanup elevation on unmount
+  useEffect(() => {
+    return () => cleanupElevation();
+  }, [cleanupElevation]);
+
+  const handleOverlayClick = () => {
+    if (isFadingOut) return;
+    // For interactive steps, don't advance on overlay click
+    if (currentTourStep?.interactive) return;
+    
     setIsFadingOut(true);
     setTimeout(() => {
       setIsFadingOut(false);
       if (isFinalStep) {
         onComplete();
       } else {
+        cleanupElevation();
         onNext();
       }
     }, 250);
   };
 
-  // Calculate tooltip position
   const getTooltipStyle = (): React.CSSProperties => {
     if (!targetRect || !currentTourStep) return {};
-
     const padding = 16;
     const position = currentTourStep.position || 'bottom';
 
@@ -240,43 +331,57 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     }
   };
 
+  // For the save-session step (step 10), render a lighter overlay since the dialog handles its own
+  const isSaveDialogStep = currentTourStep?.targetSelector === '[data-tour="save-session-btn"]';
+
   const content = (
-    <div 
+    <div
       className="fixed inset-0 z-[100]"
-      onClick={handleClick}
+      onClick={handleOverlayClick}
+      style={{ pointerEvents: currentTourStep?.interactive ? 'none' : 'auto' }}
     >
       {/* Overlay with spotlight cutout */}
       {targetRect && !isFinalStep ? (
-        <svg className="fixed inset-0 w-full h-full pointer-events-none">
-          <defs>
-            <mask id="spotlight-mask">
-              <rect x="0" y="0" width="100%" height="100%" fill="white" />
-              <rect
-                x={targetRect.left - 8}
-                y={targetRect.top - 8}
-                width={targetRect.width + 16}
-                height={targetRect.height + 16}
-                rx="12"
-                fill="black"
-                style={{
-                  transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-                  opacity: isAnimating ? 0 : 1,
-                }}
-              />
-            </mask>
-          </defs>
-          <rect
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            fill="rgba(0, 0, 0, 0.8)"
-            mask="url(#spotlight-mask)"
-            style={{ transition: 'opacity 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-          />
-        </svg>
+        <>
+          <svg className="fixed inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+            <defs>
+              <mask id="spotlight-mask">
+                <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                <rect
+                  x={targetRect.left - 8}
+                  y={targetRect.top - 8}
+                  width={targetRect.width + 16}
+                  height={targetRect.height + 16}
+                  rx="12"
+                  fill="black"
+                  style={{
+                    transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    opacity: isAnimating ? 0 : 1,
+                  }}
+                />
+              </mask>
+            </defs>
+            <rect
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              fill={isSaveDialogStep ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.8)"}
+              mask="url(#spotlight-mask)"
+              style={{ transition: 'opacity 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+            />
+          </svg>
+          {/* Overlay click catcher for non-interactive steps */}
+          {!currentTourStep?.interactive && (
+            <div
+              className="fixed inset-0"
+              style={{ pointerEvents: 'auto' }}
+              onClick={handleOverlayClick}
+            />
+          )}
+        </>
       ) : (
-        <div className="fixed inset-0 bg-black/80" />
+        <div className="fixed inset-0 bg-black/80" style={{ pointerEvents: 'auto' }} onClick={handleOverlayClick} />
       )}
 
       {/* Highlighted element border */}
@@ -291,19 +396,21 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
             opacity: (isAnimating || isFadingOut) ? 0 : 1,
             transform: (isAnimating || isFadingOut) ? 'scale(0.95)' : 'scale(1)',
+            zIndex: 102,
           }}
         />
       )}
 
       {/* Tooltip / Message */}
       {isFinalStep ? (
-        // Final centered message
-        <div 
+        <div
           className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center"
           style={{
             transition: 'opacity 250ms ease-in-out',
             opacity: isFadingOut ? 0 : 1,
+            pointerEvents: 'auto',
           }}
+          onClick={handleOverlayClick}
         >
           <div className="animate-scale-in">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-6">
@@ -322,32 +429,38 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         </div>
       ) : targetRect && currentTourStep && (
         <div
-          className="fixed max-w-xs px-4 py-3 bg-card border border-border rounded-xl shadow-lg"
+          className="fixed max-w-xs px-4 py-3 bg-card border border-border rounded-xl shadow-lg pointer-events-none"
           style={{
             ...getTooltipStyle(),
             transition: 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)',
             opacity: (isAnimating || isFadingOut) ? 0 : 1,
             transform: `translateX(-50%) ${isAnimating ? 'translateY(8px)' : 'translateY(0)'}`,
+            zIndex: 103,
           }}
         >
           <p className="text-sm text-foreground text-center font-medium">
             {currentTourStep.message}
           </p>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            Tap anywhere to continue
+          {currentTourStep.subMessage && (
+            <p className="text-xs text-muted-foreground text-center mt-1">
+              {currentTourStep.subMessage}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground/60 text-center mt-2">
+            {currentTourStep.interactive ? 'Tap the highlighted area' : 'Tap anywhere to continue'}
           </p>
         </div>
       )}
 
-      {/* Step indicator - hide on step 4 (friends nav) since it overlaps with bottom nav */}
-      {!isFinalStep && step !== 4 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-          {[1, 2, 3, 4, 5, 6].map((s) => (
+      {/* Step indicator */}
+      {!isFinalStep && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none" style={{ zIndex: 103 }}>
+          {tourSteps.map((_, i) => (
             <div
-              key={s}
+              key={i}
               className={cn(
                 'w-2 h-2 rounded-full transition-colors duration-300',
-                s === step ? 'bg-primary' : 'bg-muted-foreground/40'
+                i + 1 === step ? 'bg-primary' : i + 1 < step ? 'bg-primary/40' : 'bg-muted-foreground/40'
               )}
             />
           ))}

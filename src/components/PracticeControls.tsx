@@ -656,6 +656,7 @@ export function PracticeControls() {
         <CollapsibleTrigger asChild>
           {/* Glint effect disabled but kept for potential future use: add `glint ${isPaused ? 'glint-paused' : ''}` to className and style={glintStyle} */}
           <button 
+            data-tour="practice-start-btn"
             className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
           >
             <div className="flex items-center gap-2">
@@ -692,6 +693,7 @@ export function PracticeControls() {
           {!activeSession && (showSessionChoice || isStartingSession) && (
             <div className="px-3 sm:px-4 pb-4 space-y-3 min-h-[100px]">
               <Button
+                data-tour="start-live-btn"
                 className="w-full bg-gradient-primary text-primary-foreground"
                 onClick={handleStartLiveSession}
                 disabled={startSession.isPending || isStartingSession}
@@ -844,6 +846,7 @@ export function PracticeControls() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
+                    data-tour="link-to-list"
                     className="flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none"
                     data-no-hover-reset
                     onTouchEnd={(e) => { e.currentTarget.blur(); }}
@@ -879,7 +882,7 @@ export function PracticeControls() {
 
           {/* Text Content - with list formatting support */}
           {/* Larger textarea during active sessions for focus */}
-          <div className="mb-4">
+          <div className="mb-4" data-tour="session-textarea">
             <RichTextarea
               placeholder="What are you practicing this session?"
               value={noteText}
@@ -943,11 +946,13 @@ export function PracticeControls() {
           {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
             {/* Audio Recorder - when recording, shows stop + timer; otherwise mic button */}
-            <AudioRecorder 
-              onRecorded={handleAudioRecorded} 
-              onRecordingChange={setIsRecordingAudio}
-              className={isRecordingAudio ? 'shrink-0' : 'flex-1'}
-            />
+            <div data-tour="audio-recorder" className={isRecordingAudio ? 'shrink-0' : 'flex-1'}>
+              <AudioRecorder 
+                onRecorded={handleAudioRecorded} 
+                onRecordingChange={setIsRecordingAudio}
+                className="w-full"
+              />
+            </div>
             
             {/* Pause/Resume button - disabled during recording */}
             <Button
@@ -969,6 +974,7 @@ export function PracticeControls() {
             </Button>
             {/* End Session button - disabled during recording */}
             <Button
+              data-tour="end-session-btn"
               size="icon"
               className={`h-9 flex-1 bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
                 isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
