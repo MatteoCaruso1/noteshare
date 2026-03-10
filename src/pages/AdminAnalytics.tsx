@@ -248,6 +248,8 @@ const AdminAnalytics = () => {
   const [drilldownLoading, setDrilldownLoading] = useState(false);
   const [recentAccounts, setRecentAccounts] = useState<RecentAccount[]>([]);
   const [accountsLoading, setAccountsLoading] = useState(true);
+  const [filterHasNotes, setFilterHasNotes] = useState<'all' | 'yes' | 'no'>('all');
+  const [filterFriends, setFilterFriends] = useState<'all' | '0' | '1+'>('all');
 
   useEffect(() => {
     const fetchRecentAccounts = async () => {
@@ -259,7 +261,35 @@ const AdminAnalytics = () => {
         .select('id, user_id, name, username, created_at, has_logged_first_note, instruments')
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false });
-      setRecentAccounts(accounts || []);
+
+      if (!accounts) {
+        setRecentAccounts([]);
+        setAccountsLoading(false);
+        return;
+      }
+
+      // Fetch friend counts for all these profile IDs
+      const profileIds = accounts.map(a => a.id);
+      const { data: friendships } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(profileIds.map(id => `requester_id.eq.${id}`).join(',') + ',' + profileIds.map(id => `addressee_id.eq.${id}`).join(','));
+
+      const friendCountMap: Record<string, number> = {};
+      (friendships || []).forEach(f => {
+        if (profileIds.includes(f.requester_id)) {
+          friendCountMap[f.requester_id] = (friendCountMap[f.requester_id] || 0) + 1;
+        }
+        if (profileIds.includes(f.addressee_id)) {
+          friendCountMap[f.addressee_id] = (friendCountMap[f.addressee_id] || 0) + 1;
+        }
+      });
+
+      setRecentAccounts(accounts.map(a => ({
+        ...a,
+        friendCount: friendCountMap[a.id] || 0,
+      })));
       setAccountsLoading(false);
     };
     fetchRecentAccounts();
