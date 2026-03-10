@@ -351,14 +351,28 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Volume</span>
             </div>
             <div className="space-y-2">
-              <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.notesLast30Days ?? 'TBD'}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (Last 30 Days)</p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.totalNotesCount}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Notes (All Time)</p>
-              </div>
+              {(() => {
+                const now = new Date();
+                const yearStart = new Date(now.getFullYear(), 0, 1);
+                const daysPassed = Math.ceil((now.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24));
+                const daysPracticed = Object.keys(stats.dailyMinutesMap).filter(d => {
+                  const year = parseInt(d.slice(0, 4));
+                  return year === now.getFullYear() && stats.dailyMinutesMap[d] > 0;
+                }).length;
+                const pct = daysPassed > 0 ? Math.round((daysPracticed / daysPassed) * 100) : 0;
+                return (
+                  <>
+                    <div className="flex flex-col items-center text-center">
+                      <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{daysPracticed}d</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Practiced ({now.getFullYear()})</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                      <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{pct}%</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">of Days This Year</p>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
 
