@@ -14,6 +14,7 @@ interface TourStep {
   waitForRemoval?: string;
   elevateParent?: boolean;
   excludeBottomNav?: boolean;
+  instantEntry?: boolean;
 }
 
 const tourSteps: TourStep[] = [
@@ -42,16 +43,17 @@ const tourSteps: TourStep[] = [
     elevateParent: true,
   },
   {
-    targetSelector: '[data-tour="start-live-btn"]',
+  targetSelector: '[data-tour="start-live-btn"]',
     message: 'Start a live session!',
     position: 'bottom',
     interactive: true,
     waitForSelector: '[data-tour="session-textarea"]',
     elevateParent: true,
+    instantEntry: true,
   },
   {
     targetSelector: '[data-tour="session-textarea"]',
-    message: 'Write what you\'re practicing',
+    message: 'You can write what you\'re practicing',
     position: 'bottom',
     elevateParent: true,
   },
@@ -219,6 +221,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         setTargetRect(rect);
 
         // Phase 2: fade in tooltip after highlight has moved
+        const tooltipDelay = currentTourStep.instantEntry ? 0 : TRANSITION_DURATION + 50;
         setTimeout(() => {
           if (!cancelled) {
             forceScrollToTop();
@@ -227,7 +230,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             if (freshRect) setTargetRect(freshRect);
             setTooltipVisible(true);
           }
-        }, TRANSITION_DURATION + 50);
+        }, tooltipDelay);
 
         // Keep position accurate
         const el = document.querySelector(currentTourStep.targetSelector);
@@ -247,7 +250,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             if (cancelled) return;
             if (currentTourStep.waitForSelector && document.querySelector(currentTourStep.waitForSelector)) {
               waitObserver?.disconnect();
-              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, 300);
+              // Check if the NEXT step has instantEntry — if so, advance immediately
+              const nextStepIndex = step; // step is 1-indexed, so tourSteps[step] is the next step
+              const nextStep = tourSteps[nextStepIndex];
+              const advanceDelay = nextStep?.instantEntry ? 0 : 300;
+              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, advanceDelay);
             }
             if (currentTourStep.waitForRemoval && !document.querySelector(currentTourStep.waitForRemoval)) {
               waitObserver?.disconnect();
@@ -263,7 +270,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     };
 
     forceScrollToTop();
-    // Small delay to let fade-out complete before moving highlight
+    // Small delay to let fade-out complete before moving highlight (skip for instant steps)
+    const entryDelay = currentTourStep.instantEntry ? 0 : 120;
     const startDelay = setTimeout(() => {
       if (!cancelled) findAndHighlight();
     }, 120);
