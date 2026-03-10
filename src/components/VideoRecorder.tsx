@@ -130,7 +130,8 @@ export function VideoRecorder({ className, onDiscard }: VideoRecorderProps & { o
     setPreviewUrl(null);
     setState('idle');
     setElapsed(0);
-  }, [previewUrl]);
+    onDiscard?.();
+  }, [previewUrl, onDiscard]);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
