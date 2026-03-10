@@ -230,11 +230,39 @@ function AccountFunnelCard({ funnel, days }: { funnel: NonNullable<ReturnType<ty
 interface DrilldownUser { name: string; username: string; }
 interface DrilldownData { date: string; viewers: DrilldownUser[]; creators: DrilldownUser[]; }
 
+interface RecentAccount {
+  id: string;
+  user_id: string | null;
+  name: string;
+  username: string;
+  created_at: string;
+  has_logged_first_note: boolean;
+  instruments: string[] | null;
+}
+
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
   const { data, isLoading, error } = useAnalytics(days);
   const [drilldown, setDrilldown] = useState<DrilldownData | null>(null);
   const [drilldownLoading, setDrilldownLoading] = useState(false);
+  const [recentAccounts, setRecentAccounts] = useState<RecentAccount[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentAccounts = async () => {
+      setAccountsLoading(true);
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data: accounts } = await supabase
+        .from('profiles')
+        .select('id, user_id, name, username, created_at, has_logged_first_note, instruments')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false });
+      setRecentAccounts(accounts || []);
+      setAccountsLoading(false);
+    };
+    fetchRecentAccounts();
+  }, []);
 
   const handleActivationChartClick = useCallback(async (chartData: any) => {
     if (!chartData?.activePayload?.[0]?.payload?.date) return;
