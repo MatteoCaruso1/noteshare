@@ -338,9 +338,12 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const isSaveDialogStep = currentTourStep?.targetSelector === '[data-tour="save-session-btn"]';
 
+  const isInteractive = currentTourStep?.interactive;
+
   const content = (
     <div
       className="fixed inset-0 z-[100]"
+      style={{ pointerEvents: isInteractive ? 'none' : 'auto' }}
       onClick={handleOverlayClick}
     >
       {/* Dark overlay - always visible */}
