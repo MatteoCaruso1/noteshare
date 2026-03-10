@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
