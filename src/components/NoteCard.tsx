@@ -976,6 +976,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </div>
       )}
 
+      {/* Video attachment */}
+      {(note as any).video_path && <NoteVideoPlayer videoPath={(note as any).video_path} />}
+
       {/* Full timestamp at bottom in expanded view */}
       {expanded && (
         <p className="text-xs text-muted-foreground/60 mt-3">
