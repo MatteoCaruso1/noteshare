@@ -513,6 +513,7 @@ export function useLogOfflineSession() {
             text_content: noteText,
             tags: tags || [],
             visibility: 'friends',
+            created_at: startedAt.toISOString(),
           });
 
         if (noteError) throw noteError;
