@@ -21,7 +21,8 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { FocusViewDialog } from '@/components/FocusViewDialog';
 import { SignedImage } from '@/components/SignedImage';
 import { ApplauseFooter } from '@/components/ApplauseFooter';
-import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ListTodo, Settings, X, Flame, Pencil, Check, Calendar, Share, Play, Zap } from 'lucide-react';
+import { FolderOpen, Lock, Clock, Music, Trash2, Users, MessageCircle, Compass, ListTodo, Settings, X, Flame, Pencil, Check, Calendar, Share, Play, Zap, Video } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { format, isToday, isYesterday } from 'date-fns';
 import { getStreakTier } from '@/lib/streakUtils';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +34,58 @@ import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
+
+function NoteVideoPlayer({ videoPath }: { videoPath: string }) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handlePlay = async () => {
+    if (signedUrl || loading) return;
+    setLoading(true);
+    setError(false);
+    const { data, error: err } = await supabase.storage
+      .from('notes-media')
+      .createSignedUrl(videoPath, 60);
+    setLoading(false);
+    if (err || !data?.signedUrl) {
+      setError(true);
+      return;
+    }
+    setSignedUrl(data.signedUrl);
+  };
+
+  if (signedUrl) {
+    return (
+      <div className="mt-2 rounded-lg overflow-hidden bg-secondary/30">
+        <video
+          controls
+          preload="metadata"
+          className="w-full max-h-80 rounded-lg"
+          src={signedUrl}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); handlePlay(); }}
+      className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/40 text-sm text-muted-foreground hover:bg-secondary/60 transition-colors"
+    >
+      {loading ? (
+        <span className="animate-pulse">Loading video…</span>
+      ) : error ? (
+        <span className="text-destructive">Failed to load video. Tap to retry.</span>
+      ) : (
+        <>
+          <Video className="w-4 h-4" />
+          <span>Video</span>
+        </>
+      )}
+    </button>
+  );
+}
 
 
 // Progressive-fill Zap icon for focus level (1–5)
@@ -974,6 +1027,9 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           )}
         </div>
       )}
+
+      {/* Video attachment */}
+      {(note as any).video_path && <NoteVideoPlayer videoPath={(note as any).video_path} />}
 
       {/* Full timestamp at bottom in expanded view */}
       {expanded && (
