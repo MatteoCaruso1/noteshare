@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
@@ -36,6 +36,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ListTodo } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+import { uploadNoteVideo } from '@/lib/videoUpload';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -73,6 +74,7 @@ export function QuickNoteCapture() {
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
+  const videoBlobRef = useRef<Blob | null>(null);
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
@@ -192,8 +194,18 @@ export function QuickNoteCapture() {
         focusTextSnapshot: focusData ? focusData.focus_text : undefined,
       },
       {
-        onSuccess: () => {
-          incrementCount(); // Update local count optimistically
+        onSuccess: async (newNote) => {
+          incrementCount();
+          
+          // Upload video if one was recorded (non-blocking)
+          if (videoBlobRef.current && newNote?.id && user?.id) {
+            const blob = videoBlobRef.current;
+            videoBlobRef.current = null;
+            uploadNoteVideo(blob, user.id, newNote.id).then(path => {
+              if (!path) toast.error('Video upload failed.');
+            });
+          }
+          
           clearState();
           setPrivateAudioIndices([]);
           setIsOpen(false);
@@ -343,6 +355,8 @@ export function QuickNoteCapture() {
                   <AudioRecorder 
                     onRecorded={handleAudioRecorded} 
                     onRecordingChange={setIsRecordingAudio}
+                    onVideoReady={(blob) => { videoBlobRef.current = blob; }}
+                    onVideoDiscarded={() => { videoBlobRef.current = null; }}
                     userId={profile.id}
                     className="w-full" 
                   />

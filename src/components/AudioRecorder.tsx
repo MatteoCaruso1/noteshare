@@ -15,11 +15,13 @@ import { VideoRecorder, VideoRecordButton } from '@/components/VideoRecorder';
 interface AudioRecorderProps {
   onRecorded: (blob: Blob, duration: number, backupId?: string) => void;
   onRecordingChange?: (isRecording: boolean) => void;
+  onVideoReady?: (blob: Blob) => void;
+  onVideoDiscarded?: () => void;
   userId?: string;
   className?: string;
 }
 
-export function AudioRecorder({ onRecorded, onRecordingChange, userId, className }: AudioRecorderProps) {
+export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onVideoDiscarded, userId, className }: AudioRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -329,7 +331,10 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
   return (
     <div className={`flex flex-col gap-2 ${className || ''}`}>
       {videoRecording ? (
-        <VideoRecorder onDiscard={() => setVideoRecording(false)} />
+        <VideoRecorder
+          onDiscard={() => { setVideoRecording(false); onVideoDiscarded?.(); }}
+          onVideoReady={(blob) => { onVideoReady?.(blob); }}
+        />
       ) : null}
       <div className="flex items-center gap-2">
         {recording ? (

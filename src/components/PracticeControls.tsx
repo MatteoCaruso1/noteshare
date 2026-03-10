@@ -13,6 +13,7 @@ import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
 import { useMilestoneToasts } from '@/hooks/useMilestoneToasts';
+import { uploadNoteVideo } from '@/lib/videoUpload';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -143,6 +144,7 @@ export function PracticeControls() {
   } = usePersistentNoteState('practice_session', profile?.id);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
+  const videoBlobRef = useRef<Blob | null>(null);
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
@@ -580,13 +582,22 @@ export function PracticeControls() {
             },
             {
               onSuccess: (newNote) => {
-                incrementCount(); // Update local count optimistically
+                incrementCount();
                 
                 // Share with selected friends if any
                 if (playingWithIds && playingWithIds.length > 0 && newNote?.id) {
                   createNoteShares.mutate({
                     noteId: newNote.id,
                     sharedWithIds: playingWithIds,
+                  });
+                }
+
+                // Upload video if one was recorded (non-blocking)
+                if (videoBlobRef.current && newNote?.id && user?.id) {
+                  const blob = videoBlobRef.current;
+                  videoBlobRef.current = null;
+                  uploadNoteVideo(blob, user.id, newNote.id).then(path => {
+                    if (!path) sonnerToast.error('Video upload failed.');
                   });
                 }
                 
@@ -950,6 +961,8 @@ export function PracticeControls() {
               <AudioRecorder 
                 onRecorded={handleAudioRecorded} 
                 onRecordingChange={setIsRecordingAudio}
+                onVideoReady={(blob) => { videoBlobRef.current = blob; }}
+                onVideoDiscarded={() => { videoBlobRef.current = null; }}
                 className="w-full"
               />
             </div>
