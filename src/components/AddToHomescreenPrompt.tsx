@@ -34,8 +34,8 @@ const shouldShowPrompt = () => {
 // Hook to trigger the homescreen prompt after first note
 export function useHomescreenPromptTrigger() {
   const triggerPrompt = useCallback((totalNoteCount: number) => {
-    // Only trigger on first note creation
-    if (totalNoteCount !== 1) return;
+    // Trigger on second note (first is auto-created during FTUE)
+    if (totalNoteCount !== 2) return;
     
     // Check if already triggered or dismissed
     if (localStorage.getItem(HOMESCREEN_PROMPT_TRIGGERED_KEY) === 'true') return;
