@@ -197,6 +197,7 @@ export function BottomNav() {
     <nav 
       ref={navRef}
       data-bottom-nav="true"
+      data-tour="bottom-nav"
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0",
         // In browser mode on mobile, add extra bottom padding to account for Safari chrome

@@ -14,6 +14,7 @@ interface TourStep {
   waitForSelector?: string;
   waitForRemoval?: string;
   elevateParent?: boolean;
+  excludeBottomNav?: boolean;
 }
 
 const tourSteps: TourStep[] = [
@@ -35,6 +36,7 @@ const tourSteps: TourStep[] = [
     message: 'View your practice history',
     subMessage: 'All your sessions and notes appear here',
     position: 'top',
+    excludeBottomNav: true,
   },
   // Steps 4-5: Interactive - start a session
   {
@@ -164,7 +166,16 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     if (currentTourStep) {
       const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement | null;
       if (element) {
-        const rect = element.getBoundingClientRect();
+        let rect = element.getBoundingClientRect();
+        // If excludeBottomNav, clip the highlight to stop above the bottom nav
+        if (currentTourStep.excludeBottomNav) {
+          const bottomNav = document.querySelector('[data-tour="bottom-nav"]') as HTMLElement | null;
+          if (bottomNav) {
+            const navTop = bottomNav.getBoundingClientRect().top;
+            const clippedHeight = Math.max(0, navTop - rect.top);
+            rect = new DOMRect(rect.left, rect.top, rect.width, clippedHeight);
+          }
+        }
         setTargetRect(rect);
         elevateElement(element, currentTourStep);
         return true;
@@ -327,9 +338,12 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const isSaveDialogStep = currentTourStep?.targetSelector === '[data-tour="save-session-btn"]';
 
+  const isInteractive = currentTourStep?.interactive;
+
   const content = (
     <div
       className="fixed inset-0 z-[100]"
+      style={{ pointerEvents: isInteractive ? 'none' : 'auto' }}
       onClick={handleOverlayClick}
     >
       {/* Dark overlay - always visible */}
@@ -431,9 +445,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
               {currentTourStep.subMessage}
             </p>
           )}
-          <p className="text-xs text-muted-foreground/60 text-center mt-2">
-            {currentTourStep.interactive ? 'Tap the highlighted area' : 'Tap anywhere to continue'}
-          </p>
+          {!currentTourStep.interactive && (
+            <p className="text-xs text-muted-foreground/60 text-center mt-2">
+              Tap anywhere to continue
+            </p>
+          )}
         </div>
       )}
 
