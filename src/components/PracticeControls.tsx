@@ -974,6 +974,7 @@ export function PracticeControls() {
             </Button>
             {/* End Session button - disabled during recording */}
             <Button
+              data-tour="end-session-btn"
               size="icon"
               className={`h-9 flex-1 bg-gradient-primary text-primary-foreground focus:outline-none focus-visible:outline-none transition-opacity ${
                 isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''

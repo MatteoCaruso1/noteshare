@@ -166,6 +166,7 @@ export function EndSessionDialog({
         {/* Save Button - Fixed at bottom */}
         <div className="p-4 pt-2 border-t border-border shrink-0">
           <Button
+            data-tour="save-session-btn"
             className="w-full bg-gradient-primary text-primary-foreground"
             onClick={handleSave}
             disabled={isSaving || !isValidDuration}
