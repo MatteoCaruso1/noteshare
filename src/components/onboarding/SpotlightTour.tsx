@@ -437,20 +437,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         </div>
       )}
 
-      {/* Step indicator */}
-      {!isFinalStep && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none" style={{ zIndex: 103 }}>
-          {tourSteps.map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                'w-2 h-2 rounded-full transition-colors duration-300',
-                i + 1 === step ? 'bg-primary' : i + 1 < step ? 'bg-primary/40' : 'bg-muted-foreground/40'
-              )}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 
