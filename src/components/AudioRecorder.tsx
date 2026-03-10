@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square, Loader2, AlertCircle, Video } from 'lucide-react';
+import { Mic, Square, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { audioManager } from '@/lib/audioManager';
 import { 
@@ -10,6 +10,7 @@ import {
   formatBytes,
   isIndexedDBAvailable 
 } from '@/lib/recordingBackup';
+import { VideoRecorder, VideoRecordButton } from '@/components/VideoRecorder';
 
 interface AudioRecorderProps {
   onRecorded: (blob: Blob, duration: number, backupId?: string) => void;
@@ -23,6 +24,8 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
   const [processing, setProcessing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recordingSize, setRecordingSize] = useState(0);
+  const [videoRecording, setVideoRecording] = useState(false);
+  const videoRecorderRef = useRef<{ start: () => void } | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
@@ -324,54 +327,54 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
   const sizeDisplay = getSizeDisplay();
 
   return (
-    <div className={`flex items-center gap-2 ${className || ''}`}>
-      {recording ? (
-        <>
-          <Button
-            variant="destructive"
-            size="icon"
-            onClick={stopRecording}
-            onTouchEnd={handleTouchEnd}
-            className="h-9 w-9 shrink-0 bg-destructive text-destructive-foreground touch-manipulation focus:outline-none focus-visible:outline-none"
-          >
-            <Square className="w-4 h-4 fill-current" />
-          </Button>
-          <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
-            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-            <span className="tabular-nums">{formatTime(elapsedTime)}</span>
-            {sizeDisplay && recordingSize > 50 * 1024 * 1024 && (
-              <span className="text-xs text-muted-foreground">({sizeDisplay})</span>
-            )}
-          </div>
-        </>
-      ) : (
-        <>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={startRecording}
-            onTouchEnd={handleTouchEnd}
-            className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
-            title="Record audio"
-          >
-            {processing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Mic className="w-4 h-4" />
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => console.log('video record pressed')}
-            onTouchEnd={handleTouchEnd}
-            className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
-            title="Record video"
-          >
-            <Video className="w-4 h-4" />
-          </Button>
-        </>
-      )}
+    <div className={`flex flex-col gap-2 ${className || ''}`}>
+      {videoRecording ? (
+        <VideoRecorder onDiscard={() => setVideoRecording(false)} />
+      ) : null}
+      <div className="flex items-center gap-2">
+        {recording ? (
+          <>
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={stopRecording}
+              onTouchEnd={handleTouchEnd}
+              className="h-9 w-9 shrink-0 bg-destructive text-destructive-foreground touch-manipulation focus:outline-none focus-visible:outline-none"
+            >
+              <Square className="w-4 h-4 fill-current" />
+            </Button>
+            <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
+              <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+              <span className="tabular-nums">{formatTime(elapsedTime)}</span>
+              {sizeDisplay && recordingSize > 50 * 1024 * 1024 && (
+                <span className="text-xs text-muted-foreground">({sizeDisplay})</span>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={startRecording}
+              onTouchEnd={handleTouchEnd}
+              disabled={videoRecording}
+              className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
+              title="Record audio"
+            >
+              {processing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
+            </Button>
+            <VideoRecordButton
+              onPress={() => setVideoRecording(true)}
+              disabled={recording || processing}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
