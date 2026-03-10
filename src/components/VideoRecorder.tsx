@@ -9,7 +9,7 @@ interface VideoRecorderProps {
   className?: string;
 }
 
-export function VideoRecorder({ className }: VideoRecorderProps) {
+export function VideoRecorder({ className, onDiscard }: VideoRecorderProps & { onDiscard?: () => void }) {
   const [state, setState] = useState<'idle' | 'recording' | 'ready'>('idle');
   const [elapsed, setElapsed] = useState(0);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
