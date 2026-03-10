@@ -422,8 +422,8 @@ const AdminAnalytics = () => {
           </Select>
         </div>
 
-        {/* Engagement Metric Cards (Row 1) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* Engagement Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <MetricCard
             icon={<Users className="w-4 h-4" />}
             title="Note-activated Users (Today)"
@@ -441,49 +441,12 @@ const AdminAnalytics = () => {
           />
 
           <MetricCard
-            icon={<RefreshCw className="w-4 h-4" />}
-            title="Day 7 Retention"
-            definition={METRIC_DEFINITIONS.day7Retention}
-            value={data.day7Retention.today.rate !== null ? `${data.day7Retention.today.rate}%` : 'N/A'}
-            subtitle={data.day7Retention.today.cohortSize > 0 
-              ? `${data.day7Retention.today.retained} of ${data.day7Retention.today.cohortSize} users returned`
-              : 'No cohort from 7 days ago'}
-          />
-        </div>
-
-        {/* Subscription Metric Cards (Row 2) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <MetricCard
             icon={<CreditCard className="w-4 h-4" />}
             title="Active Premium"
             definition={METRIC_DEFINITIONS.activePremium}
             value={data.paidConversion.totalActive}
             subtitle={`${data.paidConversion.inTrial} trial, ${data.paidConversion.actuallyPaying} paying`}
           />
-
-          <MetricCard
-            icon={<Repeat className="w-4 h-4" />}
-            title="Trial → Paid (7 days)"
-            definition={METRIC_DEFINITIONS.trialToPaid}
-            value={data.trialToPaidRate.trialsEndedLast7Days > 0 ? `${data.trialToPaidRate.rate}%` : 'N/A'}
-            subtitle={data.trialToPaidRate.trialsEndedLast7Days > 0
-              ? `${data.trialToPaidRate.converted} of ${data.trialToPaidRate.trialsEndedLast7Days} converted`
-              : 'No trials ended in last 7 days'}
-          />
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Data Range</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-semibold">
-                {data.metadata.startDate && formatTooltipLabel(data.metadata.startDate)}
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Updated: {format(parseISO(data.metadata.generatedAt), 'h:mm a')}
-              </p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Account Funnel */}
