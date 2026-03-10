@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
