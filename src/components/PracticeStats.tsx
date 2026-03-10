@@ -17,6 +17,7 @@ interface PracticeStatsProps {
 
 export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { profile } = useAuth();
+  const isMobile = useIsMobile();
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [showShareCalendar, setShowShareCalendar] = useState(false);
