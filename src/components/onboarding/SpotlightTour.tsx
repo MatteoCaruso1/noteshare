@@ -14,6 +14,7 @@ interface TourStep {
   waitForRemoval?: string;
   elevateParent?: boolean;
   excludeBottomNav?: boolean;
+  instantEntry?: boolean;
 }
 
 const tourSteps: TourStep[] = [
