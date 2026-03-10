@@ -898,6 +898,7 @@ const AdminAnalytics = () => {
         )}
       />
 
+      </div>
     </div>
   );
 };
