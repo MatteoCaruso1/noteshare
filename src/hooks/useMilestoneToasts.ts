@@ -48,10 +48,12 @@ export function useMilestoneToasts() {
           claimingFirstNote.current = false;
           return;
         }
-        showMilestoneToast(
-          'First practice logged!',
-          'Your first step to practicing smarter',
-        );
+        if (!isOnboardingActive) {
+          showMilestoneToast(
+            'First practice logged!',
+            'Your first step to practicing smarter',
+          );
+        }
         await refreshProfile();
       }
 
