@@ -561,7 +561,58 @@ const AdminAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Metric 3: Day 7 Retention Chart */}
+      {/* Activation Rate Drilldown Dialog */}
+      <Dialog open={!!drilldown || drilldownLoading} onOpenChange={(open) => { if (!open) { setDrilldown(null); setDrilldownLoading(false); } }}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {drilldown ? format(parseISO(drilldown.date), 'MMMM d, yyyy') : 'Loading...'}
+            </DialogTitle>
+            <DialogDescription>
+              Viewers & Note Creators for this day
+            </DialogDescription>
+          </DialogHeader>
+          {drilldownLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : drilldown && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Viewers ({drilldown.viewers.length})
+                </h4>
+                <div className="space-y-1">
+                  {drilldown.viewers.map((u, i) => (
+                    <div key={i} className="text-sm flex items-center justify-between py-1 px-2 rounded-md bg-muted/50">
+                      <span>{u.name}</span>
+                      <span className="text-muted-foreground text-xs">@{u.username}</span>
+                    </div>
+                  ))}
+                  {drilldown.viewers.length === 0 && <p className="text-sm text-muted-foreground">No viewers</p>}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-primary mb-2 flex items-center gap-2">
+                  <Music className="w-4 h-4" />
+                  Note Creators ({drilldown.creators.length})
+                </h4>
+                <div className="space-y-1">
+                  {drilldown.creators.map((u, i) => (
+                    <div key={i} className="text-sm flex items-center justify-between py-1 px-2 rounded-md bg-primary/10">
+                      <span>{u.name}</span>
+                      <span className="text-muted-foreground text-xs">@{u.username}</span>
+                    </div>
+                  ))}
+                  {drilldown.creators.length === 0 && <p className="text-sm text-muted-foreground">No creators</p>}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
