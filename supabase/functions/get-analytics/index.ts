@@ -146,6 +146,73 @@ serve(async (req) => {
 
     // Parse query params
     const url = new URL(req.url);
+    const drilldownDate = url.searchParams.get('drilldown_date');
+
+    // ============================================
+    // Lightweight drilldown: return viewer/creator user lists for a single date
+    // ============================================
+    if (drilldownDate) {
+      console.log(`Drilldown request for date: ${drilldownDate}`);
+
+      // Fetch viewers (page_views) for that date
+      const nextDay = new Date(drilldownDate + 'T00:00:00Z');
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+      const nextDayStr = nextDay.toISOString().split('T')[0];
+
+      const [pageViewsRes, notesRes] = await Promise.all([
+        supabaseAdmin
+          .from('page_views')
+          .select('user_id')
+          .eq('page_name', 'practice')
+          .gte('viewed_at', drilldownDate)
+          .lt('viewed_at', nextDayStr),
+        supabaseAdmin
+          .from('notes')
+          .select('author_id')
+          .gte('created_at', drilldownDate)
+          .lt('created_at', nextDayStr),
+      ]);
+
+      // Unique viewer user_ids (auth UIDs from page_views)
+      const viewerAuthIds = new Set<string>();
+      for (const v of pageViewsRes.data || []) {
+        viewerAuthIds.add(v.user_id);
+      }
+      // Unique creator profile IDs
+      const creatorProfileIds = new Set<string>();
+      for (const n of notesRes.data || []) {
+        creatorProfileIds.add(n.author_id);
+      }
+
+      // Resolve creator profiles
+      const creatorIds = Array.from(creatorProfileIds);
+      const { data: creatorProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, user_id, name, username')
+        .in('id', creatorIds.length > 0 ? creatorIds : ['00000000-0000-0000-0000-000000000000']);
+
+      // Add creator auth UIDs to viewers set (union)
+      for (const p of creatorProfiles || []) {
+        if (p.user_id) viewerAuthIds.add(p.user_id);
+      }
+
+      // Resolve viewer profiles (by auth user_id)
+      const viewerIds = Array.from(viewerAuthIds);
+      const { data: viewerProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, user_id, name, username')
+        .in('user_id', viewerIds.length > 0 ? viewerIds : ['00000000-0000-0000-0000-000000000000']);
+
+      const viewers = (viewerProfiles || []).map(p => ({ name: p.name, username: p.username }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      const creators = (creatorProfiles || []).map(p => ({ name: p.name, username: p.username }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      return new Response(JSON.stringify({ date: drilldownDate, viewers, creators }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const days = parseInt(url.searchParams.get('days') || '30');
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
