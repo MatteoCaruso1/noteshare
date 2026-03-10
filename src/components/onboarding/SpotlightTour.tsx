@@ -221,6 +221,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         setTargetRect(rect);
 
         // Phase 2: fade in tooltip after highlight has moved
+        const tooltipDelay = currentTourStep.instantEntry ? 0 : TRANSITION_DURATION + 50;
         setTimeout(() => {
           if (!cancelled) {
             forceScrollToTop();
@@ -229,7 +230,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             if (freshRect) setTargetRect(freshRect);
             setTooltipVisible(true);
           }
-        }, TRANSITION_DURATION + 50);
+        }, tooltipDelay);
 
         // Keep position accurate
         const el = document.querySelector(currentTourStep.targetSelector);
