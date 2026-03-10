@@ -42,12 +42,13 @@ const tourSteps: TourStep[] = [
     elevateParent: true,
   },
   {
-    targetSelector: '[data-tour="start-live-btn"]',
+  targetSelector: '[data-tour="start-live-btn"]',
     message: 'Start a live session!',
     position: 'bottom',
     interactive: true,
     waitForSelector: '[data-tour="session-textarea"]',
     elevateParent: true,
+    instantEntry: true,
   },
   {
     targetSelector: '[data-tour="session-textarea"]',
