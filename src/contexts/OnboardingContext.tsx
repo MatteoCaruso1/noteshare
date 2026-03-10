@@ -41,7 +41,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const nextStep = () => {
-    if (currentStep >= 7) {
+    if (currentStep >= 11) {
       completeOnboarding();
     } else {
       setCurrentStep(prev => prev + 1);
