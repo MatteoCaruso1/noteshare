@@ -270,6 +270,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       videoFiles = [],
       tags = [],
       sessionId,
+      isSessionNote,
       projectId,
       goalId,
       gigId,
