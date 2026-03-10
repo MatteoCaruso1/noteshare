@@ -693,6 +693,7 @@ export function PracticeControls() {
           {!activeSession && (showSessionChoice || isStartingSession) && (
             <div className="px-3 sm:px-4 pb-4 space-y-3 min-h-[100px]">
               <Button
+                data-tour="start-live-btn"
                 className="w-full bg-gradient-primary text-primary-foreground"
                 onClick={handleStartLiveSession}
                 disabled={startSession.isPending || isStartingSession}
