@@ -433,9 +433,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
               {currentTourStep.subMessage}
             </p>
           )}
-          <p className="text-xs text-muted-foreground/60 text-center mt-2">
-            {currentTourStep.interactive ? 'Tap the highlighted area' : 'Tap anywhere to continue'}
-          </p>
+          {!currentTourStep.interactive && (
+            <p className="text-xs text-muted-foreground/60 text-center mt-2">
+              Tap anywhere to continue
+            </p>
+          )}
         </div>
       )}
 
