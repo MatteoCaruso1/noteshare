@@ -329,7 +329,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
   return (
     <div className={`flex flex-col gap-2 ${className || ''}`}>
       {videoRecording ? (
-        <VideoRecorder />
+        <VideoRecorder onDiscard={() => setVideoRecording(false)} />
       ) : null}
       <div className="flex items-center gap-2">
         {recording ? (
