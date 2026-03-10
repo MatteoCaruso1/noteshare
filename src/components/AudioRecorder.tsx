@@ -345,20 +345,32 @@ export function AudioRecorder({ onRecorded, onRecordingChange, userId, className
           </div>
         </>
       ) : (
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={startRecording}
-          onTouchEnd={handleTouchEnd}
-          className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
-          title="Record audio"
-        >
-          {processing ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Mic className="w-4 h-4" />
-          )}
-        </Button>
+        <>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={startRecording}
+            onTouchEnd={handleTouchEnd}
+            className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
+            title="Record audio"
+          >
+            {processing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => console.log('video record pressed')}
+            onTouchEnd={handleTouchEnd}
+            className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
+            title="Record video"
+          >
+            <Video className="w-4 h-4" />
+          </Button>
+        </>
       )}
     </div>
   );
