@@ -398,7 +398,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       {/* Tooltip */}
       {isFinalStep ? (
         <div
-          className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center"
+          className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-background z-[104]"
           style={{
             transition: `opacity 300ms ease`,
             opacity: isFadingOut ? 0 : 1,
