@@ -1,69 +1,52 @@
 
 
-# Per-Audio Privacy Toggle
+## Bug: Practice List content not persisting across sign-out/sign-in
 
-## Overview
-Add a toggle on each audio file item that lets users mark individual recordings as public or private. Private recordings are hidden from friends even if the post itself is shared. The owner always sees all their own recordings.
+### Root Cause
 
-## Database Change
+When the user signs out, the sequence is:
+1. `supabase.auth.signOut()` invalidates the session
+2. `onAuthStateChange('SIGNED_OUT')` fires → clears React Query cache, sets `user` to null
+3. `TodaysFocus` component unmounts → cleanup effect tries to call `updateFocus(textRef.current)`
+4. But `userId` inside the `useTodaysFocus` mutation is already `null` (read reactively from `useAuth()`)
+5. The mutation throws `'Not authenticated'` and the unsaved text is lost
+6. On next sign-in, the DB has no record of the edits
 
-Add a `private_audio_indices` column to the `notes` table -- an integer array storing the indices of audio files the user has marked private. This avoids a new table and keeps the data co-located with existing audio arrays.
+Additionally, the user-scoped localStorage cache (`noteshare_focus_cache:{userId}`) may still hold the text, but the re-hydration only works if the cache key matches, and the query ultimately overwrites it with whatever the DB returns.
 
-```sql
-ALTER TABLE public.notes
-ADD COLUMN private_audio_indices integer[] NOT NULL DEFAULT '{}';
+### Fix (2 changes)
+
+**1. `src/hooks/useDailyFocus.ts` — Use a ref for userId in the mutation**
+
+Keep a `userIdRef` that retains the last non-null userId. Use this ref inside `mutationFn` so that even if `user` becomes null during sign-out, the mutation can still authenticate with the still-valid (briefly) Supabase session or at minimum identify the user for the upsert.
+
+```ts
+const userIdRef = useRef(userId);
+useEffect(() => {
+  if (userId) userIdRef.current = userId;
+}, [userId]);
 ```
 
-No new RLS policies needed -- existing notes UPDATE policy already restricts to owner only.
+In `mutationFn`, use `userIdRef.current` as a fallback:
+```ts
+const effectiveUserId = userId || userIdRef.current;
+if (!effectiveUserId) throw new Error('Not authenticated');
+```
 
-## UI Changes
+**2. `src/components/TodaysFocus.tsx` — Flush save synchronously before sign-out**
 
-### 1. Trash button styling (AudioFileItem.tsx)
-- Change from `variant="outline"` to `variant="ghost"` with explicit `border border-border` class and `bg-transparent` to get a white/transparent outline-only look.
+The more robust fix: ensure the save actually fires before auth is invalidated. Add an event-based mechanism:
 
-### 2. Privacy toggle in AudioFileItem
-- Add a new prop `isPrivate: boolean` and `onTogglePrivacy: () => void`
-- Render a compact toggle to the left of the trash button: `Users` icon (public) on left, `Lock` icon (private) on right, with a `Switch` component between them
-- Toast on every flip: "Recording set to private" / "Recording set to public"
+- In `TodaysFocus`, listen for a custom `'noteshare:before-signout'` event that flushes pending changes synchronously (cancels debounce, calls `updateFocus` immediately).
+- In `useAuth.tsx` `signOut()`, dispatch `'noteshare:before-signout'` **before** calling `supabase.auth.signOut()`, so the save runs while the session is still valid.
 
-### 3. NoteCard.tsx -- owner viewing
-- When rendering audio files, pass `isPrivate` and `onTogglePrivacy` to `AudioFileItem` (edit mode) or show a small lock icon on `WaveformPlayer` entries (display mode)
-- Create a new mutation hook `useUpdateNotePrivateAudios` that updates `private_audio_indices` on the note
+This ensures the 1-second debounce window doesn't cause data loss during sign-out.
 
-### 4. NoteCard.tsx -- friend viewing (filtering)
-- When `!isOwner`, filter out audio files whose index is in `note.private_audio_indices` before rendering
-- Also filter the corresponding `audio_file_names` entries
-- This is a pure client-side filter with zero extra queries
+### Summary of file changes
 
-### 5. FriendsFeed / other views
-- The same filtering applies anywhere `NoteCard` is rendered for non-owner notes, since the logic lives inside `NoteCard` itself
-
-### 6. Hook: useUpdateNotePrivateAudios (in useUpdateNote.ts)
-- Simple mutation: updates `private_audio_indices` on the note
-- Optimistic update on `['note', noteId]` and `['notes']`
-- Invalidates `['notes']`, `['friends-notes']`, `['note']`
-
-## Data Flow
-- `notes.private_audio_indices` stores `[1, 3]` meaning audio at index 1 and 3 are private
-- Default is `[]` (all public)
-- Owner toggles an index: if present, remove it (make public); if absent, add it (make private)
-- Friends see `note.audio_files.filter((_, i) => !privateSet.has(i))`
-
-## Performance
-- No new queries, no new tables, no new RLS policies
-- Single column added to existing `notes` rows (already fetched)
-- Client-side index filtering is O(n) where n = number of audio files per note (typically 1-3)
-- Toggle mutation is a single UPDATE on one row
-
-## Files Modified
-1. `src/components/AudioFileItem.tsx` -- trash button style + privacy toggle UI
-2. `src/hooks/useUpdateNote.ts` -- new `useUpdateNotePrivateAudios` mutation
-3. `src/components/NoteCard.tsx` -- wire toggle for owner, filter for friends
-4. `src/types/index.ts` -- add `private_audio_indices` to Note type (if not auto-generated)
-5. Database migration -- add column
-
-## What Won't Change
-- QuickNoteCapture, AddNoteDialog, GroupPostCapture -- these are pre-save UIs where audio privacy isn't relevant yet (defaults to public)
-- No changes to RLS, storage, or edge functions
-- No changes to how audio files are uploaded or stored
+| File | Change |
+|------|--------|
+| `src/hooks/useAuth.tsx` | Dispatch `noteshare:before-signout` event before `signOut()` |
+| `src/hooks/useDailyFocus.ts` | Add `userIdRef` fallback in mutation |
+| `src/components/TodaysFocus.tsx` | Listen for `noteshare:before-signout` and flush pending save |
 
