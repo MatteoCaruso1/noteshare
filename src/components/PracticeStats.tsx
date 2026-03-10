@@ -197,12 +197,12 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis 
+                     <XAxis 
                       dataKey="week" 
                       tick={{ fontSize: 10 }} 
                       className="text-muted-foreground"
                       tickLine={false}
-                      interval={0}
+                      interval={isMobile ? 1 : 0}
                     />
                     <YAxis 
                       tick={{ fontSize: 10 }} 
