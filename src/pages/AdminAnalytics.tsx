@@ -251,6 +251,7 @@ const AdminAnalytics = () => {
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [filterHasNotes, setFilterHasNotes] = useState<'all' | 'yes' | 'no'>('all');
   const [filterFriends, setFilterFriends] = useState<'all' | '0' | '1+'>('all');
+  const [userSearch, setUserSearch] = useState('');
 
   useEffect(() => {
     const fetchRecentAccounts = async () => {
