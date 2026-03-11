@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser } from '@/hooks/useAnalytics';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser, AllUser } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
