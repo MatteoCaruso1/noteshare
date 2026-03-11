@@ -121,6 +121,7 @@ export interface AnalyticsData {
   tryProClickUsers: TryProClickUser[];
   mobileSessionUsers: MobileSessionUser[];
   accountFunnel: AccountFunnel;
+  allUsers: AllUser[];
   metadata: {
     daysRequested: number;
     startDate: string;
