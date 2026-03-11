@@ -84,6 +84,14 @@ export interface FunnelUser {
   friendCount: number;
 }
 
+export interface AllUser {
+  name: string;
+  username: string;
+  email: string;
+  noteCount: number;
+  createdAt: string;
+}
+
 export interface AccountFunnel {
   accountsCreated: number;
   with1PlusNotes: number;
