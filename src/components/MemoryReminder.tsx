@@ -13,7 +13,7 @@ import { RichTextContent } from '@/components/RichTextContent';
 // Set to false for production!
 const DEV_MODE = false;
 
-const MEMORY_REFRESH_DAYS = 5;
+const MEMORY_REFRESH_DAYS = 15;
 const MEMORY_EXPIRATION_HOURS = 24; // Memory auto-expires after 24 hours
 const MIN_AGE_WEEKS = 2;
 const MIN_REPEAT_MONTHS = 6;
