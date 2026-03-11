@@ -11,6 +11,7 @@ import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
+import { Input } from '@/components/ui/input';
 import { format, parseISO } from 'date-fns';
 
 const PREVIEW_COUNT = 5;
