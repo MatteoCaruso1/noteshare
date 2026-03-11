@@ -845,6 +845,7 @@ serve(async (req) => {
       accountFunnel,
       tryProClickUsers,
       mobileSessionUsers,
+      allUsers,
       metadata: {
         daysRequested: days,
         startDate: startDateStr,
