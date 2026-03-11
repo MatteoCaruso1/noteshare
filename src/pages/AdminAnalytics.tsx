@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser } from '@/hooks/useAnalytics';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useAnalytics, PremiumUser, NoteActivatedUser, FriendCountUser, TryProClickUser, MobileSessionUser, FunnelUser, AllUser } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone, Filter, Trash2, UserCheck } from 'lucide-react';
+import { Loader2, Users, TrendingUp, AlertCircle, RefreshCw, CreditCard, Repeat, HelpCircle, ChevronDown, ChevronUp, Crown, Music, UserPlus, Star, Smartphone, Filter, Trash2, UserCheck, Mail, Search } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
+import { Input } from '@/components/ui/input';
 import { format, parseISO } from 'date-fns';
 
 const PREVIEW_COUNT = 5;
@@ -250,6 +251,7 @@ const AdminAnalytics = () => {
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [filterHasNotes, setFilterHasNotes] = useState<'all' | 'yes' | 'no'>('all');
   const [filterFriends, setFilterFriends] = useState<'all' | '0' | '1+'>('all');
+  const [userSearch, setUserSearch] = useState('');
 
   useEffect(() => {
     const fetchRecentAccounts = async () => {
@@ -763,6 +765,63 @@ const AdminAnalytics = () => {
           <Badge variant="outline">{user.mobilePercent}% mobile ({user.mobileCount}/{user.totalCount})</Badge>
         )}
       />
+
+      {/* All Users with Email and Notes */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="w-5 h-5" />
+            All Users ({data.allUsers?.length || 0})
+          </CardTitle>
+          <CardDescription>Name, email, and total notes created</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or email..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div className="overflow-auto max-h-[500px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-right">Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(data.allUsers || [])
+                  .filter(u => {
+                    if (!userSearch) return true;
+                    const q = userSearch.toLowerCase();
+                    return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
+                  })
+                  .map((user, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-xs text-muted-foreground">@{user.username}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{user.email || '—'}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant={user.noteCount > 0 ? 'default' : 'secondary'}>{user.noteCount}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       </div>
     </div>

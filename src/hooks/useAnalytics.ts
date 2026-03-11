@@ -84,6 +84,14 @@ export interface FunnelUser {
   friendCount: number;
 }
 
+export interface AllUser {
+  name: string;
+  username: string;
+  email: string;
+  noteCount: number;
+  createdAt: string;
+}
+
 export interface AccountFunnel {
   accountsCreated: number;
   with1PlusNotes: number;
@@ -113,6 +121,7 @@ export interface AnalyticsData {
   tryProClickUsers: TryProClickUser[];
   mobileSessionUsers: MobileSessionUser[];
   accountFunnel: AccountFunnel;
+  allUsers: AllUser[];
   metadata: {
     daysRequested: number;
     startDate: string;

@@ -797,6 +797,34 @@ serve(async (req) => {
       }
     }
 
+    // ============================================
+    // All Users with email and note counts
+    // ============================================
+    const { data: allProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, user_id, name, username, created_at');
+
+    const { data: authUsersList } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+
+    const authEmailMap = new Map<string, string>();
+    for (const au of authUsersList?.users || []) {
+      if (au.email) authEmailMap.set(au.id, au.email);
+    }
+
+    // Count all-time notes per author
+    const allTimeNoteCount = new Map<string, number>();
+    for (const note of allNotesData || []) {
+      allTimeNoteCount.set(note.author_id, (allTimeNoteCount.get(note.author_id) || 0) + 1);
+    }
+
+    const allUsers = (allProfiles || []).map(p => ({
+      name: p.name,
+      username: p.username,
+      email: p.user_id ? (authEmailMap.get(p.user_id) || '') : '',
+      noteCount: allTimeNoteCount.get(p.id) || 0,
+      createdAt: p.created_at,
+    })).sort((a, b) => b.noteCount - a.noteCount);
+
     const response = {
       noteActivatedUsers: {
         dailyCounts,
@@ -817,6 +845,7 @@ serve(async (req) => {
       accountFunnel,
       tryProClickUsers,
       mobileSessionUsers,
+      allUsers,
       metadata: {
         daysRequested: days,
         startDate: startDateStr,
