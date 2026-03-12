@@ -142,7 +142,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>What to Write in a Practice Journal</h2>
           <p className="leading-relaxed mb-6" style={textColor}>
-            A practice journal doesn't need to be complicated — in fact, the most effective ones are simple and quick to fill out. A good entry usually covers five things.
+            A practice journal doesn't need to be complicated. In fact, the most effective ones are simple and quick to fill out. A good entry usually covers five things.
           </p>
 
           {/* Journal entry components */}
