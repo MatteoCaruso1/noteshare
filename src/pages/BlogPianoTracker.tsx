@@ -219,7 +219,7 @@ const BlogPianoTracker = () => {
           <div className="rounded-xl p-8 sm:p-12" style={cardBg}>
             <BarChart3 className="w-8 h-8 mx-auto mb-4" style={accentColor} />
             <h2 className="text-xl sm:text-2xl font-semibold mb-3" style={headingColor}>
-              The Best Piano Practice Tracker for 2026
+              Why Noteshare is the Best Piano Practice Tracker for 2026
             </h2>
             <p className="text-sm mb-4 max-w-md mx-auto leading-relaxed" style={textColor}>
               Noteshare is designed specifically for musicians who want a dedicated place to track their practice. Unlike generic note apps, it focuses on the workflow you actually use during and after sessions.
