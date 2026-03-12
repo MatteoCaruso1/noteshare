@@ -213,7 +213,7 @@ const BlogPracticeJournal = () => {
             {[
               {
                 title: 'They Force Intentional Practice',
-                body: 'When you know you\'ll be writing down what you practiced, you naturally become more focused. Instead of wandering through material randomly, you practice with real purpose — and that shift alone can transform a session.',
+                body: 'When you know you\'ll be writing down what you practiced, you naturally become more focused. Instead of wandering through material randomly, you practice with real purpose, and that shift alone can transform a session.',
               },
               {
                 title: 'They Reveal Progress',
