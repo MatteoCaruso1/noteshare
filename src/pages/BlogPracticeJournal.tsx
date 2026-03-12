@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { BookOpen, CheckCircle2, HelpCircle } from 'lucide-react';
+import { BookOpen, CheckCircle2, HelpCircle, ArrowLeft } from 'lucide-react';
 import blogHeroImage from '@/assets/blog-practice-journal.jpg';
 
 const h2Style = 'text-2xl sm:text-3xl font-semibold tracking-tight leading-tight mb-6';
@@ -39,6 +39,9 @@ const BlogPracticeJournal = () => {
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px]" style={{ background: 'hsl(198 93% 59% / 0.04)' }} />
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
+          <Link to="/blog" className="inline-flex items-center gap-1.5 text-xs font-medium mb-6 opacity-60 hover:opacity-100 transition-opacity" style={headingColor}>
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Blog
+          </Link>
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
             Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Feb 26
           </p>
