@@ -287,7 +287,7 @@ const BlogPracticeJournal = () => {
             </ol>
           </div>
           <p className="leading-relaxed" style={textColor}>
-            That small habit can completely change how you approach practice. Over time, your journal becomes a detailed map of your musical development — something you can look back on and feel genuinely proud of.
+            That small habit can completely change how you approach practice. Over time, your journal becomes a detailed map of your musical development, something you can look back on and feel genuinely proud of.
           </p>
         </div>
       </section>
