@@ -116,7 +116,7 @@ const Blog = () => {
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
                 <span>Coming soon</span>
                 <span className="text-muted-foreground/40">|</span>
-                <span>Noteshare Team</span>
+                <span>Matteo</span>
               </div>
               <h3 className="text-base font-semibold text-foreground leading-snug">
                 {post.title}
