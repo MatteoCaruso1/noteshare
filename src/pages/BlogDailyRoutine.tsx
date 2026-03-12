@@ -370,27 +370,6 @@ const BlogDailyRoutine = () => {
         </div>
       </section>
 
-      {/* The Real Key */}
-      <section className="py-14 px-6 md:px-12">
-        <div className="max-w-3xl mx-auto">
-          <h2 className={h2Style} style={headingColor}>The Real Key to Musical Progress</h2>
-          <p className="leading-relaxed mb-4" style={textColor}>
-            Musical improvement rarely comes from sudden breakthroughs. It comes from hundreds of focused practice sessions that build on each other.
-          </p>
-          <p className="leading-relaxed mb-4" style={textColor}>
-            A structured routine makes that process easier.
-          </p>
-          <p className="leading-relaxed mb-4" style={textColor}>
-            When musicians practice with clear goals, track their sessions, and consistently refine weaknesses, improvement becomes predictable.
-          </p>
-          <p className="leading-relaxed mb-2" style={textColor}>
-            The goal is not to practice more.
-          </p>
-          <p className="text-lg font-medium" style={headingColor}>
-            The goal is to practice with intention every day.
-          </p>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="py-14 px-6 md:px-12">
