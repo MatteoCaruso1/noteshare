@@ -59,7 +59,7 @@ const routeScrollKeys: Record<string, string> = {
 };
 
 // Routes where BottomNav should be hidden
-const hiddenRoutes = ['/welcome', '/auth', '/science-of-practice', '/pricing'];
+const hiddenRoutes = ['/welcome', '/auth', '/science-of-practice', '/pricing', '/blog'];
 
 export function BottomNav() {
   const location = useLocation();
@@ -91,6 +91,7 @@ export function BottomNav() {
 
   // Hide on auth/welcome routes, or on root when not authenticated (landing page)
   const shouldHide = hiddenRoutes.includes(location.pathname) || 
+    location.pathname.startsWith('/blog') ||
     (location.pathname === '/' && !user) ||
     (location.pathname.startsWith('/profile/') && !user);
 
