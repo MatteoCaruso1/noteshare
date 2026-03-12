@@ -37,7 +37,7 @@ const Blog = () => {
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 <span>Mar 12</span>
                 <span className="text-muted-foreground/40">|</span>
-                <span>Noteshare Team</span>
+                <span>Matteo</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground leading-tight group-hover:text-primary transition-colors">
                 Build the perfect daily music practice routine
@@ -77,7 +77,7 @@ const Blog = () => {
             <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
               <span>Mar 10</span>
               <span className="text-muted-foreground/40">|</span>
-              <span>Noteshare Team</span>
+              <span>Matteo</span>
             </div>
             <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
               The science of effective music practice
@@ -96,7 +96,7 @@ const Blog = () => {
             <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
               <span>Mar 12</span>
               <span className="text-muted-foreground/40">|</span>
-              <span>Noteshare Team</span>
+              <span>Matteo</span>
             </div>
             <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
               Why every musician needs a practice journal
@@ -116,7 +116,7 @@ const Blog = () => {
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
                 <span>Coming soon</span>
                 <span className="text-muted-foreground/40">|</span>
-                <span>Noteshare Team</span>
+                <span>Matteo</span>
               </div>
               <h3 className="text-base font-semibold text-foreground leading-snug">
                 {post.title}

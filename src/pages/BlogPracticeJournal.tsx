@@ -40,7 +40,7 @@ const BlogPracticeJournal = () => {
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
-            Mar 12 &nbsp;|&nbsp; Noteshare Team
+            Matteo — Musician and Noteshare Developer &nbsp;|&nbsp; Mar 12
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] mb-6" style={headingColor}>
             Why Every Musician Needs a Practice Journal
