@@ -157,8 +157,9 @@ export function AppHeader() {
                 if (user) {
                   navigate('/');
                 } else {
-                  const from = location.pathname === '/pricing' ? 'pricing' 
+                const from = location.pathname === '/pricing' ? 'pricing' 
                     : location.pathname === '/science-of-practice' ? 'science' 
+                    : location.pathname === '/blog' ? 'blog'
                     : undefined;
                   navigate(from ? `/auth?from=${from}` : '/auth');
                 }
