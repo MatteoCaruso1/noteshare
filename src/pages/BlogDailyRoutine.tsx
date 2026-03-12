@@ -401,7 +401,7 @@ const BlogDailyRoutine = () => {
               Start tracking your practice
             </h2>
             <p className="text-sm mb-6 max-w-md mx-auto" style={textColor}>
-              Noteshare helps you capture, organize, and reflect on every practice session — so you can build the routine that works for you.
+              Noteshare helps you capture, organize, and reflect on every practice session so you can build the routine that works for you.
             </p>
             <Button
               size="lg"
