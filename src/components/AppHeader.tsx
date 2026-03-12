@@ -132,6 +132,16 @@ export function AppHeader() {
               >
                 Product Tiers
               </Link>
+              <Link
+                to="/blog"
+                className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline ${
+                  location.pathname === '/blog'
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Blog
+              </Link>
             </nav>
           )}
         </div>

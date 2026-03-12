@@ -194,6 +194,7 @@ function AppInner() {
                       <Route path="/qr" element={<Suspense fallback={null}><QRCodePage /></Suspense>} />
                       <Route path="/science-of-practice" element={<Suspense fallback={null}><ScienceOfPractice /></Suspense>} />
                       <Route path="/pricing" element={<Suspense fallback={null}><Pricing /></Suspense>} />
+                      <Route path="/blog" element={<Suspense fallback={null}><Blog /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
