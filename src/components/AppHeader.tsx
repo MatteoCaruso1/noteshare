@@ -151,7 +151,7 @@ export function AppHeader() {
           <div className="hidden sm:flex items-center">
             <Button
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 text-[11px] px-3 py-1 h-8 font-medium"
+              className="bg-primary text-primary-foreground hover:bg-primary/80 hover:brightness-110 text-[11px] px-3 py-1 h-8 font-medium transition-all"
               onClick={() => {
                 window.scrollTo(0, 0);
                 if (user) {
