@@ -118,7 +118,7 @@ const BlogPianoTracker = () => {
               {
                 icon: Shield,
                 title: 'It Creates Accountability',
-                body: 'When you track your sessions, practice stops being something vague like "I should probably practice today" and becomes measurable. Many musicians find that simply logging their practice increases how often they sit down at the piano — seeing a streak of consistent sessions can be surprisingly motivating.',
+                body: 'When you track your sessions, practice stops being something vague like "I should probably practice today" and becomes measurable. Many musicians find that simply logging their practice increases how often they sit down at the piano. Seeing a streak of consistent sessions can be surprisingly motivating.',
               },
               {
                 icon: Target,
