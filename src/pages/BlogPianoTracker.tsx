@@ -39,6 +39,9 @@ const BlogPianoTracker = () => {
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px]" style={{ background: 'hsl(198 93% 59% / 0.04)' }} />
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
+          <Link to="/blog" className="inline-flex items-center gap-1.5 text-xs font-medium mb-6 opacity-60 hover:opacity-100 transition-opacity" style={headingColor}>
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Blog
+          </Link>
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
             Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Mar 12
           </p>

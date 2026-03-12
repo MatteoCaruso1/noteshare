@@ -38,6 +38,9 @@ const ScienceOfPractice = () => {
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px]" style={{ background: 'hsl(198 93% 59% / 0.04)' }} />
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
+          <Link to="/blog" className="inline-flex items-center gap-1.5 text-xs font-medium mb-6 opacity-60 hover:opacity-100 transition-opacity" style={{ color: 'hsl(210 40% 98%)' }}>
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Blog
+          </Link>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] mb-6" style={{ color: 'hsl(210 40% 98%)' }}>
             The Science of Effective Music Practice
           </h1>
