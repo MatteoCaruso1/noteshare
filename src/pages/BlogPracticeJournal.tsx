@@ -74,7 +74,7 @@ const BlogPracticeJournal = () => {
             Learning research consistently shows that reflection and documentation dramatically improve skill development. When musicians track what they practice and how each session goes, they make better decisions moving forward and progress noticeably faster.
           </p>
           <p className="leading-relaxed" style={textColor}>
-            A practice journal transforms practice from scattered effort into a structured feedback loop — one where every session builds meaningfully on the last.
+            A practice journal transforms practice from scattered effort into a structured feedback loop, one where every session builds meaningfully on the last.
           </p>
         </div>
       </section>
