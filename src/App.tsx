@@ -62,6 +62,7 @@ const OAuthCatchRedirect = lazy(() => import("./pages/OAuthCatchRedirect"));
 const QRCodePage = lazy(() => import("./pages/QRCode"));
 const ScienceOfPractice = lazy(() => import("./pages/ScienceOfPractice"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Blog = lazy(() => import("./pages/Blog"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
