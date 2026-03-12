@@ -37,7 +37,7 @@ const Blog = () => {
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 <span>Mar 12</span>
                 <span className="text-muted-foreground/40">|</span>
-                <span>Noteshare Team</span>
+                <span>Matteo</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground leading-tight group-hover:text-primary transition-colors">
                 Build the perfect daily music practice routine
