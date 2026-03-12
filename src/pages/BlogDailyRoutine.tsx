@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { Clock, Music, Lightbulb, BookOpen, Target, CheckCircle2 } from 'lucide-react';
+import { Clock, Music, Lightbulb, BookOpen, Target, CheckCircle2, ArrowLeft } from 'lucide-react';
 import blogHeroImage from '@/assets/blog-daily-routine.jpg';
 
 const h2Style = 'text-2xl sm:text-3xl font-semibold tracking-tight leading-tight mb-6';
