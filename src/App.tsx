@@ -63,6 +63,7 @@ const QRCodePage = lazy(() => import("./pages/QRCode"));
 const ScienceOfPractice = lazy(() => import("./pages/ScienceOfPractice"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
+const BlogDailyRoutine = lazy(() => import("./pages/BlogDailyRoutine"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -195,6 +196,7 @@ function AppInner() {
                       <Route path="/science-of-practice" element={<Suspense fallback={null}><ScienceOfPractice /></Suspense>} />
                       <Route path="/pricing" element={<Suspense fallback={null}><Pricing /></Suspense>} />
                       <Route path="/blog" element={<Suspense fallback={null}><Blog /></Suspense>} />
+                      <Route path="/blog/daily-practice-routine" element={<Suspense fallback={null}><BlogDailyRoutine /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
