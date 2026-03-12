@@ -201,8 +201,13 @@ export function QuickNoteCapture() {
           if (videoBlobRef.current && newNote?.id && user?.id) {
             const blob = videoBlobRef.current;
             videoBlobRef.current = null;
+            console.log(`[QuickNoteCapture] Uploading video (${(blob.size / 1024).toFixed(0)}KB) for note ${newNote.id}`);
             uploadNoteVideo(blob, user.id, newNote.id).then(path => {
-              if (!path) toast.error('Video upload failed.');
+              if (path) {
+                console.log(`[QuickNoteCapture] Video uploaded: ${path}`);
+              } else {
+                toast.error('Video upload failed.');
+              }
             });
           }
           
@@ -214,7 +219,7 @@ export function QuickNoteCapture() {
     );
   };
 
-  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
+  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0 || !!videoBlobRef.current;
 
   return (
     <Card className="bg-card border-border">

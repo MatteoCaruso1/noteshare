@@ -1,21 +1,22 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Video, Square, X } from 'lucide-react';
+import { Video, Square } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MAX_DURATION = 30; // seconds
 
 interface VideoRecorderProps {
-  className?: string;
   onDiscard?: () => void;
   onVideoReady?: (blob: Blob) => void;
 }
 
-export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecorderProps) {
-  const [state, setState] = useState<'idle' | 'recording' | 'ready'>('idle');
+/**
+ * VideoRecorder: auto-starts camera on mount, shows stop + timer inline.
+ * When stopped, calls onVideoReady(blob). No "ready" UI — parent handles that.
+ */
+export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
+  const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -29,7 +30,6 @@ export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecor
       timerRef.current && clearInterval(timerRef.current);
       autoStopRef.current && clearTimeout(autoStopRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
-      previewUrl && URL.revokeObjectURL(previewUrl);
     };
   }, []);
 
@@ -79,31 +79,24 @@ export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecor
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'video/webm' });
         if (blob.size === 0) {
           toast.error('Video recording failed — no data captured.');
-          setState('idle');
+          onDiscard?.();
           return;
         }
 
-        // Revoke old preview
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-
-        const url = URL.createObjectURL(blob);
-        setVideoBlob(blob);
-        setPreviewUrl(url);
-        setState('ready');
-        onVideoReady?.(blob);
         console.log(`[VideoRecorder] Recorded ${(blob.size / 1024).toFixed(0)}KB, type: ${blob.type}`);
+        onVideoReady?.(blob);
       };
 
       recorder.onerror = (event) => {
         console.error('[VideoRecorder] error:', event);
         stopTracks();
-        setState('idle');
         toast.error('Video recording error.');
+        onDiscard?.();
       };
 
-      recorder.start(1000); // 1s chunks
+      recorder.start(1000);
       setElapsed(0);
-      setState('recording');
+      setRecording(true);
 
       timerRef.current = setInterval(() => {
         setElapsed(prev => prev + 1);
@@ -120,22 +113,13 @@ export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecor
       toast.error('Camera access required to record video.');
       onDiscard?.();
     }
-  }, [stopTracks, previewUrl]);
+  }, [stopTracks, onDiscard, onVideoReady]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
   }, []);
-
-  const discardVideo = useCallback(() => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setVideoBlob(null);
-    setPreviewUrl(null);
-    setState('idle');
-    setElapsed(0);
-    onDiscard?.();
-  }, [previewUrl, onDiscard]);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -147,57 +131,30 @@ export function VideoRecorder({ className, onDiscard, onVideoReady }: VideoRecor
     e.currentTarget.blur();
   };
 
-  if (state === 'ready') {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-1.5">
-          <Video className="w-4 h-4 text-primary" />
-          <span className="text-sm text-foreground">Video ready</span>
-          <span className="text-xs text-muted-foreground">
-            ({(videoBlob!.size / (1024 * 1024)).toFixed(1)}MB)
-          </span>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={discardVideo}
-          className="h-7 w-7 shrink-0"
-          title="Discard video"
-        >
-          <X className="w-3.5 h-3.5" />
-        </Button>
-      </div>
-    );
+  if (!recording) {
+    // Still starting up — render nothing (auto-start fires immediately)
+    return null;
   }
 
-  if (state === 'recording') {
-    return (
-      <div className="flex items-center gap-2">
-        <Button
-          variant="destructive"
-          size="icon"
-          onClick={stopRecording}
-          onTouchEnd={handleTouchEnd}
-          className="h-9 w-9 shrink-0 bg-destructive text-destructive-foreground touch-manipulation focus:outline-none focus-visible:outline-none"
-        >
-          <Square className="w-4 h-4 fill-current" />
-        </Button>
-        <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
-          <Video className="w-3.5 h-3.5" />
-          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-          <span className="tabular-nums">{formatTime(elapsed)}</span>
-          <span className="text-xs text-muted-foreground">/ {formatTime(MAX_DURATION)}</span>
-        </div>
-      </div>
-    );
-  }
-
-  // idle — starting up, show nothing (auto-start fires)
+  // Recording state: stop button + timer, same layout as audio recording
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <Video className="w-4 h-4 animate-pulse" />
-      <span>Starting camera…</span>
-    </div>
+    <>
+      <Button
+        variant="destructive"
+        size="icon"
+        onClick={stopRecording}
+        onTouchEnd={handleTouchEnd}
+        className="h-9 w-9 shrink-0 bg-destructive text-destructive-foreground touch-manipulation focus:outline-none focus-visible:outline-none"
+      >
+        <Square className="w-4 h-4 fill-current" />
+      </Button>
+      <div className="flex items-center gap-2 text-sm text-destructive shrink-0">
+        <Video className="w-3.5 h-3.5" />
+        <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+        <span className="tabular-nums">{formatTime(elapsed)}</span>
+        <span className="text-xs text-muted-foreground">/ {formatTime(MAX_DURATION)}</span>
+      </div>
+    </>
   );
 }
 

@@ -28,7 +28,7 @@ export async function uploadNoteVideo(
   // Update the note with the video path
   const { error: updateError } = await supabase
     .from('notes')
-    .update({ video_path: filePath } as any)
+    .update({ video_path: filePath })
     .eq('id', noteId);
 
   if (updateError) {

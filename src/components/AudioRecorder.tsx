@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square, Loader2, AlertCircle } from 'lucide-react';
+import { Mic, Square, Loader2, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { audioManager } from '@/lib/audioManager';
 import { 
@@ -27,7 +27,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recordingSize, setRecordingSize] = useState(0);
   const [videoRecording, setVideoRecording] = useState(false);
-  const videoRecorderRef = useRef<{ start: () => void } | null>(null);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
@@ -38,32 +38,20 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      if (dataIntervalRef.current) {
-        clearInterval(dataIntervalRef.current);
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (dataIntervalRef.current) clearInterval(dataIntervalRef.current);
+      if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
     };
   }, []);
 
-  // Handle visibility change (screen lock)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && recording && mediaRecorderRef.current) {
-        // When screen is locked/hidden, try to keep recording
-        // Most browsers will pause, but we can at least handle it gracefully
         console.log('[AudioRecorder] Screen hidden while recording, chunks so far:', chunkCountRef.current);
       }
     };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [recording]);
 
   const isSafari = (): boolean => {
@@ -73,33 +61,16 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
   };
 
   const getSupportedMimeType = (): string => {
-    // Safari/iOS requires mp4 - check this first for iOS devices
     if (isSafari()) {
-      // On Safari/iOS, try mp4 first, then let browser decide
       const safariTypes = ['audio/mp4', 'audio/aac', 'audio/mpeg'];
       for (const type of safariTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          return type;
-        }
+        if (MediaRecorder.isTypeSupported(type)) return type;
       }
-      // Safari may work without specifying mimeType - let it choose
       return '';
     }
-    
-    // For other browsers, prefer webm/ogg
-    const types = [
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/ogg;codecs=opus',
-      'audio/ogg',
-      'audio/mp4',
-      'audio/mpeg',
-    ];
-    
+    const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4', 'audio/mpeg'];
     for (const type of types) {
-      if (MediaRecorder.isTypeSupported(type)) {
-        return type;
-      }
+      if (MediaRecorder.isTypeSupported(type)) return type;
     }
     return '';
   };
@@ -112,34 +83,23 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
 
   const startRecording = async () => {
     try {
-      // Pause any playing audio before recording
       audioManager.pauseAll();
       audioManager.setRecording(true);
 
-      // Safari/iOS is stricter about constraints - use simpler config for Safari
       const audioConstraints = isSafari() 
         ? { audio: true }
-        : { 
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true,
-            }
-          };
+        : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
 
       const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
-      
       streamRef.current = stream;
       
       const mimeType = getSupportedMimeType();
-      // For Safari, don't pass mimeType if empty - let browser choose
       const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
       
       let mediaRecorder: MediaRecorder;
       try {
         mediaRecorder = new MediaRecorder(stream, options);
       } catch (e) {
-        // If options fail (Safari can be picky), try without options
         console.warn('[AudioRecorder] MediaRecorder with options failed, trying without:', e);
         mediaRecorder = new MediaRecorder(stream);
       }
@@ -152,7 +112,6 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
       startTimeRef.current = Date.now();
       setElapsedTime(0);
 
-      // Start timer
       timerRef.current = setInterval(() => {
         setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
       }, 1000);
@@ -161,76 +120,39 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
         if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
           chunkCountRef.current++;
-          
-          // Calculate total size
           const totalSize = chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0);
           setRecordingSize(totalSize);
-          
           console.log(`[AudioRecorder] Chunk #${chunkCountRef.current}, size: ${e.data.size}, total: ${formatBytes(totalSize)}`);
-        } else {
-          console.warn('[AudioRecorder] Empty chunk received');
         }
       };
 
       mediaRecorder.onstop = async () => {
-        console.log(`[AudioRecorder] onstop - chunks: ${chunksRef.current.length}, total size: ${formatBytes(chunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0))}`);
-        
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-        if (dataIntervalRef.current) {
-          clearInterval(dataIntervalRef.current);
-          dataIntervalRef.current = null;
-        }
-        
+        console.log(`[AudioRecorder] onstop - chunks: ${chunksRef.current.length}`);
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        if (dataIntervalRef.current) { clearInterval(dataIntervalRef.current); dataIntervalRef.current = null; }
         audioManager.setRecording(false);
         
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
         const actualMimeType = mediaRecorder.mimeType || 'audio/mp4';
         const blob = new Blob(chunksRef.current, { type: actualMimeType });
         
-        console.log(`[AudioRecorder] Final blob - size: ${formatBytes(blob.size)}, type: ${blob.type}, duration: ${duration}s`);
-        
-        if (blob.size === 0) {
-          toast.error('Recording is empty. Please try again.');
-          setProcessing(false);
-          setElapsedTime(0);
-          setRecordingSize(0);
-          return;
-        }
-        
-        if (duration === 0) {
-          toast.error('Recording too short. Please try again.');
-          setProcessing(false);
-          setElapsedTime(0);
-          setRecordingSize(0);
-          return;
-        }
+        if (blob.size === 0) { toast.error('Recording is empty.'); setProcessing(false); setElapsedTime(0); setRecordingSize(0); return; }
+        if (duration === 0) { toast.error('Recording too short.'); setProcessing(false); setElapsedTime(0); setRecordingSize(0); return; }
 
-        // Show processing toast
         toast.info(`Processing ${formatBytes(blob.size)} recording...`);
 
-        // Save to IndexedDB backup BEFORE calling onRecorded
         let backupId: string | undefined;
         if (isIndexedDBAvailable() && userId) {
           try {
             backupId = generateBackupId();
             await saveRecordingBackup(backupId, blob, duration, userId);
-            console.log(`[AudioRecorder] Saved backup ${backupId}`);
           } catch (error) {
             console.error('[AudioRecorder] Failed to save backup:', error);
-            // Continue anyway - backup is a safety net, not required
           }
         }
 
-        // Pass to parent with backup ID
         onRecorded(blob, duration, backupId);
-        
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
-        }
+        if (streamRef.current) { streamRef.current.getTracks().forEach(track => track.stop()); streamRef.current = null; }
         setProcessing(false);
         setElapsedTime(0);
         setRecordingSize(0);
@@ -238,42 +160,25 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
 
       mediaRecorder.onerror = (event) => {
         console.error('[AudioRecorder] MediaRecorder error:', event);
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-        if (dataIntervalRef.current) {
-          clearInterval(dataIntervalRef.current);
-          dataIntervalRef.current = null;
-        }
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        if (dataIntervalRef.current) { clearInterval(dataIntervalRef.current); dataIntervalRef.current = null; }
         audioManager.setRecording(false);
-        toast.error('Recording failed. Please try again.');
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
-        }
+        toast.error('Recording failed.');
+        if (streamRef.current) { streamRef.current.getTracks().forEach(track => track.stop()); streamRef.current = null; }
         setRecording(false);
         setProcessing(false);
         setElapsedTime(0);
         setRecordingSize(0);
       };
 
-      // Safari has issues with timeslice - use requestData() periodically instead
       if (isSafari()) {
         mediaRecorder.start();
-        // For Safari, periodically request data to avoid losing long recordings
-        // requestData() forces ondataavailable to fire with current data
         dataIntervalRef.current = setInterval(() => {
-          if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-            try {
-              mediaRecorderRef.current.requestData();
-            } catch (e) {
-              console.warn('[AudioRecorder] requestData failed:', e);
-            }
+          if (mediaRecorderRef.current?.state === 'recording') {
+            try { mediaRecorderRef.current.requestData(); } catch (e) { console.warn('[AudioRecorder] requestData failed:', e); }
           }
-        }, 5000); // Request data every 5 seconds
+        }, 5000);
       } else {
-        // Use timeslice to get data more frequently (helps with screen lock scenarios)
         mediaRecorder.start(1000);
       }
       setRecording(true);
@@ -281,18 +186,16 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
     } catch (err) {
       console.error('[AudioRecorder] Failed to start recording:', err);
       audioManager.setRecording(false);
-      
-      // Provide more specific error message for permission issues
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          toast.error('Microphone access denied. Please enable in Settings > Safari > Microphone.');
+          toast.error('Microphone access denied. Please enable in Settings.');
         } else if (err.name === 'NotFoundError') {
-          toast.error('No microphone found on this device.');
+          toast.error('No microphone found.');
         } else {
-          toast.error('Could not access microphone. Please check permissions and try again.');
+          toast.error('Could not access microphone.');
         }
       } else {
-        toast.error('Could not access microphone. Please check permissions.');
+        toast.error('Could not access microphone.');
       }
     }
   };
@@ -300,44 +203,51 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       setProcessing(true);
-      try {
-        mediaRecorderRef.current.stop();
-      } catch (e) {
-        console.error('[AudioRecorder] Error stopping recorder:', e);
-        setProcessing(false);
-      }
+      try { mediaRecorderRef.current.stop(); } catch (e) { console.error('[AudioRecorder] Error stopping:', e); setProcessing(false); }
       setRecording(false);
       onRecordingChange?.(false);
     }
   };
 
-  // Handle touch end to blur button and prevent stuck focus states
   const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
     e.currentTarget.blur();
   };
 
-  // Format recording size for display
+  const handleVideoReady = (blob: Blob) => {
+    setVideoBlob(blob);
+    setVideoRecording(false);
+    onVideoReady?.(blob);
+  };
+
+  const handleVideoDiscard = () => {
+    setVideoRecording(false);
+  };
+
+  const discardVideo = () => {
+    setVideoBlob(null);
+    onVideoDiscarded?.();
+  };
+
   const getSizeDisplay = (): string | null => {
     if (!recording || recordingSize === 0) return null;
-    const sizeStr = formatBytes(recordingSize);
-    if (recordingSize > 50 * 1024 * 1024) {
-      return `${sizeStr} - Large`;
-    }
-    return sizeStr;
+    if (recordingSize > 50 * 1024 * 1024) return `${formatBytes(recordingSize)} - Large`;
+    return formatBytes(recordingSize);
   };
 
   const sizeDisplay = getSizeDisplay();
+  const isAnyRecording = recording || videoRecording;
 
   return (
     <div className={`flex flex-col gap-2 ${className || ''}`}>
-      {videoRecording ? (
-        <VideoRecorder
-          onDiscard={() => { setVideoRecording(false); onVideoDiscarded?.(); }}
-          onVideoReady={(blob) => { onVideoReady?.(blob); }}
-        />
-      ) : null}
       <div className="flex items-center gap-2">
-        {recording ? (
+        {videoRecording ? (
+          // Video recording: stop + timer replaces buttons (same pattern as audio)
+          <VideoRecorder
+            onDiscard={handleVideoDiscard}
+            onVideoReady={handleVideoReady}
+          />
+        ) : recording ? (
+          // Audio recording: stop + timer
           <>
             <Button
               variant="destructive"
@@ -357,21 +267,18 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
             </div>
           </>
         ) : (
+          // Idle: mic + video buttons
           <>
             <Button
               variant="outline"
               size="icon"
               onClick={startRecording}
               onTouchEnd={handleTouchEnd}
-              disabled={videoRecording}
+              disabled={!!videoBlob && false} // mic always available
               className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
               title="Record audio"
             >
-              {processing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Mic className="w-4 h-4" />
-              )}
+              {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mic className="w-4 h-4" />}
             </Button>
             <VideoRecordButton
               onPress={() => setVideoRecording(true)}
@@ -380,14 +287,32 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
           </>
         )}
       </div>
+
+      {/* Video ready chip — shown below like audio files */}
+      {videoBlob && !videoRecording && (
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-2.5 py-1.5">
+            <Video className="w-3.5 h-3.5 text-primary" />
+            <span className="text-sm text-foreground">Video clip</span>
+            <span className="text-xs text-muted-foreground">
+              ({(videoBlob.size / (1024 * 1024)).toFixed(1)}MB)
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={discardVideo}
+            className="h-7 w-7 shrink-0"
+            title="Discard video"
+          >
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
 
-/**
- * Clear a recording backup after successful upload
- * This should be called by the parent component after upload succeeds
- */
 export async function clearRecordingBackup(backupId: string): Promise<void> {
   try {
     await clearBackup(backupId);
