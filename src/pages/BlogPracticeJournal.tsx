@@ -153,7 +153,7 @@ const BlogPracticeJournal = () => {
             },
             {
               title: 'Duration',
-              body: 'Recording how long you practiced gives you a clearer, more honest sense of effort over time. Many musicians tend to either underestimate or overestimate how much time they actually spend — having a written record keeps you grounded.',
+              body: 'Recording how long you practiced gives you a clearer, more honest sense of effort over time. Many musicians tend to either underestimate or overestimate how much time they actually spend, and having a written record keeps you grounded.',
             },
             {
               title: 'Focus Areas',
