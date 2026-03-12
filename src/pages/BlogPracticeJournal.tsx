@@ -197,7 +197,7 @@ const BlogPracticeJournal = () => {
             </div>
           </div>
           <p className="text-sm mt-4" style={textColor}>
-            Entries like this take less than two minutes to write — but they provide enormous long-term value by creating a clear thread between your sessions.
+            Entries like this take less than two minutes to write, but they provide enormous long-term value by creating a clear thread between your sessions.
           </p>
         </div>
       </section>
