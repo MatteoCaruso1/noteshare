@@ -64,6 +64,7 @@ const ScienceOfPractice = lazy(() => import("./pages/ScienceOfPractice"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogDailyRoutine = lazy(() => import("./pages/BlogDailyRoutine"));
+const BlogPracticeJournal = lazy(() => import("./pages/BlogPracticeJournal"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
