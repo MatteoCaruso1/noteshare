@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { BarChart3, CheckCircle2, HelpCircle, Target, Eye, TrendingUp, Shield } from 'lucide-react';
+import { BarChart3, CheckCircle2, HelpCircle, Target, Eye, TrendingUp, Shield, ArrowLeft } from 'lucide-react';
 import blogHeroImage from '@/assets/blog-piano-tracker.jpg';
 
 const h2Style = 'text-2xl sm:text-3xl font-semibold tracking-tight leading-tight mb-6';
