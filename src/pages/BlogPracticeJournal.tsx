@@ -336,7 +336,7 @@ const BlogPracticeJournal = () => {
             {[
               {
                 q: 'Do professional musicians keep practice journals?',
-                a: 'Many advanced musicians track their practice in some form — whether in a notebook, an app, or even voice notes. It helps organize technical work and monitor long-term progress in a way that memory alone can\'t match.',
+                a: 'Many advanced musicians track their practice in some form, whether in a notebook, an app, or even voice notes. It helps organize technical work and monitor long-term progress in a way that memory alone can\'t match.',
               },
               {
                 q: 'How long should a journal entry be?',
