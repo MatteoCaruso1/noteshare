@@ -219,7 +219,7 @@ export function QuickNoteCapture() {
     );
   };
 
-  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0;
+  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0 || !!videoBlobRef.current;
 
   return (
     <Card className="bg-card border-border">
