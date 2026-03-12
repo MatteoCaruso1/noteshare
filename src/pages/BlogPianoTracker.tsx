@@ -161,7 +161,7 @@ const BlogPianoTracker = () => {
             },
             {
               title: 'Goal Setting',
-              body: 'Tracking works best when it connects to clear goals. Whether it\'s playing a scale cleanly at 100 bpm, learning the first page of a new piece, or improving left-hand rhythm consistency — a good tracker keeps these goals visible so your practice stays aligned with them.',
+              body: 'Tracking works best when it connects to clear goals. Whether it\'s playing a scale cleanly at 100 bpm, learning the first page of a new piece, or improving left-hand rhythm consistency, a good tracker keeps these goals visible so your practice stays aligned with them.',
             },
             {
               title: 'Progress Tracking',
