@@ -417,10 +417,12 @@ const BlogDailyRoutine = () => {
       {/* Footer */}
       <footer className="py-10 px-6 md:px-12 text-center" style={{ borderTop: '1px solid hsl(222 47% 20%)' }}>
         <p className="text-xs flex flex-wrap justify-center gap-2" style={textColor}>
-          <span className="font-medium" style={headingColor}>Noteshare — Practice Smarter</span>
-          <span>—</span>
+          <span className="font-medium" style={headingColor}>Noteshare</span>
+          <span>·</span>
+          <span>Practice Smarter</span>
+          <span>·</span>
           <span>Contact: notesharemusic@gmail.com</span>
-          <span>—</span>
+          <span>·</span>
           <span>© 2026 Noteshare</span>
         </p>
       </footer>
