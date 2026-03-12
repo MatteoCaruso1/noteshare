@@ -301,7 +301,7 @@ const BlogPianoTracker = () => {
             </ol>
           </div>
           <p className="leading-relaxed mb-4" style={textColor}>
-            That small habit can transform how you approach practice. Over time, your tracker becomes something more than a log — it becomes a clear map of your musical progress.
+            That small habit can transform how you approach practice. Over time, your tracker becomes something more than a log. It becomes a clear map of your musical progress.
           </p>
           <p className="leading-relaxed" style={textColor}>
             And when practice becomes visible and intentional, improvement tends to follow naturally.
