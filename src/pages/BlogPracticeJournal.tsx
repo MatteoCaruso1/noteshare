@@ -117,7 +117,7 @@ const BlogPracticeJournal = () => {
             Studies in music education consistently show that musicians who reflect on their practice develop stronger problem-solving skills and improve faster than those who simply repeat material without pausing to think about what's working and what isn't.
           </p>
           <p className="leading-relaxed mb-4" style={textColor}>
-            When you write about your practice, you naturally start asking better questions — the kind that lead to breakthroughs:
+            When you write about your practice, you naturally start asking better questions, the kind that lead to breakthroughs:
           </p>
           <ul className="space-y-2 mb-4" style={textColor}>
             {[
