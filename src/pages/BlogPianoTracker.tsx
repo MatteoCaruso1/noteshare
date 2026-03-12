@@ -317,7 +317,7 @@ const BlogPianoTracker = () => {
             {[
               {
                 q: 'How long should piano practice sessions be?',
-                a: 'Beginners often benefit from 30 to 60 minutes per day. Consistency matters far more than occasional marathon sessions — showing up regularly is what builds real skill.',
+                a: 'Beginners often benefit from 30 to 60 minutes per day. Consistency matters far more than occasional marathon sessions. Showing up regularly is what builds real skill.',
               },
               {
                 q: 'Do professional pianists track their practice?',
