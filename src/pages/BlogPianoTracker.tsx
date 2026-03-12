@@ -325,7 +325,7 @@ const BlogPianoTracker = () => {
               },
               {
                 q: 'Is a practice tracker useful for beginners?',
-                a: 'Absolutely. Beginners often benefit the most because tracking builds strong, intentional practice habits from the very start — before less productive patterns have a chance to take hold.',
+                a: 'Absolutely. Beginners often benefit the most because tracking builds strong, intentional practice habits from the very start, before less productive patterns have a chance to take hold.',
               },
               {
                 q: 'What if I forget to log a session?',
