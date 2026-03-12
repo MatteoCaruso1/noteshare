@@ -68,7 +68,7 @@ const BlogPianoTracker = () => {
             Ask a beginner pianist what they practiced last week and the answer is usually vague. Maybe a few scales, maybe part of a song, maybe whatever felt right that day. The details fade quickly, and that's the problem.
           </p>
           <p className="leading-relaxed mb-4" style={textColor}>
-            Musical progress depends on two things — consistency and feedback — and both are difficult to maintain when your practice disappears the moment you walk away from the piano.
+            Musical progress depends on two things, consistency and feedback, and both are difficult to maintain when your practice disappears the moment you walk away from the piano.
           </p>
           <p className="leading-relaxed mb-4" style={textColor}>
             Research in music education and skill acquisition consistently shows that musicians improve faster when they track what they practice. Recording sessions helps you notice patterns, identify weaknesses, and stay consistent over long stretches of time.
