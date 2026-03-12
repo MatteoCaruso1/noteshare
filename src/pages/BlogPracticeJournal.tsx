@@ -250,7 +250,7 @@ const BlogPracticeJournal = () => {
           <ul className="space-y-2 mb-4" style={textColor}>
             {[
               'Automatic practice streak tracking that keeps you motivated',
-              'Searchable notes so you can find past observations instantly',
+              
               'Easy organization of sessions by date, project, or focus area',
               'The ability to attach audio recordings captured during practice',
               'Long-term progress visualization that reveals patterns over months',
