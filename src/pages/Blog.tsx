@@ -76,7 +76,7 @@ const Blog = () => {
               />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
-              <span>Mar 10</span>
+              <span>Feb 18</span>
               <span className="text-muted-foreground/40">|</span>
               <span>Matteo</span>
             </div>
