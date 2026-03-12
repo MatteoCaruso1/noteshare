@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowRight } from 'lucide-react';
-import blogHeroImage from '@/assets/blog-science-practice.jpg';
+import blogScienceImage from '@/assets/blog-science-practice.jpg';
+import blogRoutineImage from '@/assets/blog-daily-routine.jpg';
 
 const Blog = () => {
   const { user } = useAuth();
@@ -27,21 +28,21 @@ const Blog = () => {
 
         {/* Featured post — large hero layout */}
         <Link
-          to="/science-of-practice"
+          to="/blog/daily-practice-routine"
           className="group block mb-16"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                <span>Mar 10</span>
+                <span>Mar 12</span>
                 <span className="text-muted-foreground/40">|</span>
                 <span>Noteshare Team</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground leading-tight group-hover:text-primary transition-colors">
-                The science of effective music practice
+                Build the perfect daily music practice routine
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Research-backed principles that help musicians improve faster — from deliberate focus to spaced repetition and reflective logging.
+                A research-backed 60-minute routine covering warmup, technique, repertoire, and reflection — designed for musicians who want to improve faster.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
                 Read more
@@ -50,8 +51,8 @@ const Blog = () => {
             </div>
             <div className="rounded-xl overflow-hidden border border-border bg-muted aspect-[3/2]">
               <img
-                src={blogHeroImage}
-                alt="The science of effective music practice"
+                src={blogRoutineImage}
+                alt="Build the perfect daily music practice routine"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
@@ -61,21 +62,31 @@ const Blog = () => {
         {/* Divider */}
         <div className="border-t border-border mb-12" />
 
-        {/* Bottom grid — 3 coming soon cards */}
+        {/* Bottom grid — 3 cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+          {/* Science of Practice — published */}
+          <Link to="/science-of-practice" className="group">
+            <div className="rounded-xl aspect-[4/3] overflow-hidden border border-border bg-muted mb-4">
+              <img
+                src={blogScienceImage}
+                alt="The science of effective music practice"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
+              <span>Mar 10</span>
+              <span className="text-muted-foreground/40">|</span>
+              <span>Noteshare Team</span>
+            </div>
+            <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+              The science of effective music practice
+            </h3>
+          </Link>
+
+          {/* Coming soon cards */}
           {[
-            {
-              title: 'How to build a daily practice habit',
-              color: 'from-primary/20 to-primary/5',
-            },
-            {
-              title: 'Organizing long-term musical projects',
-              color: 'from-accent/30 to-accent/10',
-            },
-            {
-              title: 'Why private practice logs beat social media',
-              color: 'from-muted to-muted/50',
-            },
+            { title: 'Organizing long-term musical projects', color: 'from-accent/30 to-accent/10' },
+            { title: 'Why private practice logs beat social media', color: 'from-muted to-muted/50' },
           ].map((post, i) => (
             <div key={i} className="group cursor-default">
               <div className={`rounded-xl aspect-[4/3] bg-gradient-to-br ${post.color} border border-border flex items-center justify-center mb-4`}>
