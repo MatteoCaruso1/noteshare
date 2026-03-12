@@ -36,7 +36,7 @@ const Blog = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                <span>Mar 12</span>
+                <span>Mar 5</span>
                 <span className="text-muted-foreground/40">|</span>
                 <span>Matteo</span>
               </div>
