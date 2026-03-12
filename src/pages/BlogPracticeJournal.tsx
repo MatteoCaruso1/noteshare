@@ -65,7 +65,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Most Practice Is Forgotten</h2>
           <p className="leading-relaxed mb-4" style={textColor}>
-            A typical practice session follows a familiar arc: you sit down, work through a few exercises, play through a piece, and stop when time runs out. It feels productive in the moment — but by the next day, most of the details have already slipped away.
+            A typical practice session follows a familiar arc: you sit down, work through a few exercises, play through a piece, and stop when time runs out. It feels productive in the moment, but by the next day, most of the details have already slipped away.
           </p>
           <p className="leading-relaxed mb-6" style={textColor}>
             You try to remember what tempo you reached, which section gave you trouble, what actually improved, and what you'd planned to work on next. Usually, that information is gone.
