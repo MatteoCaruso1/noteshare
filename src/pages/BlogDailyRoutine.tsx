@@ -221,7 +221,7 @@ const BlogDailyRoutine = () => {
       <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <RoutineBlock
-            duration="5–10 Minutes"
+            duration="5 to 10 Minutes"
             title="Exploration or Creativity"
             description="Musical development is not only technical. Creative play strengthens musical intuition and keeps practice engaging."
             items={[
