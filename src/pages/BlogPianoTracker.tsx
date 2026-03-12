@@ -214,7 +214,7 @@ const BlogPianoTracker = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Paper vs Digital Piano Practice Trackers</h2>
           <p className="leading-relaxed mb-4" style={textColor}>
-            Both approaches work well, and the right choice depends on your personal preference. A paper journal is simple and distraction-free — many musicians genuinely enjoy the tactile experience of writing notes by hand and keeping a physical record.
+            Both approaches work well, and the right choice depends on your personal preference. A paper journal is simple and distraction-free, and many musicians genuinely enjoy the tactile experience of writing notes by hand and keeping a physical record.
           </p>
           <p className="leading-relaxed mb-6" style={textColor}>
             A digital tracker, on the other hand, adds a few meaningful advantages:
