@@ -239,14 +239,16 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
 
   return (
     <div className={`flex flex-col gap-2 ${className || ''}`}>
+      {/* Video recorder overlay (renders via portal) */}
+      {videoRecording && (
+        <VideoRecorder
+          onDiscard={handleVideoDiscard}
+          onVideoReady={handleVideoReady}
+        />
+      )}
+
       <div className="flex items-center gap-2">
-        {videoRecording ? (
-          // Video recording: stop + timer replaces buttons (same pattern as audio)
-          <VideoRecorder
-            onDiscard={handleVideoDiscard}
-            onVideoReady={handleVideoReady}
-          />
-        ) : recording ? (
+        {recording ? (
           // Audio recording: stop + timer
           <>
             <Button
@@ -274,7 +276,6 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
               size="icon"
               onClick={startRecording}
               onTouchEnd={handleTouchEnd}
-              disabled={!!videoBlob && false} // mic always available
               className="h-9 flex-1 bg-background touch-manipulation [@media(hover:hover)]:hover:bg-accent focus:outline-none focus-visible:outline-none"
               title="Record audio"
             >
