@@ -123,7 +123,7 @@ const BlogPianoTracker = () => {
               {
                 icon: Target,
                 title: 'It Makes Practice More Intentional',
-                body: 'Without a tracker, practice tends to drift toward whatever feels easiest in the moment. With one, you begin each session knowing what you covered yesterday and what needs improvement next. That small shift changes your entire approach — practice becomes focused rather than random.',
+                body: 'Without a tracker, practice tends to drift toward whatever feels easiest in the moment. With one, you begin each session knowing what you covered yesterday and what needs improvement next. That small shift changes your entire approach and practice becomes focused rather than random.',
               },
               {
                 icon: Eye,
