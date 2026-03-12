@@ -185,7 +185,7 @@ const BlogPianoTracker = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Example Piano Practice Tracker Entry</h2>
           <p className="leading-relaxed mb-6" style={textColor}>
-            A good practice entry should be quick and simple — something you can fill out in under a minute.
+            A good practice entry should be quick and simple, something you can fill out in under a minute.
           </p>
           <div className="rounded-lg overflow-hidden border" style={tableBorder}>
             <div className="divide-y" style={{ ...cardBg, ...tableBorder }}>
