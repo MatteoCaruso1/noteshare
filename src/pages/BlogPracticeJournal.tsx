@@ -344,7 +344,7 @@ const BlogPracticeJournal = () => {
               },
               {
                 q: 'Should beginners track their practice?',
-                a: 'Absolutely — beginners often benefit the most because journaling builds strong, intentional practice habits from the very start, before bad patterns have a chance to set in.',
+                a: 'Absolutely. Beginners often benefit the most because journaling builds strong, intentional practice habits from the very start, before bad patterns have a chance to set in.',
               },
               {
                 q: 'What if I miss a day?',
