@@ -283,8 +283,8 @@ const BlogDailyRoutine = () => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
             {[
-              { time: '20–30 min/day', desc: 'Brand new players' },
-              { time: '45–60 min/day', desc: 'After the first few months' },
+              { time: '20 to 30 min/day', desc: 'Brand new players' },
+              { time: '45 to 60 min/day', desc: 'After the first few months' },
               { time: '5 days/week', desc: 'Better than 1 long weekend session' },
             ].map(({ time, desc }, i) => (
               <div key={i} className="rounded-lg p-4 text-center" style={cardBg}>
