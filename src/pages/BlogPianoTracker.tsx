@@ -169,7 +169,7 @@ const BlogPianoTracker = () => {
             },
             {
               title: 'Reflection and Notes',
-              body: 'This is where the real learning happens. After each session, a short reflection captures insights while they\'re fresh — things like "right hand fingering felt smoother today" or "measure 12 still uneven with metronome." These notes guide the next session and prevent repeating the same mistakes.',
+              body: 'This is where the real learning happens. After each session, a short reflection captures insights while they\'re fresh. Things like "right hand fingering felt smoother today" or "measure 12 still uneven with metronome." These notes guide the next session and prevent repeating the same mistakes.',
             },
           ].map(({ title, body }, i) => (
             <div key={i} className="mb-8">
