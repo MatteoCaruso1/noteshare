@@ -157,7 +157,7 @@ const BlogPracticeJournal = () => {
             },
             {
               title: 'Focus Areas',
-              body: 'Write down the main things you worked on — major scale patterns, chord transitions, sight reading, the verse section of a particular song, rhythm exercises. This simple act helps ensure your sessions stay intentional rather than drifting.',
+              body: 'Write down the main things you worked on: major scale patterns, chord transitions, sight reading, the verse section of a particular song, rhythm exercises. This simple act helps ensure your sessions stay intentional rather than drifting.',
             },
             {
               title: 'Observations',
