@@ -127,7 +127,7 @@ const Blog = () => {
 
       {/* Footer */}
       <footer className="border-t border-border mt-16 py-10 px-6 md:px-12 text-center text-xs text-muted-foreground space-y-1">
-        <p className="font-medium text-foreground">Noteshare — Practice Smarter</p>
+        <p className="font-medium text-foreground">Noteshare · Practice Smarter</p>
         <p>Contact: notesharemusic@gmail.com</p>
         <p>© {new Date().getFullYear()} Noteshare</p>
       </footer>
