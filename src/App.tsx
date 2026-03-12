@@ -198,6 +198,7 @@ function AppInner() {
                       <Route path="/pricing" element={<Suspense fallback={null}><Pricing /></Suspense>} />
                       <Route path="/blog" element={<Suspense fallback={null}><Blog /></Suspense>} />
                       <Route path="/blog/daily-practice-routine" element={<Suspense fallback={null}><BlogDailyRoutine /></Suspense>} />
+                      <Route path="/blog/practice-journal" element={<Suspense fallback={null}><BlogPracticeJournal /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
