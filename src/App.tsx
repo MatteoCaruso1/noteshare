@@ -64,6 +64,7 @@ const ScienceOfPractice = lazy(() => import("./pages/ScienceOfPractice"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogDailyRoutine = lazy(() => import("./pages/BlogDailyRoutine"));
+const BlogPracticeJournal = lazy(() => import("./pages/BlogPracticeJournal"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -197,6 +198,7 @@ function AppInner() {
                       <Route path="/pricing" element={<Suspense fallback={null}><Pricing /></Suspense>} />
                       <Route path="/blog" element={<Suspense fallback={null}><Blog /></Suspense>} />
                       <Route path="/blog/daily-practice-routine" element={<Suspense fallback={null}><BlogDailyRoutine /></Suspense>} />
+                      <Route path="/blog/practice-journal" element={<Suspense fallback={null}><BlogPracticeJournal /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
