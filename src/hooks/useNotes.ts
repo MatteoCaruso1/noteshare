@@ -133,7 +133,7 @@ export function useNotes(projectId?: string) {
         .select(`
           id, author_id, session_id, project_id, goal_id, gig_id, focus_entry_id, focus_date, focus_text_snapshot,
           text_content, tags, visibility, comment_count, created_at, updated_at,
-          audio_files, audio_file_names, image_files, video_files,
+          audio_files, audio_file_names, image_files, video_files, video_path,
           profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme),
           practice_sessions!notes_session_id_fkey (id, user_id, started_at, ended_at, paused_duration_ms, collaborator_ids, is_active, paused_at),
           projects!notes_project_id_fkey (id, title),
