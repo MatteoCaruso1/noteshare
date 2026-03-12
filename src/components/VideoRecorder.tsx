@@ -176,7 +176,6 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
         playsInline
         muted
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ transform: 'scaleX(-1)' }}
       />
 
       {/* Top bar: cancel + timer */}
