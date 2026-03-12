@@ -225,7 +225,7 @@ const BlogPracticeJournal = () => {
               },
               {
                 title: 'They Build Consistency',
-                body: 'Writing down each session creates a gentle sense of accountability. Many musicians find that simply tracking their practice — seeing the streak grow — increases how often they sit down to play.',
+                body: 'Writing down each session creates a gentle sense of accountability. Many musicians find that simply tracking their practice, seeing the streak grow, increases how often they sit down to play.',
               },
             ].map(({ title, body }, i) => (
               <div key={i} className="rounded-lg p-5" style={cardBg}>
