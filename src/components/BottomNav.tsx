@@ -91,6 +91,7 @@ export function BottomNav() {
 
   // Hide on auth/welcome routes, or on root when not authenticated (landing page)
   const shouldHide = hiddenRoutes.includes(location.pathname) || 
+    location.pathname.startsWith('/blog') ||
     (location.pathname === '/' && !user) ||
     (location.pathname.startsWith('/profile/') && !user);
 
