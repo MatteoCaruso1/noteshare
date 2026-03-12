@@ -165,7 +165,7 @@ const BlogPracticeJournal = () => {
             },
             {
               title: 'Next Session Goal',
-              body: 'End each entry by deciding what comes next — for example, "Practice the chorus section slowly at 70 bpm and focus on clean chord transitions." This small step removes the decision-making friction when your next practice session begins, so you can sit down and start working immediately.',
+              body: 'End each entry by deciding what comes next. For example, "Practice the chorus section slowly at 70 bpm and focus on clean chord transitions." This small step removes the decision-making friction when your next practice session begins, so you can sit down and start working immediately.',
             },
           ].map(({ title, body }, i) => (
             <div key={i} className="mb-8">
