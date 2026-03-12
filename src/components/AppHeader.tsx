@@ -63,7 +63,7 @@ export function AppHeader() {
   }, [activeSession]);
   
   // Check if on welcome/landing page - include "/" for non-logged-in users
-  const isOnWelcomePage = location.pathname === '/welcome' || location.pathname === '/science-of-practice' || location.pathname === '/pricing' || (location.pathname === '/' && !user);
+  const isOnWelcomePage = location.pathname === '/welcome' || location.pathname === '/science-of-practice' || location.pathname === '/pricing' || location.pathname === '/blog' || (location.pathname === '/' && !user);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
@@ -132,6 +132,16 @@ export function AppHeader() {
               >
                 Product Tiers
               </Link>
+              <Link
+                to="/blog"
+                className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline ${
+                  location.pathname === '/blog'
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Blog
+              </Link>
             </nav>
           )}
         </div>
@@ -147,8 +157,9 @@ export function AppHeader() {
                 if (user) {
                   navigate('/');
                 } else {
-                  const from = location.pathname === '/pricing' ? 'pricing' 
+                const from = location.pathname === '/pricing' ? 'pricing' 
                     : location.pathname === '/science-of-practice' ? 'science' 
+                    : location.pathname === '/blog' ? 'blog'
                     : undefined;
                   navigate(from ? `/auth?from=${from}` : '/auth');
                 }

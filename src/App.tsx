@@ -62,6 +62,7 @@ const OAuthCatchRedirect = lazy(() => import("./pages/OAuthCatchRedirect"));
 const QRCodePage = lazy(() => import("./pages/QRCode"));
 const ScienceOfPractice = lazy(() => import("./pages/ScienceOfPractice"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Blog = lazy(() => import("./pages/Blog"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -193,6 +194,7 @@ function AppInner() {
                       <Route path="/qr" element={<Suspense fallback={null}><QRCodePage /></Suspense>} />
                       <Route path="/science-of-practice" element={<Suspense fallback={null}><ScienceOfPractice /></Suspense>} />
                       <Route path="/pricing" element={<Suspense fallback={null}><Pricing /></Suspense>} />
+                      <Route path="/blog" element={<Suspense fallback={null}><Blog /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
