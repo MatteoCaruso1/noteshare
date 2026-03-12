@@ -242,7 +242,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Paper Journal vs Digital Practice Tracking</h2>
           <p className="leading-relaxed mb-6" style={textColor}>
-            Both approaches work well, and the best system is simply the one you'll actually use consistently. A notebook is simple and accessible — there's something satisfying about writing by hand. But digital tools offer some meaningful advantages that are hard to replicate on paper:
+            Both approaches work well, and the best system is simply the one you'll actually use consistently. A notebook is simple and accessible, and there's something satisfying about writing by hand. But digital tools offer some meaningful advantages that are hard to replicate on paper:
           </p>
           <ul className="space-y-2 mb-4" style={textColor}>
             {[
