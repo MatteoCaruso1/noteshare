@@ -60,7 +60,7 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: isMobile
-          ? { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } }
+          ? { facingMode: 'environment', width: { ideal: 1080 }, height: { ideal: 1920 } }
           : { width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: true,
       });
