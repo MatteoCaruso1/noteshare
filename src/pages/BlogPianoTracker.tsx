@@ -234,7 +234,7 @@ const BlogPianoTracker = () => {
             ))}
           </ul>
           <p className="text-sm" style={textColor}>
-            For many musicians, the convenience of digital tracking makes it easier to stay consistent — which is ultimately what matters most.
+            For many musicians, the convenience of digital tracking makes it easier to stay consistent, which is ultimately what matters most.
           </p>
         </div>
       </section>
