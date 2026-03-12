@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import blogScienceImage from '@/assets/blog-science-practice.jpg';
 import blogRoutineImage from '@/assets/blog-daily-routine.jpg';
 import blogJournalImage from '@/assets/blog-practice-journal.jpg';
+import blogPianoImage from '@/assets/blog-piano-tracker.jpg';
 
 const Blog = () => {
   const { user } = useAuth();
