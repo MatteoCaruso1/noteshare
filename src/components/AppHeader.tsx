@@ -63,7 +63,7 @@ export function AppHeader() {
   }, [activeSession]);
   
   // Check if on welcome/landing page - include "/" for non-logged-in users
-  const isOnWelcomePage = location.pathname === '/welcome' || location.pathname === '/science-of-practice' || location.pathname === '/pricing' || (location.pathname === '/' && !user);
+  const isOnWelcomePage = location.pathname === '/welcome' || location.pathname === '/science-of-practice' || location.pathname === '/pricing' || location.pathname === '/blog' || (location.pathname === '/' && !user);
   
   // Don't show on auth page
   if (location.pathname === '/auth') {
