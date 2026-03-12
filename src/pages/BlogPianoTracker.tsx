@@ -157,7 +157,7 @@ const BlogPianoTracker = () => {
           {[
             {
               title: 'Practice Session Logging',
-              body: 'The foundation of any tracker is the ability to record sessions quickly. A good tracker should let you log the date, duration, focus areas, and notes from each session — and it should take less than a minute so it doesn\'t interrupt your routine.',
+              body: 'The foundation of any tracker is the ability to record sessions quickly. A good tracker should let you log the date, duration, focus areas, and notes from each session, and it should take less than a minute so it doesn\'t interrupt your routine.',
             },
             {
               title: 'Goal Setting',
