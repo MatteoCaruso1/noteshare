@@ -44,7 +44,7 @@ const Blog = () => {
                 Build the perfect daily music practice routine
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                A research-backed 60-minute routine covering warmup, technique, repertoire, and reflection — designed for musicians who want to improve faster.
+                A research-backed 60-minute routine covering warmup, technique, repertoire, and reflection, designed for musicians who want to improve faster.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
                 Read more
