@@ -63,6 +63,7 @@ const QRCodePage = lazy(() => import("./pages/QRCode"));
 const ScienceOfPractice = lazy(() => import("./pages/ScienceOfPractice"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
+const BlogDailyRoutine = lazy(() => import("./pages/BlogDailyRoutine"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
