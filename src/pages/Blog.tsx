@@ -44,7 +44,7 @@ const Blog = () => {
                 Build the perfect daily music practice routine
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                A research-backed 60-minute routine covering warmup, technique, repertoire, and reflection — designed for musicians who want to improve faster.
+                A research-backed 60-minute routine covering warmup, technique, repertoire, and reflection, designed for musicians who want to improve faster.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
                 Read more
@@ -127,7 +127,7 @@ const Blog = () => {
 
       {/* Footer */}
       <footer className="border-t border-border mt-16 py-10 px-6 md:px-12 text-center text-xs text-muted-foreground space-y-1">
-        <p className="font-medium text-foreground">Noteshare — Practice Smarter</p>
+        <p className="font-medium text-foreground">Noteshare · Practice Smarter</p>
         <p>Contact: notesharemusic@gmail.com</p>
         <p>© {new Date().getFullYear()} Noteshare</p>
       </footer>

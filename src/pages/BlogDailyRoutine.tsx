@@ -40,7 +40,7 @@ const BlogDailyRoutine = () => {
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
-            Matteo — Musician and Noteshare Developer &nbsp;|&nbsp; Mar 5
+            Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Mar 5
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] mb-6" style={headingColor}>
             Build the Perfect Daily Music Practice Routine
@@ -221,7 +221,7 @@ const BlogDailyRoutine = () => {
       <section className="py-14 px-6 md:px-12">
         <div className="max-w-3xl mx-auto">
           <RoutineBlock
-            duration="5–10 Minutes"
+            duration="5 to 10 Minutes"
             title="Exploration or Creativity"
             description="Musical development is not only technical. Creative play strengthens musical intuition and keeps practice engaging."
             items={[
@@ -283,8 +283,8 @@ const BlogDailyRoutine = () => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
             {[
-              { time: '20–30 min/day', desc: 'Brand new players' },
-              { time: '45–60 min/day', desc: 'After the first few months' },
+              { time: '20 to 30 min/day', desc: 'Brand new players' },
+              { time: '45 to 60 min/day', desc: 'After the first few months' },
               { time: '5 days/week', desc: 'Better than 1 long weekend session' },
             ].map(({ time, desc }, i) => (
               <div key={i} className="rounded-lg p-4 text-center" style={cardBg}>
@@ -401,7 +401,7 @@ const BlogDailyRoutine = () => {
               Start tracking your practice
             </h2>
             <p className="text-sm mb-6 max-w-md mx-auto" style={textColor}>
-              Noteshare helps you capture, organize, and reflect on every practice session — so you can build the routine that works for you.
+              Noteshare helps you capture, organize, and reflect on every practice session so you can build the routine that works for you.
             </p>
             <Button
               size="lg"
@@ -417,10 +417,12 @@ const BlogDailyRoutine = () => {
       {/* Footer */}
       <footer className="py-10 px-6 md:px-12 text-center" style={{ borderTop: '1px solid hsl(222 47% 20%)' }}>
         <p className="text-xs flex flex-wrap justify-center gap-2" style={textColor}>
-          <span className="font-medium" style={headingColor}>Noteshare — Practice Smarter</span>
-          <span>—</span>
+          <span className="font-medium" style={headingColor}>Noteshare</span>
+          <span>·</span>
+          <span>Practice Smarter</span>
+          <span>·</span>
           <span>Contact: notesharemusic@gmail.com</span>
-          <span>—</span>
+          <span>·</span>
           <span>© 2026 Noteshare</span>
         </p>
       </footer>

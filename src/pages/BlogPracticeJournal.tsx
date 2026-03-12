@@ -40,7 +40,7 @@ const BlogPracticeJournal = () => {
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
-            Matteo — Musician and Noteshare Developer &nbsp;|&nbsp; Feb 26
+            Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Feb 26
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] mb-6" style={headingColor}>
             Why Every Musician Needs a Practice Journal
@@ -65,7 +65,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Most Practice Is Forgotten</h2>
           <p className="leading-relaxed mb-4" style={textColor}>
-            A typical practice session follows a familiar arc: you sit down, work through a few exercises, play through a piece, and stop when time runs out. It feels productive in the moment — but by the next day, most of the details have already slipped away.
+            A typical practice session follows a familiar arc: you sit down, work through a few exercises, play through a piece, and stop when time runs out. It feels productive in the moment, but by the next day, most of the details have already slipped away.
           </p>
           <p className="leading-relaxed mb-6" style={textColor}>
             You try to remember what tempo you reached, which section gave you trouble, what actually improved, and what you'd planned to work on next. Usually, that information is gone.
@@ -74,7 +74,7 @@ const BlogPracticeJournal = () => {
             Learning research consistently shows that reflection and documentation dramatically improve skill development. When musicians track what they practice and how each session goes, they make better decisions moving forward and progress noticeably faster.
           </p>
           <p className="leading-relaxed" style={textColor}>
-            A practice journal transforms practice from scattered effort into a structured feedback loop — one where every session builds meaningfully on the last.
+            A practice journal transforms practice from scattered effort into a structured feedback loop, one where every session builds meaningfully on the last.
           </p>
         </div>
       </section>
@@ -111,13 +111,13 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>The Science Behind Reflective Practice</h2>
           <p className="leading-relaxed mb-4" style={textColor}>
-            Educational researchers call this process <em>metacognition</em> — essentially, thinking about how you learn. It sounds abstract, but it has very concrete effects on skill development.
+            Educational researchers call this process <em>metacognition</em>: essentially, thinking about how you learn. It sounds abstract, but it has very concrete effects on skill development.
           </p>
           <p className="leading-relaxed mb-6" style={textColor}>
             Studies in music education consistently show that musicians who reflect on their practice develop stronger problem-solving skills and improve faster than those who simply repeat material without pausing to think about what's working and what isn't.
           </p>
           <p className="leading-relaxed mb-4" style={textColor}>
-            When you write about your practice, you naturally start asking better questions — the kind that lead to breakthroughs:
+            When you write about your practice, you naturally start asking better questions, the kind that lead to breakthroughs:
           </p>
           <ul className="space-y-2 mb-4" style={textColor}>
             {[
@@ -142,7 +142,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>What to Write in a Practice Journal</h2>
           <p className="leading-relaxed mb-6" style={textColor}>
-            A practice journal doesn't need to be complicated — in fact, the most effective ones are simple and quick to fill out. A good entry usually covers five things.
+            A practice journal doesn't need to be complicated. In fact, the most effective ones are simple and quick to fill out. A good entry usually covers five things.
           </p>
 
           {/* Journal entry components */}
@@ -153,11 +153,11 @@ const BlogPracticeJournal = () => {
             },
             {
               title: 'Duration',
-              body: 'Recording how long you practiced gives you a clearer, more honest sense of effort over time. Many musicians tend to either underestimate or overestimate how much time they actually spend — having a written record keeps you grounded.',
+              body: 'Recording how long you practiced gives you a clearer, more honest sense of effort over time. Many musicians tend to either underestimate or overestimate how much time they actually spend, and having a written record keeps you grounded.',
             },
             {
               title: 'Focus Areas',
-              body: 'Write down the main things you worked on — major scale patterns, chord transitions, sight reading, the verse section of a particular song, rhythm exercises. This simple act helps ensure your sessions stay intentional rather than drifting.',
+              body: 'Write down the main things you worked on: major scale patterns, chord transitions, sight reading, the verse section of a particular song, rhythm exercises. This simple act helps ensure your sessions stay intentional rather than drifting.',
             },
             {
               title: 'Observations',
@@ -165,7 +165,7 @@ const BlogPracticeJournal = () => {
             },
             {
               title: 'Next Session Goal',
-              body: 'End each entry by deciding what comes next — for example, "Practice the chorus section slowly at 70 bpm and focus on clean chord transitions." This small step removes the decision-making friction when your next practice session begins, so you can sit down and start working immediately.',
+              body: 'End each entry by deciding what comes next. For example, "Practice the chorus section slowly at 70 bpm and focus on clean chord transitions." This small step removes the decision-making friction when your next practice session begins, so you can sit down and start working immediately.',
             },
           ].map(({ title, body }, i) => (
             <div key={i} className="mb-8">
@@ -197,7 +197,7 @@ const BlogPracticeJournal = () => {
             </div>
           </div>
           <p className="text-sm mt-4" style={textColor}>
-            Entries like this take less than two minutes to write — but they provide enormous long-term value by creating a clear thread between your sessions.
+            Entries like this take less than two minutes to write, but they provide enormous long-term value by creating a clear thread between your sessions.
           </p>
         </div>
       </section>
@@ -213,7 +213,7 @@ const BlogPracticeJournal = () => {
             {[
               {
                 title: 'They Force Intentional Practice',
-                body: 'When you know you\'ll be writing down what you practiced, you naturally become more focused. Instead of wandering through material randomly, you practice with real purpose — and that shift alone can transform a session.',
+                body: 'When you know you\'ll be writing down what you practiced, you naturally become more focused. Instead of wandering through material randomly, you practice with real purpose, and that shift alone can transform a session.',
               },
               {
                 title: 'They Reveal Progress',
@@ -225,7 +225,7 @@ const BlogPracticeJournal = () => {
               },
               {
                 title: 'They Build Consistency',
-                body: 'Writing down each session creates a gentle sense of accountability. Many musicians find that simply tracking their practice — seeing the streak grow — increases how often they sit down to play.',
+                body: 'Writing down each session creates a gentle sense of accountability. Many musicians find that simply tracking their practice, seeing the streak grow, increases how often they sit down to play.',
               },
             ].map(({ title, body }, i) => (
               <div key={i} className="rounded-lg p-5" style={cardBg}>
@@ -242,7 +242,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Paper Journal vs Digital Practice Tracking</h2>
           <p className="leading-relaxed mb-6" style={textColor}>
-            Both approaches work well, and the best system is simply the one you'll actually use consistently. A notebook is simple and accessible — there's something satisfying about writing by hand. But digital tools offer some meaningful advantages that are hard to replicate on paper:
+            Both approaches work well, and the best system is simply the one you'll actually use consistently. A notebook is simple and accessible, and there's something satisfying about writing by hand. But digital tools offer some meaningful advantages that are hard to replicate on paper:
           </p>
           <ul className="space-y-2 mb-4" style={textColor}>
             {[
@@ -287,7 +287,7 @@ const BlogPracticeJournal = () => {
             </ol>
           </div>
           <p className="leading-relaxed" style={textColor}>
-            That small habit can completely change how you approach practice. Over time, your journal becomes a detailed map of your musical development — something you can look back on and feel genuinely proud of.
+            That small habit can completely change how you approach practice. Over time, your journal becomes a detailed map of your musical development, something you can look back on and feel genuinely proud of.
           </p>
         </div>
       </section>
@@ -336,7 +336,7 @@ const BlogPracticeJournal = () => {
             {[
               {
                 q: 'Do professional musicians keep practice journals?',
-                a: 'Many advanced musicians track their practice in some form — whether in a notebook, an app, or even voice notes. It helps organize technical work and monitor long-term progress in a way that memory alone can\'t match.',
+                a: 'Many advanced musicians track their practice in some form, whether in a notebook, an app, or even voice notes. It helps organize technical work and monitor long-term progress in a way that memory alone can\'t match.',
               },
               {
                 q: 'How long should a journal entry be?',
@@ -344,7 +344,7 @@ const BlogPracticeJournal = () => {
               },
               {
                 q: 'Should beginners track their practice?',
-                a: 'Absolutely — beginners often benefit the most because journaling builds strong, intentional practice habits from the very start, before bad patterns have a chance to set in.',
+                a: 'Absolutely. Beginners often benefit the most because journaling builds strong, intentional practice habits from the very start, before bad patterns have a chance to set in.',
               },
               {
                 q: 'What if I miss a day?',
@@ -381,10 +381,12 @@ const BlogPracticeJournal = () => {
       {/* Footer */}
       <footer className="py-10 px-6 md:px-12 text-center" style={{ borderTop: '1px solid hsl(222 47% 20%)' }}>
         <p className="text-xs flex flex-wrap justify-center gap-2" style={textColor}>
-          <span className="font-medium" style={headingColor}>Noteshare — Practice Smarter</span>
-          <span>—</span>
+          <span className="font-medium" style={headingColor}>Noteshare</span>
+          <span>·</span>
+          <span>Practice Smarter</span>
+          <span>·</span>
           <span>Contact: notesharemusic@gmail.com</span>
-          <span>—</span>
+          <span>·</span>
           <span>© 2026 Noteshare</span>
         </p>
       </footer>

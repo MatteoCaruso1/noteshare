@@ -40,7 +40,7 @@ const BlogPianoTracker = () => {
         </div>
         <div className="max-w-3xl mx-auto relative z-10">
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
-            Matteo — Musician and Noteshare Developer &nbsp;|&nbsp; Mar 12
+            Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Mar 12
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] mb-6" style={headingColor}>
             Best Piano Practice Tracker for 2026
@@ -68,7 +68,7 @@ const BlogPianoTracker = () => {
             Ask a beginner pianist what they practiced last week and the answer is usually vague. Maybe a few scales, maybe part of a song, maybe whatever felt right that day. The details fade quickly, and that's the problem.
           </p>
           <p className="leading-relaxed mb-4" style={textColor}>
-            Musical progress depends on two things — consistency and feedback — and both are difficult to maintain when your practice disappears the moment you walk away from the piano.
+            Musical progress depends on two things, consistency and feedback, and both are difficult to maintain when your practice disappears the moment you walk away from the piano.
           </p>
           <p className="leading-relaxed mb-4" style={textColor}>
             Research in music education and skill acquisition consistently shows that musicians improve faster when they track what they practice. Recording sessions helps you notice patterns, identify weaknesses, and stay consistent over long stretches of time.
@@ -118,12 +118,12 @@ const BlogPianoTracker = () => {
               {
                 icon: Shield,
                 title: 'It Creates Accountability',
-                body: 'When you track your sessions, practice stops being something vague like "I should probably practice today" and becomes measurable. Many musicians find that simply logging their practice increases how often they sit down at the piano — seeing a streak of consistent sessions can be surprisingly motivating.',
+                body: 'When you track your sessions, practice stops being something vague like "I should probably practice today" and becomes measurable. Many musicians find that simply logging their practice increases how often they sit down at the piano. Seeing a streak of consistent sessions can be surprisingly motivating.',
               },
               {
                 icon: Target,
                 title: 'It Makes Practice More Intentional',
-                body: 'Without a tracker, practice tends to drift toward whatever feels easiest in the moment. With one, you begin each session knowing what you covered yesterday and what needs improvement next. That small shift changes your entire approach — practice becomes focused rather than random.',
+                body: 'Without a tracker, practice tends to drift toward whatever feels easiest in the moment. With one, you begin each session knowing what you covered yesterday and what needs improvement next. That small shift changes your entire approach and practice becomes focused rather than random.',
               },
               {
                 icon: Eye,
@@ -157,11 +157,11 @@ const BlogPianoTracker = () => {
           {[
             {
               title: 'Practice Session Logging',
-              body: 'The foundation of any tracker is the ability to record sessions quickly. A good tracker should let you log the date, duration, focus areas, and notes from each session — and it should take less than a minute so it doesn\'t interrupt your routine.',
+              body: 'The foundation of any tracker is the ability to record sessions quickly. A good tracker should let you log the date, duration, focus areas, and notes from each session, and it should take less than a minute so it doesn\'t interrupt your routine.',
             },
             {
               title: 'Goal Setting',
-              body: 'Tracking works best when it connects to clear goals. Whether it\'s playing a scale cleanly at 100 bpm, learning the first page of a new piece, or improving left-hand rhythm consistency — a good tracker keeps these goals visible so your practice stays aligned with them.',
+              body: 'Tracking works best when it connects to clear goals. Whether it\'s playing a scale cleanly at 100 bpm, learning the first page of a new piece, or improving left-hand rhythm consistency, a good tracker keeps these goals visible so your practice stays aligned with them.',
             },
             {
               title: 'Progress Tracking',
@@ -169,7 +169,7 @@ const BlogPianoTracker = () => {
             },
             {
               title: 'Reflection and Notes',
-              body: 'This is where the real learning happens. After each session, a short reflection captures insights while they\'re fresh — things like "right hand fingering felt smoother today" or "measure 12 still uneven with metronome." These notes guide the next session and prevent repeating the same mistakes.',
+              body: 'This is where the real learning happens. After each session, a short reflection captures insights while they\'re fresh. Things like "right hand fingering felt smoother today" or "measure 12 still uneven with metronome." These notes guide the next session and prevent repeating the same mistakes.',
             },
           ].map(({ title, body }, i) => (
             <div key={i} className="mb-8">
@@ -185,7 +185,7 @@ const BlogPianoTracker = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Example Piano Practice Tracker Entry</h2>
           <p className="leading-relaxed mb-6" style={textColor}>
-            A good practice entry should be quick and simple — something you can fill out in under a minute.
+            A good practice entry should be quick and simple, something you can fill out in under a minute.
           </p>
           <div className="rounded-lg overflow-hidden border" style={tableBorder}>
             <div className="divide-y" style={{ ...cardBg, ...tableBorder }}>
@@ -214,7 +214,7 @@ const BlogPianoTracker = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>Paper vs Digital Piano Practice Trackers</h2>
           <p className="leading-relaxed mb-4" style={textColor}>
-            Both approaches work well, and the right choice depends on your personal preference. A paper journal is simple and distraction-free — many musicians genuinely enjoy the tactile experience of writing notes by hand and keeping a physical record.
+            Both approaches work well, and the right choice depends on your personal preference. A paper journal is simple and distraction-free, and many musicians genuinely enjoy the tactile experience of writing notes by hand and keeping a physical record.
           </p>
           <p className="leading-relaxed mb-6" style={textColor}>
             A digital tracker, on the other hand, adds a few meaningful advantages:
@@ -234,7 +234,7 @@ const BlogPianoTracker = () => {
             ))}
           </ul>
           <p className="text-sm" style={textColor}>
-            For many musicians, the convenience of digital tracking makes it easier to stay consistent — which is ultimately what matters most.
+            For many musicians, the convenience of digital tracking makes it easier to stay consistent, which is ultimately what matters most.
           </p>
         </div>
       </section>
@@ -301,7 +301,7 @@ const BlogPianoTracker = () => {
             </ol>
           </div>
           <p className="leading-relaxed mb-4" style={textColor}>
-            That small habit can transform how you approach practice. Over time, your tracker becomes something more than a log — it becomes a clear map of your musical progress.
+            That small habit can transform how you approach practice. Over time, your tracker becomes something more than a log. It becomes a clear map of your musical progress.
           </p>
           <p className="leading-relaxed" style={textColor}>
             And when practice becomes visible and intentional, improvement tends to follow naturally.
@@ -317,7 +317,7 @@ const BlogPianoTracker = () => {
             {[
               {
                 q: 'How long should piano practice sessions be?',
-                a: 'Beginners often benefit from 30 to 60 minutes per day. Consistency matters far more than occasional marathon sessions — showing up regularly is what builds real skill.',
+                a: 'Beginners often benefit from 30 to 60 minutes per day. Consistency matters far more than occasional marathon sessions. Showing up regularly is what builds real skill.',
               },
               {
                 q: 'Do professional pianists track their practice?',
@@ -325,7 +325,7 @@ const BlogPianoTracker = () => {
               },
               {
                 q: 'Is a practice tracker useful for beginners?',
-                a: 'Absolutely. Beginners often benefit the most because tracking builds strong, intentional practice habits from the very start — before less productive patterns have a chance to take hold.',
+                a: 'Absolutely. Beginners often benefit the most because tracking builds strong, intentional practice habits from the very start, before less productive patterns have a chance to take hold.',
               },
               {
                 q: 'What if I forget to log a session?',
@@ -362,10 +362,12 @@ const BlogPianoTracker = () => {
       {/* Footer */}
       <footer className="py-10 px-6 md:px-12 text-center" style={{ borderTop: '1px solid hsl(222 47% 20%)' }}>
         <p className="text-xs flex flex-wrap justify-center gap-2" style={textColor}>
-          <span className="font-medium" style={headingColor}>Noteshare — Practice Smarter</span>
-          <span>—</span>
+          <span className="font-medium" style={headingColor}>Noteshare</span>
+          <span>·</span>
+          <span>Practice Smarter</span>
+          <span>·</span>
           <span>Contact: notesharemusic@gmail.com</span>
-          <span>—</span>
+          <span>·</span>
           <span>© 2026 Noteshare</span>
         </p>
       </footer>
