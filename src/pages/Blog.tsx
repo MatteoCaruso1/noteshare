@@ -104,26 +104,24 @@ const Blog = () => {
             </h3>
           </Link>
 
-          {/* Coming soon cards */}
-          {[
-            { title: 'Organizing long-term musical projects', color: 'from-accent/30 to-accent/10' },
-          ].map((post, i) => (
-            <div key={i} className="group cursor-default">
-              <div className={`rounded-xl aspect-[4/3] bg-gradient-to-br ${post.color} border border-border flex items-center justify-center mb-4`}>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Coming soon
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
-                <span>Coming soon</span>
-                <span className="text-muted-foreground/40">|</span>
-                <span>Matteo</span>
-              </div>
-              <h3 className="text-base font-semibold text-foreground leading-snug">
-                {post.title}
-              </h3>
+          {/* Piano Practice Tracker — published */}
+          <Link to="/blog/piano-practice-tracker" className="group">
+            <div className="rounded-xl aspect-[4/3] overflow-hidden border border-border bg-muted mb-4">
+              <img
+                src={blogPianoImage}
+                alt="Best piano practice tracker for 2026"
+                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+              />
             </div>
-          ))}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
+              <span>Mar 12</span>
+              <span className="text-muted-foreground/40">|</span>
+              <span>Matteo</span>
+            </div>
+            <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+              Best piano practice tracker for 2026
+            </h3>
+          </Link>
         </div>
       </div>
 
