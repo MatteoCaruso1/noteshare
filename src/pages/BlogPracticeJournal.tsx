@@ -111,7 +111,7 @@ const BlogPracticeJournal = () => {
         <div className="max-w-3xl mx-auto">
           <h2 className={h2Style} style={headingColor}>The Science Behind Reflective Practice</h2>
           <p className="leading-relaxed mb-4" style={textColor}>
-            Educational researchers call this process <em>metacognition</em> — essentially, thinking about how you learn. It sounds abstract, but it has very concrete effects on skill development.
+            Educational researchers call this process <em>metacognition</em>: essentially, thinking about how you learn. It sounds abstract, but it has very concrete effects on skill development.
           </p>
           <p className="leading-relaxed mb-6" style={textColor}>
             Studies in music education consistently show that musicians who reflect on their practice develop stronger problem-solving skills and improve faster than those who simply repeat material without pausing to think about what's working and what isn't.
