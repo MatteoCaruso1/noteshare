@@ -359,7 +359,7 @@ function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: (
   );
 }
 
-
+export async function clearRecordingBackup(backupId: string): Promise<void> {
   try {
     await clearBackup(backupId);
     console.log(`[AudioRecorder] Cleared backup ${backupId} after successful upload`);
