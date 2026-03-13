@@ -291,24 +291,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
 
       {/* Video ready chip — shown below like audio files */}
       {videoBlob && !videoRecording && (
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-2.5 py-1.5">
-            <Video className="w-3.5 h-3.5 text-primary" />
-            <span className="text-sm text-foreground">Video clip</span>
-            <span className="text-xs text-muted-foreground">
-              ({(videoBlob.size / (1024 * 1024)).toFixed(1)}MB)
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={discardVideo}
-            className="h-7 w-7 shrink-0"
-            title="Discard video"
-          >
-            <X className="w-3.5 h-3.5" />
-          </Button>
-        </div>
+        <VideoClipChip videoBlob={videoBlob} onDiscard={discardVideo} />
       )}
     </div>
   );
