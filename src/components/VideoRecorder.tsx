@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Video, Square, X } from 'lucide-react';
+import { Video, Square, X, Play, RotateCcw, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPortal } from 'react-dom';
 
@@ -14,13 +14,16 @@ interface VideoRecorderProps {
 /**
  * VideoRecorder: opens a fullscreen camera overlay on mount.
  * Shows live preview with stop button + timer overlaid.
- * When stopped, calls onVideoReady(blob) and closes.
+ * After recording, shows a video preview with accept/retake/discard options.
  */
 export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
+  const playbackRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -33,6 +36,7 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
       timerRef.current && clearInterval(timerRef.current);
       autoStopRef.current && clearTimeout(autoStopRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, []);
 
@@ -57,10 +61,19 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
 
   const startRecording = useCallback(async () => {
     try {
+      // Clean up any previous preview
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+      setPreviewBlob(null);
+
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: isMobile
-          ? { facingMode: 'environment', width: { ideal: 1080 }, height: { ideal: 1920 } }
+          // Don't over-constrain on mobile — let the browser pick optimal resolution
+          // High ideal values cause extreme zoom on many devices
+          ? { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
           : { width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: true,
       });
@@ -105,7 +118,11 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
         }
 
         console.log(`[VideoRecorder] Recorded ${(blob.size / 1024).toFixed(0)}KB, type: ${blob.type}`);
-        onVideoReady?.(blob);
+        
+        // Show preview instead of immediately accepting
+        const url = URL.createObjectURL(blob);
+        setPreviewBlob(blob);
+        setPreviewUrl(url);
       };
 
       recorder.onerror = (event) => {
@@ -134,9 +151,10 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
       toast.error('Camera access required to record video.');
       onDiscard?.();
     }
-  }, [stopTracks, onDiscard, onVideoReady]);
+  }, [stopTracks, onDiscard]); // intentionally exclude previewUrl to avoid stale closure issues
 
   const stopRecording = useCallback(() => {
+    setRecording(false);
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
@@ -146,13 +164,28 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
     timerRef.current && clearInterval(timerRef.current);
     autoStopRef.current && clearTimeout(autoStopRef.current);
     if (mediaRecorderRef.current?.state === 'recording') {
-      // Remove onstop handler to prevent triggering onVideoReady
       mediaRecorderRef.current.onstop = null;
       mediaRecorderRef.current.stop();
     }
     stopTracks();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     onDiscard?.();
-  }, [stopTracks, onDiscard]);
+  }, [stopTracks, onDiscard, previewUrl]);
+
+  const acceptVideo = useCallback(() => {
+    if (previewBlob) {
+      onVideoReady?.(previewBlob);
+    }
+  }, [previewBlob, onVideoReady]);
+
+  const retakeVideo = useCallback(() => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewBlob(null);
+    setPreviewUrl(null);
+    setRecording(false);
+    setElapsed(0);
+    startRecording();
+  }, [previewUrl, startRecording]);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -166,7 +199,62 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
 
   const progressPercent = (elapsed / MAX_DURATION) * 100;
 
-  // Render fullscreen overlay via portal
+  // ── Preview mode ──
+  if (previewUrl && previewBlob) {
+    const previewOverlay = (
+      <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+        <video
+          ref={playbackRef}
+          src={previewUrl}
+          autoPlay
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-contain bg-black"
+        />
+
+        {/* Top bar: discard */}
+        <div className="relative z-10 flex items-center justify-between px-4 pt-4 safe-area-top">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={cancelRecording}
+            onTouchEnd={handleTouchEnd}
+            className="h-10 w-10 rounded-full bg-black/40 text-white hover:bg-black/60 backdrop-blur-sm touch-manipulation"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+          <div className="bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5">
+            <span className="text-white text-sm">
+              {(previewBlob.size / (1024 * 1024)).toFixed(1)}MB
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom bar: retake + accept */}
+        <div className="relative z-10 mt-auto flex items-center justify-center gap-8 pb-10 safe-area-bottom">
+          <Button
+            variant="ghost"
+            onClick={retakeVideo}
+            onTouchEnd={handleTouchEnd}
+            className="h-14 w-14 rounded-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm touch-manipulation flex items-center justify-center"
+          >
+            <RotateCcw className="w-6 h-6" />
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={acceptVideo}
+            onTouchEnd={handleTouchEnd}
+            className="h-16 w-16 rounded-full bg-green-500 text-white hover:bg-green-600 touch-manipulation flex items-center justify-center"
+          >
+            <Check className="w-8 h-8" />
+          </Button>
+        </div>
+      </div>
+    );
+    return createPortal(previewOverlay, document.body);
+  }
+
+  // ── Recording mode ──
   const overlay = (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col">
       {/* Camera preview */}
