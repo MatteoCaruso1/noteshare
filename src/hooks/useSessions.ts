@@ -228,6 +228,7 @@ export function useEndSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    retry: 1, // Retry once on transient mobile network failures
     mutationFn: async ({
       sessionId,
       userId,

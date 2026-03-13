@@ -262,6 +262,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
   const { profile } = useAuth();
 
   return useMutation({
+    retry: 1, // Retry once on transient mobile network failures
     mutationFn: async ({
       authorId,
       textContent,
