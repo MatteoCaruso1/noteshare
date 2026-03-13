@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square, Loader2, Video, X } from 'lucide-react';
+import { Mic, Square, Loader2, Video, X, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { audioManager } from '@/lib/audioManager';
 import { 
