@@ -296,8 +296,70 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
     </div>
   );
 }
+/** Small chip showing recorded video with play preview */
+function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: () => void }) {
+  const [showPreview, setShowPreview] = useState(false);
+  const previewUrl = useMemo(() => URL.createObjectURL(videoBlob), [videoBlob]);
 
-export async function clearRecordingBackup(backupId: string): Promise<void> {
+  useEffect(() => {
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowPreview(true)}
+          className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-2.5 py-1.5 hover:bg-muted transition-colors cursor-pointer"
+        >
+          <Video className="w-3.5 h-3.5 text-primary" />
+          <span className="text-sm text-foreground">Video clip</span>
+          <span className="text-xs text-muted-foreground">
+            ({(videoBlob.size / (1024 * 1024)).toFixed(1)}MB)
+          </span>
+          <Play className="w-3 h-3 text-muted-foreground" />
+        </button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onDiscard}
+          className="h-7 w-7 shrink-0"
+          title="Discard video"
+        >
+          <X className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+
+      {/* Fullscreen video preview dialog */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          onClick={() => setShowPreview(false)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowPreview(false)}
+            className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-black/40 text-white hover:bg-black/60"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+          <video
+            src={previewUrl}
+            autoPlay
+            controls
+            playsInline
+            className="max-w-full max-h-full"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+
   try {
     await clearBackup(backupId);
     console.log(`[AudioRecorder] Cleared backup ${backupId} after successful upload`);
