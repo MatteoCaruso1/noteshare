@@ -122,6 +122,7 @@ export interface AnalyticsData {
   mobileSessionUsers: MobileSessionUser[];
   accountFunnel: AccountFunnel;
   allUsers: AllUser[];
+  ftueFunnel: { step: number; users: number }[];
   metadata: {
     daysRequested: number;
     startDate: string;

@@ -21,10 +21,23 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentStep, setCurrentStep] = useState(0); // 0 = welcome modal
 
+  // Fire-and-forget tracking of each onboarding step reached
+  const trackStep = (step: number) => {
+    const userId = profile?.user_id;
+    if (!userId) return;
+    supabase
+      .from('onboarding_step_events')
+      .upsert({ user_id: userId, step_number: step }, { onConflict: 'user_id,step_number' })
+      .then(({ error }) => {
+        if (error) console.debug('Onboarding step tracking error:', error.message);
+      });
+  };
+
   const startOnboarding = () => {
     setCurrentStep(0);
     setShowOnboarding(true);
     isOnboardingActive = true;
+    trackStep(0);
   };
 
   const completeOnboarding = () => {
@@ -46,10 +59,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const nextStep = () => {
-    if (currentStep >= 11) {
+    const next = currentStep + 1;
+    if (next > 11) {
       completeOnboarding();
     } else {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep(next);
+      trackStep(next);
     }
   };
 

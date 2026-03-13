@@ -825,6 +825,23 @@ serve(async (req) => {
       createdAt: p.created_at,
     })).sort((a, b) => b.noteCount - a.noteCount);
 
+    // ── FTUE funnel ──
+    const { data: ftueRows } = await supabaseAdmin
+      .from('onboarding_step_events')
+      .select('step_number, user_id');
+
+    const ftueStepCounts: Record<number, number> = {};
+    if (ftueRows) {
+      for (const r of ftueRows) {
+        ftueStepCounts[r.step_number] = (ftueStepCounts[r.step_number] || 0) + 1;
+      }
+    }
+    // Build array 0-11
+    const ftueFunnel = Array.from({ length: 12 }, (_, i) => ({
+      step: i,
+      users: ftueStepCounts[i] || 0,
+    }));
+
     const response = {
       noteActivatedUsers: {
         dailyCounts,
@@ -846,6 +863,7 @@ serve(async (req) => {
       tryProClickUsers,
       mobileSessionUsers,
       allUsers,
+      ftueFunnel,
       metadata: {
         daysRequested: days,
         startDate: startDateStr,

@@ -440,6 +440,47 @@ const AdminAnalytics = () => {
         {/* Account Funnel */}
         {data.accountFunnel && <AccountFunnelCard funnel={data.accountFunnel} days={days} />}
 
+        {/* FTUE Funnel */}
+        {data.ftueFunnel && data.ftueFunnel.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="w-5 h-5 text-primary" />
+                FTUE Step Funnel
+              </CardTitle>
+              <CardDescription>How many users reached each step of the 12-step onboarding flow (all time)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {data.ftueFunnel.map((s, i) => {
+                  const maxUsers = data.ftueFunnel[0]?.users || 1;
+                  const pct = maxUsers > 0 ? Math.round((s.users / maxUsers) * 100) : 0;
+                  const stepLabels = [
+                    'Welcome modal', 'Start session button', 'Session started', 'Capture note',
+                    'Record audio', 'End session', 'Save session', 'View timeline',
+                    'View note detail', 'Share education', 'Add friend', 'Complete'
+                  ];
+                  return (
+                    <div key={s.step} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-28 shrink-0 truncate">
+                        {i}. {stepLabels[i] || `Step ${i}`}
+                      </span>
+                      <div className="flex-1 h-6 bg-muted rounded overflow-hidden relative">
+                        <div
+                          className="h-full bg-primary/70 rounded transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
+                          {s.users} ({pct}%)
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
         {/* Recent Accounts - right under funnel */}
         <Card className="mb-8">
           <CardHeader>

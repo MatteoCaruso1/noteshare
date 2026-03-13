@@ -961,6 +961,27 @@ export type Database = {
           },
         ]
       }
+      onboarding_step_events: {
+        Row: {
+          created_at: string
+          id: string
+          step_number: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          step_number: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          step_number?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       orphan_payments: {
         Row: {
           amount: number | null
