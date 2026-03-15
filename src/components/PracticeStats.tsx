@@ -335,7 +335,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
           </div>
 
-          {/* Volume — bottom left */}
+          {/* Monthly Volume — bottom left */}
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4 scale-125 origin-center">
@@ -348,7 +348,50 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
                 </g>
               </svg>
-              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Volume</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Monthly Volume</span>
+            </div>
+            <div className="space-y-2">
+              {(() => {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                const daysPassed = Math.ceil((now.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysPracticed = Object.keys(stats.dailyMinutesMap).filter(d => {
+                  const year = parseInt(d.slice(0, 4));
+                  const month = parseInt(d.slice(5, 7));
+                  return year === now.getFullYear() && month === now.getMonth() + 1 && stats.dailyMinutesMap[d] > 0;
+                }).length;
+                const pct = daysPassed > 0 ? Math.round((daysPracticed / daysPassed) * 100) : 0;
+                return (
+                  <>
+                    <div className="flex flex-col items-center text-center">
+                      <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{daysPracticed}d</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Days this Month</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                      <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${pct > 70 ? 'text-green-500' : pct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{pct}%</p>
+                      <p className={`text-[10px] sm:text-xs ${pct > 70 ? 'text-green-500/70' : pct >= 50 ? 'text-yellow-500/70' : 'text-red-500/70'}`}>of Days this Month</p>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Yearly Volume — bottom right */}
+          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4 scale-125 origin-center">
+                <g transform="translate(6, 4)">
+                  <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
+                  <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
+                  <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+                  <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
+                  <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                  <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                </g>
+              </svg>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Yearly Volume</span>
             </div>
             <div className="space-y-2">
               {(() => {
@@ -364,33 +407,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   <>
                     <div className="flex flex-col items-center text-center">
                       <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{daysPracticed}d</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Days Practiced</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Days this Year</p>
                     </div>
                     <div className="flex flex-col items-center text-center">
                       <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${pct > 70 ? 'text-green-500' : pct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{pct}%</p>
-                      <p className={`text-[10px] sm:text-xs ${pct > 70 ? 'text-green-500/70' : pct >= 50 ? 'text-yellow-500/70' : 'text-red-500/70'}`}>of Days Practiced</p>
+                      <p className={`text-[10px] sm:text-xs ${pct > 70 ? 'text-green-500/70' : pct >= 50 ? 'text-yellow-500/70' : 'text-red-500/70'}`}>of Days this Year</p>
                     </div>
                   </>
                 );
               })()}
-            </div>
-          </div>
-
-          {/* Time Records — bottom right */}
-          <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Trophy className="w-4 h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Time Records</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestWeekMinutes ? formatMinutes(stats.bestWeekMinutes.minutes) : '0m'}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Week</p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.bestMonthMinutes ? formatMinutes(stats.bestMonthMinutes.minutes) : '0m'}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Top Month</p>
-              </div>
             </div>
           </div>
         </div>
