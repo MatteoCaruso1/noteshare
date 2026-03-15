@@ -78,7 +78,18 @@ export function TodaysFocus() {
     if (prevFocusTextRef.current === freshText) return;
     prevFocusTextRef.current = freshText;
     // Only overwrite local text if user has no pending edits
+    // AND the DB data is actually newer than the local cache
     if (!hasChangesRef.current && freshText !== text) {
+      const existingCache = readFocusCache(user?.id);
+      if (existingCache && existingCache.focus_text !== freshText) {
+        // Local cache differs from DB — only overwrite if DB is strictly newer
+        const dbUpdated = new Date((focus as any).updated_at).getTime();
+        const cacheUpdated = new Date(existingCache.updated_at).getTime();
+        if (dbUpdated <= cacheUpdated) {
+          // Local cache is newer — keep it, don't overwrite
+          return;
+        }
+      }
       setText(freshText);
       updateLocalCache(freshText);
     }
