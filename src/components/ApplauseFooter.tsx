@@ -28,9 +28,10 @@ export const ApplauseFooter = memo(function ApplauseFooter({
   applauseData
 }: ApplauseFooterProps) {
   const { profile } = useAuth();
-  // Only fetch per-note if no batch data was provided (i.e. NoteDetail page)
-  const { data: fetchedApplause = [], isLoading: isFetching } = useNoteApplause(noteId, { enabled: applauseData === undefined });
-  const applauseList = applauseData ?? fetchedApplause;
+  // Always read from per-note cache (batch query seeds it, optimistic updates write to it)
+  const { data: cachedApplause, isLoading: isFetching } = useNoteApplause(noteId, { enabled: applauseData === undefined });
+  // Prefer cache (reflects optimistic updates) over stale batch prop
+  const applauseList = cachedApplause ?? applauseData ?? [];
   const isLoading = applauseData === undefined ? isFetching : false;
   const giveApplause = useGiveApplause();
   const removeApplause = useRemoveApplause();
