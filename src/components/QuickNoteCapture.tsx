@@ -173,7 +173,7 @@ export function QuickNoteCapture() {
     const gigId = selectedLink?.type === 'gig' ? selectedLink.id : undefined;
     
     // Resolve focus data: use hook data first, fall back to localStorage cache
-    const focusData = attachFocus ? (currentFocus || readFocusCache(user?.id)) : null;
+    const focusData = attachFocus ? (currentFocus || readFocusCache(profile?.id)) : null;
     
     createNote.mutate(
       {

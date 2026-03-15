@@ -12,49 +12,78 @@ interface DailyFocus {
   updated_at: string;
 }
 
-export const FOCUS_CACHE_KEY = 'noteshare_focus_cache';
+// ── Draft cache (survives navigation even without a DB row) ──
+const DRAFT_KEY_PREFIX = 'noteshare_focus_draft';
 
-export function getFocusCacheKey(userId?: string | null): string {
-  return userId ? `${FOCUS_CACHE_KEY}:${userId}` : FOCUS_CACHE_KEY;
+function getDraftKey(profileId: string): string {
+  return `${DRAFT_KEY_PREFIX}:${profileId}`;
 }
 
-export function readFocusCache(userId?: string | null): DailyFocus | null {
+export interface FocusDraft {
+  text: string;
+  updated_at: string; // ISO string
+}
+
+export function readDraft(profileId?: string | null): FocusDraft | null {
+  if (!profileId) return null;
   try {
-    const scopedKey = getFocusCacheKey(userId);
-    const scopedRaw = localStorage.getItem(scopedKey);
-    if (scopedRaw) {
-      const scopedParsed = JSON.parse(scopedRaw);
-      if (scopedParsed && typeof scopedParsed === 'object' && scopedParsed.id) {
-        return scopedParsed as DailyFocus;
+    const raw = localStorage.getItem(getDraftKey(profileId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.text === 'string' && parsed.updated_at) return parsed;
+    return null;
+  } catch { return null; }
+}
+
+export function writeDraft(profileId: string, text: string) {
+  try {
+    localStorage.setItem(getDraftKey(profileId), JSON.stringify({
+      text,
+      updated_at: new Date().toISOString(),
+    }));
+  } catch { /* quota */ }
+}
+
+export function clearDraft(profileId: string) {
+  try { localStorage.removeItem(getDraftKey(profileId)); } catch { /* */ }
+}
+
+// ── Persisted focus cache (reflects a real DB row) ──
+export const FOCUS_CACHE_KEY = 'noteshare_focus_cache';
+
+export function getFocusCacheKey(profileId?: string | null): string {
+  return profileId ? `${FOCUS_CACHE_KEY}:${profileId}` : FOCUS_CACHE_KEY;
+}
+
+export function readFocusCache(profileId?: string | null): DailyFocus | null {
+  try {
+    // 1. Profile-scoped key
+    if (profileId) {
+      const scopedRaw = localStorage.getItem(getFocusCacheKey(profileId));
+      if (scopedRaw) {
+        const parsed = JSON.parse(scopedRaw);
+        if (parsed && typeof parsed === 'object' && parsed.id) return parsed as DailyFocus;
       }
     }
 
-    // Backward compatibility for legacy global cache key.
-    // Only reuse it when it belongs to the current user, then migrate it.
+    // 2. Legacy global key – migrate if owner matches
     const legacyRaw = localStorage.getItem(FOCUS_CACHE_KEY);
     if (!legacyRaw) return null;
-
     const legacyParsed = JSON.parse(legacyRaw);
-    if (!legacyParsed || typeof legacyParsed !== 'object' || !legacyParsed.id) {
-      return null;
-    }
+    if (!legacyParsed || typeof legacyParsed !== 'object' || !legacyParsed.id) return null;
 
     const cacheOwner = legacyParsed.user_id as string | undefined;
-    if (userId && cacheOwner === userId) {
-      localStorage.setItem(scopedKey, legacyRaw);
+    if (profileId && cacheOwner === profileId) {
+      localStorage.setItem(getFocusCacheKey(profileId), legacyRaw);
       localStorage.removeItem(FOCUS_CACHE_KEY);
       return legacyParsed as DailyFocus;
     }
-
-    // Prevent cross-account leakage from stale legacy cache.
-    if (userId && cacheOwner && cacheOwner !== userId) {
+    // Cross-account: purge stale legacy
+    if (profileId && cacheOwner && cacheOwner !== profileId) {
       localStorage.removeItem(FOCUS_CACHE_KEY);
     }
-
     return null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function writeFocusCache(focus: DailyFocus) {
@@ -67,9 +96,8 @@ function writeFocusCache(focus: DailyFocus) {
       created_at: focus.created_at,
       updated_at: focus.updated_at,
     }));
-    // Remove legacy cache key after successful scoped write.
     localStorage.removeItem(FOCUS_CACHE_KEY);
-  } catch { /* quota exceeded — ignore */ }
+  } catch { /* quota */ }
 }
 
 // Get the user's local date as YYYY-MM-DD (timezone-safe)
@@ -82,29 +110,28 @@ function getLocalDateString(): string {
 }
 
 export function useTodaysFocus() {
-  const { user } = useAuth();
-  const userId = user?.id;
+  const { profile } = useAuth();
+  const profileId = profile?.id;
   const queryClient = useQueryClient();
 
   // Keep a ref so the mutation can still identify the user during sign-out
-  const userIdRef = useRef(userId);
+  const profileIdRef = useRef(profileId);
   useEffect(() => {
-    if (userId) userIdRef.current = userId;
-  }, [userId]);
+    if (profileId) profileIdRef.current = profileId;
+  }, [profileId]);
 
   // Fetch today's focus entry, or the most recent one if today doesn't exist
   const query = useQuery({
-    queryKey: ['daily-focus', userId],
+    queryKey: ['daily-focus', profileId],
     queryFn: async () => {
-      if (!userId) return null;
+      if (!profileId) return null;
 
       const today = getLocalDateString();
 
-      // First, try to get today's focus
       const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
         .select('id, user_id, focus_date, focus_text, created_at, updated_at')
-        .eq('user_id', userId)
+        .eq('user_id', profileId)
         .eq('focus_date', today)
         .maybeSingle();
 
@@ -118,14 +145,13 @@ export function useTodaysFocus() {
       const { data: recentFocus, error: recentError } = await supabase
         .from('daily_focus')
         .select('id, user_id, focus_date, focus_text, created_at, updated_at')
-        .eq('user_id', userId)
+        .eq('user_id', profileId)
         .order('focus_date', { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (recentError) throw recentError;
 
-      // Return the recent focus but mark it as "carried forward"
       if (recentFocus) {
         return {
           ...recentFocus,
@@ -135,42 +161,36 @@ export function useTodaysFocus() {
 
       return null;
     },
-    enabled: !!userId,
-    staleTime: 30 * 1000, // 30s — ensures cross-device edits sync quickly
+    enabled: !!profileId,
+    staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: true,
-    placeholderData: () => readFocusCache(userId),
+    placeholderData: () => readFocusCache(profileId),
   });
 
   // Persist to localStorage whenever fresh data arrives
-  // BUT: don't overwrite local cache if it has unsaved edits (newer than DB)
   const freshData = query.data;
   const isPlaceholder = query.isPlaceholderData;
   useEffect(() => {
     if (freshData && !isPlaceholder && freshData.focus_text !== undefined) {
-      // Check if local cache has content that differs from DB
-      // If so, the local cache is likely newer (unsaved edit from before iOS killed the tab)
-      const existingCache = readFocusCache(userId);
+      const existingCache = readFocusCache(profileId);
       if (existingCache && existingCache.focus_text !== freshData.focus_text) {
-        // Local cache differs from DB — local is potentially newer (unsaved edits)
-        // Only overwrite if DB data is actually newer (updated_at comparison)
         const dbUpdated = new Date(freshData.updated_at).getTime();
         const cacheUpdated = new Date(existingCache.updated_at).getTime();
         if (dbUpdated > cacheUpdated) {
           writeFocusCache(freshData as DailyFocus);
         }
-        // Otherwise keep local cache (it has unsaved changes)
       } else {
         writeFocusCache(freshData as DailyFocus);
       }
     }
-  }, [freshData, isPlaceholder, userId]);
+  }, [freshData, isPlaceholder, profileId]);
 
-  // Upsert today's focus
-  const updateFocus = useMutation({
+  // Upsert today's focus – returns the mutateAsync function for hardened save
+  const updateFocusMutation = useMutation({
     mutationFn: async (focusText: string) => {
-      const effectiveUserId = userId || userIdRef.current;
-      if (!effectiveUserId) throw new Error('Not authenticated');
+      const effectiveId = profileId || profileIdRef.current;
+      if (!effectiveId) throw new Error('Not authenticated');
 
       const today = getLocalDateString();
 
@@ -178,13 +198,11 @@ export function useTodaysFocus() {
         .from('daily_focus')
         .upsert(
           {
-            user_id: effectiveUserId,
+            user_id: effectiveId,
             focus_date: today,
             focus_text: focusText,
           },
-          {
-            onConflict: 'user_id,focus_date',
-          }
+          { onConflict: 'user_id,focus_date' }
         )
         .select()
         .single();
@@ -192,76 +210,79 @@ export function useTodaysFocus() {
       if (error) throw error;
       return data as DailyFocus;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['daily-focus', userId] });
-      queryClient.invalidateQueries({ queryKey: ['current-focus-entry', userId] });
+    onSuccess: (data) => {
+      // Update persisted cache with the DB-confirmed row
+      writeFocusCache(data);
+      queryClient.invalidateQueries({ queryKey: ['daily-focus', profileId] });
+      queryClient.invalidateQueries({ queryKey: ['current-focus-entry', profileId] });
     },
   });
 
   return {
     focus: query.data,
     isLoading: query.isLoading,
-    updateFocus: updateFocus.mutate,
-    isUpdating: updateFocus.isPending,
+    updateFocus: updateFocusMutation.mutate,
+    updateFocusAsync: updateFocusMutation.mutateAsync,
+    isUpdating: updateFocusMutation.isPending,
   };
 }
 
 // Hook to get the current focus entry for attaching to notes/sessions
-// Derives from useTodaysFocus cache instead of making a separate DB call
 export function useCurrentFocusEntry() {
   const { focus, isLoading } = useTodaysFocus();
-  
-  // useTodaysFocus already returns today's focus or the most recent carried-forward one
-  // Just re-expose the data in the shape consumers expect
+  const { profile } = useAuth();
+
+  // Combine DB focus with draft/cache for attachment safety
   return {
     data: focus as (DailyFocus & { isCarriedForward?: boolean }) | null | undefined,
     isLoading,
     isPending: isLoading,
+    profileId: profile?.id,
   };
 }
 
 // Hook to fetch all focus entries for history view
 export function useFocusHistory() {
-  const { user } = useAuth();
-  const userId = user?.id;
+  const { profile } = useAuth();
+  const profileId = profile?.id;
 
   return useQuery({
-    queryKey: ['focus-history', userId],
+    queryKey: ['focus-history', profileId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!profileId) return [];
 
       const { data, error } = await supabase
         .from('daily_focus')
         .select('id, user_id, focus_date, focus_text, created_at, updated_at')
-        .eq('user_id', userId)
+        .eq('user_id', profileId)
         .order('focus_date', { ascending: false });
 
       if (error) throw error;
       return data as DailyFocus[];
     },
-    enabled: !!userId,
+    enabled: !!profileId,
   });
 }
 
 // Hook to fetch all focus dates for filtering
 export function useFocusDates() {
-  const { user } = useAuth();
-  const userId = user?.id;
+  const { profile } = useAuth();
+  const profileId = profile?.id;
 
   return useQuery({
-    queryKey: ['focus-dates', userId],
+    queryKey: ['focus-dates', profileId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!profileId) return [];
 
       const { data, error } = await supabase
         .from('daily_focus')
         .select('focus_date')
-        .eq('user_id', userId)
+        .eq('user_id', profileId)
         .order('focus_date', { ascending: false });
 
       if (error) throw error;
       return data.map((d) => d.focus_date) as string[];
     },
-    enabled: !!userId,
+    enabled: !!profileId,
   });
 }

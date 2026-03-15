@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { useTodaysFocus, readFocusCache, getFocusCacheKey } from '@/hooks/useDailyFocus';
+import { useTodaysFocus, readFocusCache, readDraft, writeDraft } from '@/hooks/useDailyFocus';
 import { useFocusBacklog } from '@/hooks/useFocusBacklog';
 import { useGlint } from '@/contexts/GlintContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,20 +19,25 @@ import { useToast } from '@/hooks/use-toast';
 const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
 export function TodaysFocus() {
-  const { focus, isLoading, updateFocus, isUpdating } = useTodaysFocus();
-  const { user } = useAuth();
+  const { focus, isLoading, updateFocus, updateFocusAsync, isUpdating } = useTodaysFocus();
+  const { profile } = useAuth();
+  const profileId = profile?.id;
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   const { toast: structuredToast } = useToast();
-  const [text, setText] = useState(() => readFocusCache(user?.id)?.focus_text || '');
+
+  // Initialize text from: draft > persisted cache > empty
+  const [text, setText] = useState(() => {
+    const draft = readDraft(profileId);
+    if (draft) return draft.text;
+    const cached = readFocusCache(profileId);
+    return cached?.focus_text || '';
+  });
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(() => !!readFocusCache(user?.id));
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
-  // isRestoring removed — CSS grid mirror approach makes it unnecessary
   const [isOpen, setIsOpen] = useState(() => {
-    // Initialize from localStorage, default to expanded (true)
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
     return stored === null ? true : stored === 'open';
   });
@@ -50,81 +55,60 @@ export function TodaysFocus() {
     setFocusFocused(isFocused);
   }, [isFocused, setFocusFocused]);
 
-  // No-op kept for compatibility with existing call sites.
-  // Height is now driven entirely by the CSS grid mirror div.
   const autosizeTextarea = useCallback(() => {
-    // Force a reflow on the textarea just in case (e.g. font loading)
     const textarea = textareaRef.current;
     if (textarea) void textarea.offsetHeight;
     return 0;
   }, []);
 
-  // Re-hydrate local UI state from user-scoped cache on auth user changes
+  // Re-hydrate local UI state when profile changes (login/logout)
   useEffect(() => {
-    const cached = readFocusCache(user?.id);
-    setText(cached?.focus_text || '');
-    setIsInitialized(!!cached);
+    const draft = readDraft(profileId);
+    if (draft) {
+      setText(draft.text);
+    } else {
+      const cached = readFocusCache(profileId);
+      setText(cached?.focus_text || '');
+    }
     setHasChanges(false);
-  }, [user?.id]);
+  }, [profileId]);
 
   // Sync fresh DB data to local state when it arrives (cross-device sync)
   // Only update if user is NOT actively editing (no pending changes)
   const prevFocusTextRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (!isInitialized) return;
     if (!focus?.focus_text && focus?.focus_text !== '') return;
     const freshText = focus.focus_text;
-    // Skip if this is the same value we already know about
     if (prevFocusTextRef.current === freshText) return;
     prevFocusTextRef.current = freshText;
-    // Only overwrite local text if user has no pending edits
-    // AND the DB data is actually newer than the local cache
-    if (!hasChangesRef.current && freshText !== text) {
-      const existingCache = readFocusCache(user?.id);
-      if (existingCache && existingCache.focus_text !== freshText) {
-        // Local cache differs from DB — only overwrite if DB is strictly newer
-        const dbUpdated = new Date((focus as any).updated_at).getTime();
-        const cacheUpdated = new Date(existingCache.updated_at).getTime();
-        if (dbUpdated <= cacheUpdated) {
-          // Local cache is newer — keep it, don't overwrite
-          return;
-        }
-      }
-      setText(freshText);
-      updateLocalCache(freshText);
-    }
-  }, [focus?.focus_text, isInitialized]);
 
-  // Deterministic autosize using useLayoutEffect - runs before paint
-  // Triggers on: isOpen change, text change, initialization
-  // IMPORTANT: Radix CollapsibleContent uses CSS animations for open/close transitions.
-  // We need to wait for the animation to complete before measuring scrollHeight.
+    // Don't overwrite if user has pending edits
+    if (hasChangesRef.current) return;
+
+    // Check if there's a newer local draft
+    const draft = readDraft(profileId);
+    if (draft) {
+      const dbUpdated = new Date((focus as any).updated_at).getTime();
+      const draftUpdated = new Date(draft.updated_at).getTime();
+      if (draftUpdated > dbUpdated) return; // local draft is newer, keep it
+    }
+
+    if (freshText !== text) {
+      setText(freshText);
+    }
+  }, [focus?.focus_text, profileId]);
+
+  // Deterministic autosize using useLayoutEffect
   useLayoutEffect(() => {
     if (!isOpen) return;
-    
-    // Run autosize immediately for already-expanded cases
     autosizeTextarea();
-    
     const contentEl = collapsibleContentRef.current;
-    
-    // Handler for when animation completes
-    const handleAnimationEnd = () => {
-      autosizeTextarea();
-    };
-    
-    // Listen for CSS transition/animation end events on the collapsible content
+    const handleAnimationEnd = () => { autosizeTextarea(); };
     if (contentEl) {
       contentEl.addEventListener('transitionend', handleAnimationEnd);
       contentEl.addEventListener('animationend', handleAnimationEnd);
     }
-    
-    // Fallback timeout: Radix animations are typically ~200-300ms
-    // This ensures autosize runs even if animation events don't fire
-    // (e.g., prefers-reduced-motion, or if animation is already complete)
-    const fallbackTimeout = setTimeout(() => {
-      autosizeTextarea();
-    }, 350);
-    
+    const fallbackTimeout = setTimeout(() => { autosizeTextarea(); }, 350);
     return () => {
       if (contentEl) {
         contentEl.removeEventListener('transitionend', handleAnimationEnd);
@@ -132,108 +116,69 @@ export function TodaysFocus() {
       }
       clearTimeout(fallbackTimeout);
     };
-  }, [isOpen, text, isInitialized, autosizeTextarea]);
+  }, [isOpen, text, autosizeTextarea]);
 
-  // Special case: When data loads while the collapsible is already open,
-  // ensure we wait for any ongoing animations before final measurement
   useEffect(() => {
-    if (isInitialized && isOpen) {
-      // Schedule autosize after typical Radix animation duration
+    if (isOpen) {
       const timeoutId = setTimeout(autosizeTextarea, 350);
       return () => clearTimeout(timeoutId);
     }
-  }, [isInitialized]); // Only trigger when isInitialized changes
+  }, []);
 
-  // Dedicated effect for when text content changes after initial mount
-  // This handles the race condition where database data arrives after the 350ms fallback
   useEffect(() => {
-    if (isOpen && text && isInitialized) {
-      // Double RAF ensures DOM has fully rendered the new text before measuring
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          autosizeTextarea();
-        });
-      });
+    if (isOpen && text) {
+      requestAnimationFrame(() => { requestAnimationFrame(() => { autosizeTextarea(); }); });
     }
-  }, [text, isOpen, isInitialized, autosizeTextarea]);
+  }, [text, isOpen, autosizeTextarea]);
 
-  // ResizeObserver to handle viewport/container size changes while open
+  // ResizeObserver
   useEffect(() => {
     if (!isOpen) return;
     const textarea = textareaRef.current;
     if (!textarea) return;
-
-    const observer = new ResizeObserver(() => {
-      // Re-autosize when container width changes (affects text wrapping)
-      autosizeTextarea();
-    });
-
+    const observer = new ResizeObserver(() => { autosizeTextarea(); });
     observer.observe(textarea);
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
-  // bfcache / visibility — no special handling needed since CSS grid drives height
-
   // MutationObserver for Radix CollapsibleContent hidden attribute changes
-  // When Radix removes the hidden attribute during transitions, we need to re-measure
   useEffect(() => {
     if (!isOpen) return;
     const contentEl = collapsibleContentRef.current;
     if (!contentEl) return;
-    
-    // Watch for Radix removing the hidden attribute (happens during transitions)
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
-          // Hidden state changed - re-measure after paint
-          requestAnimationFrame(() => {
-            autosizeTextarea();
-          });
+          requestAnimationFrame(() => { autosizeTextarea(); });
         }
       }
     });
-    
     observer.observe(contentEl, { attributes: true, attributeFilter: ['hidden'] });
-    
     return () => observer.disconnect();
   }, [isOpen, autosizeTextarea]);
 
-  // Helper to update localStorage cache immediately with current text
-  // Updates updated_at to current time so stale DB data won't overwrite it
-  const updateLocalCache = useCallback((value: string) => {
-    try {
-      const scopedKey = getFocusCacheKey(user?.id);
-      const raw = localStorage.getItem(scopedKey);
-      if (raw) {
-        const cached = JSON.parse(raw);
-        cached.focus_text = value;
-        cached.updated_at = new Date().toISOString();
-        localStorage.setItem(scopedKey, JSON.stringify(cached));
-      } else if (focus) {
-        // Create cache entry from current focus data with updated text
-        localStorage.setItem(scopedKey, JSON.stringify({
-          ...focus,
-          focus_text: value,
-          updated_at: new Date().toISOString(),
-        }));
-      }
-    } catch { /* ignore */ }
-  }, [focus, user?.id]);
-
-  // Auto-save with debounce
+  // Auto-save with debounce — write draft immediately, DB save on debounce
   const handleTextChange = (value: string) => {
     setText(value);
     setHasChanges(true);
-    // Immediately persist to localStorage so navigation doesn't lose changes
-    updateLocalCache(value);
+
+    // Immediately persist draft to localStorage (survives navigation)
+    if (profileId) writeDraft(profileId, value);
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    saveTimeoutRef.current = setTimeout(() => {
-      updateFocus(value);
-      setHasChanges(false);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync(value);
+        setHasChanges(false);
+        // Clear draft after successful DB save
+        if (profileId) writeDraft(profileId, value); // keep draft in sync
+      } catch (err) {
+        console.warn('[TodaysFocus] DB save failed, draft preserved locally', err);
+        // Draft stays in localStorage — will sync on next attempt
+      }
     }, 1000);
   };
 
@@ -243,12 +188,13 @@ export function TodaysFocus() {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      updateFocus(text);
-      setHasChanges(false);
+      updateFocusAsync(text)
+        .then(() => setHasChanges(false))
+        .catch(() => console.warn('[TodaysFocus] Blur save failed, draft preserved'));
     }
   };
 
-  // Flush pending save on unmount (e.g. navigating away)
+  // Flush pending save on unmount
   const textRef = useRef(text);
   const hasChangesRef = useRef(hasChanges);
   textRef.current = text;
@@ -259,14 +205,13 @@ export function TodaysFocus() {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      // Save any unsaved changes before unmounting
       if (hasChangesRef.current) {
         updateFocus(textRef.current);
       }
     };
   }, []);
 
-  // Flush pending save immediately when app goes to background (iOS kills tabs without running cleanup effects)
+  // Flush pending save immediately when app goes to background
   useEffect(() => {
     const flushPendingSave = () => {
       if (hasChangesRef.current) {
@@ -285,13 +230,11 @@ export function TodaysFocus() {
       }
     };
 
-    // Flush before sign-out while session is still valid
     const handleBeforeSignout = () => {
       flushPendingSave();
     };
 
     document.addEventListener('visibilitychange', flushOnBackground);
-    // pagehide is more reliable on iOS Safari/PWA
     window.addEventListener('pagehide', flushPendingSave);
     window.addEventListener('noteshare:before-signout', handleBeforeSignout);
     return () => {
