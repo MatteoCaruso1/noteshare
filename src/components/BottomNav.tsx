@@ -214,7 +214,7 @@ export function BottomNav() {
       }}
     >
       <div className="container max-w-2xl mx-auto px-2 sm:px-4">
-        <div className="flex items-start justify-around pt-2 pb-1.5 -mt-2">
+        <div className="flex items-start justify-around pt-2.5 pb-1.5 -mt-2">
           {links.map(({ to, icon: Icon, label, mobileLabel, showBadge }) => {
             // Use optimistic route for instant feedback, then override, then standard logic
             let isActive: boolean;
