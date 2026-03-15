@@ -112,6 +112,17 @@ export function AppHeader() {
           {isOnWelcomePage && (
             <nav className="flex items-center gap-1 ml-2 sm:ml-6">
               <Link
+                to="/welcome"
+                onClick={() => window.scrollTo(0, 0)}
+                className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline ${
+                  location.pathname === '/welcome' || (location.pathname === '/' && !user)
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Home
+              </Link>
+              <Link
                 to="/science-of-practice"
                 className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline whitespace-nowrap ${
                   location.pathname === '/science-of-practice'
