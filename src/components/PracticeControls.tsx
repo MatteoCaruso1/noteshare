@@ -538,7 +538,7 @@ export function PracticeControls() {
     endSession.mutate(
       { sessionId: capturedSessionId, userId: profile.id, notesSummary, collaboratorIds: playingWithIds, customDurationMinutes },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           // Determine projectId, goalId, and gigId based on captured selectedLink
           const projectId = capturedSelectedLink?.type === 'project' ? capturedSelectedLink.id : undefined;
           const goalId = capturedSelectedLink?.type === 'goal' ? capturedSelectedLink.id : undefined;
@@ -552,6 +552,20 @@ export function PracticeControls() {
             console.error('[PracticeControls] capturedSessionId is null in onSuccess - this should never happen');
             toast.error('Error saving session note. Please log it manually.');
             return;
+          }
+
+          // Upload video BEFORE creating note so video_path is included in the insert
+          let videoPath: string | undefined;
+          if (videoBlob && user?.id) {
+            sonnerToast.loading('Uploading video…', { id: 'video-upload' });
+            const path = await uploadVideoToStorage(videoBlob, user.id);
+            sonnerToast.dismiss('video-upload');
+            if (path) {
+              videoPath = path;
+              setVideoBlob(null);
+            } else {
+              sonnerToast.error('Video upload failed. Note will be saved without video.');
+            }
           }
           
           createNote.mutate(
@@ -579,6 +593,7 @@ export function PracticeControls() {
               focusDate: focusData ? getTodayLocalDate() : undefined,
               focusTextSnapshot: focusData ? focusData.focus_text : undefined,
               privateAudioIndices: capturedPrivateAudioIndices,
+              videoPath,
             },
             {
               onSuccess: (newNote) => {
@@ -589,15 +604,6 @@ export function PracticeControls() {
                   createNoteShares.mutate({
                     noteId: newNote.id,
                     sharedWithIds: playingWithIds,
-                  });
-                }
-
-                // Upload video if one was recorded (non-blocking)
-                if (videoBlob && newNote?.id && user?.id) {
-                  const blob = videoBlob;
-                  setVideoBlob(null);
-                  uploadNoteVideo(blob, user.id, newNote.id).then(path => {
-                    if (!path) sonnerToast.error('Video upload failed.');
                   });
                 }
                 
