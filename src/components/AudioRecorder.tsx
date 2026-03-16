@@ -294,7 +294,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
   );
 }
 /** Small chip showing recorded video with play preview */
-function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: () => void }) {
+export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: () => void }) {
   const [showPreview, setShowPreview] = useState(false);
   const previewUrl = useMemo(() => URL.createObjectURL(videoBlob), [videoBlob]);
 
