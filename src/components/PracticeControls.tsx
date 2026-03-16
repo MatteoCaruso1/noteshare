@@ -971,8 +971,8 @@ export function PracticeControls() {
               <AudioRecorder 
                 onRecorded={handleAudioRecorded} 
                 onRecordingChange={setIsRecordingAudio}
-                onVideoReady={(blob) => { videoBlobRef.current = blob; }}
-                onVideoDiscarded={() => { videoBlobRef.current = null; }}
+                onVideoReady={(blob) => { setVideoBlob(blob); }}
+                onVideoDiscarded={() => { setVideoBlob(null); }}
                 className="w-full"
               />
             </div>
