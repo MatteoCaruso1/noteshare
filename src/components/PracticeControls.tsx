@@ -593,9 +593,9 @@ export function PracticeControls() {
                 }
 
                 // Upload video if one was recorded (non-blocking)
-                if (videoBlobRef.current && newNote?.id && user?.id) {
-                  const blob = videoBlobRef.current;
-                  videoBlobRef.current = null;
+                if (videoBlob && newNote?.id && user?.id) {
+                  const blob = videoBlob;
+                  setVideoBlob(null);
                   uploadNoteVideo(blob, user.id, newNote.id).then(path => {
                     if (!path) sonnerToast.error('Video upload failed.');
                   });
