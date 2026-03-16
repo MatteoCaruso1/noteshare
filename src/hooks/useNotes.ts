@@ -281,6 +281,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusDate,
       focusTextSnapshot,
       privateAudioIndices = [],
+      videoPath,
     }: {
       authorId: string;
       textContent?: string;
@@ -299,6 +300,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusDate?: string;
       focusTextSnapshot?: string;
       privateAudioIndices?: number[];
+      videoPath?: string;
     }) => {
       // SAFETY CHECK: If this was explicitly marked as a session note (from PracticeControls),
       // it MUST have a sessionId. If it doesn't, a race condition stripped it.
@@ -328,6 +330,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
           focus_date: focusDate,
           focus_text_snapshot: focusTextSnapshot,
           private_audio_indices: privateAudioIndices,
+          video_path: videoPath || null,
         })
         .select()
         .single();

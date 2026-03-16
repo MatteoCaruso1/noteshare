@@ -1,9 +1,37 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Upload a video blob to notes-media storage and update the note's video_path.
+ * Upload a video blob to notes-media storage.
  * Returns the storage path on success, null on failure.
- * Failures are non-blocking — the note is already saved.
+ * Call this BEFORE creating the note, then pass the path into the note insert.
+ */
+export async function uploadVideoToStorage(
+  videoBlob: Blob,
+  userId: string,
+): Promise<string | null> {
+  const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+  const fileId = crypto.randomUUID();
+  const filePath = `${userId}/${fileId}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('notes-media')
+    .upload(filePath, videoBlob, {
+      contentType: videoBlob.type || 'video/webm',
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error('[uploadVideoToStorage] Upload failed:', uploadError);
+    return null;
+  }
+
+  console.log(`[uploadVideoToStorage] Success: ${filePath}`);
+  return filePath;
+}
+
+/**
+ * @deprecated Use uploadVideoToStorage before note creation instead.
+ * Legacy: Upload video and update an existing note's video_path.
  */
 export async function uploadNoteVideo(
   videoBlob: Blob,
@@ -25,7 +53,6 @@ export async function uploadNoteVideo(
     return null;
   }
 
-  // Update the note with the video path
   const { error: updateError } = await supabase
     .from('notes')
     .update({ video_path: filePath })
@@ -33,7 +60,6 @@ export async function uploadNoteVideo(
 
   if (updateError) {
     console.error('[uploadNoteVideo] Failed to update note video_path:', updateError);
-    // Video is uploaded but path not saved — still return path
     return filePath;
   }
 
