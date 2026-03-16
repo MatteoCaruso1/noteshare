@@ -161,7 +161,7 @@ export function QuickNoteCapture() {
     setAudioFiles(audioFiles.map((a, i) => i === index ? { ...a, name: newName } : a));
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (hasReachedLimit) {
       toast.error('Daily note limit reached. Try Pro for Free for unlimited notes.');
       return;
@@ -174,6 +174,20 @@ export function QuickNoteCapture() {
     
     // Resolve focus data: use hook data first, fall back to localStorage cache
     const focusData = attachFocus ? (currentFocus || readFocusCache(profile?.id)) : null;
+
+    // Upload video BEFORE creating note so video_path is included in the insert
+    let videoPath: string | undefined;
+    if (videoBlobRef.current && user?.id) {
+      toast.loading('Uploading video…', { id: 'video-upload' });
+      const path = await uploadVideoToStorage(videoBlobRef.current, user.id);
+      toast.dismiss('video-upload');
+      if (path) {
+        videoPath = path;
+        videoBlobRef.current = null;
+      } else {
+        toast.error('Video upload failed. Note will be saved without video.');
+      }
+    }
     
     createNote.mutate(
       {
@@ -188,6 +202,7 @@ export function QuickNoteCapture() {
         gigId,
         visibility,
         privateAudioIndices,
+        videoPath,
         // Attach focus if toggle is on and focus data is available
         focusEntryId: focusData ? focusData.id : undefined,
         focusDate: focusData ? getTodayLocalDate() : undefined,
@@ -196,20 +211,6 @@ export function QuickNoteCapture() {
       {
         onSuccess: async (newNote) => {
           incrementCount();
-          
-          // Upload video if one was recorded (non-blocking)
-          if (videoBlobRef.current && newNote?.id && user?.id) {
-            const blob = videoBlobRef.current;
-            videoBlobRef.current = null;
-            console.log(`[QuickNoteCapture] Uploading video (${(blob.size / 1024).toFixed(0)}KB) for note ${newNote.id}`);
-            uploadNoteVideo(blob, user.id, newNote.id).then(path => {
-              if (path) {
-                console.log(`[QuickNoteCapture] Video uploaded: ${path}`);
-              } else {
-                toast.error('Video upload failed.');
-              }
-            });
-          }
           
           clearState();
           setPrivateAudioIndices([]);
