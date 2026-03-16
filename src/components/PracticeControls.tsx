@@ -13,7 +13,7 @@ import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
 import { useMilestoneToasts } from '@/hooks/useMilestoneToasts';
-import { uploadNoteVideo } from '@/lib/videoUpload';
+import { uploadVideoToStorage } from '@/lib/videoUpload';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
