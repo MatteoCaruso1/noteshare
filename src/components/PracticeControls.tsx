@@ -954,6 +954,16 @@ export function PracticeControls() {
             onOpenChange={(open) => !open && setPreviewImage(null)}
           />
 
+          {/* Video clip preview — above buttons like audio files */}
+          {videoBlobRef.current && (
+            <div className="mb-4">
+              <VideoClipChip
+                videoBlob={videoBlobRef.current}
+                onDiscard={() => { videoBlobRef.current = null; forceUpdate({}); }}
+              />
+            </div>
+          )}
+
           {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
             {/* Audio Recorder - when recording, shows stop + timer; otherwise mic button */}
