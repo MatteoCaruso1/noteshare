@@ -350,7 +350,7 @@ function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: (
             autoPlay
             controls
             playsInline
-            className="max-w-full max-h-full"
+            className="w-full h-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
