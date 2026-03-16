@@ -955,11 +955,11 @@ export function PracticeControls() {
           />
 
           {/* Video clip preview — above buttons like audio files */}
-          {videoBlobRef.current && (
+          {videoBlob && (
             <div className="mb-4">
               <VideoClipChip
-                videoBlob={videoBlobRef.current}
-                onDiscard={() => { videoBlobRef.current = null; forceUpdate({}); }}
+                videoBlob={videoBlob}
+                onDiscard={() => setVideoBlob(null)}
               />
             </div>
           )}
