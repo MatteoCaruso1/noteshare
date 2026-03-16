@@ -18,7 +18,7 @@ import { uploadNoteVideo } from '@/lib/videoUpload';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
-import { AudioRecorder, clearRecordingBackup } from '@/components/AudioRecorder';
+import { AudioRecorder, clearRecordingBackup, VideoClipChip } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
