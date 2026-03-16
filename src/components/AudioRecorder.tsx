@@ -289,10 +289,7 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
         )}
       </div>
 
-      {/* Video ready chip — shown below like audio files */}
-      {videoBlob && !videoRecording && (
-        <VideoClipChip videoBlob={videoBlob} onDiscard={discardVideo} />
-      )}
+      {/* Video clip chip moved to parent (PracticeControls) for layout consistency */}
     </div>
   );
 }
