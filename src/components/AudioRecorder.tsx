@@ -289,15 +289,12 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
         )}
       </div>
 
-      {/* Video ready chip — shown below like audio files */}
-      {videoBlob && !videoRecording && (
-        <VideoClipChip videoBlob={videoBlob} onDiscard={discardVideo} />
-      )}
+      {/* Video clip chip moved to parent (PracticeControls) for layout consistency */}
     </div>
   );
 }
 /** Small chip showing recorded video with play preview */
-function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: () => void }) {
+export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: () => void }) {
   const [showPreview, setShowPreview] = useState(false);
   const previewUrl = useMemo(() => URL.createObjectURL(videoBlob), [videoBlob]);
 

@@ -18,7 +18,7 @@ import { uploadNoteVideo } from '@/lib/videoUpload';
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
 import { useGlint } from '@/contexts/GlintContext';
-import { AudioRecorder, clearRecordingBackup } from '@/components/AudioRecorder';
+import { AudioRecorder, clearRecordingBackup, VideoClipChip } from '@/components/AudioRecorder';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { OfflineSessionInput } from '@/components/OfflineSessionInput';
@@ -144,7 +144,7 @@ export function PracticeControls() {
   } = usePersistentNoteState('practice_session', profile?.id);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
-  const videoBlobRef = useRef<Blob | null>(null);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
@@ -593,9 +593,9 @@ export function PracticeControls() {
                 }
 
                 // Upload video if one was recorded (non-blocking)
-                if (videoBlobRef.current && newNote?.id && user?.id) {
-                  const blob = videoBlobRef.current;
-                  videoBlobRef.current = null;
+                if (videoBlob && newNote?.id && user?.id) {
+                  const blob = videoBlob;
+                  setVideoBlob(null);
                   uploadNoteVideo(blob, user.id, newNote.id).then(path => {
                     if (!path) sonnerToast.error('Video upload failed.');
                   });
@@ -954,6 +954,16 @@ export function PracticeControls() {
             onOpenChange={(open) => !open && setPreviewImage(null)}
           />
 
+          {/* Video clip preview — above buttons like audio files */}
+          {videoBlob && (
+            <div className="mb-4">
+              <VideoClipChip
+                videoBlob={videoBlob}
+                onDiscard={() => setVideoBlob(null)}
+              />
+            </div>
+          )}
+
           {/* Action Buttons - inline full-width, no tooltips on mobile */}
           <div className="flex items-center gap-2">
             {/* Audio Recorder - when recording, shows stop + timer; otherwise mic button */}
@@ -961,8 +971,8 @@ export function PracticeControls() {
               <AudioRecorder 
                 onRecorded={handleAudioRecorded} 
                 onRecordingChange={setIsRecordingAudio}
-                onVideoReady={(blob) => { videoBlobRef.current = blob; }}
-                onVideoDiscarded={() => { videoBlobRef.current = null; }}
+                onVideoReady={(blob) => { setVideoBlob(blob); }}
+                onVideoDiscarded={() => { setVideoBlob(null); }}
                 className="w-full"
               />
             </div>
