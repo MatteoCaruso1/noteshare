@@ -25,6 +25,8 @@ import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 import { StreakBadges } from '@/components/StreakBadges';
 import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
 import { AwardsSection } from '@/components/AwardsSection';
+import { getAwardById } from '@/lib/awardUtils';
+import { AwardIcon } from '@/components/shared/AwardIcon';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
@@ -70,6 +72,7 @@ const Profile = () => {
   const [instruments, setInstruments] = useState<string[]>(profile?.instruments || []);
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
   const [saving, setSaving] = useState(false);
+  const [localSelectedAward, setLocalSelectedAward] = useState<string | null>((profile as any)?.selected_award || null);
   
   // Weekly goal preference
   const [weeklyGoalDisabled, setWeeklyGoalDisabled] = useState(() => {
@@ -314,7 +317,13 @@ const Profile = () => {
               ) : (
                 <div className="space-y-1.5">
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
-                  <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+                    {localSelectedAward && (() => {
+                      const awardTier = getAwardById(localSelectedAward);
+                      return awardTier ? <AwardIcon tier={awardTier} achieved={true} size={16} /> : null;
+                    })()}
+                  </div>
                   {/* Noteshare Creator badge - temporarily hidden */}
                 </div>
               )}
@@ -330,9 +339,9 @@ const Profile = () => {
               bestStreak={practiceStats.bestDailyStreak}
               totalNotes={practiceStats.totalNotesCount}
               totalHours={Math.floor(practiceStats.totalAllTimeMinutes / 60)}
-              selectedAward={(profile as any)?.selected_award || null}
+              selectedAward={localSelectedAward}
               onAwardSelected={(awardId) => {
-                // Refresh profile to update local state
+                setLocalSelectedAward(awardId);
                 refreshProfile();
               }}
             />
