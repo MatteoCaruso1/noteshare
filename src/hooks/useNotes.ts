@@ -199,7 +199,7 @@ async function fetchNote(noteId: string) {
     .from('notes')
     .select(`
       *,
-      profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme),
+      profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme, streak_achievement_counts, selected_award),
       practice_sessions!notes_session_id_fkey (id, user_id, started_at, ended_at, paused_duration_ms, collaborator_ids, is_active, paused_at, goals, notes_summary, focus_text_snapshot),
       projects!notes_project_id_fkey (id, title),
       goals!notes_goal_id_fkey (id, title, content),
