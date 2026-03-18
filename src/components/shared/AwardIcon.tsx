@@ -5,6 +5,7 @@ interface AwardIconProps {
   tier: AwardTier;
   achieved: boolean;
   size?: number;
+  count?: number;  // For streak trophies: how many times achieved
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export const AwardIcon = memo(function AwardIcon({
   tier,
   achieved,
   size = 14,
+  count,
   className = '',
 }: AwardIconProps) {
   // All categories use outline-only (colored stroke, no fill)
@@ -41,6 +43,20 @@ export const AwardIcon = memo(function AwardIcon({
           <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
           <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
           <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" fill={fillColor} />
+          {achieved && count != null && count > 0 && (
+            <text
+              x="12"
+              y="8"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={String(count).length === 1 ? 7 : String(count).length === 2 ? 6 : 5}
+              fontWeight="bold"
+              fill={strokeColor}
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+            >
+              {count > 99 ? '99+' : count}
+            </text>
+          )}
         </g>
       )}
       {tier.category === 'notes' && (

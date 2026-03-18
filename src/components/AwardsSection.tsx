@@ -33,6 +33,7 @@ interface AwardsSectionProps {
   totalNotes: number;
   totalHours: number;
   selectedAward: string | null;
+  achievementCounts?: Record<string, number>;
   onAwardSelected?: (awardId: string | null) => void;
 }
 
@@ -41,6 +42,7 @@ export function AwardsSection({
   totalNotes,
   totalHours,
   selectedAward,
+  achievementCounts,
   onAwardSelected,
 }: AwardsSectionProps) {
   const [open, setOpen] = useState(false);
@@ -109,6 +111,10 @@ export function AwardsSection({
                   {cat.tiers.map((tier) => {
                     const isAchieved = achieved.has(tier.id);
                     const isSelected = selectedAward === tier.id;
+                    // For streak awards, get the achievement count
+                    const streakCount = cat.category === 'streak' && isAchieved
+                      ? Math.max(achievementCounts?.[String(tier.threshold)] || 0, 1)
+                      : undefined;
 
                     return (
                       <TapTooltip
@@ -117,7 +123,7 @@ export function AwardsSection({
                           <div className="text-xs space-y-0.5">
                             <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
                             <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount })}</p>
-                            {isAchieved && <p className="text-primary">✓ Achieved</p>}
+                            {isAchieved && <p className="text-primary">✓ Achieved{streakCount ? ` (${streakCount}x)` : ''}</p>}
                           </div>
                         }
                       >
@@ -133,7 +139,7 @@ export function AwardsSection({
                           )}
                         >
                           <div className="flex flex-col items-center justify-center gap-0.5">
-                            <AwardIcon tier={tier} achieved={isAchieved} size={18} />
+                            <AwardIcon tier={tier} achieved={isAchieved} size={18} count={streakCount} />
                             <span className={cn(
                               'text-[9px] leading-none font-medium',
                               isAchieved ? tier.colorClass : 'text-muted-foreground/40'
