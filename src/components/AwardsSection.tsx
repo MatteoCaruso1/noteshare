@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Award, ChevronDown, Check } from 'lucide-react';
-import { TapTooltip } from '@/components/shared/TapTooltip';
 import { AwardIcon } from '@/components/shared/AwardIcon';
 import { AWARD_CATEGORIES, getAchievedAwards, AwardTier } from '@/lib/awardUtils';
 import { cn } from '@/lib/utils';
