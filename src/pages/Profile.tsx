@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout, PageHeader, PageBody } from '@/components/PageLayout';
@@ -60,6 +61,7 @@ function ProUpgradeButton() {
 }
 
 const Profile = () => {
+  const queryClient = useQueryClient();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { uploadImage } = useMediaUpload();
@@ -344,6 +346,9 @@ const Profile = () => {
               onAwardSelected={(awardId) => {
                 setLocalSelectedAward(awardId);
                 refreshProfile();
+                // Invalidate notes cache so the award icon updates on the home/practice page
+                queryClient.invalidateQueries({ queryKey: ['notes'] });
+                queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
               }}
             />
           )}
