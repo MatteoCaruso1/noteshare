@@ -160,7 +160,8 @@ export function useNotes(projectId?: string) {
       })) as NoteWithAuthor[];
     },
     // Require both profile AND a valid session to ensure auth token is propagated
-    enabled: !!profileId,
+    // Also disable during onboarding to prevent race-condition "loading error" toasts on signup
+    enabled: !!profileId && !isOnboardingActive,
     // Keep data visible during refetch - prevents "no notes" flash
     staleTime: 2 * 60 * 1000, // Consider fresh for 2 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes

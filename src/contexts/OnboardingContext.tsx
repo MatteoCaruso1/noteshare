@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { clearScrollState } from '@/hooks/useScrollRestoration';
 
 interface OnboardingContextType {
   showOnboarding: boolean;
@@ -49,6 +50,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setCurrentStep(0);
     isOnboardingActive = false;
     clearNewUserFlag();
+    
+    // Reset scroll position and clear saved scroll state to prevent "creeping header"
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    clearScrollState('index-timeline');
+    clearScrollState('index-feed');
     
     // Check for profile redirect (from shared profile link signup flow)
     const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
