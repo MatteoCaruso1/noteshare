@@ -462,6 +462,16 @@ const PublicProfile = () => {
             )}
           </Card>
 
+          {/* Awards Section - visible to friends */}
+          {isFriend && (
+            <PublicAwardsSection
+              bestStreak={getBestAchievedMilestone(profile)}
+              totalNotes={notes?.length || 0}
+              totalHours={0}
+              selectedAward={(profile as any).selected_award}
+            />
+          )}
+
           {/* Messages Dialog - opens direct chat with this profile */}
           <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
             <DialogContent className="max-w-md p-0" hideCloseButton>
