@@ -3,11 +3,28 @@ import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Award, ChevronDown, Check } from 'lucide-react';
 import { AwardIcon } from '@/components/shared/AwardIcon';
-import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, AwardTier } from '@/lib/awardUtils';
+import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, AwardTier, AwardCategory } from '@/lib/awardUtils';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { TapTooltip } from '@/components/shared/TapTooltip';
 import { toast } from 'sonner';
+
+function getAwardDescription(category: AwardCategory, threshold: number): string {
+  switch (category) {
+    case 'streak': return `Maintain a ${threshold}+ day practice streak`;
+    case 'notes': return `Complete ${threshold} practice notes`;
+    case 'hours': return `Practice for ${threshold} total hours`;
+  }
+}
+
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number }): string {
+  switch (category) {
+    case 'streak': return `Currently ${stats.bestStreak} days`;
+    case 'notes': return `Currently ${stats.totalNotes} notes`;
+    case 'hours': return `Currently ${stats.totalHours}h`;
+  }
+}
 
 interface AwardsSectionProps {
   bestStreak: number;
