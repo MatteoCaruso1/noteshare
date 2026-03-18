@@ -33,6 +33,7 @@ interface AwardsSectionProps {
   totalNotes: number;
   totalHours: number;
   selectedAward: string | null;
+  achievementCounts?: Record<string, number>;
   onAwardSelected?: (awardId: string | null) => void;
 }
 
