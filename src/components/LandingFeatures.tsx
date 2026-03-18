@@ -16,7 +16,7 @@ const features = [
   },
   {
     title: 'Reflect With Practice Notes',
-    description: 'Write text notes, tag focus areas, and organize entries by topic. Notes are stored chronologically so you can review what you worked on and when.',
+    description: 'Write text notes, tag focus areas, and organize entries by topic. Notes are stored chronologically so you can review what you worked on and when. This helps you learn concepts faster.',
     image: landingFocus,
     alt: 'Noteshare daily focus view listing practice topics such as scales, sight-reading, and repertoire pieces with editable text fields',
     cropTop: false,
