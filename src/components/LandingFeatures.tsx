@@ -79,19 +79,27 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const isRight = index % 2 === 1;
 
   return (
-    <div
+    <section
       ref={ref}
+      aria-labelledby={`feature-heading-${index}`}
       className={`flex items-center gap-4 md:gap-16 lg:gap-20 xl:gap-24 transition-all duration-700 ease-out ${
         isRight ? 'justify-end flex-row-reverse' : 'justify-start flex-row'
       } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
     >
-      <h2 className={`text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground max-w-[225px] sm:max-w-[320px] lg:max-w-[400px] xl:max-w-[480px] ${
+      <div className={`max-w-[225px] sm:max-w-[320px] lg:max-w-[400px] xl:max-w-[480px] ${
         isRight ? 'text-right' : 'text-left'
       }`}>
-        {feature.title}
-      </h2>
+        <h2
+          id={`feature-heading-${index}`}
+          className="text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground"
+        >
+          {feature.title}
+        </h2>
+        <p className="mt-2 text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
+          {feature.description}
+        </p>
+      </div>
       <div className="relative">
-        {/* Glow effect */}
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
           className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ${
@@ -111,7 +119,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           />
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

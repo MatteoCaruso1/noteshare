@@ -59,7 +59,7 @@ export function WelcomeHero() {
           style={{ opacity: scrollOpacity }}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl lg:max-w-6xl">
-            Noteshare is a purpose-built tool to help musicians practice smarter
+            Practice Tracking for Musicians
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl lg:max-w-4xl mb-8 leading-relaxed">
             Organize, record, and share your practice. Manage your musical life, all in one place
