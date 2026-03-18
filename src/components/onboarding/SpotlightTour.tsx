@@ -411,8 +411,8 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
             <p className="text-2xl font-semibold text-foreground mb-4">
               Happy practicing!
             </p>
-            <p className="text-base text-muted-foreground mb-8">
-              Explore everything Noteshare has to offer
+            <p className="text-base text-foreground/80 font-medium mb-8">
+              Stay disciplined with these tools and I promise you'll see significant growth
             </p>
             <p className="text-sm text-muted-foreground/60">
               Tap anywhere to continue
