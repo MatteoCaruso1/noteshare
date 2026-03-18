@@ -35,6 +35,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const { showOnboarding } = useOnboarding();
   const { isPremium, isLoading: premiumLoading } = usePremium();
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
