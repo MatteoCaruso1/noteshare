@@ -33,8 +33,8 @@ const features = [
     height: 488,
   },
   {
-    title: 'Stay Accountable With Friends',
-    description: 'Connect with other musicians to see their practice activity. Share notes selectively with trusted peers for feedback on your playing.',
+    title: "Don't Practice Alone",
+    description: 'Connect with other musicians to see their practice activity and learn from what they are working on. Share notes selectively with your friends and watch how this increases your practice motivation and pushes you to become a better player.',
     image: landingFriends,
     alt: 'Noteshare friends feed showing practice session summaries from connected musicians with timestamps and session durations',
     cropTop: false,
