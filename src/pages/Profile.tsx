@@ -24,7 +24,7 @@ import { FeedbackCard } from '@/components/FeedbackCard';
 import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 import { StreakBadges } from '@/components/StreakBadges';
 import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
-import { StreakRewardsSection } from '@/components/StreakRewardsSection';
+import { AwardsSection } from '@/components/AwardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
