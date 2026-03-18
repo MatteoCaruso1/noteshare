@@ -42,16 +42,28 @@
     <meta name="twitter:description" content="Capture practice ideas, track your progress, and share with your inner circle. Built for musicians." />
     <meta name="twitter:image" content="https://jazz-scene-alive.lovable.app/pwa-icon-512.png" />
 
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Noteshare",
+      "url": "https://noteshare.app",
+      "description": "Practice tracking and progress analytics platform for musicians.",
+      "sameAs": ["https://noteshare.app"]
+    }
+    </script>
+
     <!-- Structured Data: WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Noteshare",
-      "url": "https://jazz-scene-alive.lovable.app",
-      "description": "A music practice journal for musicians to capture ideas, track progress, and share with trusted peers.",
+      "url": "https://noteshare.app",
       "applicationCategory": "MusicApplication",
       "operatingSystem": "Web, iOS",
+      "description": "Track practice sessions, capture ideas, reflect with notes, and analyze progress over time. The practice journal built for musicians.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -60,6 +72,23 @@
       "creator": {
         "@type": "Organization",
         "name": "Noteshare"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: SoftwareApplication (PWA) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Noteshare",
+      "applicationCategory": "MusicApplication",
+      "operatingSystem": "Web, iOS",
+      "description": "A music practice journal that helps musicians capture ideas, track progress, and share with trusted peers. 10× easier than voice memos.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       }
     }
     </script>
