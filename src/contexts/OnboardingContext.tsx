@@ -51,6 +51,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     isOnboardingActive = false;
     clearNewUserFlag();
     
+    // Reset scroll position and clear saved scroll state to prevent "creeping header"
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    clearScrollState('index-timeline');
+    clearScrollState('index-feed');
+    
     // Check for profile redirect (from shared profile link signup flow)
     const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
     if (profileRedirect) {

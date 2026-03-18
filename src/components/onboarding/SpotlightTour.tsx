@@ -325,6 +325,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     setTimeout(() => {
       setIsFadingOut(false);
       if (isFinalStep) {
+        // Force scroll to top and clear scroll state before completing
+        forceScrollToTop();
+        clearScrollState('index-timeline');
+        clearScrollState('index-feed');
         onCompleteRef.current();
       } else {
         cleanupElevation();
