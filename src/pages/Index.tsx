@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useNotes } from '@/hooks/useNotes';
 import { useAcceptedNoteShares } from '@/hooks/useNoteShares';
 import { useFeedProjects } from '@/hooks/useProjects';
