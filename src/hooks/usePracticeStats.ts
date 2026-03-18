@@ -526,6 +526,7 @@ export function usePracticeStats(profileId: string | undefined) {
         dailyMinutesMap,
         totalNotesCount,
         notesLast30Days,
+        totalAllTimeMinutes: sessionsWithDuration.reduce((sum, s) => sum + s.durationMinutes, 0),
         weeklyFocusAverage,
       };
     },
