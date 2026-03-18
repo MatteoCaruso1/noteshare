@@ -191,7 +191,7 @@ const FriendsJournals = () => {
               {/* Friends Button - no count, Add Friend is inside FriendsList */}
               <FriendsList open={friendsListOpen} onOpenChange={handleFriendsListOpenChange}>
                 <div data-tour="friends-list" className="cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
-                  <Users className={`w-4 h-4 ${!friendsListViewed ? 'text-primary animate-pulse' : 'text-muted-foreground'}`} />
+                  <Users className="w-4 h-4 text-muted-foreground" />
                 </div>
               </FriendsList>
             </div>
