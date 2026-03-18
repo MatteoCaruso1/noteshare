@@ -5,6 +5,7 @@ interface AwardIconProps {
   tier: AwardTier;
   achieved: boolean;
   size?: number;
+  count?: number;  // For streak trophies: how many times achieved
   className?: string;
 }
 
