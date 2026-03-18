@@ -21,7 +21,6 @@ export const AwardIcon = memo(function AwardIcon({
   // All categories use outline-only (colored stroke, no fill)
   const fillColor = 'transparent';
   const strokeColor = achieved ? tier.fillColor : 'hsl(var(--muted-foreground) / 0.4)';
-  const strokeColor = achieved ? tier.fillColor : 'hsl(var(--muted-foreground) / 0.4)';
   const opacity = achieved ? 1 : 0.4;
 
   return (
