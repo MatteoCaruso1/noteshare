@@ -7,7 +7,7 @@ import landingFriends from '@/assets/landing-friends.png';
 const features = [
   {
     title: 'Track Practice Sessions',
-    description: 'Start a timed session, record audio or video of your playing, and attach notes. Each session is saved to your timeline with duration and date.',
+    description: 'Start a timed session, record audio or video of your playing, and attach notes. Each session is saved to your timeline with duration and date. This loop is academically proven to improve your practice quality.',
     image: landingSessions,
     alt: 'Noteshare practice session screen showing a timed session with audio recording controls, attached notes, and a comment thread between musicians',
     cropTop: false,
