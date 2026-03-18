@@ -317,7 +317,13 @@ const Profile = () => {
               ) : (
                 <div className="space-y-1.5">
                   <h2 className="text-xl font-semibold">{profile?.name}</h2>
-                  <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+                    {localSelectedAward && (() => {
+                      const awardTier = getAwardById(localSelectedAward);
+                      return awardTier ? <AwardIcon tier={awardTier} achieved={true} size={16} /> : null;
+                    })()}
+                  </div>
                   {/* Noteshare Creator badge - temporarily hidden */}
                 </div>
               )}
