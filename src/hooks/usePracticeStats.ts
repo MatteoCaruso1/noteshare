@@ -37,6 +37,9 @@ interface PracticeStats {
   // Notes created in last 30 days
   notesLast30Days: number;
 
+  // Total all-time minutes (from loaded sessions window)
+  totalAllTimeMinutes: number;
+
   // Weekly average focus level (from F=N tags)
   weeklyFocusAverage: { week: string; average: number }[];
 }
