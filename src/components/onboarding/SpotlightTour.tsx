@@ -216,37 +216,47 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     const findAndHighlight = () => {
       if (cancelled) return;
       forceScrollToTop();
-      const rect = getRectForStep(currentTourStep);
-      if (rect) {
-        const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement;
-        if (element) elevateElement(element, currentTourStep);
 
-        // Update rect — CSS transition on the highlight handles smooth movement
-        setTargetRect(rect);
+      // Defer measurement to next frame so mobile Safari's scroll has settled
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        forceScrollToTop();
 
-        // Phase 2: fade in tooltip after highlight has moved
-        const tooltipDelay = currentTourStep.instantEntry ? 0 : TRANSITION_DURATION + 50;
+        // Secondary delay for mobile Safari async scroll
         setTimeout(() => {
-          if (!cancelled) {
-            forceScrollToTop();
-            // Re-measure after scroll
-            const freshRect = getRectForStep(currentTourStep);
-            if (freshRect) setTargetRect(freshRect);
-            setTooltipVisible(true);
-          }
-        }, tooltipDelay);
+          if (cancelled) return;
+          forceScrollToTop();
 
-        // Keep position accurate
-        const el = document.querySelector(currentTourStep.targetSelector);
-        if (el) {
-          resizeObserver = new ResizeObserver(() => {
-            if (!cancelled) {
-              const r = getRectForStep(currentTourStep);
-              if (r) setTargetRect(r);
+          const rect = getRectForStep(currentTourStep);
+          if (rect) {
+            const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement;
+            if (element) elevateElement(element, currentTourStep);
+
+            setTargetRect(rect);
+
+            // Phase 2: fade in tooltip after highlight has moved
+            const tooltipDelay = currentTourStep.instantEntry ? 0 : TRANSITION_DURATION + 50;
+            setTimeout(() => {
+              if (!cancelled) {
+                forceScrollToTop();
+                // Re-measure after scroll settled
+                const freshRect = getRectForStep(currentTourStep);
+                if (freshRect) setTargetRect(freshRect);
+                setTooltipVisible(true);
+              }
+            }, tooltipDelay);
+
+            // Keep position accurate
+            const el = document.querySelector(currentTourStep.targetSelector);
+            if (el) {
+              resizeObserver = new ResizeObserver(() => {
+                if (!cancelled) {
+                  const r = getRectForStep(currentTourStep);
+                  if (r) setTargetRect(r);
+                }
+              });
+              resizeObserver.observe(el);
             }
-          });
-          resizeObserver.observe(el);
-        }
 
         // Interactive step watchers
         if (currentTourStep.interactive && (currentTourStep.waitForSelector || currentTourStep.waitForRemoval)) {
