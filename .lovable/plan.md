@@ -1,69 +1,44 @@
 
 
-# Per-Audio Privacy Toggle
+## Fix Plan: Mobile Safari FTUE Issues
 
-## Overview
-Add a toggle on each audio file item that lets users mark individual recordings as public or private. Private recordings are hidden from friends even if the post itself is shared. The owner always sees all their own recordings.
+### Issue 1: "Loading error" toast on initial signup
 
-## Database Change
+The `InlineErrorBoundary` component in `ErrorBoundary.tsx` renders "Failed to load" as its fallback text. During signup, there's a race condition: `queryClient.clear()` fires on `SIGNED_IN` (in `useAuth.tsx` line 128), which can cause in-flight React Query fetches to fail momentarily while the profile/session is still being established. The `InlineErrorBoundary` catches this and shows "Failed to load" (which the user perceives as a "loading error" toast — though it's likely the inline fallback text appearing briefly, or a query error toast).
 
-Add a `private_audio_indices` column to the `notes` table -- an integer array storing the indices of audio files the user has marked private. This avoids a new table and keeps the data co-located with existing audio arrays.
+**Root cause**: The notes query (`useNotes`) fires before the profile is fully loaded after signup, fails (no auth context yet), and either the error propagates to a toast or the `InlineErrorBoundary` shows "Failed to load".
 
-```sql
-ALTER TABLE public.notes
-ADD COLUMN private_audio_indices integer[] NOT NULL DEFAULT '{}';
-```
+**Fix**: In `useNotes.ts`, the query should be disabled when `isOnboardingActive` is true (it already imports this flag). Additionally, suppress error toasts during the initial auth bootstrapping window by checking if profile exists before queries run. The key change is in `Index.tsx` — the `isBootstrapping` check already gates skeletons, but during onboarding, queries may still fire. We should ensure the notes query doesn't fire during onboarding by adding `enabled: !!profile?.id && !isOnboardingActive` to the query.
 
-No new RLS policies needed -- existing notes UPDATE policy already restricts to owner only.
+**Files**: `src/hooks/useNotes.ts` — add `isOnboardingActive` check to the `enabled` flag on the main `useNotes` query.
 
-## UI Changes
+### Issue 2: Spotlight highlight positioned too low on mobile Safari
 
-### 1. Trash button styling (AudioFileItem.tsx)
-- Change from `variant="outline"` to `variant="ghost"` with explicit `border border-border` class and `bg-transparent` to get a white/transparent outline-only look.
+The `SpotlightTour` uses `getBoundingClientRect()` which returns viewport-relative coordinates. On mobile Safari, `forceScrollToTop()` is called but may not have taken effect by the time the rect is measured — Safari defers scroll updates. The highlight and tooltip position are thus offset by whatever residual scroll position exists.
 
-### 2. Privacy toggle in AudioFileItem
-- Add a new prop `isPrivate: boolean` and `onTogglePrivacy: () => void`
-- Render a compact toggle to the left of the trash button: `Users` icon (public) on left, `Lock` icon (private) on right, with a `Switch` component between them
-- Toast on every flip: "Recording set to private" / "Recording set to public"
+**Fix**: 
+1. In `forceScrollToTop()`, also reset the visual viewport scroll (mobile Safari uses `window.visualViewport`).
+2. After calling `forceScrollToTop()`, use `requestAnimationFrame` before measuring the rect in `findAndHighlight()` to ensure the scroll has settled.
+3. Add a secondary re-measurement after a short delay (e.g., 50ms) to handle Safari's async scroll behavior.
 
-### 3. NoteCard.tsx -- owner viewing
-- When rendering audio files, pass `isPrivate` and `onTogglePrivacy` to `AudioFileItem` (edit mode) or show a small lock icon on `WaveformPlayer` entries (display mode)
-- Create a new mutation hook `useUpdateNotePrivateAudios` that updates `private_audio_indices` on the note
+**Files**: `src/components/onboarding/SpotlightTour.tsx` — update `findAndHighlight` to wait a frame after `forceScrollToTop` before measuring rects, and add a secondary measurement pass.
 
-### 4. NoteCard.tsx -- friend viewing (filtering)
-- When `!isOwner`, filter out audio files whose index is in `note.private_audio_indices` before rendering
-- Also filter the corresponding `audio_file_names` entries
-- This is a pure client-side filter with zero extra queries
+### Issue 3: After FTUE ends, page is scrolled down with "My Practice" creeping above header
 
-### 5. FriendsFeed / other views
-- The same filtering applies anywhere `NoteCard` is rendered for non-owner notes, since the logic lives inside `NoteCard` itself
+When `completeOnboarding()` fires, it cleans up the elevated elements and the portal overlay, but doesn't scroll to top. The `forceScrollToTop` in the final step only runs when entering the final step, not when dismissing it. Additionally, the `PageLayout` has `pt-12` for the fixed header, but after FTUE cleanup the scroll position may be left wherever the tour left it.
 
-### 6. Hook: useUpdateNotePrivateAudios (in useUpdateNote.ts)
-- Simple mutation: updates `private_audio_indices` on the note
-- Optimistic update on `['note', noteId]` and `['notes']`
-- Invalidates `['notes']`, `['friends-notes']`, `['note']`
+**Fix**:
+1. In `OnboardingContext.tsx` `completeOnboarding()`, add `window.scrollTo({ top: 0, left: 0, behavior: 'auto' })` to ensure the page resets.
+2. In `SpotlightTour.tsx`, when the final step overlay is clicked (triggering `onComplete`), also call `forceScrollToTop()` and clear any scroll restoration state.
+3. Also clear `clearScrollState('index-timeline')` to prevent the scroll restoration hook from restoring a stale position.
 
-## Data Flow
-- `notes.private_audio_indices` stores `[1, 3]` meaning audio at index 1 and 3 are private
-- Default is `[]` (all public)
-- Owner toggles an index: if present, remove it (make public); if absent, add it (make private)
-- Friends see `note.audio_files.filter((_, i) => !privateSet.has(i))`
+**Files**: `src/contexts/OnboardingContext.tsx`, `src/components/onboarding/SpotlightTour.tsx`
 
-## Performance
-- No new queries, no new tables, no new RLS policies
-- Single column added to existing `notes` rows (already fetched)
-- Client-side index filtering is O(n) where n = number of audio files per note (typically 1-3)
-- Toggle mutation is a single UPDATE on one row
+### Summary of changes
 
-## Files Modified
-1. `src/components/AudioFileItem.tsx` -- trash button style + privacy toggle UI
-2. `src/hooks/useUpdateNote.ts` -- new `useUpdateNotePrivateAudios` mutation
-3. `src/components/NoteCard.tsx` -- wire toggle for owner, filter for friends
-4. `src/types/index.ts` -- add `private_audio_indices` to Note type (if not auto-generated)
-5. Database migration -- add column
-
-## What Won't Change
-- QuickNoteCapture, AddNoteDialog, GroupPostCapture -- these are pre-save UIs where audio privacy isn't relevant yet (defaults to public)
-- No changes to RLS, storage, or edge functions
-- No changes to how audio files are uploaded or stored
+| File | Change |
+|------|--------|
+| `src/hooks/useNotes.ts` | Add `!isOnboardingActive` to query `enabled` flag |
+| `src/components/onboarding/SpotlightTour.tsx` | Defer rect measurement with rAF after scroll reset; force scroll to top on complete; clear scroll state |
+| `src/contexts/OnboardingContext.tsx` | Add `window.scrollTo` and `clearScrollState` in `completeOnboarding` |
 
