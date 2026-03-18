@@ -277,10 +277,12 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           });
           waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
         }
-      } else if (retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(findAndHighlight, 100);
-      }
+          } else if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(findAndHighlight, 100);
+          }
+        }, 50); // 50ms secondary delay for mobile Safari
+      }); // end rAF
     };
 
     forceScrollToTop();
