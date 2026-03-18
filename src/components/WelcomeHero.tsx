@@ -77,7 +77,7 @@ export function WelcomeHero() {
             The Ultimate Practice Tracking Tool for Musicians
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl lg:max-w-4xl mb-8 leading-relaxed">
-            Organize, record, and share your practice. Designed to make you a better player
+            Organize, record, and share your practice. Double your practice quality and become a better player
           </p>
           <div className="flex items-center gap-4">
             <Button
