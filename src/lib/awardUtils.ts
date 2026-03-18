@@ -75,7 +75,9 @@ const STREAK_TIERS: AwardTier[] = [
 const NOTES_TIERS: AwardTier[] = [
   { id: 'notes-30', category: 'notes', label: '30', threshold: 30, ...TIER_COLORS.starter },
   { id: 'notes-100', category: 'notes', label: '100', threshold: 100, ...TIER_COLORS.bronze },
+  { id: 'notes-250', category: 'notes', label: '250', threshold: 250, ...TIER_COLORS.silver },
   { id: 'notes-500', category: 'notes', label: '500', threshold: 500, ...TIER_COLORS.gold },
+  { id: 'notes-1000', category: 'notes', label: '1K', threshold: 1000, ...TIER_COLORS.diamond },
 ];
 
 // Hours practiced awards (thresholds in hours)
