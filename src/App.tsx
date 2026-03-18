@@ -66,6 +66,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogDailyRoutine = lazy(() => import("./pages/BlogDailyRoutine"));
 const BlogPracticeJournal = lazy(() => import("./pages/BlogPracticeJournal"));
 const BlogPianoTracker = lazy(() => import("./pages/BlogPianoTracker"));
+const HowMusicianspractice = lazy(() => import("./pages/HowMusiciansPractice"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
