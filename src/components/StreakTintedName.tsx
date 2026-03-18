@@ -55,6 +55,7 @@ export const StreakTintedName = memo(function StreakTintedName({
               {selectedAwardTier.category === 'streak' && `${selectedAwardTier.threshold}+ day streak`}
               {selectedAwardTier.category === 'notes' && `${selectedAwardTier.threshold} notes completed`}
               {selectedAwardTier.category === 'hours' && `${selectedAwardTier.threshold}h practiced`}
+              {selectedAwardTier.category === 'legend' && `${selectedAwardTier.threshold} awards earned`}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
