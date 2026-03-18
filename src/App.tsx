@@ -66,6 +66,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogDailyRoutine = lazy(() => import("./pages/BlogDailyRoutine"));
 const BlogPracticeJournal = lazy(() => import("./pages/BlogPracticeJournal"));
 const BlogPianoTracker = lazy(() => import("./pages/BlogPianoTracker"));
+const HowMusicianspractice = lazy(() => import("./pages/HowMusiciansPractice"));
 import { AdminGuard } from "./components/AdminGuard";
 
 const queryClient = new QueryClient({
@@ -201,6 +202,7 @@ function AppInner() {
                       <Route path="/blog/daily-practice-routine" element={<Suspense fallback={null}><BlogDailyRoutine /></Suspense>} />
                       <Route path="/blog/practice-journal" element={<Suspense fallback={null}><BlogPracticeJournal /></Suspense>} />
                       <Route path="/blog/piano-practice-tracker" element={<Suspense fallback={null}><BlogPianoTracker /></Suspense>} />
+                      <Route path="/how-musicians-practice-effectively" element={<Suspense fallback={null}><HowMusicianspractice /></Suspense>} />
                       <Route path="*" element={<Suspense fallback={null}><NotFound /></Suspense>} />
                     </Routes>
                     <BottomNav />
