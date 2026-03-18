@@ -25,7 +25,7 @@ const features = [
   },
   {
     title: 'Measure Progress With Analytics',
-    description: 'View total practice minutes, daily streaks, and session frequency over weeks and months. Identify patterns in your practice habits with simple charts.',
+    description: 'View total practice minutes, daily streaks, and session frequency over weeks and months. This truly strengthens your motivation to practice and helps maintain accountability.',
     image: landingProgress,
     alt: 'Noteshare analytics dashboard displaying a weekly practice minutes bar chart, current streak count, and a calendar heatmap of practice days',
     cropTop: false,
