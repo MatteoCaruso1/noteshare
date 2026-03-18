@@ -344,6 +344,9 @@ const Profile = () => {
               onAwardSelected={(awardId) => {
                 setLocalSelectedAward(awardId);
                 refreshProfile();
+                // Invalidate notes cache so the award icon updates on the home/practice page
+                queryClient.invalidateQueries({ queryKey: ['notes'] });
+                queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
               }}
             />
           )}
