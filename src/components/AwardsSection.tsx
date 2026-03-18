@@ -3,11 +3,28 @@ import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Award, ChevronDown, Check } from 'lucide-react';
 import { AwardIcon } from '@/components/shared/AwardIcon';
-import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, AwardTier } from '@/lib/awardUtils';
+import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, AwardTier, AwardCategory } from '@/lib/awardUtils';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { TapTooltip } from '@/components/shared/TapTooltip';
 import { toast } from 'sonner';
+
+function getAwardDescription(category: AwardCategory, threshold: number): string {
+  switch (category) {
+    case 'streak': return `Maintain a ${threshold}+ day practice streak`;
+    case 'notes': return `Complete ${threshold} practice notes`;
+    case 'hours': return `Practice for ${threshold} total hours`;
+  }
+}
+
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number }): string {
+  switch (category) {
+    case 'streak': return `Currently ${stats.bestStreak} days`;
+    case 'notes': return `Currently ${stats.totalNotes} notes`;
+    case 'hours': return `Currently ${stats.totalHours}h`;
+  }
+}
 
 interface AwardsSectionProps {
   bestStreak: number;
@@ -87,38 +104,43 @@ export function AwardsSection({
                     const isSelected = selectedAward === tier.id;
 
                     return (
-                      <button
+                      <TapTooltip
                         key={tier.id}
-                        type="button"
-                        onClick={isAchieved ? () => handleSelectAward(tier) : undefined}
-                        className={cn(
-                          'relative w-10 h-10 rounded-full border ring-1 inline-flex items-center justify-center transition-all',
-                          isAchieved
-                            ? `${tier.bgColorClass} ${tier.borderColorClass} ${tier.ringColorClass} cursor-pointer hover:opacity-80`
-                            : 'bg-muted/20 border-border/30 ring-transparent cursor-default',
-                          isSelected && 'ring-2 ring-primary border-primary'
-                        )}
-                        title={
-                          cat.category === 'streak' ? `${tier.threshold}+ day streak` :
-                          cat.category === 'notes' ? `${tier.threshold} notes completed` :
-                          `${tier.threshold} hours practiced`
+                        content={
+                          <div className="text-xs space-y-0.5">
+                            <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
+                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours })}</p>
+                            {isAchieved && <p className="text-primary">✓ Achieved</p>}
+                          </div>
                         }
                       >
-                        <div className="flex flex-col items-center justify-center gap-0.5">
-                          <AwardIcon tier={tier} achieved={isAchieved} size={18} />
-                          <span className={cn(
-                            'text-[9px] leading-none font-medium',
-                            isAchieved ? tier.colorClass : 'text-muted-foreground/40'
-                          )}>
-                            {tier.label}
-                          </span>
-                        </div>
-                        {isSelected && (
-                          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center">
-                            <Check className="w-2 h-2 text-primary-foreground" />
+                        <button
+                          type="button"
+                          onClick={isAchieved ? () => handleSelectAward(tier) : undefined}
+                          className={cn(
+                            'relative w-10 h-10 rounded-full border ring-1 inline-flex items-center justify-center transition-all',
+                            isAchieved
+                              ? `${tier.bgColorClass} ${tier.borderColorClass} ${tier.ringColorClass} cursor-pointer hover:opacity-80`
+                              : 'bg-muted/20 border-border/30 ring-transparent cursor-default',
+                            isSelected && 'ring-2 ring-primary border-primary'
+                          )}
+                        >
+                          <div className="flex flex-col items-center justify-center gap-0.5">
+                            <AwardIcon tier={tier} achieved={isAchieved} size={18} />
+                            <span className={cn(
+                              'text-[9px] leading-none font-medium',
+                              isAchieved ? tier.colorClass : 'text-muted-foreground/40'
+                            )}>
+                              {tier.label}
+                            </span>
                           </div>
-                        )}
-                      </button>
+                          {isSelected && (
+                            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center">
+                              <Check className="w-2 h-2 text-primary-foreground" />
+                            </div>
+                          )}
+                        </button>
+                      </TapTooltip>
                     );
                   })}
                 </div>
