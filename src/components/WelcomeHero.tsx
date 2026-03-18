@@ -76,7 +76,7 @@ export function WelcomeHero() {
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl lg:max-w-6xl">
             The Ultimate Practice Tracking Tool for Musicians
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl lg:max-w-4xl mb-8 leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl lg:max-w-none mb-8 leading-relaxed">
             Organize, record, and share your practice. Double your practice quality and become a better player
           </p>
           <div className="flex items-center gap-4">
