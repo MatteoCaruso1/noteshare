@@ -43,14 +43,29 @@ export function WelcomeHero() {
     >
       {/* Hero Section */}
       <div className="min-h-[85dvh] flex flex-col overflow-hidden relative w-full">
-        {/* Subtle gradient background effects - desktop only */}
-        <div className="absolute inset-0 pointer-events-none hidden md:block">
-          {/* Primary glow - top left */}
-          <div className="absolute top-1/4 -left-32 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />
-          {/* Secondary glow - bottom right */}
-          <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
-          {/* Subtle accent - center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-br from-primary/3 via-transparent to-transparent rounded-full blur-[80px]" />
+        {/* Ambient glow effects */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Large primary glow - upper left */}
+          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-[140px]" />
+          {/* Accent orb - right side */}
+          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-[120px]" />
+          {/* Warm bottom glow */}
+          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-[100px]" />
+          {/* Subtle grid overlay for depth */}
+          <div 
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--primary)) 1px, transparent 0)`,
+              backgroundSize: '48px 48px',
+            }}
+          />
+          {/* Radial vignette to draw focus to center-left */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse 80% 70% at 30% 50%, transparent 0%, hsl(var(--background) / 0.4) 100%)',
+            }}
+          />
         </div>
 
         {/* Hero Content - fades on scroll */}
