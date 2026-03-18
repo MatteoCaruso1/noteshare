@@ -15,14 +15,16 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'streak': return `Maintain a ${threshold}+ day practice streak`;
     case 'notes': return `Complete ${threshold} practice notes`;
     case 'hours': return `Practice for ${threshold} total hours`;
+    case 'legend': return `Earn ${threshold} total awards`;
   }
 }
 
-function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number }): string {
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number }): string {
   switch (category) {
     case 'streak': return `Currently ${stats.bestStreak} days`;
     case 'notes': return `Currently ${stats.totalNotes} notes`;
     case 'hours': return `Currently ${stats.totalHours}h`;
+    case 'legend': return `Currently ${stats.baseAwardCount} awards`;
   }
 }
 
