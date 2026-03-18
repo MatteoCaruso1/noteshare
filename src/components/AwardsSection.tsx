@@ -88,24 +88,22 @@ export function AwardsSection({
                     const isSelected = selectedAward === tier.id;
 
                     return (
-                      <TapTooltip
+                      <button
                         key={tier.id}
-                        content={
-                          <p>
-                            {cat.category === 'streak' && `${tier.threshold}+ day streak`}
-                            {cat.category === 'notes' && `${tier.threshold} notes completed`}
-                            {cat.category === 'hours' && `${tier.threshold} hours practiced`}
-                            {isAchieved ? ' ✓' : ''}
-                          </p>
-                        }
+                        type="button"
+                        onClick={isAchieved ? () => handleSelectAward(tier) : undefined}
                         className={cn(
-                          'relative w-10 h-10 border ring-1 transition-all',
+                          'relative w-10 h-10 rounded-full border ring-1 inline-flex items-center justify-center transition-all',
                           isAchieved
                             ? `${tier.bgColorClass} ${tier.borderColorClass} ${tier.ringColorClass} cursor-pointer hover:opacity-80`
                             : 'bg-muted/20 border-border/30 ring-transparent cursor-default',
                           isSelected && 'ring-2 ring-primary border-primary'
                         )}
-                        onTap={isAchieved ? () => handleSelectAward(tier) : undefined}
+                        title={
+                          cat.category === 'streak' ? `${tier.threshold}+ day streak` :
+                          cat.category === 'notes' ? `${tier.threshold} notes completed` :
+                          `${tier.threshold} hours practiced`
+                        }
                       >
                         <div className="flex flex-col items-center justify-center gap-0.5">
                           <AwardIcon tier={tier} achieved={isAchieved} size={18} />
@@ -121,7 +119,7 @@ export function AwardsSection({
                             <Check className="w-2 h-2 text-primary-foreground" />
                           </div>
                         )}
-                      </TapTooltip>
+                      </button>
                     );
                   })}
                 </div>

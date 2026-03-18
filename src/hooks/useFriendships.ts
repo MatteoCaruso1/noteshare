@@ -434,7 +434,7 @@ export function useSuggestedMusicians() {
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, user_id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak, bio, location, skill_level, streak_achievement_counts, followers_count, following_count, celebrated_streak_milestones, color_theme, created_at, updated_at, has_logged_first_note, has_added_first_friend, has_logged_ten_notes')
+        .select('id, user_id, name, username, avatar, instruments, genres, open_to_collaborate, current_streak, bio, location, skill_level, streak_achievement_counts, followers_count, following_count, celebrated_streak_milestones, color_theme, created_at, updated_at, has_logged_first_note, has_added_first_friend, has_logged_ten_notes, selected_award')
         .in('id', suggestionIds)
         .limit(15);
 

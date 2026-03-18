@@ -71,6 +71,7 @@ export function usePracticeStats(profileId: string | undefined) {
           dailyMinutesMap: {},
           totalNotesCount: 0,
           notesLast30Days: 0,
+          totalAllTimeMinutes: 0,
           weeklyFocusAverage: [],
         };
       }
