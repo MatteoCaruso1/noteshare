@@ -6,33 +6,37 @@ import landingFriends from '@/assets/landing-friends.png';
 
 const features = [
   {
-    title: 'Log practice sessions and record your playing',
+    title: 'Track Practice Sessions',
+    description: 'Start a timed session, record audio or video of your playing, and attach notes. Each session is saved to your timeline with duration and date.',
     image: landingSessions,
-    alt: 'Practice session with audio recording and comments',
+    alt: 'Noteshare practice session screen showing a timed session with audio recording controls, attached notes, and a comment thread between musicians',
     cropTop: false,
     width: 979,
     height: 631,
   },
   {
-    title: 'Organize your focus areas',
+    title: 'Reflect With Practice Notes',
+    description: 'Write text notes, tag focus areas, and organize entries by topic. Notes are stored chronologically so you can review what you worked on and when.',
     image: landingFocus,
-    alt: 'Practice List showing exercises and songs to focus on',
+    alt: 'Noteshare daily focus view listing practice topics such as scales, sight-reading, and repertoire pieces with editable text fields',
     cropTop: false,
     width: 1225,
     height: 464,
   },
   {
-    title: 'Track your progress over time',
+    title: 'Measure Progress With Analytics',
+    description: 'View total practice minutes, daily streaks, and session frequency over weeks and months. Identify patterns in your practice habits with simple charts.',
     image: landingProgress,
-    alt: 'Progress charts showing practice minutes and streak',
+    alt: 'Noteshare analytics dashboard displaying a weekly practice minutes bar chart, current streak count, and a calendar heatmap of practice days',
     cropTop: false,
     width: 1075,
     height: 488,
   },
   {
-    title: 'See what your friends are working on',
+    title: 'Stay Accountable With Friends',
+    description: 'Connect with other musicians to see their practice activity. Share notes selectively with trusted peers for feedback on your playing.',
     image: landingFriends,
-    alt: 'Friends practice feed showing their sessions',
+    alt: 'Noteshare friends feed showing practice session summaries from connected musicians with timestamps and session durations',
     cropTop: false,
     width: 895,
     height: 649,
@@ -75,19 +79,27 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const isRight = index % 2 === 1;
 
   return (
-    <div
+    <section
       ref={ref}
+      aria-labelledby={`feature-heading-${index}`}
       className={`flex items-center gap-4 md:gap-16 lg:gap-20 xl:gap-24 transition-all duration-700 ease-out ${
         isRight ? 'justify-end flex-row-reverse' : 'justify-start flex-row'
       } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
     >
-      <h2 className={`text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground max-w-[225px] sm:max-w-[320px] lg:max-w-[400px] xl:max-w-[480px] ${
+      <div className={`max-w-[225px] sm:max-w-[320px] lg:max-w-[400px] xl:max-w-[480px] ${
         isRight ? 'text-right' : 'text-left'
       }`}>
-        {feature.title}
-      </h2>
+        <h2
+          id={`feature-heading-${index}`}
+          className="text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground"
+        >
+          {feature.title}
+        </h2>
+        <p className="mt-2 text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
+          {feature.description}
+        </p>
+      </div>
       <div className="relative">
-        {/* Glow effect */}
         <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
         <div 
           className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ${
@@ -107,7 +119,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           />
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
