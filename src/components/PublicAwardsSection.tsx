@@ -19,6 +19,7 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'streak': return `Maintain a ${threshold}+ day practice streak`;
     case 'notes': return `Complete ${threshold} practice notes`;
     case 'hours': return `Practice for ${threshold} total hours`;
+    case 'legend': return `Earn ${threshold} total awards`;
   }
 }
 
