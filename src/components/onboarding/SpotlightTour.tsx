@@ -181,6 +181,10 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    // Mobile Safari may use visualViewport offset
+    if (window.visualViewport) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
   }, []);
 
   useEffect(() => {
