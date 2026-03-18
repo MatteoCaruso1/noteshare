@@ -28,6 +28,7 @@ export interface Profile {
   current_streak: number;
   celebrated_streak_milestones: number[];
   streak_achievement_counts: Record<string, number> | null;
+  selected_award: string | null;
   has_logged_first_note: boolean;
   has_added_first_friend: boolean;
   has_logged_ten_notes: boolean;

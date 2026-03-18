@@ -37,6 +37,9 @@ interface PracticeStats {
   // Notes created in last 30 days
   notesLast30Days: number;
 
+  // Total all-time minutes (from loaded sessions window)
+  totalAllTimeMinutes: number;
+
   // Weekly average focus level (from F=N tags)
   weeklyFocusAverage: { week: string; average: number }[];
 }
@@ -68,6 +71,7 @@ export function usePracticeStats(profileId: string | undefined) {
           dailyMinutesMap: {},
           totalNotesCount: 0,
           notesLast30Days: 0,
+          totalAllTimeMinutes: 0,
           weeklyFocusAverage: [],
         };
       }
@@ -522,6 +526,7 @@ export function usePracticeStats(profileId: string | undefined) {
         dailyMinutesMap,
         totalNotesCount,
         notesLast30Days,
+        totalAllTimeMinutes: sessionsWithDuration.reduce((sum, s) => sum + s.durationMinutes, 0),
         weeklyFocusAverage,
       };
     },

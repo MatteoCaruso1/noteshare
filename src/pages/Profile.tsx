@@ -24,7 +24,7 @@ import { FeedbackCard } from '@/components/FeedbackCard';
 import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
 import { StreakBadges } from '@/components/StreakBadges';
 import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
-import { StreakRewardsSection } from '@/components/StreakRewardsSection';
+import { AwardsSection } from '@/components/AwardsSection';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
@@ -332,9 +332,18 @@ const Profile = () => {
             )}
           </div>
 
-          {/* Streak Rewards - show above About when not editing */}
+          {/* Awards - show above About when not editing */}
           {!editing && practiceStats && (
-            <StreakRewardsSection currentStreak={practiceStats.currentStreak} />
+            <AwardsSection
+              bestStreak={practiceStats.bestDailyStreak}
+              totalNotes={practiceStats.totalNotesCount}
+              totalHours={Math.floor(practiceStats.totalAllTimeMinutes / 60)}
+              selectedAward={(profile as any)?.selected_award || null}
+              onAwardSelected={(awardId) => {
+                // Refresh profile to update local state
+                refreshProfile();
+              }}
+            />
           )}
 
           {/* About Section - combined bio, instruments, and genres */}

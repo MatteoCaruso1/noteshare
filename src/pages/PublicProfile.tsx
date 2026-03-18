@@ -380,6 +380,7 @@ const PublicProfile = () => {
                     streakDays={profile.current_streak || 0}
                     bestAchievedMilestone={getBestAchievedMilestone(profile)}
                     achievementCount={getBestAchievementCount(profile)}
+                    selectedAward={(profile as any).selected_award}
                     className="text-xl font-bold truncate"
                   />
                   {(profile.current_streak || 0) > 0 && (
