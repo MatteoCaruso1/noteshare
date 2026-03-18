@@ -42,6 +42,7 @@ export function AwardsSection({
   totalNotes,
   totalHours,
   selectedAward,
+  achievementCounts,
   onAwardSelected,
 }: AwardsSectionProps) {
   const [open, setOpen] = useState(false);
