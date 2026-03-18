@@ -339,9 +339,9 @@ const Profile = () => {
               bestStreak={practiceStats.bestDailyStreak}
               totalNotes={practiceStats.totalNotesCount}
               totalHours={Math.floor(practiceStats.totalAllTimeMinutes / 60)}
-              selectedAward={(profile as any)?.selected_award || null}
+              selectedAward={localSelectedAward}
               onAwardSelected={(awardId) => {
-                // Refresh profile to update local state
+                setLocalSelectedAward(awardId);
                 refreshProfile();
               }}
             />
