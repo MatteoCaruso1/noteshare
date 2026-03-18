@@ -51,6 +51,11 @@ export function AwardsSection({
     [bestStreak, totalNotes, totalHours]
   );
 
+  const baseAwardCount = useMemo(
+    () => getBaseAchievedCount({ bestStreak, totalNotes, totalHours }),
+    [bestStreak, totalNotes, totalHours]
+  );
+
   const handleSelectAward = useCallback(async (tier: AwardTier) => {
     if (!profile?.id) return;
     if (!achieved.has(tier.id)) return; // Can't select unachieved
