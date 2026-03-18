@@ -18,7 +18,9 @@ export const AwardIcon = memo(function AwardIcon({
   size = 14,
   className = '',
 }: AwardIconProps) {
-  const fillColor = achieved ? tier.fillColor : 'transparent';
+  // Streak trophies get filled; notes & hours are outline-only
+  const useOutlineOnly = tier.category === 'notes' || tier.category === 'hours';
+  const fillColor = achieved && !useOutlineOnly ? tier.fillColor : 'transparent';
   const strokeColor = achieved ? tier.fillColor : 'hsl(var(--muted-foreground) / 0.4)';
   const opacity = achieved ? 1 : 0.4;
 
