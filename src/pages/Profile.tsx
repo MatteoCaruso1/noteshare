@@ -61,6 +61,7 @@ function ProUpgradeButton() {
 }
 
 const Profile = () => {
+  const queryClient = useQueryClient();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { uploadImage } = useMediaUpload();
