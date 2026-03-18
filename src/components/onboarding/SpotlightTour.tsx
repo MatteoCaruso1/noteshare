@@ -59,7 +59,7 @@ const tourSteps: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="audio-recorder"]',
-    message: 'Record audio clips',
+    message: 'Record audio and video clips',
     position: 'top',
     elevateParent: true,
   },
