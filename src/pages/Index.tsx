@@ -318,7 +318,7 @@ const Index = () => {
                 <Timeline
                   notes={filteredNotes}
                   feedItems={feedItems}
-                  loading={isTimelineLoading || isBootstrapping} 
+                  loading={isTimelineLoading || (isBootstrapping && !showOnboarding)} 
                   isRefetching={isTimelineRefetching}
                   displayCount={displayCount}
                   onLoadMore={handleLoadMore}
