@@ -61,7 +61,7 @@ export function AwardsSection({
             <Award className="w-5 h-5 text-primary" />
             <h3 className="font-medium">Awards</h3>
             <span className="text-xs text-muted-foreground">
-              {achievedCount} earned
+              {achievedCount} / {ALL_AWARD_TIERS.length}
             </span>
           </div>
           <ChevronDown className={cn(
