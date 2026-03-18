@@ -20,7 +20,8 @@ export const AwardIcon = memo(function AwardIcon({
 }: AwardIconProps) {
   // Streak trophies get filled; notes & hours are outline-only
   const useOutlineOnly = tier.category === 'notes' || tier.category === 'hours';
-  const fillColor = achieved && !useOutlineOnly ? tier.fillColor : 'transparent';
+  const useFilled = tier.category === 'streak' || tier.category === 'legend';
+  const fillColor = achieved && useFilled ? tier.fillColor : 'transparent';
   const strokeColor = achieved ? tier.fillColor : 'hsl(var(--muted-foreground) / 0.4)';
   const opacity = achieved ? 1 : 0.4;
 
@@ -59,6 +60,16 @@ export const AwardIcon = memo(function AwardIcon({
         <g fill="none" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" fill={fillColor} />
           <polyline points="12 6 12 12 16 14" />
+        </g>
+      )}
+      {tier.category === 'legend' && (
+        // Crown icon
+        <g fill="none" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 17L12 3l10 14H2Z" fill={fillColor} />
+          <path d="M5 17l2-7 5 4 5-4 2 7" />
+          <circle cx="12" cy="21" r="1" fill={strokeColor} />
+          <circle cx="7" cy="21" r="1" fill={strokeColor} />
+          <circle cx="17" cy="21" r="1" fill={strokeColor} />
         </g>
       )}
     </svg>

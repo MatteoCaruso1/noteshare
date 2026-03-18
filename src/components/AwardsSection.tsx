@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Award, ChevronDown, Check } from 'lucide-react';
 import { AwardIcon } from '@/components/shared/AwardIcon';
-import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, AwardTier, AwardCategory } from '@/lib/awardUtils';
+import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, getBaseAchievedCount, AwardTier, AwardCategory } from '@/lib/awardUtils';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,14 +15,16 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'streak': return `Maintain a ${threshold}+ day practice streak`;
     case 'notes': return `Complete ${threshold} practice notes`;
     case 'hours': return `Practice for ${threshold} total hours`;
+    case 'legend': return `Earn ${threshold} total awards`;
   }
 }
 
-function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number }): string {
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number }): string {
   switch (category) {
     case 'streak': return `Currently ${stats.bestStreak} days`;
     case 'notes': return `Currently ${stats.totalNotes} notes`;
     case 'hours': return `Currently ${stats.totalHours}h`;
+    case 'legend': return `Currently ${stats.baseAwardCount} awards`;
   }
 }
 
@@ -46,6 +48,11 @@ export function AwardsSection({
 
   const achieved = useMemo(
     () => getAchievedAwards({ bestStreak, totalNotes, totalHours }),
+    [bestStreak, totalNotes, totalHours]
+  );
+
+  const baseAwardCount = useMemo(
+    () => getBaseAchievedCount({ bestStreak, totalNotes, totalHours }),
     [bestStreak, totalNotes, totalHours]
   );
 
@@ -109,7 +116,7 @@ export function AwardsSection({
                         content={
                           <div className="text-xs space-y-0.5">
                             <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
-                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours })}</p>
+                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount })}</p>
                             {isAchieved && <p className="text-primary">✓ Achieved</p>}
                           </div>
                         }
