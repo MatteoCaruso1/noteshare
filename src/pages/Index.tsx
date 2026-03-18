@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useNotes } from '@/hooks/useNotes';
 import { useAcceptedNoteShares } from '@/hooks/useNoteShares';
 import { useFeedProjects } from '@/hooks/useProjects';
@@ -34,6 +35,7 @@ const LOAD_MORE_COUNT = 10;
 
 const Index = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const { showOnboarding } = useOnboarding();
   const { isPremium, isLoading: premiumLoading } = usePremium();
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
@@ -316,7 +318,7 @@ const Index = () => {
                 <Timeline
                   notes={filteredNotes}
                   feedItems={feedItems}
-                  loading={isTimelineLoading || isBootstrapping} 
+                  loading={isTimelineLoading || (isBootstrapping && !showOnboarding)} 
                   isRefetching={isTimelineRefetching}
                   displayCount={displayCount}
                   onLoadMore={handleLoadMore}
