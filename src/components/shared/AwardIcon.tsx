@@ -17,6 +17,7 @@ export const AwardIcon = memo(function AwardIcon({
   tier,
   achieved,
   size = 14,
+  count,
   className = '',
 }: AwardIconProps) {
   // All categories use outline-only (colored stroke, no fill)
