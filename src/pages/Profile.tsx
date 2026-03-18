@@ -340,6 +340,7 @@ const Profile = () => {
               totalNotes={practiceStats.totalNotesCount}
               totalHours={Math.floor(practiceStats.totalAllTimeMinutes / 60)}
               selectedAward={localSelectedAward}
+              achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
               onAwardSelected={(awardId) => {
                 setLocalSelectedAward(awardId);
                 refreshProfile();
