@@ -1,7 +1,7 @@
 // Award system definitions
 // All award categories, tiers, and display info
 
-export type AwardCategory = 'streak' | 'notes' | 'hours';
+export type AwardCategory = 'streak' | 'notes' | 'hours' | 'legend';
 
 export interface AwardTier {
   id: string;          // e.g. "streak-30", "notes-100", "hours-50"
@@ -18,7 +18,7 @@ export interface AwardTier {
 export interface AwardCategoryInfo {
   category: AwardCategory;
   title: string;
-  iconType: 'trophy' | 'notebook' | 'clock';
+  iconType: 'trophy' | 'notebook' | 'clock' | 'crown';
   tiers: AwardTier[];
 }
 
@@ -61,6 +61,27 @@ const TIER_COLORS = {
     borderColorClass: 'border-cyan-400/30',
     ringColorClass: 'ring-cyan-400/20',
   },
+  purple: {
+    colorClass: 'text-purple-500',
+    fillColor: 'hsl(270, 70%, 60%)',
+    bgColorClass: 'bg-purple-500/10',
+    borderColorClass: 'border-purple-500/30',
+    ringColorClass: 'ring-purple-500/20',
+  },
+  platinum: {
+    colorClass: 'text-zinc-300',
+    fillColor: 'hsl(240, 5%, 84%)',
+    bgColorClass: 'bg-zinc-300/10',
+    borderColorClass: 'border-zinc-300/30',
+    ringColorClass: 'ring-zinc-300/20',
+  },
+  crimson: {
+    colorClass: 'text-red-500',
+    fillColor: 'hsl(0, 84%, 60%)',
+    bgColorClass: 'bg-red-500/10',
+    borderColorClass: 'border-red-500/30',
+    ringColorClass: 'ring-red-500/20',
+  },
 };
 
 // Streak awards (reusing existing thresholds)
@@ -89,13 +110,24 @@ const HOURS_TIERS: AwardTier[] = [
   { id: 'hours-1000', category: 'hours', label: '1000h', threshold: 1000, ...TIER_COLORS.diamond },
 ];
 
+// Legend awards — based on total awards earned (excluding legend awards themselves)
+const LEGEND_TIERS: AwardTier[] = [
+  { id: 'legend-7', category: 'legend', label: '7', threshold: 7, ...TIER_COLORS.purple },
+  { id: 'legend-12', category: 'legend', label: '12', threshold: 12, ...TIER_COLORS.platinum },
+  { id: 'legend-15', category: 'legend', label: '15', threshold: 15, ...TIER_COLORS.crimson },
+];
+
+// Base tiers (non-legend) used for counting toward legend awards
+const BASE_AWARD_TIERS: AwardTier[] = [...STREAK_TIERS, ...NOTES_TIERS, ...HOURS_TIERS];
+
 export const AWARD_CATEGORIES: AwardCategoryInfo[] = [
   { category: 'streak', title: 'Streak', iconType: 'trophy', tiers: STREAK_TIERS },
   { category: 'notes', title: 'Notes Completed', iconType: 'notebook', tiers: NOTES_TIERS },
   { category: 'hours', title: 'Time Practiced', iconType: 'clock', tiers: HOURS_TIERS },
+  { category: 'legend', title: 'Noteshare Legend', iconType: 'crown', tiers: LEGEND_TIERS },
 ];
 
-export const ALL_AWARD_TIERS: AwardTier[] = [...STREAK_TIERS, ...NOTES_TIERS, ...HOURS_TIERS];
+export const ALL_AWARD_TIERS: AwardTier[] = [...BASE_AWARD_TIERS, ...LEGEND_TIERS];
 
 export function getAwardById(id: string): AwardTier | undefined {
   return ALL_AWARD_TIERS.find(t => t.id === id);
@@ -111,6 +143,7 @@ export function getAchievedAwards(stats: {
 }): Set<string> {
   const achieved = new Set<string>();
 
+  // First compute base awards
   for (const tier of STREAK_TIERS) {
     if (stats.bestStreak >= tier.threshold) achieved.add(tier.id);
   }
@@ -121,7 +154,34 @@ export function getAchievedAwards(stats: {
     if (stats.totalHours >= tier.threshold) achieved.add(tier.id);
   }
 
+  // Then compute legend awards based on base award count
+  const baseCount = achieved.size;
+  for (const tier of LEGEND_TIERS) {
+    if (baseCount >= tier.threshold) achieved.add(tier.id);
+  }
+
   return achieved;
+}
+
+/**
+ * Get the count of base (non-legend) awards achieved
+ */
+export function getBaseAchievedCount(stats: {
+  bestStreak: number;
+  totalNotes: number;
+  totalHours: number;
+}): number {
+  let count = 0;
+  for (const tier of STREAK_TIERS) {
+    if (stats.bestStreak >= tier.threshold) count++;
+  }
+  for (const tier of NOTES_TIERS) {
+    if (stats.totalNotes >= tier.threshold) count++;
+  }
+  for (const tier of HOURS_TIERS) {
+    if (stats.totalHours >= tier.threshold) count++;
+  }
+  return count;
 }
 
 /**
