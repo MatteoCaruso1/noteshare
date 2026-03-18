@@ -422,7 +422,7 @@ export function useMemoryNotes() {
         .select(`
           id, author_id, text_content, tags, visibility, comment_count, created_at,
           audio_files, audio_file_names, image_files, video_files, video_path,
-          profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme)
+          profiles!notes_author_id_fkey (id, user_id, name, username, avatar, current_streak, color_theme, streak_achievement_counts, selected_award)
         `)
         .or(`created_at.gte.${oneYearAgo.toISOString().split('T')[0]},created_at.gte.${sixMonthsAgo.toISOString().split('T')[0]},created_at.gte.${oneMonthAgo.toISOString().split('T')[0]}`)
         .order('created_at', { ascending: false })

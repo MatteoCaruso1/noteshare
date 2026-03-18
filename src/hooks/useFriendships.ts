@@ -273,7 +273,7 @@ export function useFriendsNotes() {
           text_content, tags, visibility, comment_count, created_at, updated_at,
           audio_files, audio_file_names, image_files, video_files, video_path,
           profiles!notes_author_id_fkey (
-            id, name, username, avatar, current_streak
+            id, name, username, avatar, current_streak, streak_achievement_counts, selected_award
           ),
           practice_sessions!notes_session_id_fkey (
             id, started_at, ended_at, paused_duration_ms
