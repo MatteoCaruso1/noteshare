@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Award, ChevronDown, Check } from 'lucide-react';
 import { AwardIcon } from '@/components/shared/AwardIcon';
-import { AWARD_CATEGORIES, getAchievedAwards, AwardTier } from '@/lib/awardUtils';
+import { AWARD_CATEGORIES, ALL_AWARD_TIERS, getAchievedAwards, AwardTier } from '@/lib/awardUtils';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,7 +61,7 @@ export function AwardsSection({
             <Award className="w-5 h-5 text-primary" />
             <h3 className="font-medium">Awards</h3>
             <span className="text-xs text-muted-foreground">
-              {achievedCount} earned
+              {achievedCount} / {ALL_AWARD_TIERS.length}
             </span>
           </div>
           <ChevronDown className={cn(

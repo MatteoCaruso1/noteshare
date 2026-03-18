@@ -21,6 +21,7 @@ import { Profile } from '@/types';
 import { Timeline, LOAD_MORE_COUNT } from '@/components/Timeline';
 import { StreakTintedName } from '@/components/StreakTintedName';
 import { getStreakTier } from '@/lib/streakUtils';
+import { PublicAwardsSection } from '@/components/PublicAwardsSection';
 import { toast } from 'sonner';
 
 // Noteshare Team profile ID (Matteo)
@@ -460,6 +461,16 @@ const PublicProfile = () => {
               </div>
             )}
           </Card>
+
+          {/* Awards Section - visible to friends */}
+          {isFriend && (
+            <PublicAwardsSection
+              bestStreak={getBestAchievedMilestone(profile)}
+              totalNotes={notes?.length || 0}
+              totalHours={0}
+              selectedAward={(profile as any).selected_award}
+            />
+          )}
 
           {/* Messages Dialog - opens direct chat with this profile */}
           <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
