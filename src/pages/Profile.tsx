@@ -70,6 +70,7 @@ const Profile = () => {
   const [instruments, setInstruments] = useState<string[]>(profile?.instruments || []);
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
   const [saving, setSaving] = useState(false);
+  const [localSelectedAward, setLocalSelectedAward] = useState<string | null>((profile as any)?.selected_award || null);
   
   // Weekly goal preference
   const [weeklyGoalDisabled, setWeeklyGoalDisabled] = useState(() => {
