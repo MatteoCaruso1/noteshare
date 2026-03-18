@@ -116,7 +116,7 @@ export function AwardsSection({
                         content={
                           <div className="text-xs space-y-0.5">
                             <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
-                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours })}</p>
+                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount })}</p>
                             {isAchieved && <p className="text-primary">✓ Achieved</p>}
                           </div>
                         }
