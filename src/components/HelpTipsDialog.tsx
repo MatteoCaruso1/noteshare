@@ -28,7 +28,7 @@ interface HelpSection {
   items: HelpItem[];
 }
 
-// Combined icon for Practice List + Toggle
+// Combined icon for Practice Routine + Toggle
 const PracticeBoardToggleIcon = () => (
   <span className="inline-flex items-center gap-0.5 -ml-5">
     <ListTodo className="w-4 h-4" />
