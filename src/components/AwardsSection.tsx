@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Award, ChevronDown, Check } from 'lucide-react';
@@ -79,6 +79,22 @@ export function AwardsSection({
 
   const achievedCount = achieved.size;
 
+  // Auto-select the first achieved award if none is selected
+  useEffect(() => {
+    if (!profile?.id || selectedAward || achievedCount === 0) return;
+    // Find the first achieved tier
+    const firstAchieved = ALL_AWARD_TIERS.find((t) => achieved.has(t.id));
+    if (firstAchieved) {
+      supabase
+        .from('profiles')
+        .update({ selected_award: firstAchieved.id } as any)
+        .eq('id', profile.id)
+        .then(({ error }) => {
+          if (!error) onAwardSelected?.(firstAchieved.id);
+        });
+    }
+  }, [profile?.id, selectedAward, achievedCount, achieved, onAwardSelected]);
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <Card className="bg-card border-border overflow-hidden">
@@ -98,8 +114,8 @@ export function AwardsSection({
 
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Tap an earned award to display it beside your name
+            <p className="text-sm font-medium text-primary/80">
+              ✨ Tap to display beside your name!
             </p>
 
             {AWARD_CATEGORIES.map((cat) => (
