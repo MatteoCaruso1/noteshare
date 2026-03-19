@@ -60,11 +60,11 @@ const helpSections: HelpSection[] = [
     ],
   },
   {
-    feature: 'Practice List',
+    feature: 'Practice Routine',
     featureIcon: <ListTodo className="w-4 h-4 text-foreground" />,
     definition: 'Document your cross-session focus areas to maintain intentionality across sessions',
     items: [
-      { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Lists to revisit later' },
+      { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Routines to revisit later' },
       { icon: <FolderOpen className="w-4 h-4" />, label: 'View Backlog', description: 'Revisit saved focuses' },
     ],
   },

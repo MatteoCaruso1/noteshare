@@ -748,7 +748,7 @@ export function TodaysFocus() {
       <Card className="bg-card border-border min-h-[60px]">
         <div className="px-3 py-4 sm:px-4 flex items-center gap-2">
           <ListTodo className="w-5 h-5 text-muted-foreground" />
-          <h2 className="font-semibold">Practice List</h2>
+           <h2 className="font-semibold">Practice Routine</h2>
         </div>
         {willBeOpen && (
           <div className="px-4 pb-4">

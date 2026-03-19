@@ -123,11 +123,11 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
         </DialogHeader>
 
         <PremiumGate 
-          featureName="Practice List Backlog" 
+          featureName="Practice Routine Backlog" 
           blur={false}
           showPreview={false}
           icon={StickyNote}
-          description="Upgrade to Pro to view archived Practice Lists"
+          description="Upgrade to Pro to view archived Practice Routines"
         >
           {/* Search and Filter */}
           <div className="flex gap-2 mb-4">

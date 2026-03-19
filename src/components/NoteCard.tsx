@@ -885,7 +885,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               <RichTextarea
                 value={editedFocusText}
                 onChange={setEditedFocusText}
-                placeholder="Practice board text..."
+                placeholder="Practice routine text..."
                 className="text-sm"
                 autoExpand={true}
                 rows={3}

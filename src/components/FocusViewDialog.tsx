@@ -68,7 +68,7 @@ export function FocusViewDialog({
               onClick={handleRemove}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Remove Practice Board Tag
+              Remove Practice Routine Tag
             </Button>
           </div>
         )}

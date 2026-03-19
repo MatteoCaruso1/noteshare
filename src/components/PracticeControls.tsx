@@ -885,7 +885,7 @@ export function PracticeControls() {
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Link to Practice List</TooltipContent>
+                <TooltipContent>Link to Practice Routine</TooltipContent>
               </Tooltip>
             </div>
           </TooltipProvider>
