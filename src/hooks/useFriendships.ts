@@ -163,16 +163,32 @@ export function useRespondToFriendRequest() {
 
       // Check first-friend milestone on acceptance
       if (status === 'accepted' && profile && !profile.has_added_first_friend) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ has_added_first_friend: true })
-          .eq('id', profile.id);
-        if (!error) {
-          toast('First connection made.', {
-            description: 'Practicing with others raises the standard.',
-            duration: 4000,
-            className: 'milestone-toast border-l-4 border-l-primary bg-card shadow-lg',
-          });
+        // Verify this is truly the first accepted friendship
+        const { count } = await supabase
+          .from('friendships')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
+
+        if (count === 1) {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ has_added_first_friend: true })
+            .eq('id', profile.id);
+          if (!error) {
+            toast('First connection made.', {
+              description: 'Practicing with others raises the standard.',
+              duration: 4000,
+              className: 'milestone-toast border-l-4 border-l-primary bg-card shadow-lg',
+            });
+            await refreshProfile();
+          }
+        } else {
+          // Already had friends, just fix the flag silently
+          await supabase
+            .from('profiles')
+            .update({ has_added_first_friend: true })
+            .eq('id', profile.id);
           await refreshProfile();
         }
       }
