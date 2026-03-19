@@ -15,6 +15,12 @@ interface TourStep {
   elevateParent?: boolean;
   excludeBottomNav?: boolean;
   instantEntry?: boolean;
+  measureSelector?: string;
+}
+
+interface ResolvedTourTarget {
+  targetElement: HTMLElement;
+  measureElement: HTMLElement;
 }
 
 const tourSteps: TourStep[] = [
@@ -43,7 +49,7 @@ const tourSteps: TourStep[] = [
     elevateParent: true,
   },
   {
-  targetSelector: '[data-tour="start-live-btn"]',
+    targetSelector: '[data-tour="start-live-btn"]',
     message: 'Start a live session!',
     position: 'bottom',
     interactive: true,
@@ -53,6 +59,7 @@ const tourSteps: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="session-textarea"]',
+    measureSelector: 'textarea',
     message: 'You can write what you\'re practicing',
     position: 'bottom',
     elevateParent: true,
@@ -87,7 +94,6 @@ const tourSteps: TourStep[] = [
 ];
 
 const FINAL_STEP = tourSteps.length + 1;
-
 const TRANSITION_DURATION = 350;
 const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
@@ -103,10 +109,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
   const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const overlayRef = useRef<HTMLDivElement>(null);
   const elevatedElementsRef = useRef<HTMLElement[]>([]);
   const onNextRef = useRef(onNext);
   const onCompleteRef = useRef(onComplete);
-  
+
   onNextRef.current = onNext;
   onCompleteRef.current = onComplete;
 
@@ -116,7 +123,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     : null;
 
   const cleanupElevation = useCallback(() => {
-    elevatedElementsRef.current.forEach(el => {
+    elevatedElementsRef.current.forEach((el) => {
       el.style.removeProperty('position');
       el.style.removeProperty('z-index');
       el.style.removeProperty('pointer-events');
@@ -131,7 +138,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
     element.style.position = 'relative';
     element.style.zIndex = '101';
-    // Only the target element should be clickable during interactive steps
     if (tourStep.interactive) {
       element.style.pointerEvents = 'auto';
     }
@@ -144,7 +150,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         if (parent.classList.contains('session-focus-card') || parent.tagName === 'MAIN') break;
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
-        // Block clicks on parent containers so only the target is interactive
         if (tourStep.interactive) {
           parent.style.pointerEvents = 'none';
         }
@@ -152,6 +157,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         parent = parent.parentElement;
         depth++;
       }
+
       if (parent && parent.classList.contains('session-focus-card')) {
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
@@ -163,28 +169,52 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     }
   }, [cleanupElevation]);
 
+  const resolveTarget = useCallback((tourStep: TourStep): ResolvedTourTarget | null => {
+    const targetElement = document.querySelector(tourStep.targetSelector) as HTMLElement | null;
+    if (!targetElement) return null;
+
+    if (tourStep.measureSelector) {
+      const measureElement = targetElement.querySelector(tourStep.measureSelector) as HTMLElement | null;
+      if (!measureElement) return null;
+      return { targetElement, measureElement };
+    }
+
+    return { targetElement, measureElement: targetElement };
+  }, []);
+
   const getRectForStep = useCallback((tourStep: TourStep): DOMRect | null => {
-    const element = document.querySelector(tourStep.targetSelector) as HTMLElement | null;
-    if (!element) return null;
-    let rect = element.getBoundingClientRect();
+    const resolved = resolveTarget(tourStep);
+    if (!resolved) return null;
+
+    const measureRect = resolved.measureElement.getBoundingClientRect();
+    if (measureRect.width === 0 || measureRect.height === 0) return null;
+
+    const overlayRect = overlayRef.current?.getBoundingClientRect() ?? new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+
+    let left = measureRect.left - overlayRect.left;
+    let top = measureRect.top - overlayRect.top;
+    let width = measureRect.width;
+    let height = measureRect.height;
+
     if (tourStep.excludeBottomNav) {
       const bottomNav = document.querySelector('[data-tour="bottom-nav"]') as HTMLElement | null;
       if (bottomNav) {
-        const navTop = bottomNav.getBoundingClientRect().top;
-        rect = new DOMRect(rect.left, rect.top, rect.width, Math.max(0, navTop - rect.top));
+        const navRect = bottomNav.getBoundingClientRect();
+        const navTop = navRect.top - overlayRect.top;
+        height = Math.max(0, navTop - top);
       }
     }
-    return rect;
-  }, []);
+
+    left = Math.max(0, left);
+    top = Math.max(0, top);
+
+    return new DOMRect(left, top, width, height);
+  }, [resolveTarget]);
 
   const forceScrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    // Mobile Safari may use visualViewport offset
-    if (window.visualViewport) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    }
   }, []);
 
   useEffect(() => {
@@ -204,113 +234,149 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     if (!currentTourStep) return;
     if (location.pathname !== '/') navigate('/');
 
-    // Phase 1: fade out tooltip
     setTooltipVisible(false);
 
     let resizeObserver: ResizeObserver | null = null;
     let waitObserver: MutationObserver | null = null;
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+    let tooltipTimeout: ReturnType<typeof setTimeout> | null = null;
+    let startDelayTimeout: ReturnType<typeof setTimeout> | null = null;
+    let settleRafId: number | null = null;
     let retryCount = 0;
     const maxRetries = 50;
     let cancelled = false;
 
+    const measureCurrentStep = () => {
+      if (cancelled) return null;
+      const rect = getRectForStep(currentTourStep);
+      if (rect) {
+        setTargetRect(rect);
+      }
+      return rect;
+    };
+
+    const settleMeasurement = (frames = 6) => {
+      let remaining = frames;
+
+      const tick = () => {
+        if (cancelled || remaining <= 0) return;
+        measureCurrentStep();
+        remaining -= 1;
+        if (remaining > 0) {
+          settleRafId = requestAnimationFrame(tick);
+        }
+      };
+
+      settleRafId = requestAnimationFrame(tick);
+    };
+
+    const installWaitObserver = () => {
+      if (!currentTourStep.interactive || (!currentTourStep.waitForSelector && !currentTourStep.waitForRemoval)) {
+        return;
+      }
+
+      waitObserver = new MutationObserver(() => {
+        if (cancelled) return;
+
+        if (currentTourStep.waitForSelector && document.querySelector(currentTourStep.waitForSelector)) {
+          waitObserver?.disconnect();
+          const nextStep = tourSteps[step];
+          const advanceDelay = nextStep?.instantEntry ? 0 : 300;
+          setTimeout(() => {
+            if (!cancelled) {
+              cleanupElevation();
+              onNextRef.current();
+            }
+          }, advanceDelay);
+          return;
+        }
+
+        if (currentTourStep.waitForRemoval && !document.querySelector(currentTourStep.waitForRemoval)) {
+          waitObserver?.disconnect();
+          setTimeout(() => {
+            if (!cancelled) {
+              cleanupElevation();
+              onNextRef.current();
+            }
+          }, 300);
+        }
+      });
+
+      waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
+    };
+
     const findAndHighlight = () => {
       if (cancelled) return;
+
       forceScrollToTop();
 
-      // Defer measurement to next frame so mobile Safari's scroll has settled
-      requestAnimationFrame(() => {
-        if (cancelled) return;
-        forceScrollToTop();
+      const resolved = resolveTarget(currentTourStep);
+      const rect = measureCurrentStep();
 
-        // Secondary delay for mobile Safari async scroll
-        setTimeout(() => {
-          if (cancelled) return;
-          forceScrollToTop();
-
-          const rect = getRectForStep(currentTourStep);
-          if (rect) {
-            const element = document.querySelector(currentTourStep.targetSelector) as HTMLElement;
-            if (element) elevateElement(element, currentTourStep);
-
-            setTargetRect(rect);
-
-            // Phase 2: fade in tooltip after highlight has moved
-            const tooltipDelay = currentTourStep.instantEntry ? 0 : TRANSITION_DURATION + 50;
-            setTimeout(() => {
-              if (!cancelled) {
-                forceScrollToTop();
-                // Re-measure after scroll settled
-                const freshRect = getRectForStep(currentTourStep);
-                if (freshRect) setTargetRect(freshRect);
-                setTooltipVisible(true);
-              }
-            }, tooltipDelay);
-
-            // Keep position accurate
-            const el = document.querySelector(currentTourStep.targetSelector);
-            if (el) {
-              resizeObserver = new ResizeObserver(() => {
-                if (!cancelled) {
-                  const r = getRectForStep(currentTourStep);
-                  if (r) setTargetRect(r);
-                }
-              });
-              resizeObserver.observe(el);
-            }
-
-        // Interactive step watchers
-        if (currentTourStep.interactive && (currentTourStep.waitForSelector || currentTourStep.waitForRemoval)) {
-          waitObserver = new MutationObserver(() => {
-            if (cancelled) return;
-            if (currentTourStep.waitForSelector && document.querySelector(currentTourStep.waitForSelector)) {
-              waitObserver?.disconnect();
-              // Check if the NEXT step has instantEntry — if so, advance immediately
-              const nextStepIndex = step; // step is 1-indexed, so tourSteps[step] is the next step
-              const nextStep = tourSteps[nextStepIndex];
-              const advanceDelay = nextStep?.instantEntry ? 0 : 300;
-              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, advanceDelay);
-            }
-            if (currentTourStep.waitForRemoval && !document.querySelector(currentTourStep.waitForRemoval)) {
-              waitObserver?.disconnect();
-              setTimeout(() => { if (!cancelled) { cleanupElevation(); onNextRef.current(); } }, 300);
-            }
-          });
-          waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
+      if (!resolved || !rect) {
+        if (retryCount < maxRetries) {
+          retryCount += 1;
+          retryTimeout = setTimeout(findAndHighlight, 100);
         }
-          } else if (retryCount < maxRetries) {
-            retryCount++;
-            setTimeout(findAndHighlight, 100);
-          }
-        }, 50); // 50ms secondary delay for mobile Safari
-      }); // end rAF
+        return;
+      }
+
+      elevateElement(resolved.targetElement, currentTourStep);
+
+      resizeObserver = new ResizeObserver(() => {
+        if (!cancelled) {
+          measureCurrentStep();
+        }
+      });
+      resizeObserver.observe(resolved.targetElement);
+      if (resolved.measureElement !== resolved.targetElement) {
+        resizeObserver.observe(resolved.measureElement);
+      }
+
+      installWaitObserver();
+
+      const tooltipDelay = currentTourStep.instantEntry ? 0 : TRANSITION_DURATION + 50;
+      tooltipTimeout = setTimeout(() => {
+        if (cancelled) return;
+        measureCurrentStep();
+        settleMeasurement(currentTourStep.instantEntry ? 2 : 6);
+        setTooltipVisible(true);
+      }, tooltipDelay);
+    };
+
+    const handleViewportChange = () => {
+      if (cancelled) return;
+      measureCurrentStep();
+      settleMeasurement(2);
     };
 
     forceScrollToTop();
-    // Small delay to let fade-out complete before moving highlight (skip for instant steps)
     const entryDelay = currentTourStep.instantEntry ? 0 : 120;
-    const startDelay = setTimeout(() => {
-      if (!cancelled) findAndHighlight();
-    }, 120);
-
-    const handleScroll = () => {
-      if (!cancelled && currentTourStep) {
-        const r = getRectForStep(currentTourStep);
-        if (r) setTargetRect(r);
+    startDelayTimeout = setTimeout(() => {
+      if (!cancelled) {
+        findAndHighlight();
       }
-    };
-    const handleResize = handleScroll;
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('resize', handleResize);
+    }, entryDelay);
+
+    window.addEventListener('scroll', handleViewportChange, true);
+    window.addEventListener('resize', handleViewportChange);
+    window.visualViewport?.addEventListener('resize', handleViewportChange);
+    window.visualViewport?.addEventListener('scroll', handleViewportChange);
 
     return () => {
       cancelled = true;
-      clearTimeout(startDelay);
-      window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('resize', handleResize);
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (tooltipTimeout) clearTimeout(tooltipTimeout);
+      if (startDelayTimeout) clearTimeout(startDelayTimeout);
+      if (settleRafId !== null) cancelAnimationFrame(settleRafId);
+      window.removeEventListener('scroll', handleViewportChange, true);
+      window.removeEventListener('resize', handleViewportChange);
+      window.visualViewport?.removeEventListener('resize', handleViewportChange);
+      window.visualViewport?.removeEventListener('scroll', handleViewportChange);
       resizeObserver?.disconnect();
       waitObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, forceScrollToTop, cleanupElevation, elevateElement]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, resolveTarget, forceScrollToTop, cleanupElevation, elevateElement]);
 
   useEffect(() => {
     return () => cleanupElevation();
@@ -325,7 +391,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     setTimeout(() => {
       setIsFadingOut(false);
       if (isFinalStep) {
-        // Force scroll to top and clear scroll state before completing
         forceScrollToTop();
         clearScrollState('index-timeline');
         clearScrollState('index-feed');
@@ -339,6 +404,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const getTooltipStyle = (): React.CSSProperties => {
     if (!targetRect || !currentTourStep) return { top: '40%', left: '50%', transform: 'translateX(-50%)' };
+
     const padding = 14;
     const position = currentTourStep.position || 'bottom';
 
@@ -349,6 +415,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         transform: 'translateX(-50%)',
       };
     }
+
     return {
       top: targetRect.bottom + padding,
       left: '50%',
@@ -358,16 +425,15 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
 
   const isSaveDialogStep = currentTourStep?.targetSelector === '[data-tour="save-session-btn"]';
   const isInteractive = currentTourStep?.interactive;
-
   const transStyle = `all ${TRANSITION_DURATION}ms ${EASE}`;
 
   const content = (
     <div
+      ref={overlayRef}
       className="fixed inset-0 z-[100]"
       style={{ pointerEvents: isInteractive ? 'none' : 'auto' }}
       onClick={handleOverlayClick}
     >
-      {/* Dark overlay */}
       {!isFinalStep ? (
         targetRect ? (
           <svg className="fixed inset-0 w-full h-full pointer-events-none">
@@ -386,8 +452,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
               </mask>
             </defs>
             <rect
-              x="0" y="0" width="100%" height="100%"
-              fill={isSaveDialogStep ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.75)"}
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              fill={isSaveDialogStep ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.75)'}
               mask="url(#spotlight-mask)"
               style={{ transition: `fill ${TRANSITION_DURATION}ms ${EASE}` }}
             />
@@ -399,7 +468,6 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         <div className="fixed inset-0 bg-background transition-opacity duration-300" />
       )}
 
-      {/* Highlight border */}
       {targetRect && !isFinalStep && (
         <div
           className="fixed rounded-xl border-2 border-primary/80 pointer-events-none"
@@ -415,12 +483,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         />
       )}
 
-      {/* Tooltip */}
       {isFinalStep ? (
         <div
           className="fixed inset-0 flex flex-col items-center justify-center px-8 text-center bg-background z-[104]"
           style={{
-            transition: `opacity 300ms ease`,
+            transition: 'opacity 300ms ease',
             opacity: isFadingOut ? 0 : 1,
           }}
         >
@@ -445,7 +512,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
           style={{
             ...getTooltipStyle(),
             transition: `opacity ${TRANSITION_DURATION}ms ease, transform ${TRANSITION_DURATION}ms ${EASE}`,
-            opacity: (tooltipVisible && !isFadingOut) ? 1 : 0,
+            opacity: tooltipVisible && !isFadingOut ? 1 : 0,
             transform: `translateX(-50%) translateY(${tooltipVisible && !isFadingOut ? '0' : '6px'})`,
             zIndex: 103,
           }}
