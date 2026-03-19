@@ -663,7 +663,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           })()}
 
           {/* Focus Date Badge - now inline with type badge and tags */}
-          {/* Practice Board badge removed - text is now shown in note content */}
+          {/* Practice Routine badge removed - text is now shown in note content */}
 
           {/* Linked Goal Badge - only visible to note owner since goals are private */}
           {note.goal_id && isOwner && (

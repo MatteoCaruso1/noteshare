@@ -808,7 +808,7 @@ export function TodaysFocus() {
             <div className="px-3 py-4 sm:px-4 flex items-center justify-between cursor-pointer group touch-manipulation">
               <div className="flex items-center gap-2">
                 <ListTodo className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-                <h2 className="font-semibold">Practice List</h2>
+                <h2 className="font-semibold">Practice Routine</h2>
               </div>
               
               <div className="flex items-center gap-1">
