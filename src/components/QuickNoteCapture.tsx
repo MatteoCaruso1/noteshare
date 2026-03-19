@@ -331,9 +331,9 @@ export function QuickNoteCapture() {
                       onCheckedChange={(checked) => {
                         setAttachFocus(checked);
                         if (checked) {
-                          toast.success("Your note will be linked to Practice List");
+                          toast.success("Your note will be linked to Practice Routine");
                         } else {
-                          toast.success("Your note will no longer be linked to Practice List");
+                          toast.success("Your note will no longer be linked to Practice Routine");
                         }
                       }}
                       className="scale-90"
