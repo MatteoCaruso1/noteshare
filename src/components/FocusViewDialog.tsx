@@ -50,7 +50,7 @@ export function FocusViewDialog({
             Practice Routine for {formattedDate}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            View the practice board text that was saved with this note
+            View the practice routine text that was saved with this note
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
