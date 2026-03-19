@@ -866,7 +866,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <ListTodo className="w-3 h-3" />
-                  Practice Board
+                  Practice Routine
                 </p>
                 <Button
                   size="sm"
