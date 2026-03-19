@@ -77,13 +77,14 @@ export const AwardIcon = memo(function AwardIcon({
         </g>
       )}
       {tier.category === 'legend' && (
-        // Crown icon
-        <g fill="none" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 17L12 3l10 14H2Z" fill={fillColor} />
-          <path d="M5 17l2-7 5 4 5-4 2 7" />
-          <circle cx="12" cy="21" r="1" fill={strokeColor} />
-          <circle cx="7" cy="21" r="1" fill={strokeColor} />
-          <circle cx="17" cy="21" r="1" fill={strokeColor} />
+        // Noteshare double eighth notes icon
+        <g transform="translate(2, 1) scale(0.833)">
+          <ellipse cx="7" cy="19" rx="3" ry="2.4" fill={strokeColor} transform="rotate(-15, 7, 19)" />
+          <ellipse cx="17" cy="17" rx="3" ry="2.4" fill={strokeColor} transform="rotate(-15, 17, 17)" />
+          <rect x="9.2" y="5" width="1.6" height="14.5" rx="0.8" fill={strokeColor} />
+          <rect x="19.2" y="3" width="1.6" height="14.5" rx="0.8" fill={strokeColor} />
+          <rect x="9.2" y="3" width="11.6" height="2" rx="1" fill={strokeColor} />
+          <rect x="9.2" y="7" width="11.6" height="2" rx="1" fill={strokeColor} />
         </g>
       )}
     </svg>
