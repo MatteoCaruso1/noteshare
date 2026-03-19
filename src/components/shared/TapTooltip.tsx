@@ -9,6 +9,8 @@ interface TapTooltipProps {
   align?: 'start' | 'center' | 'end';
   sideOffset?: number;
   className?: string;
+  /** When set, mobile taps call this instead of toggling the popover. Tooltip still shows on desktop hover. */
+  onTap?: () => void;
 }
 
 /**
