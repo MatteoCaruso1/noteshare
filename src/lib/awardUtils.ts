@@ -86,10 +86,11 @@ const TIER_COLORS = {
 
 // Streak awards (reusing existing thresholds)
 const STREAK_TIERS: AwardTier[] = [
-  { id: 'streak-10', category: 'streak', label: '10d', threshold: 10, ...TIER_COLORS.starter },
-  { id: 'streak-30', category: 'streak', label: '30d', threshold: 30, ...TIER_COLORS.bronze },
-  { id: 'streak-90', category: 'streak', label: '90d', threshold: 90, ...TIER_COLORS.silver },
-  { id: 'streak-360', category: 'streak', label: '360d', threshold: 360, ...TIER_COLORS.gold },
+  { id: 'streak-5', category: 'streak', label: '5d', threshold: 5, ...TIER_COLORS.starter },
+  { id: 'streak-10', category: 'streak', label: '10d', threshold: 10, ...TIER_COLORS.bronze },
+  { id: 'streak-30', category: 'streak', label: '30d', threshold: 30, ...TIER_COLORS.silver },
+  { id: 'streak-90', category: 'streak', label: '90d', threshold: 90, ...TIER_COLORS.gold },
+  { id: 'streak-360', category: 'streak', label: '360d', threshold: 360, ...TIER_COLORS.diamond },
 ];
 
 // Notes completed awards
@@ -112,9 +113,9 @@ const HOURS_TIERS: AwardTier[] = [
 
 // Legend awards — based on total awards earned (excluding legend awards themselves)
 const LEGEND_TIERS: AwardTier[] = [
-  { id: 'legend-7', category: 'legend', label: '7', threshold: 7, ...TIER_COLORS.purple },
-  { id: 'legend-12', category: 'legend', label: '12', threshold: 12, ...TIER_COLORS.platinum },
-  { id: 'legend-15', category: 'legend', label: '15', threshold: 15, ...TIER_COLORS.crimson },
+  { id: 'legend-8', category: 'legend', label: '8', threshold: 8, ...TIER_COLORS.purple },
+  { id: 'legend-13', category: 'legend', label: '13', threshold: 13, ...TIER_COLORS.platinum },
+  { id: 'legend-16', category: 'legend', label: '16', threshold: 16, ...TIER_COLORS.crimson },
 ];
 
 // Base tiers (non-legend) used for counting toward legend awards
