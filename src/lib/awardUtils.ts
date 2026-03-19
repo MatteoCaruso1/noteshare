@@ -113,9 +113,9 @@ const HOURS_TIERS: AwardTier[] = [
 
 // Legend awards — based on total awards earned (excluding legend awards themselves)
 const LEGEND_TIERS: AwardTier[] = [
-  { id: 'legend-7', category: 'legend', label: '7', threshold: 7, ...TIER_COLORS.purple },
-  { id: 'legend-12', category: 'legend', label: '12', threshold: 12, ...TIER_COLORS.platinum },
-  { id: 'legend-15', category: 'legend', label: '15', threshold: 15, ...TIER_COLORS.crimson },
+  { id: 'legend-8', category: 'legend', label: '8', threshold: 8, ...TIER_COLORS.purple },
+  { id: 'legend-13', category: 'legend', label: '13', threshold: 13, ...TIER_COLORS.platinum },
+  { id: 'legend-16', category: 'legend', label: '16', threshold: 16, ...TIER_COLORS.crimson },
 ];
 
 // Base tiers (non-legend) used for counting toward legend awards
