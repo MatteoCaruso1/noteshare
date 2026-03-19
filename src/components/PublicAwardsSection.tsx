@@ -44,9 +44,9 @@ export function PublicAwardsSection({
         <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-primary" />
-            <h3 className="font-medium">Awards</h3>
-            <span className="text-xs text-muted-foreground">
-              {achievedCount} / {ALL_AWARD_TIERS.length}
+            <h3 className="font-medium">Achievements</h3>
+            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full leading-none flex items-center">
+              {achievedCount}&thinsp;/&thinsp;{ALL_AWARD_TIERS.length}
             </span>
           </div>
           <ChevronDown className={cn(
