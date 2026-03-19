@@ -24,10 +24,12 @@ export function TapTooltip({
   align = 'center',
   sideOffset = 4,
   className,
+  onTap,
 }: TapTooltipProps) {
   const [open, setOpen] = React.useState(false);
   const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const isTouchRef = React.useRef(false);
 
   // Clear timeout on unmount
   React.useEffect(() => {
@@ -52,15 +54,30 @@ export function TapTooltip({
     }, 100);
   };
 
+  const handleTouchStart = () => {
+    isTouchRef.current = true;
+  };
+
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
+    // If onTap is provided and this is a touch interaction, fire the action directly
+    if (onTap && isTouchRef.current) {
+      isTouchRef.current = false;
+      onTap();
+      return;
+    }
+    isTouchRef.current = false;
     setOpen((prev) => !prev);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      setOpen((prev) => !prev);
+      if (onTap) {
+        onTap();
+      } else {
+        setOpen((prev) => !prev);
+      }
     } else if (e.key === 'Escape') {
       setOpen(false);
     }
