@@ -126,6 +126,7 @@ export function AwardsSection({
                             {isAchieved && <p className="text-primary">✓ Achieved{streakCount ? ` (${streakCount}x)` : ''}</p>}
                           </div>
                         }
+                        onTap={isAchieved ? () => handleSelectAward(tier) : undefined}
                       >
                         <button
                           type="button"
