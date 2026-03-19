@@ -78,7 +78,7 @@ export const AwardIcon = memo(function AwardIcon({
       )}
       {tier.category === 'legend' && (
         // Noteshare double eighth notes icon
-        <g transform="translate(2, 1) scale(0.833)">
+        <g transform="translate(0, 0) scale(1)">
           <ellipse cx="7" cy="19" rx="3" ry="2.4" fill={strokeColor} transform="rotate(-15, 7, 19)" />
           <ellipse cx="17" cy="17" rx="3" ry="2.4" fill={strokeColor} transform="rotate(-15, 17, 17)" />
           <rect x="9.2" y="5" width="1.6" height="14.5" rx="0.8" fill={strokeColor} />
