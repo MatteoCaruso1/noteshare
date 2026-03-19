@@ -89,6 +89,7 @@ export function TapTooltip({
         <button
           ref={triggerRef}
           type="button"
+          onTouchStart={handleTouchStart}
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
