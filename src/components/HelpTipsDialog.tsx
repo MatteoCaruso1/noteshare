@@ -55,7 +55,7 @@ const helpSections: HelpSection[] = [
       { icon: <MetronomeIcon className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM' },
       { icon: <Timer className="w-4 h-4" />, label: 'Practice Timer', description: 'Set a countdown timer with audio chime when complete' },
       { icon: <Lock className="w-4 h-4" />, label: 'Unlock Screen', description: 'Keep your mobile screen unlocked while practicing' },
-      { icon: <PracticeBoardToggleIcon />, label: 'Link to Practice List', description: 'Connect your session to your cross-session focus' },
+      { icon: <PracticeBoardToggleIcon />, label: 'Link to Practice Routine', description: 'Connect your session to your cross-session focus' },
       { icon: <SettingsUploadIcon />, label: 'Upload Media', description: 'Upload audio or image files (found within Settings)' },
     ],
   },
