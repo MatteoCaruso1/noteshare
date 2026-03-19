@@ -47,10 +47,10 @@ export function FocusViewDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
-            Practice Board for {formattedDate}
+            Practice Routine for {formattedDate}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            View the practice board text that was saved with this note
+            View the practice routine text that was saved with this note
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4">
@@ -68,7 +68,7 @@ export function FocusViewDialog({
               onClick={handleRemove}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Remove Practice Board Tag
+              Remove Practice Routine Tag
             </Button>
           </div>
         )}

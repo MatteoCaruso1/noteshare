@@ -65,7 +65,7 @@ const tourSteps: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="link-to-list"]',
-    message: 'Link to your Practice List',
+    message: 'Link to your Practice Routine',
     position: 'top',
     elevateParent: true,
   },

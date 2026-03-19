@@ -876,16 +876,16 @@ export function PracticeControls() {
                       onCheckedChange={(checked) => {
                         setAttachFocus(checked);
                         if (checked) {
-                          toast.success("Your session will be linked to Practice List");
+                          toast.success("Your session will be linked to Practice Routine");
                         } else {
-                          toast.success("Your session will no longer be linked to Practice List");
+                          toast.success("Your session will no longer be linked to Practice Routine");
                         }
                       }}
                       className="scale-90"
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Link to Practice List</TooltipContent>
+                <TooltipContent>Link to Practice Routine</TooltipContent>
               </Tooltip>
             </div>
           </TooltipProvider>

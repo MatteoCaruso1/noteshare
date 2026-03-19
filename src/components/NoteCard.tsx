@@ -153,7 +153,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
-              Practice List
+              Practice Routine
             </p>
             <RichTextContent 
               content={focusTextSnapshot} 
@@ -200,7 +200,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
-              Practice List
+              Practice Routine
             </p>
             <RichTextContent 
               content={focusTextSnapshot} 
@@ -663,7 +663,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           })()}
 
           {/* Focus Date Badge - now inline with type badge and tags */}
-          {/* Practice Board badge removed - text is now shown in note content */}
+          {/* Practice Routine badge removed - text is now shown in note content */}
 
           {/* Linked Goal Badge - only visible to note owner since goals are private */}
           {note.goal_id && isOwner && (
@@ -866,7 +866,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <ListTodo className="w-3 h-3" />
-                  Practice Board
+                  Practice Routine
                 </p>
                 <Button
                   size="sm"
@@ -885,7 +885,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
               <RichTextarea
                 value={editedFocusText}
                 onChange={setEditedFocusText}
-                placeholder="Practice board text..."
+                placeholder="Practice routine text..."
                 className="text-sm"
                 autoExpand={true}
                 rows={3}

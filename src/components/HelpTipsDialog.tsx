@@ -28,7 +28,7 @@ interface HelpSection {
   items: HelpItem[];
 }
 
-// Combined icon for Practice List + Toggle
+// Combined icon for Practice Routine + Toggle
 const PracticeBoardToggleIcon = () => (
   <span className="inline-flex items-center gap-0.5 -ml-5">
     <ListTodo className="w-4 h-4" />
@@ -55,16 +55,16 @@ const helpSections: HelpSection[] = [
       { icon: <MetronomeIcon className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM' },
       { icon: <Timer className="w-4 h-4" />, label: 'Practice Timer', description: 'Set a countdown timer with audio chime when complete' },
       { icon: <Lock className="w-4 h-4" />, label: 'Unlock Screen', description: 'Keep your mobile screen unlocked while practicing' },
-      { icon: <PracticeBoardToggleIcon />, label: 'Link to Practice List', description: 'Connect your session to your cross-session focus' },
+      { icon: <PracticeBoardToggleIcon />, label: 'Link to Practice Routine', description: 'Connect your session to your cross-session focus' },
       { icon: <SettingsUploadIcon />, label: 'Upload Media', description: 'Upload audio or image files (found within Settings)' },
     ],
   },
   {
-    feature: 'Practice List',
+    feature: 'Practice Routine',
     featureIcon: <ListTodo className="w-4 h-4 text-foreground" />,
     definition: 'Document your cross-session focus areas to maintain intentionality across sessions',
     items: [
-      { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Lists to revisit later' },
+      { icon: <Save className="w-4 h-4" />, label: 'Save to Backlog', description: 'Save Practice Routines to revisit later' },
       { icon: <FolderOpen className="w-4 h-4" />, label: 'View Backlog', description: 'Revisit saved focuses' },
     ],
   },

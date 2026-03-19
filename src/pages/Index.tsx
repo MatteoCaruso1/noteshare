@@ -276,7 +276,7 @@ const Index = () => {
                     <QuickNoteCapture />
                   </div>
 
-                  {/* Ongoing Focus - Practice Board */}
+                  {/* Ongoing Focus - Practice Routine */}
                   {profile && (
                     <div data-tour="practice-board" className="session-focus-card">
                       <TodaysFocus />
