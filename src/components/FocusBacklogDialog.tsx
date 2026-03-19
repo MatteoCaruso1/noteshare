@@ -119,7 +119,7 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Practice List Backlog</DialogTitle>
+          <DialogTitle>Practice Routine Backlog</DialogTitle>
         </DialogHeader>
 
         <PremiumGate 
