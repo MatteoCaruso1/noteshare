@@ -79,6 +79,22 @@ export function AwardsSection({
 
   const achievedCount = achieved.size;
 
+  // Auto-select the first achieved award if none is selected
+  useEffect(() => {
+    if (!profile?.id || selectedAward || achievedCount === 0) return;
+    // Find the first achieved tier
+    const firstAchieved = ALL_AWARD_TIERS.find((t) => achieved.has(t.id));
+    if (firstAchieved) {
+      supabase
+        .from('profiles')
+        .update({ selected_award: firstAchieved.id } as any)
+        .eq('id', profile.id)
+        .then(({ error }) => {
+          if (!error) onAwardSelected?.(firstAchieved.id);
+        });
+    }
+  }, [profile?.id, selectedAward, achievedCount, achieved, onAwardSelected]);
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <Card className="bg-card border-border overflow-hidden">
