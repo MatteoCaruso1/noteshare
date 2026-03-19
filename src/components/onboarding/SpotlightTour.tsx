@@ -186,21 +186,21 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     const resolved = resolveTarget(tourStep);
     if (!resolved) return null;
 
-    const measureRect = resolved.measureElement.getBoundingClientRect();
-    if (measureRect.width === 0 || measureRect.height === 0) return null;
+    // Use getBoundingClientRect directly — all spotlight elements (SVG, border, tooltip)
+    // are fixed-positioned, so viewport coordinates are correct. No overlay-relative
+    // normalization needed (which caused mobile Safari offset bugs).
+    const r = resolved.measureElement.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) return null;
 
-    const overlayRect = overlayRef.current?.getBoundingClientRect() ?? new DOMRect(0, 0, window.innerWidth, window.innerHeight);
-
-    let left = measureRect.left - overlayRect.left;
-    let top = measureRect.top - overlayRect.top;
-    let width = measureRect.width;
-    let height = measureRect.height;
+    let left = r.left;
+    let top = r.top;
+    let width = r.width;
+    let height = r.height;
 
     if (tourStep.excludeBottomNav) {
       const bottomNav = document.querySelector('[data-tour="bottom-nav"]') as HTMLElement | null;
       if (bottomNav) {
-        const navRect = bottomNav.getBoundingClientRect();
-        const navTop = navRect.top - overlayRect.top;
+        const navTop = bottomNav.getBoundingClientRect().top;
         height = Math.max(0, navTop - top);
       }
     }
