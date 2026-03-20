@@ -6,6 +6,7 @@ export interface FocusBacklogEntry {
   id: string;
   user_id: string;
   focus_text: string;
+  focus_title: string;
   saved_at: string;
   original_focus_date: string | null;
   created_at: string;
