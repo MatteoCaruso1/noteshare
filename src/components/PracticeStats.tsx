@@ -35,22 +35,31 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     const saved = localStorage.getItem('practiceStats_chartRange');
     return (saved && ['1m', '2m', '3m', '6m', 'all'].includes(saved)) ? saved as TimeRange : '1m';
   });
+  const [focusRange, setFocusRange] = useState<TimeRange>(() => {
+    const saved = localStorage.getItem('practiceStats_focusRange');
+    return (saved && ['1m', '2m', '3m', '6m', 'all'].includes(saved)) ? saved as TimeRange : '1m';
+  });
 
   const handleSetChartRange = (range: TimeRange) => {
     setChartRange(range);
     localStorage.setItem('practiceStats_chartRange', range);
   };
+  const handleSetFocusRange = (range: TimeRange) => {
+    setFocusRange(range);
+    localStorage.setItem('practiceStats_focusRange', range);
+  };
 
   // Slice chart data based on selected time range
   const weeksToShow = WEEKS_FOR_RANGE[chartRange];
+  const focusWeeksToShow = WEEKS_FOR_RANGE[focusRange];
   const filteredWeeklyData = useMemo(() => {
     const all = stats?.weeklyMinutesOverTime || [];
     return all.slice(-weeksToShow);
   }, [stats?.weeklyMinutesOverTime, weeksToShow]);
   const filteredFocusData = useMemo(() => {
     const all = stats?.weeklyFocusAverage || [];
-    return all.slice(-weeksToShow);
-  }, [stats?.weeklyFocusAverage, weeksToShow]);
+    return all.slice(-focusWeeksToShow);
+  }, [stats?.weeklyFocusAverage, focusWeeksToShow]);
 
   // Smart x-axis tick interval: prevent label overlap
   const xAxisInterval = useMemo(() => {
@@ -66,6 +75,20 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     if (weeksToShow <= 26) return 2;
     return 5;
   }, [weeksToShow, isMobile]);
+
+  const focusXAxisInterval = useMemo(() => {
+    if (isMobile) {
+      if (focusWeeksToShow <= 5) return 0;
+      if (focusWeeksToShow <= 9) return 1;
+      if (focusWeeksToShow <= 13) return 2;
+      if (focusWeeksToShow <= 26) return 3;
+      return 7;
+    }
+    if (focusWeeksToShow <= 9) return 0;
+    if (focusWeeksToShow <= 13) return 1;
+    if (focusWeeksToShow <= 26) return 2;
+    return 5;
+  }, [focusWeeksToShow, isMobile]);
 
   // Fetch all weekly goals for the calendar heatmap
   const { data: weeklyGoals } = useQuery({
