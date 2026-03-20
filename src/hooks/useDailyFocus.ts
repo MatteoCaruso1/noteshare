@@ -94,6 +94,7 @@ function writeFocusCache(focus: DailyFocus) {
       user_id: focus.user_id,
       focus_date: focus.focus_date,
       focus_text: focus.focus_text,
+      focus_title: focus.focus_title || '',
       created_at: focus.created_at,
       updated_at: focus.updated_at,
     }));
