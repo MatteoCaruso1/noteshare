@@ -212,7 +212,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             {TIME_RANGE_OPTIONS.map(opt => (
               <button
                 key={opt.value}
-                onClick={() => setChartRange(opt.value)}
+                onClick={() => handleSetChartRange(opt.value)}
                 className={`px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors ${
                   chartRange === opt.value
                     ? 'bg-primary text-primary-foreground'
