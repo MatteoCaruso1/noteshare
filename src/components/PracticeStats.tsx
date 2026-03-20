@@ -464,7 +464,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                 return (
                   <>
                     <div className="flex flex-col items-center text-center">
-                      <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{daysPracticed}d</p>
+                      <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{daysPracticed}/{daysPassed}d</p>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Days this Month</p>
                     </div>
                     <div className="flex flex-col items-center text-center">
