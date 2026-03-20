@@ -195,14 +195,31 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     <div className="space-y-4">
       {/* Section: Progress */}
       <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Practice Time</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Practice Time</h3>
+          </div>
+          <div className="flex gap-1">
+            {TIME_RANGE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setChartRange(opt.value)}
+                className={`px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors ${
+                  chartRange === opt.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
         
         {/* Line Chart */}
         {(() => {
-          const rawData = (stats.weeklyMinutesOverTime || []).map(d => ({
+          const rawData = filteredWeeklyData.map(d => ({
             ...d,
             hours: Math.round((d.minutes / 60) * 100) / 100,
           }));
