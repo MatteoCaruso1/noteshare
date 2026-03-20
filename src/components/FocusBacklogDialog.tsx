@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Search, Trash2, Calendar, StickyNote, Upload } from 'lucide-react';
+import { Search, Trash2, Calendar, StickyNote, RotateCcw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -191,7 +191,7 @@ function BacklogEntryCard({ entry, onLoad, onDelete }: BacklogEntryCardProps) {
                   className="h-7 w-7 p-0"
                   title="Load routine"
                 >
-                  <Upload className="w-4 h-4" />
+                  <RotateCcw className="w-4 h-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
