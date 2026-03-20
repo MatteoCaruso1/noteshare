@@ -228,7 +228,7 @@ export function TodaysFocus() {
         clearTimeout(saveTimeoutRef.current);
       }
       if (hasChangesRef.current) {
-        updateFocus(textRef.current);
+        updateFocus(textRef.current, titleRef.current);
       }
     };
   }, []);
