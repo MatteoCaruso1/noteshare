@@ -31,6 +31,33 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [showShareCalendar, setShowShareCalendar] = useState(false);
+  const [chartRange, setChartRange] = useState<TimeRange>('1m');
+
+  // Slice chart data based on selected time range
+  const weeksToShow = WEEKS_FOR_RANGE[chartRange];
+  const filteredWeeklyData = useMemo(() => {
+    const all = stats?.weeklyMinutesOverTime || [];
+    return all.slice(-weeksToShow);
+  }, [stats?.weeklyMinutesOverTime, weeksToShow]);
+  const filteredFocusData = useMemo(() => {
+    const all = stats?.weeklyFocusAverage || [];
+    return all.slice(-weeksToShow);
+  }, [stats?.weeklyFocusAverage, weeksToShow]);
+
+  // Smart x-axis tick interval: prevent label overlap
+  const xAxisInterval = useMemo(() => {
+    if (isMobile) {
+      if (weeksToShow <= 5) return 0;
+      if (weeksToShow <= 9) return 1;
+      if (weeksToShow <= 13) return 2;
+      if (weeksToShow <= 26) return 3;
+      return 7;
+    }
+    if (weeksToShow <= 9) return 0;
+    if (weeksToShow <= 13) return 1;
+    if (weeksToShow <= 26) return 2;
+    return 5;
+  }, [weeksToShow, isMobile]);
 
   // Fetch all weekly goals for the calendar heatmap
   const { data: weeklyGoals } = useQuery({
