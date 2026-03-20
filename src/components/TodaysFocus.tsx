@@ -190,13 +190,25 @@ export function TodaysFocus() {
     }, 1000);
   };
 
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    setHasChanges(true);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync(textRef.current, value);
+        setHasChanges(false);
+      } catch { /* draft preserved */ }
+    }, 1000);
+  };
+
   // Save on blur immediately
   const handleBlur = () => {
     if (hasChanges) {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      updateFocusAsync(text)
+      updateFocusAsync(text, title)
         .then(() => setHasChanges(false))
         .catch(() => console.warn('[TodaysFocus] Blur save failed, draft preserved'));
     }
