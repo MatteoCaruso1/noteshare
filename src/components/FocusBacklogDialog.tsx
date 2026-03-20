@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Search, Trash2, Calendar, StickyNote, Upload } from 'lucide-react';
+import { Search, Trash2, Calendar, StickyNote, RotateCcw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
