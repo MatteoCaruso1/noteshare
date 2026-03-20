@@ -23,9 +23,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [currentStep, setCurrentStep] = useState(0); // 0 = welcome modal
 
   // Fire-and-forget tracking of each onboarding step reached
-  const trackStep = (step: number) => {
-    const userId = profile?.user_id;
-    if (!userId) return;
+  // Accepts an explicit userId to avoid stale closure issues during auto-trigger
+  const trackStep = (step: number, explicitUserId?: string) => {
+    const userId = explicitUserId || profile?.user_id;
+    if (!userId) {
+      console.debug('[Onboarding] trackStep skipped – no user_id for step', step);
+      return;
+    }
     supabase
       .from('onboarding_step_events')
       .upsert({ user_id: userId, step_number: step }, { onConflict: 'user_id,step_number' })
@@ -34,11 +38,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       });
   };
 
-  const startOnboarding = () => {
+  const startOnboarding = (userId?: string) => {
     setCurrentStep(0);
     setShowOnboarding(true);
     isOnboardingActive = true;
-    trackStep(0);
+    trackStep(0, userId);
   };
 
   const completeOnboarding = () => {
