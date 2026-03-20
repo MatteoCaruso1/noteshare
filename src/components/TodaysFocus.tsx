@@ -850,24 +850,24 @@ export function TodaysFocus() {
                 <h2 className="font-semibold">Practice Routine</h2>
               </div>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 {/* Action buttons - stop propagation to prevent triggering collapse */}
                 <TooltipProvider delayDuration={300}>
-                  <div className={`flex gap-1 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <div className={`flex gap-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className={`h-7 w-7 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
+                          className={`h-8 w-8 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSaveToBacklog();
                           }}
                           disabled={isSaving || !text.trim()}
                         >
-                          <Save className="w-4 h-4" />
+                          <Save className="w-[18px] h-[18px]" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Save to backlog</TooltipContent>
@@ -878,13 +878,13 @@ export function TodaysFocus() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className={`h-7 w-7 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
+                          className={`h-8 w-8 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             setIsBacklogOpen(true);
                           }}
                         >
-                          <FolderOpen className="w-4 h-4" />
+                          <FolderOpen className="w-[18px] h-[18px]" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>View backlog</TooltipContent>
@@ -892,12 +892,8 @@ export function TodaysFocus() {
                   </div>
                 </TooltipProvider>
                 
-                {/* Chevron on the right */}
-                {isOpen ? (
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                )}
+                {/* Chevron - fades out when open so it doesn't compete with action buttons */}
+                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-all duration-200 ${isOpen ? 'opacity-0 pointer-events-none rotate-0' : 'opacity-100 -rotate-90'}`} />
               </div>
             </div>
           </CollapsibleTrigger>
