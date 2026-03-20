@@ -132,7 +132,7 @@ export function useTodaysFocus() {
 
       const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
-        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
+        .select('id, user_id, focus_date, focus_text, focus_title, created_at, updated_at')
         .eq('user_id', profileId)
         .eq('focus_date', today)
         .maybeSingle();
