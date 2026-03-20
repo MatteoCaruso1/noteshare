@@ -75,6 +75,8 @@ export function TodaysFocus() {
       const cached = readFocusCache(profileId);
       setText(cached?.focus_text || '');
     }
+    const cached = readFocusCache(profileId);
+    setTitle(cached?.focus_title || '');
     setHasChanges(false);
   }, [profileId]);
 
