@@ -11,6 +11,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+type TimeRange = '1m' | '2m' | '3m' | '6m' | 'all';
+const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
+  { value: '1m', label: '1M' },
+  { value: '2m', label: '2M' },
+  { value: '3m', label: '3M' },
+  { value: '6m', label: '6M' },
+  { value: 'all', label: 'All' },
+];
+const WEEKS_FOR_RANGE: Record<TimeRange, number> = { '1m': 5, '2m': 9, '3m': 13, '6m': 26, 'all': 52 };
+
 interface PracticeStatsProps {
   profileId: string;
 }
@@ -21,6 +31,33 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [showShareCalendar, setShowShareCalendar] = useState(false);
+  const [chartRange, setChartRange] = useState<TimeRange>('1m');
+
+  // Slice chart data based on selected time range
+  const weeksToShow = WEEKS_FOR_RANGE[chartRange];
+  const filteredWeeklyData = useMemo(() => {
+    const all = stats?.weeklyMinutesOverTime || [];
+    return all.slice(-weeksToShow);
+  }, [stats?.weeklyMinutesOverTime, weeksToShow]);
+  const filteredFocusData = useMemo(() => {
+    const all = stats?.weeklyFocusAverage || [];
+    return all.slice(-weeksToShow);
+  }, [stats?.weeklyFocusAverage, weeksToShow]);
+
+  // Smart x-axis tick interval: prevent label overlap
+  const xAxisInterval = useMemo(() => {
+    if (isMobile) {
+      if (weeksToShow <= 5) return 0;
+      if (weeksToShow <= 9) return 1;
+      if (weeksToShow <= 13) return 2;
+      if (weeksToShow <= 26) return 3;
+      return 7;
+    }
+    if (weeksToShow <= 9) return 0;
+    if (weeksToShow <= 13) return 1;
+    if (weeksToShow <= 26) return 2;
+    return 5;
+  }, [weeksToShow, isMobile]);
 
   // Fetch all weekly goals for the calendar heatmap
   const { data: weeklyGoals } = useQuery({
@@ -158,14 +195,31 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     <div className="space-y-4">
       {/* Section: Progress */}
       <Card className="p-4 bg-card border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Practice Time</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Practice Time</h3>
+          </div>
+          <div className="flex gap-1">
+            {TIME_RANGE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setChartRange(opt.value)}
+                className={`px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors ${
+                  chartRange === opt.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
         
         {/* Line Chart */}
         {(() => {
-          const rawData = (stats.weeklyMinutesOverTime || []).map(d => ({
+          const rawData = filteredWeeklyData.map(d => ({
             ...d,
             hours: Math.round((d.minutes / 60) * 100) / 100,
           }));
@@ -247,7 +301,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       tick={{ fontSize: 10 }} 
                       className="text-muted-foreground"
                       tickLine={false}
-                      interval={isMobile ? 1 : 0}
+                      interval={xAxisInterval}
                     />
                     <YAxis 
                       tick={{ fontSize: 10 }} 
@@ -517,7 +571,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       )}
 
       {/* Section: Focus Level Chart — hidden when no data */}
-      {stats.weeklyFocusAverage.some(w => w.average > 0) && (
+      {filteredFocusData.some(w => w.average > 0) && (
         <Card className="p-4 bg-card border-border">
           <div className="flex items-center gap-2 mb-1">
             <Zap className="w-5 h-5 text-primary" />
@@ -526,14 +580,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <p className="text-sm text-muted-foreground mb-3">Average weekly session focus level</p>
           <div className="h-40">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={stats.weeklyFocusAverage}>
+              <LineChart data={filteredFocusData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis
                   dataKey="week"
                   tick={{ fontSize: 10 }}
                   className="text-muted-foreground"
                   tickLine={false}
-                  interval={isMobile ? 1 : 0}
+                  interval={xAxisInterval}
                 />
                 <YAxis
                   domain={[0, 5]}

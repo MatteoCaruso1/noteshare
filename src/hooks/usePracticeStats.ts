@@ -174,9 +174,9 @@ export function usePracticeStats(profileId: string | undefined) {
         .filter(s => s.startDate >= thisMonthStart)
         .reduce((sum, s) => sum + s.durationMinutes, 0);
 
-      // Weekly minutes over time (last 12 weeks)
+      // Weekly minutes over time (last 52 weeks for flexible filtering)
       const weeklyMinutesOverTime: { week: string; minutes: number }[] = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = 51; i >= 0; i--) {
         const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
         const weekEnd = endOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
         const weekMinutes = sessionsWithDuration
@@ -495,9 +495,9 @@ export function usePracticeStats(profileId: string | undefined) {
         if (!weeklyFocusMap[weekKey]) weeklyFocusMap[weekKey] = [];
         weeklyFocusMap[weekKey].push(level);
       });
-      // Build array aligned to same 12-week window as weeklyMinutesOverTime
+      // Build array aligned to same 52-week window as weeklyMinutesOverTime
       const weeklyFocusAverage: { week: string; average: number }[] = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = 51; i >= 0; i--) {
         const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
         const weekKey = format(weekStart, 'MMM d');
         const levels = weeklyFocusMap[weekKey];
