@@ -256,7 +256,7 @@ export function useFocusHistory() {
 
       const { data, error } = await supabase
         .from('daily_focus')
-        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
+        .select('id, user_id, focus_date, focus_text, focus_title, created_at, updated_at')
         .eq('user_id', profileId)
         .order('focus_date', { ascending: false });
 
