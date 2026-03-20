@@ -181,13 +181,11 @@ export function TodaysFocus() {
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await updateFocusAsync(value);
+        await updateFocusAsync(value, titleRef.current);
         setHasChanges(false);
-        // Clear draft after successful DB save
-        if (profileId) writeDraft(profileId, value); // keep draft in sync
+        if (profileId) writeDraft(profileId, value);
       } catch (err) {
         console.warn('[TodaysFocus] DB save failed, draft preserved locally', err);
-        // Draft stays in localStorage — will sync on next attempt
       }
     }, 1000);
   };
