@@ -216,8 +216,10 @@ export function TodaysFocus() {
 
   // Flush pending save on unmount
   const textRef = useRef(text);
+  const titleRef = useRef(title);
   const hasChangesRef = useRef(hasChanges);
   textRef.current = text;
+  titleRef.current = title;
   hasChangesRef.current = hasChanges;
 
   useEffect(() => {
