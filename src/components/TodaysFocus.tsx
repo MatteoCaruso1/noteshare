@@ -953,7 +953,8 @@ export function TodaysFocus() {
 
       <FocusBacklogDialog 
         open={isBacklogOpen} 
-        onOpenChange={setIsBacklogOpen} 
+        onOpenChange={setIsBacklogOpen}
+        onLoad={handleLoadFromBacklog}
       />
     </>
   );
