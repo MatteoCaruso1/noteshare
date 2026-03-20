@@ -254,11 +254,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             ...d,
             hours: Math.round((d.minutes / 60) * 100) / 100,
           }));
-          // Compute cumulative all-time average at each week
-          const chartData = rawData.map((d, i) => {
-            const sum = rawData.slice(0, i + 1).reduce((s, x) => s + x.hours, 0);
-            return { ...d, avgHours: Math.round((sum / (i + 1)) * 100) / 100 };
-          });
+          // Compute true all-time average from ALL weeks with data, not just filtered
+          const allWeeks = (stats?.weeklyMinutesOverTime || []).filter(w => w.minutes > 0);
+          const allTimeAvgHours = allWeeks.length > 0
+            ? Math.round((allWeeks.reduce((s, w) => s + w.minutes, 0) / allWeeks.length / 60) * 100) / 100
+            : 0;
+          const chartData = rawData.map(d => ({
+            ...d,
+            avgHours: allTimeAvgHours,
+          }));
           const maxHours = Math.max(
             ...chartData.map(d => Math.max(d.hours, d.avgHours)),
             1
