@@ -11,6 +11,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+type TimeRange = '1m' | '2m' | '3m' | '6m' | 'all';
+const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
+  { value: '1m', label: '1M' },
+  { value: '2m', label: '2M' },
+  { value: '3m', label: '3M' },
+  { value: '6m', label: '6M' },
+  { value: 'all', label: 'All' },
+];
+const WEEKS_FOR_RANGE: Record<TimeRange, number> = { '1m': 5, '2m': 9, '3m': 13, '6m': 26, 'all': 52 };
+import { Skeleton } from '@/components/ui/skeleton';
+import { CalendarHeatmap } from './CalendarHeatmap';
+import { ShareCalendarSheet } from './ShareCalendarSheet';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 interface PracticeStatsProps {
   profileId: string;
 }
