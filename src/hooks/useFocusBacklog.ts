@@ -24,7 +24,7 @@ export function useFocusBacklog() {
 
       const { data, error } = await supabase
         .from('focus_backlog')
-        .select('id, user_id, focus_text, saved_at, original_focus_date, created_at')
+        .select('id, user_id, focus_text, focus_title, saved_at, original_focus_date, created_at')
         .eq('user_id', profile.id)
         .order('saved_at', { ascending: false });
 
