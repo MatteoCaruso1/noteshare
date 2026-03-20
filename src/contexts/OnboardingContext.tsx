@@ -88,7 +88,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         console.log('[Onboarding] New user detected, starting onboarding');
         // Scroll to top so the welcome modal doesn't appear over a scrolled-down page
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        startOnboarding();
+        startOnboarding(profile.user_id ?? undefined);
       } else {
         clearNewUserFlag();
       }
