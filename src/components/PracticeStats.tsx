@@ -498,10 +498,12 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     borderColor: 'hsl(var(--border))',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    color: 'hsl(var(--foreground))'
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number) => [`${value} note${value !== 1 ? 's' : ''}`, 'Practiced']}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  formatter={(value: number) => [`Practiced : ${value} note${value !== 1 ? 's' : ''}`, '']}
                 />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={24}>
                   {routineFrequency.map((_, index) => (
