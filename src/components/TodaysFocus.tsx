@@ -103,6 +103,9 @@ export function TodaysFocus() {
     if (freshText !== text) {
       setText(freshText);
     }
+    if ((focus as any).focus_title !== undefined && (focus as any).focus_title !== title) {
+      setTitle((focus as any).focus_title || '');
+    }
   }, [focus?.focus_text, profileId]);
 
   // Deterministic autosize using useLayoutEffect
