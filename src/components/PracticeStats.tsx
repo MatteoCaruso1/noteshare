@@ -424,7 +424,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             </div>
             <div className="space-y-2">
               <div className="flex flex-col items-center text-center">
-                <p className="text-sm sm:text-lg font-bold whitespace-nowrap">{stats.currentStreak}d</p>
+                <p className={`text-sm sm:text-lg font-bold whitespace-nowrap ${stats.currentStreak >= 1 ? 'text-green-500' : ''}`}>{stats.currentStreak}d</p>
                 <p className="text-[10px] sm:text-xs text-muted-foreground">Current Streak</p>
               </div>
               <div className="flex flex-col items-center text-center">
