@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Copy, Search, Trash2, Calendar, StickyNote } from 'lucide-react';
+import { Search, Trash2, Calendar, StickyNote, Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -36,9 +36,10 @@ import { PremiumGate } from '@/components/PremiumGate';
 interface FocusBacklogDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onLoad?: (title: string, text: string) => void;
 }
 
-export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogProps) {
+export function FocusBacklogDialog({ open, onOpenChange, onLoad }: FocusBacklogDialogProps) {
   const { backlogEntries, isLoading, deleteFromBacklog } = useFocusBacklog();
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<string>('all');
@@ -56,57 +57,21 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
   // Filter entries
   const filteredEntries = useMemo(() => {
     return backlogEntries.filter((entry) => {
-      // Search filter
-      if (searchQuery && !entry.focus_text.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
+      const query = searchQuery.toLowerCase();
+      if (query) {
+        const matchesText = entry.focus_text.toLowerCase().includes(query);
+        const matchesTitle = (entry.focus_title || '').toLowerCase().includes(query);
+        if (!matchesText && !matchesTitle) return false;
       }
 
-      // Date filter
       if (dateFilter !== 'all') {
         const entryMonth = format(parseISO(entry.saved_at), 'yyyy-MM');
-        if (entryMonth !== dateFilter) {
-          return false;
-        }
+        if (entryMonth !== dateFilter) return false;
       }
 
       return true;
     });
   }, [backlogEntries, searchQuery, dateFilter]);
-
-  const handleCopy = async (text: string) => {
-    try {
-      // Decode any URI-encoded text, then normalize to prevent encoding artifacts
-      let cleanText = text;
-      try {
-        cleanText = decodeURIComponent(text);
-      } catch {
-        // If decodeURIComponent fails, the text wasn't encoded — use as-is
-      }
-      cleanText = cleanText.normalize('NFC');
-      
-      // Try modern clipboard API first
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(cleanText);
-      } else {
-        // Fallback for older browsers / iOS edge cases
-        const textarea = document.createElement('textarea');
-        textarea.value = cleanText;
-        textarea.style.position = 'fixed';
-        textarea.style.left = '-9999px';
-        textarea.style.top = '0';
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
-      
-      toast.success('Copied to clipboard');
-    } catch (err) {
-      console.error('Copy failed:', err);
-      toast.error('Failed to copy');
-    }
-  };
 
   const handleDelete = (id: string) => {
     deleteFromBacklog(id, {
@@ -177,7 +142,11 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
                   <BacklogEntryCard
                     key={entry.id}
                     entry={entry}
-                    onCopy={() => handleCopy(entry.focus_text)}
+                    onLoad={onLoad ? () => {
+                      let cleanText = entry.focus_text;
+                      try { cleanText = decodeURIComponent(cleanText); } catch { /* */ }
+                      onLoad(entry.focus_title || '', cleanText);
+                    } : undefined}
                     onDelete={() => handleDelete(entry.id)}
                   />
                 ))}
@@ -192,27 +161,55 @@ export function FocusBacklogDialog({ open, onOpenChange }: FocusBacklogDialogPro
 
 interface BacklogEntryCardProps {
   entry: FocusBacklogEntry;
-  onCopy: () => void;
+  onLoad?: () => void;
   onDelete: () => void;
 }
 
-function BacklogEntryCard({ entry, onCopy, onDelete }: BacklogEntryCardProps) {
+function BacklogEntryCard({ entry, onLoad, onDelete }: BacklogEntryCardProps) {
+  const decodedText = (() => {
+    try { return decodeURIComponent(entry.focus_text); } catch { return entry.focus_text; }
+  })();
+
   return (
     <Card className="p-3">
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="text-xs text-muted-foreground">
-          Saved {format(parseISO(entry.saved_at), 'MMM d')}
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="min-w-0 flex-1">
+          {entry.focus_title ? (
+            <p className="text-sm font-semibold truncate">{entry.focus_title}</p>
+          ) : null}
+          <p className="text-xs text-muted-foreground">
+            Saved {format(parseISO(entry.saved_at), 'MMM d')}
+          </p>
         </div>
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={onCopy}
-            title="Copy to clipboard"
-          >
-            <Copy className="w-4 h-4" />
-          </Button>
+        <div className="flex gap-1 shrink-0">
+          {onLoad && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  title="Load routine"
+                >
+                  <Upload className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Load this Practice Routine?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Your current routine will be overwritten. Make sure you saved it first!
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onLoad}>
+                    Load Routine
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -244,10 +241,8 @@ function BacklogEntryCard({ entry, onCopy, onDelete }: BacklogEntryCardProps) {
           </AlertDialog>
         </div>
       </div>
-      <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed">
-        {(() => {
-          try { return decodeURIComponent(entry.focus_text); } catch { return entry.focus_text; }
-        })()}
+      <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-muted-foreground line-clamp-3">
+        {decodedText}
       </pre>
     </Card>
   );

@@ -70,6 +70,7 @@ export type Database = {
           created_at: string
           focus_date: string
           focus_text: string
+          focus_title: string
           id: string
           updated_at: string
           user_id: string
@@ -78,6 +79,7 @@ export type Database = {
           created_at?: string
           focus_date: string
           focus_text?: string
+          focus_title?: string
           id?: string
           updated_at?: string
           user_id: string
@@ -86,6 +88,7 @@ export type Database = {
           created_at?: string
           focus_date?: string
           focus_text?: string
+          focus_title?: string
           id?: string
           updated_at?: string
           user_id?: string
@@ -168,6 +171,7 @@ export type Database = {
         Row: {
           created_at: string
           focus_text: string
+          focus_title: string
           id: string
           original_focus_date: string | null
           saved_at: string
@@ -176,6 +180,7 @@ export type Database = {
         Insert: {
           created_at?: string
           focus_text: string
+          focus_title?: string
           id?: string
           original_focus_date?: string | null
           saved_at?: string
@@ -184,6 +189,7 @@ export type Database = {
         Update: {
           created_at?: string
           focus_text?: string
+          focus_title?: string
           id?: string
           original_focus_date?: string | null
           saved_at?: string

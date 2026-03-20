@@ -6,6 +6,7 @@ export interface FocusBacklogEntry {
   id: string;
   user_id: string;
   focus_text: string;
+  focus_title: string;
   saved_at: string;
   original_focus_date: string | null;
   created_at: string;
@@ -23,7 +24,7 @@ export function useFocusBacklog() {
 
       const { data, error } = await supabase
         .from('focus_backlog')
-        .select('id, user_id, focus_text, saved_at, original_focus_date, created_at')
+        .select('id, user_id, focus_text, focus_title, saved_at, original_focus_date, created_at')
         .eq('user_id', profile.id)
         .order('saved_at', { ascending: false });
 
@@ -35,7 +36,7 @@ export function useFocusBacklog() {
 
   // Save to backlog
   const saveToBacklog = useMutation({
-    mutationFn: async ({ focusText, originalFocusDate }: { focusText: string; originalFocusDate?: string }) => {
+    mutationFn: async ({ focusText, focusTitle, originalFocusDate }: { focusText: string; focusTitle?: string; originalFocusDate?: string }) => {
       if (!profile?.id) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -43,6 +44,7 @@ export function useFocusBacklog() {
         .insert({
           user_id: profile.id,
           focus_text: focusText,
+          focus_title: focusTitle || '',
           original_focus_date: originalFocusDate || null,
         })
         .select()

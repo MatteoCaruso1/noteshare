@@ -9,6 +9,7 @@ import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollN
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ListTodo, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
@@ -33,6 +34,10 @@ export function TodaysFocus() {
     if (draft) return draft.text;
     const cached = readFocusCache(profileId);
     return cached?.focus_text || '';
+  });
+  const [title, setTitle] = useState(() => {
+    const cached = readFocusCache(profileId);
+    return cached?.focus_title || '';
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -70,6 +75,8 @@ export function TodaysFocus() {
       const cached = readFocusCache(profileId);
       setText(cached?.focus_text || '');
     }
+    const cached = readFocusCache(profileId);
+    setTitle(cached?.focus_title || '');
     setHasChanges(false);
   }, [profileId]);
 
@@ -95,6 +102,9 @@ export function TodaysFocus() {
 
     if (freshText !== text) {
       setText(freshText);
+    }
+    if ((focus as any).focus_title !== undefined && (focus as any).focus_title !== title) {
+      setTitle((focus as any).focus_title || '');
     }
   }, [focus?.focus_text, profileId]);
 
@@ -171,14 +181,24 @@ export function TodaysFocus() {
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await updateFocusAsync(value);
+        await updateFocusAsync(value, titleRef.current);
         setHasChanges(false);
-        // Clear draft after successful DB save
-        if (profileId) writeDraft(profileId, value); // keep draft in sync
+        if (profileId) writeDraft(profileId, value);
       } catch (err) {
         console.warn('[TodaysFocus] DB save failed, draft preserved locally', err);
-        // Draft stays in localStorage — will sync on next attempt
       }
+    }, 1000);
+  };
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    setHasChanges(true);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync(textRef.current, value);
+        setHasChanges(false);
+      } catch { /* draft preserved */ }
     }, 1000);
   };
 
@@ -188,7 +208,7 @@ export function TodaysFocus() {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      updateFocusAsync(text)
+      updateFocusAsync(text, title)
         .then(() => setHasChanges(false))
         .catch(() => console.warn('[TodaysFocus] Blur save failed, draft preserved'));
     }
@@ -196,8 +216,10 @@ export function TodaysFocus() {
 
   // Flush pending save on unmount
   const textRef = useRef(text);
+  const titleRef = useRef(title);
   const hasChangesRef = useRef(hasChanges);
   textRef.current = text;
+  titleRef.current = title;
   hasChangesRef.current = hasChanges;
 
   useEffect(() => {
@@ -206,7 +228,7 @@ export function TodaysFocus() {
         clearTimeout(saveTimeoutRef.current);
       }
       if (hasChangesRef.current) {
-        updateFocus(textRef.current);
+        updateFocus(textRef.current, titleRef.current);
       }
     };
   }, []);
@@ -219,7 +241,7 @@ export function TodaysFocus() {
           clearTimeout(saveTimeoutRef.current);
           saveTimeoutRef.current = null;
         }
-        updateFocus(textRef.current);
+        updateFocus(textRef.current, titleRef.current);
         hasChangesRef.current = false;
       }
     };
@@ -785,7 +807,8 @@ export function TodaysFocus() {
     
     saveToBacklog(
       { 
-        focusText: text, 
+        focusText: text,
+        focusTitle: title,
         originalFocusDate: focus?.focus_date 
       },
       {
@@ -797,6 +820,22 @@ export function TodaysFocus() {
         },
       }
     );
+  };
+
+  const handleLoadFromBacklog = (entryTitle: string, entryText: string) => {
+    setTitle(entryTitle);
+    setText(entryText);
+    setHasChanges(true);
+    if (profileId) writeDraft(profileId, entryText);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync(entryText, entryTitle);
+        setHasChanges(false);
+      } catch { /* draft preserved */ }
+    }, 500);
+    setIsBacklogOpen(false);
+    toast.success('Practice Routine loaded');
   };
 
   return (
@@ -864,9 +903,14 @@ export function TodaysFocus() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-3 sm:px-4 pb-4" style={{ overflow: 'visible' }}>
             <div ref={collapsibleContentRef}>
-              {/* CSS grid mirror approach: a hidden div renders the same text to drive
-                  the container height. The textarea overlays it. This is immune to
-                  bfcache / tab-switch measurement failures. */}
+              {/* Title input — compact inline */}
+              <Input
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                onBlur={handleBlur}
+                placeholder="Routine name (optional)"
+                className="mb-2 h-8 text-sm font-medium border-none bg-muted/30 focus-visible:ring-1 focus-visible:ring-primary/30 placeholder:text-muted-foreground/50"
+              />
               <div className="grid" style={{ gridTemplateColumns: '1fr' }}>
                 {/* Mirror div — invisible, drives height */}
                 {/* Mirror div — must match textarea's padding, border, font exactly */}
@@ -909,7 +953,8 @@ export function TodaysFocus() {
 
       <FocusBacklogDialog 
         open={isBacklogOpen} 
-        onOpenChange={setIsBacklogOpen} 
+        onOpenChange={setIsBacklogOpen}
+        onLoad={handleLoadFromBacklog}
       />
     </>
   );

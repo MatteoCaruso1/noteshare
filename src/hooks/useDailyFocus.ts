@@ -8,6 +8,7 @@ interface DailyFocus {
   user_id: string;
   focus_date: string;
   focus_text: string;
+  focus_title: string;
   created_at: string;
   updated_at: string;
 }
@@ -93,6 +94,7 @@ function writeFocusCache(focus: DailyFocus) {
       user_id: focus.user_id,
       focus_date: focus.focus_date,
       focus_text: focus.focus_text,
+      focus_title: focus.focus_title || '',
       created_at: focus.created_at,
       updated_at: focus.updated_at,
     }));
@@ -130,7 +132,7 @@ export function useTodaysFocus() {
 
       const { data: todayFocus, error: todayError } = await supabase
         .from('daily_focus')
-        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
+        .select('id, user_id, focus_date, focus_text, focus_title, created_at, updated_at')
         .eq('user_id', profileId)
         .eq('focus_date', today)
         .maybeSingle();
@@ -144,7 +146,7 @@ export function useTodaysFocus() {
       // If no entry for today, get the most recent focus to carry forward
       const { data: recentFocus, error: recentError } = await supabase
         .from('daily_focus')
-        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
+        .select('id, user_id, focus_date, focus_text, focus_title, created_at, updated_at')
         .eq('user_id', profileId)
         .order('focus_date', { ascending: false })
         .limit(1)
@@ -188,22 +190,24 @@ export function useTodaysFocus() {
 
   // Upsert today's focus – returns the mutateAsync function for hardened save
   const updateFocusMutation = useMutation({
-    mutationFn: async (focusText: string) => {
+    mutationFn: async ({ focusText, focusTitle }: { focusText: string; focusTitle?: string }) => {
       const effectiveId = profileId || profileIdRef.current;
       if (!effectiveId) throw new Error('Not authenticated');
 
       const today = getLocalDateString();
 
+      const upsertData: Record<string, unknown> = {
+        user_id: effectiveId,
+        focus_date: today,
+        focus_text: focusText,
+      };
+      if (focusTitle !== undefined) {
+        upsertData.focus_title = focusTitle;
+      }
+
       const { data, error } = await supabase
         .from('daily_focus')
-        .upsert(
-          {
-            user_id: effectiveId,
-            focus_date: today,
-            focus_text: focusText,
-          },
-          { onConflict: 'user_id,focus_date' }
-        )
+        .upsert(upsertData as any, { onConflict: 'user_id,focus_date' })
         .select()
         .single();
 
@@ -211,7 +215,6 @@ export function useTodaysFocus() {
       return data as DailyFocus;
     },
     onSuccess: (data) => {
-      // Update persisted cache with the DB-confirmed row
       writeFocusCache(data);
       queryClient.invalidateQueries({ queryKey: ['daily-focus', profileId] });
       queryClient.invalidateQueries({ queryKey: ['current-focus-entry', profileId] });
@@ -221,8 +224,8 @@ export function useTodaysFocus() {
   return {
     focus: query.data,
     isLoading: query.isLoading,
-    updateFocus: updateFocusMutation.mutate,
-    updateFocusAsync: updateFocusMutation.mutateAsync,
+    updateFocus: (text: string, title?: string) => updateFocusMutation.mutate({ focusText: text, focusTitle: title }),
+    updateFocusAsync: (text: string, title?: string) => updateFocusMutation.mutateAsync({ focusText: text, focusTitle: title }),
     isUpdating: updateFocusMutation.isPending,
   };
 }
@@ -253,7 +256,7 @@ export function useFocusHistory() {
 
       const { data, error } = await supabase
         .from('daily_focus')
-        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
+        .select('id, user_id, focus_date, focus_text, focus_title, created_at, updated_at')
         .eq('user_id', profileId)
         .order('focus_date', { ascending: false });
 
