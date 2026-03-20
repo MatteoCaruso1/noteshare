@@ -146,7 +146,7 @@ export function useTodaysFocus() {
       // If no entry for today, get the most recent focus to carry forward
       const { data: recentFocus, error: recentError } = await supabase
         .from('daily_focus')
-        .select('id, user_id, focus_date, focus_text, created_at, updated_at')
+        .select('id, user_id, focus_date, focus_text, focus_title, created_at, updated_at')
         .eq('user_id', profileId)
         .order('focus_date', { ascending: false })
         .limit(1)
