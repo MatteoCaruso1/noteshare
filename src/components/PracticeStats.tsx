@@ -466,6 +466,54 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         </div>
       </Card>
 
+      {/* Section: Routine Frequency — hidden when no data */}
+      {routineFrequency && routineFrequency.length > 0 && (
+        <Card className="p-4 bg-card border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <ListTodo className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Routine Frequency</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">Notes logged per routine</p>
+          <div style={{ height: Math.max(120, routineFrequency.length * 36 + 24) }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={routineFrequency} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 10 }}
+                  className="text-muted-foreground"
+                  tickLine={false}
+                  allowDecimals={false}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 11 }}
+                  className="text-muted-foreground"
+                  tickLine={false}
+                  width={isMobile ? 80 : 120}
+                  interval={0}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    borderColor: 'hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                  labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  formatter={(value: number) => [`${value} note${value !== 1 ? 's' : ''}`, 'Practiced']}
+                />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={24}>
+                  {routineFrequency.map((_, index) => (
+                    <Cell key={index} fill={`hsl(var(--primary) / ${0.5 + (0.5 * (1 - index / Math.max(routineFrequency.length - 1, 1)))})`} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
       {/* Section: Focus Level Chart — hidden when no data */}
       {stats.weeklyFocusAverage.some(w => w.average > 0) && (
         <Card className="p-4 bg-card border-border">
