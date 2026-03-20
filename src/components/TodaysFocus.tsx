@@ -903,9 +903,14 @@ export function TodaysFocus() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-3 sm:px-4 pb-4" style={{ overflow: 'visible' }}>
             <div ref={collapsibleContentRef}>
-              {/* CSS grid mirror approach: a hidden div renders the same text to drive
-                  the container height. The textarea overlays it. This is immune to
-                  bfcache / tab-switch measurement failures. */}
+              {/* Title input — compact inline */}
+              <Input
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                onBlur={handleBlur}
+                placeholder="Routine name (optional)"
+                className="mb-2 h-8 text-sm font-medium border-none bg-muted/30 focus-visible:ring-1 focus-visible:ring-primary/30 placeholder:text-muted-foreground/50"
+              />
               <div className="grid" style={{ gridTemplateColumns: '1fr' }}>
                 {/* Mirror div — invisible, drives height */}
                 {/* Mirror div — must match textarea's padding, border, font exactly */}
