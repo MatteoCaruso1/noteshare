@@ -8,6 +8,7 @@ interface DailyFocus {
   user_id: string;
   focus_date: string;
   focus_text: string;
+  focus_title: string;
   created_at: string;
   updated_at: string;
 }
