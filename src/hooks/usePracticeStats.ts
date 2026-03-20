@@ -495,9 +495,9 @@ export function usePracticeStats(profileId: string | undefined) {
         if (!weeklyFocusMap[weekKey]) weeklyFocusMap[weekKey] = [];
         weeklyFocusMap[weekKey].push(level);
       });
-      // Build array aligned to same 12-week window as weeklyMinutesOverTime
+      // Build array aligned to same 52-week window as weeklyMinutesOverTime
       const weeklyFocusAverage: { week: string; average: number }[] = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = 51; i >= 0; i--) {
         const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
         const weekKey = format(weekStart, 'MMM d');
         const levels = weeklyFocusMap[weekKey];
