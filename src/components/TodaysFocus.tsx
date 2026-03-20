@@ -35,6 +35,10 @@ export function TodaysFocus() {
     const cached = readFocusCache(profileId);
     return cached?.focus_text || '';
   });
+  const [title, setTitle] = useState(() => {
+    const cached = readFocusCache(profileId);
+    return cached?.focus_title || '';
+  });
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isBacklogOpen, setIsBacklogOpen] = useState(false);
