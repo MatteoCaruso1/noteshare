@@ -807,7 +807,8 @@ export function TodaysFocus() {
     
     saveToBacklog(
       { 
-        focusText: text, 
+        focusText: text,
+        focusTitle: title,
         originalFocusDate: focus?.focus_date 
       },
       {
@@ -819,6 +820,22 @@ export function TodaysFocus() {
         },
       }
     );
+  };
+
+  const handleLoadFromBacklog = (entryTitle: string, entryText: string) => {
+    setTitle(entryTitle);
+    setText(entryText);
+    setHasChanges(true);
+    if (profileId) writeDraft(profileId, entryText);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync(entryText, entryTitle);
+        setHasChanges(false);
+      } catch { /* draft preserved */ }
+    }, 500);
+    setIsBacklogOpen(false);
+    toast.success('Practice Routine loaded');
   };
 
   return (
