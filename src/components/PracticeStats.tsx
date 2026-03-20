@@ -301,7 +301,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       tick={{ fontSize: 10 }} 
                       className="text-muted-foreground"
                       tickLine={false}
-                      interval={isMobile ? 1 : 0}
+                      interval={xAxisInterval}
                     />
                     <YAxis 
                       tick={{ fontSize: 10 }} 
