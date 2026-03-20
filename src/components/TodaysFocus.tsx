@@ -904,7 +904,7 @@ export function TodaysFocus() {
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 onBlur={handleBlur}
-                placeholder="Routine name (optional)"
+                placeholder="Add routine name"
                 className="mb-2 h-8 text-sm font-medium border-none bg-muted/30 focus-visible:ring-1 focus-visible:ring-primary/30 placeholder:text-muted-foreground/50"
               />
               <div className="grid" style={{ gridTemplateColumns: '1fr' }}>
