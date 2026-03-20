@@ -571,7 +571,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       )}
 
       {/* Section: Focus Level Chart — hidden when no data */}
-      {stats.weeklyFocusAverage.some(w => w.average > 0) && (
+      {filteredFocusData.some(w => w.average > 0) && (
         <Card className="p-4 bg-card border-border">
           <div className="flex items-center gap-2 mb-1">
             <Zap className="w-5 h-5 text-primary" />
@@ -580,14 +580,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           <p className="text-sm text-muted-foreground mb-3">Average weekly session focus level</p>
           <div className="h-40">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={stats.weeklyFocusAverage}>
+              <LineChart data={filteredFocusData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis
                   dataKey="week"
                   tick={{ fontSize: 10 }}
                   className="text-muted-foreground"
                   tickLine={false}
-                  interval={isMobile ? 1 : 0}
+                  interval={xAxisInterval}
                 />
                 <YAxis
                   domain={[0, 5]}
