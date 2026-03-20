@@ -181,7 +181,7 @@ function BacklogEntryCard({ entry, onLoad, onDelete }: BacklogEntryCardProps) {
             Saved {format(parseISO(entry.saved_at), 'MMM d')}
           </p>
         </div>
-        <div className="flex gap-1 shrink-0">
+        <div className="flex gap-3 shrink-0">
           {onLoad && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
