@@ -224,8 +224,8 @@ export function useTodaysFocus() {
   return {
     focus: query.data,
     isLoading: query.isLoading,
-    updateFocus: updateFocusMutation.mutate,
-    updateFocusAsync: updateFocusMutation.mutateAsync,
+    updateFocus: (text: string, title?: string) => updateFocusMutation.mutate({ focusText: text, focusTitle: title }),
+    updateFocusAsync: (text: string, title?: string) => updateFocusMutation.mutateAsync({ focusText: text, focusTitle: title }),
     isUpdating: updateFocusMutation.isPending,
   };
 }
