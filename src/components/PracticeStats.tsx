@@ -31,7 +31,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [showShareCalendar, setShowShareCalendar] = useState(false);
-  const [chartRange, setChartRange] = useState<TimeRange>('1m');
+  const [chartRange, setChartRange] = useState<TimeRange>(() => {
+    const saved = localStorage.getItem('practiceStats_chartRange');
+    return (saved && ['1m', '2m', '3m', '6m', 'all'].includes(saved)) ? saved as TimeRange : '1m';
+  });
+
+  const handleSetChartRange = (range: TimeRange) => {
+    setChartRange(range);
+    localStorage.setItem('practiceStats_chartRange', range);
+  };
 
   // Slice chart data based on selected time range
   const weeksToShow = WEEKS_FOR_RANGE[chartRange];
