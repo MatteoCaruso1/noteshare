@@ -41,6 +41,51 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch routine frequency: notes linked to focus entries, grouped by title
+  const { data: routineFrequency } = useQuery({
+    queryKey: ['routine-frequency', profileId],
+    queryFn: async () => {
+      // Get all daily_focus entries with titles
+      const { data: focusEntries, error: fErr } = await supabase
+        .from('daily_focus')
+        .select('id, focus_title')
+        .eq('user_id', profileId);
+      if (fErr) throw fErr;
+      if (!focusEntries?.length) return [];
+
+      // Get all notes linked to focus entries
+      const { data: notes, error: nErr } = await supabase
+        .from('notes')
+        .select('focus_entry_id')
+        .eq('author_id', profileId)
+        .not('focus_entry_id', 'is', null);
+      if (nErr) throw nErr;
+      if (!notes?.length) return [];
+
+      // Build a map: focus_entry_id -> title
+      const titleMap = new Map<string, string>();
+      focusEntries.forEach(e => {
+        if (e.focus_title) titleMap.set(e.id, e.focus_title);
+      });
+
+      // Count notes per title
+      const counts = new Map<string, number>();
+      notes.forEach(n => {
+        const title = titleMap.get(n.focus_entry_id!);
+        if (title) {
+          counts.set(title, (counts.get(title) || 0) + 1);
+        }
+      });
+
+      return Array.from(counts.entries())
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+    },
+    enabled: !!profileId,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Compute trend callouts from stats data
   const trends = useMemo(() => {
     if (!stats) return null;
