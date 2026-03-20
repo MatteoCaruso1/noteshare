@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ListTodo, Save, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { ListTodo, Save, FolderOpen, ChevronDown } from 'lucide-react';
 import { FocusBacklogDialog } from './FocusBacklogDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
