@@ -36,7 +36,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ListTodo } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { uploadVideoToStorage } from '@/lib/videoUpload';
+import { uploadVideoToStorage, uploadVideoThumbnail } from '@/lib/videoUpload';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
