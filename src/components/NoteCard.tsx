@@ -973,6 +973,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         <CombinedTextContent
           textContent={note.text_content}
           focusTextSnapshot={note.focus_text_snapshot}
+          focusTitleSnapshot={(note as any).focus_title_snapshot || null}
           expanded={expanded}
           inlineExpanded={isInlineExpanded}
           hasMediaBelow={visibleAudioFiles.length > 0 || note.image_files.length > 0}
