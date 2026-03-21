@@ -65,6 +65,7 @@ export interface Note {
   focus_entry_id: string | null;
   focus_date: string | null;
   focus_text_snapshot: string | null;
+  focus_title_snapshot: string | null;
   text_content: string | null;
   audio_files: string[];
   audio_file_names: string[];

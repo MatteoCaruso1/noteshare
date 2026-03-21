@@ -592,6 +592,7 @@ export function PracticeControls() {
               focusEntryId: focusData ? focusData.id : undefined,
               focusDate: focusData ? getTodayLocalDate() : undefined,
               focusTextSnapshot: focusData ? focusData.focus_text : undefined,
+              focusTitleSnapshot: focusData?.focus_title || undefined,
               privateAudioIndices: capturedPrivateAudioIndices,
               videoPath,
             },

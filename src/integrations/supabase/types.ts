@@ -787,6 +787,7 @@ export type Database = {
           focus_date: string | null
           focus_entry_id: string | null
           focus_text_snapshot: string | null
+          focus_title_snapshot: string | null
           gig_id: string | null
           goal_id: string | null
           id: string
@@ -810,6 +811,7 @@ export type Database = {
           focus_date?: string | null
           focus_entry_id?: string | null
           focus_text_snapshot?: string | null
+          focus_title_snapshot?: string | null
           gig_id?: string | null
           goal_id?: string | null
           id?: string
@@ -833,6 +835,7 @@ export type Database = {
           focus_date?: string | null
           focus_entry_id?: string | null
           focus_text_snapshot?: string | null
+          focus_title_snapshot?: string | null
           gig_id?: string | null
           goal_id?: string | null
           id?: string

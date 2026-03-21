@@ -115,6 +115,7 @@ function parseFocusLevel(tags: string[] | null): number | null {
 interface CombinedTextContentProps {
   textContent: string | null;
   focusTextSnapshot: string | null;
+  focusTitleSnapshot: string | null;
   expanded?: boolean;
   inlineExpanded?: boolean;
   hasMediaBelow: boolean;
@@ -122,7 +123,7 @@ interface CombinedTextContentProps {
   onShowLess?: () => void;
 }
 
-function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineExpanded, hasMediaBelow, onShowMore, onShowLess }: CombinedTextContentProps) {
+function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapshot, expanded, inlineExpanded, hasMediaBelow, onShowMore, onShowLess }: CombinedTextContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
@@ -153,7 +154,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
-              Practice Routine
+              {focusTitleSnapshot || 'Practice Routine'}
             </p>
             <RichTextContent 
               content={focusTextSnapshot} 
@@ -200,7 +201,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineE
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
-              Practice Routine
+              {focusTitleSnapshot || 'Practice Routine'}
             </p>
             <RichTextContent 
               content={focusTextSnapshot} 
@@ -972,6 +973,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         <CombinedTextContent
           textContent={note.text_content}
           focusTextSnapshot={note.focus_text_snapshot}
+          focusTitleSnapshot={(note as any).focus_title_snapshot || null}
           expanded={expanded}
           inlineExpanded={isInlineExpanded}
           hasMediaBelow={visibleAudioFiles.length > 0 || note.image_files.length > 0}
