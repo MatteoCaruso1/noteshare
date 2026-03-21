@@ -13,10 +13,11 @@ interface VideoRecorderProps {
 
 /**
  * VideoRecorder: opens a fullscreen camera overlay on mount.
- * Shows live preview with stop button + timer overlaid.
+ * Shows live camera preview first — user presses record to start.
  * After recording, shows a video preview with accept/retake/discard options.
  */
 export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
+  const [cameraReady, setCameraReady] = useState(false);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
@@ -40,9 +41,9 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
     };
   }, []);
 
-  // Auto-start recording on mount
+  // Open camera on mount (preview only, no recording)
   useEffect(() => {
-    startRecording();
+    openCamera();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Lock body scroll when overlay is open
@@ -59,99 +60,101 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
     streamRef.current = null;
   }, []);
 
-  const startRecording = useCallback(async () => {
+  const openCamera = useCallback(async () => {
     try {
-      // Clean up any previous preview
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
         setPreviewUrl(null);
       }
       setPreviewBlob(null);
+      setCameraReady(false);
 
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: isMobile
-          // Don't over-constrain on mobile — let the browser pick optimal resolution
-          // High ideal values cause extreme zoom on many devices
           ? { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
           : { width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: true,
       });
       streamRef.current = stream;
 
-      // Attach live preview
       if (videoPreviewRef.current) {
         videoPreviewRef.current.srcObject = stream;
         videoPreviewRef.current.play().catch(() => {});
       }
 
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-        ? 'video/webm;codecs=vp9,opus'
-        : MediaRecorder.isTypeSupported('video/webm')
-          ? 'video/webm'
-          : 'video/mp4';
-
-      let recorder: MediaRecorder;
-      try {
-        recorder = new MediaRecorder(stream, { mimeType });
-      } catch {
-        recorder = new MediaRecorder(stream);
-      }
-
-      chunksRef.current = [];
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        timerRef.current && clearInterval(timerRef.current);
-        autoStopRef.current && clearTimeout(autoStopRef.current);
-        stopTracks();
-
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'video/webm' });
-        if (blob.size === 0) {
-          toast.error('Video recording failed — no data captured.');
-          onDiscard?.();
-          return;
-        }
-
-        console.log(`[VideoRecorder] Recorded ${(blob.size / 1024).toFixed(0)}KB, type: ${blob.type}`);
-        
-        // Show preview instead of immediately accepting
-        const url = URL.createObjectURL(blob);
-        setPreviewBlob(blob);
-        setPreviewUrl(url);
-      };
-
-      recorder.onerror = (event) => {
-        console.error('[VideoRecorder] error:', event);
-        stopTracks();
-        toast.error('Video recording error.');
-        onDiscard?.();
-      };
-
-      recorder.start(1000);
-      setElapsed(0);
-      setRecording(true);
-
-      timerRef.current = setInterval(() => {
-        setElapsed(prev => prev + 1);
-      }, 1000);
-
-      autoStopRef.current = setTimeout(() => {
-        if (mediaRecorderRef.current?.state === 'recording') {
-          mediaRecorderRef.current.stop();
-        }
-      }, MAX_DURATION * 1000);
-
+      setCameraReady(true);
     } catch (err) {
       console.error('[VideoRecorder] Permission error:', err);
       toast.error('Camera access required to record video.');
       onDiscard?.();
     }
-  }, [stopTracks, onDiscard]); // intentionally exclude previewUrl to avoid stale closure issues
+  }, [onDiscard]);
+
+  const beginRecording = useCallback(() => {
+    if (!streamRef.current) return;
+
+    const stream = streamRef.current;
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : MediaRecorder.isTypeSupported('video/webm')
+        ? 'video/webm'
+        : 'video/mp4';
+
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(stream, { mimeType });
+    } catch {
+      recorder = new MediaRecorder(stream);
+    }
+
+    chunksRef.current = [];
+    mediaRecorderRef.current = recorder;
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      timerRef.current && clearInterval(timerRef.current);
+      autoStopRef.current && clearTimeout(autoStopRef.current);
+      stopTracks();
+
+      const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'video/webm' });
+      if (blob.size === 0) {
+        toast.error('Video recording failed — no data captured.');
+        onDiscard?.();
+        return;
+      }
+
+      console.log(`[VideoRecorder] Recorded ${(blob.size / 1024).toFixed(0)}KB, type: ${blob.type}`);
+      
+      const url = URL.createObjectURL(blob);
+      setPreviewBlob(blob);
+      setPreviewUrl(url);
+    };
+
+    recorder.onerror = (event) => {
+      console.error('[VideoRecorder] error:', event);
+      stopTracks();
+      toast.error('Video recording error.');
+      onDiscard?.();
+    };
+
+    recorder.start(1000);
+    setElapsed(0);
+    setRecording(true);
+
+    timerRef.current = setInterval(() => {
+      setElapsed(prev => prev + 1);
+    }, 1000);
+
+    autoStopRef.current = setTimeout(() => {
+      if (mediaRecorderRef.current?.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    }, MAX_DURATION * 1000);
+  }, [stopTracks, onDiscard]);
 
   const stopRecording = useCallback(() => {
     setRecording(false);
@@ -184,8 +187,8 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
     setPreviewUrl(null);
     setRecording(false);
     setElapsed(0);
-    startRecording();
-  }, [previewUrl, startRecording]);
+    openCamera();
+  }, [previewUrl, openCamera]);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -199,7 +202,7 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
 
   const progressPercent = (elapsed / MAX_DURATION) * 100;
 
-  // ── Preview mode ──
+  // ── Preview mode (after recording) ──
   if (previewUrl && previewBlob) {
     const previewOverlay = (
       <div className="fixed inset-0 z-[100] bg-black flex flex-col">
@@ -254,7 +257,7 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
     return createPortal(previewOverlay, document.body);
   }
 
-  // ── Recording mode ──
+  // ── Camera preview / Recording mode ──
   const overlay = (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col">
       {/* Camera preview */}
@@ -291,16 +294,15 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
         )}
       </div>
 
-      {/* Bottom bar: stop button */}
+      {/* Bottom bar */}
       <div className="relative z-10 mt-auto flex flex-col items-center gap-4 pb-10 safe-area-bottom">
-        {/* Progress ring */}
-        {recording && (
+        {recording ? (
+          /* Stop button with progress ring */
           <button
             onClick={stopRecording}
-            onTouchEnd={handleTouchEnd}
+            onTouchEnd={handleTouchEnd as any}
             className="relative w-20 h-20 rounded-full flex items-center justify-center touch-manipulation focus:outline-none"
           >
-            {/* Outer ring with progress */}
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 80 80">
               <circle
                 cx="40" cy="40" r="36"
@@ -319,12 +321,21 @@ export function VideoRecorder({ onDiscard, onVideoReady }: VideoRecorderProps) {
                 className="transition-[stroke-dashoffset] duration-1000 ease-linear"
               />
             </svg>
-            {/* Inner stop square */}
             <div className="w-8 h-8 rounded-md bg-red-500" />
           </button>
-        )}
-
-        {!recording && (
+        ) : cameraReady ? (
+          /* Record button */
+          <button
+            onClick={beginRecording}
+            onTouchEnd={handleTouchEnd as any}
+            className="relative w-20 h-20 rounded-full flex items-center justify-center touch-manipulation focus:outline-none"
+          >
+            {/* Outer ring */}
+            <div className="absolute inset-0 rounded-full border-4 border-white/80" />
+            {/* Inner red circle */}
+            <div className="w-14 h-14 rounded-full bg-red-500" />
+          </button>
+        ) : (
           <div className="text-white/60 text-sm">Starting camera…</div>
         )}
       </div>
