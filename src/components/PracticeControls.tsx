@@ -980,7 +980,9 @@ export function PracticeControls() {
             <div className="mb-4">
               <VideoClipChip
                 videoBlob={videoBlob}
-                onDiscard={() => setVideoBlob(null)}
+                onDiscard={() => { setVideoBlob(null); setVideoName(''); }}
+                videoName={videoName}
+                onVideoNameChange={setVideoName}
               />
             </div>
           )}
