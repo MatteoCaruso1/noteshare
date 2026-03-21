@@ -115,6 +115,7 @@ function parseFocusLevel(tags: string[] | null): number | null {
 interface CombinedTextContentProps {
   textContent: string | null;
   focusTextSnapshot: string | null;
+  focusTitleSnapshot: string | null;
   expanded?: boolean;
   inlineExpanded?: boolean;
   hasMediaBelow: boolean;
@@ -122,7 +123,7 @@ interface CombinedTextContentProps {
   onShowLess?: () => void;
 }
 
-function CombinedTextContent({ textContent, focusTextSnapshot, expanded, inlineExpanded, hasMediaBelow, onShowMore, onShowLess }: CombinedTextContentProps) {
+function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapshot, expanded, inlineExpanded, hasMediaBelow, onShowMore, onShowLess }: CombinedTextContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
