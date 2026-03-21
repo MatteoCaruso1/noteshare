@@ -145,6 +145,7 @@ export function PracticeControls() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const [videoName, setVideoName] = useState('');
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
