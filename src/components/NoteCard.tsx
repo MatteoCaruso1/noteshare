@@ -35,10 +35,18 @@ import { usePrefetchNoteComments } from '@/hooks/useNoteComments';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
 
-function NoteVideoPlayer({ videoPath }: { videoPath: string }) {
+function NoteVideoPlayer({ videoPath, videoName, videoThumbnailPath }: { videoPath: string; videoName?: string; videoThumbnailPath?: string }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+
+  // Load thumbnail signed URL on mount
+  useEffect(() => {
+    if (!videoThumbnailPath) return;
+    supabase.storage.from('notes-media').createSignedUrl(videoThumbnailPath, 3600)
+      .then(({ data }) => { if (data?.signedUrl) setThumbUrl(data.signedUrl); });
+  }, [videoThumbnailPath]);
 
   const handlePlay = async () => {
     if (signedUrl || loading) return;
@@ -58,6 +66,7 @@ function NoteVideoPlayer({ videoPath }: { videoPath: string }) {
   if (signedUrl) {
     return (
       <div className="mt-2 rounded-lg overflow-hidden bg-secondary/30" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+        {videoName && <p className="text-xs text-muted-foreground px-2 pt-1.5">{videoName}</p>}
         <video
           controls
           playsInline
@@ -72,18 +81,23 @@ function NoteVideoPlayer({ videoPath }: { videoPath: string }) {
   return (
     <button
       onClick={(e) => { e.stopPropagation(); handlePlay(); }}
-      className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/40 text-sm text-muted-foreground hover:bg-secondary/60 transition-colors"
+      className="mt-2 flex items-center gap-2 rounded-lg bg-secondary/40 text-sm text-muted-foreground hover:bg-secondary/60 transition-colors overflow-hidden"
     >
-      {loading ? (
-        <span className="animate-pulse">Loading video…</span>
-      ) : error ? (
-        <span className="text-destructive">Failed to load video. Tap to retry.</span>
-      ) : (
-        <>
-          <Video className="w-4 h-4" />
-          <span>Video</span>
-        </>
-      )}
+      {thumbUrl ? (
+        <img src={thumbUrl} alt="" className="w-16 h-12 object-cover rounded-l-lg shrink-0" />
+      ) : null}
+      <div className="flex items-center gap-2 px-3 py-2">
+        {loading ? (
+          <span className="animate-pulse">Loading video…</span>
+        ) : error ? (
+          <span className="text-destructive">Failed to load video. Tap to retry.</span>
+        ) : (
+          <>
+            <Video className="w-4 h-4" />
+            <span>{videoName || 'Video'}</span>
+          </>
+        )}
+      </div>
     </button>
   );
 }
