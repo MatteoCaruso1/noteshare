@@ -57,9 +57,10 @@ function NoteVideoPlayer({ videoPath }: { videoPath: string }) {
 
   if (signedUrl) {
     return (
-      <div className="mt-2 rounded-lg overflow-hidden bg-secondary/30">
+      <div className="mt-2 rounded-lg overflow-hidden bg-secondary/30" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
         <video
           controls
+          playsInline
           preload="metadata"
           className="w-full max-h-80 rounded-lg"
           src={signedUrl}

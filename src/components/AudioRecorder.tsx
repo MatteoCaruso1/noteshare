@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Mic, Square, Loader2, Video, X, Play } from 'lucide-react';
 import { toast } from 'sonner';
@@ -329,7 +330,7 @@ export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDis
       </div>
 
       {/* Fullscreen video preview dialog */}
-      {showPreview && (
+      {showPreview && createPortal(
         <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
           onClick={() => setShowPreview(false)}
@@ -338,19 +339,21 @@ export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDis
             variant="ghost"
             size="icon"
             onClick={() => setShowPreview(false)}
-            className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-black/40 text-white hover:bg-black/60"
+            className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-black/40 text-white hover:bg-black/60 touch-manipulation"
           >
             <X className="w-5 h-5" />
           </Button>
           <video
             src={previewUrl}
             autoPlay
-            controls
             playsInline
+            muted={false}
+            controls
             className="w-full h-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
