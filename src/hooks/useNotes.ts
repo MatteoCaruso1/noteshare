@@ -284,6 +284,8 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusTitleSnapshot,
       privateAudioIndices = [],
       videoPath,
+      videoName,
+      videoThumbnailPath,
     }: {
       authorId: string;
       textContent?: string;
@@ -304,6 +306,8 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusTitleSnapshot?: string;
       privateAudioIndices?: number[];
       videoPath?: string;
+      videoName?: string;
+      videoThumbnailPath?: string;
     }) => {
       // SAFETY CHECK: If this was explicitly marked as a session note (from PracticeControls),
       // it MUST have a sessionId. If it doesn't, a race condition stripped it.
