@@ -214,6 +214,8 @@ export function QuickNoteCapture() {
         visibility,
         privateAudioIndices,
         videoPath,
+        videoName: videoNameRef.current || undefined,
+        videoThumbnailPath,
         // Attach focus if toggle is on and focus data is available
         focusEntryId: focusData ? focusData.id : undefined,
         focusDate: focusData ? getTodayLocalDate() : undefined,
