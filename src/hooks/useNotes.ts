@@ -281,6 +281,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusEntryId,
       focusDate,
       focusTextSnapshot,
+      focusTitleSnapshot,
       privateAudioIndices = [],
       videoPath,
     }: {
