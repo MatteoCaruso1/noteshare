@@ -294,14 +294,48 @@ export function AudioRecorder({ onRecorded, onRecordingChange, onVideoReady, onV
     </div>
   );
 }
-/** Small chip showing recorded video with play preview */
-export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDiscard: () => void }) {
+/** Small chip showing recorded video with play preview and editable name */
+export function VideoClipChip({ videoBlob, onDiscard, videoName, onVideoNameChange }: { 
+  videoBlob: Blob; 
+  onDiscard: () => void;
+  videoName?: string;
+  onVideoNameChange?: (name: string) => void;
+}) {
   const [showPreview, setShowPreview] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(videoName || '');
+  const inputRef = useRef<HTMLInputElement>(null);
   const previewUrl = useMemo(() => URL.createObjectURL(videoBlob), [videoBlob]);
 
+  // Generate a thumbnail from the video blob
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   useEffect(() => {
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+    let revoke: string | null = null;
+    generateVideoThumbnail(videoBlob).then(url => {
+      if (url) {
+        revoke = url;
+        setThumbnailUrl(url);
+      }
+    });
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [previewUrl, videoBlob]);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSaveName = () => {
+    setIsEditing(false);
+    onVideoNameChange?.(editValue.trim());
+  };
+
+  const displayName = videoName || 'Video clip';
 
   return (
     <>
@@ -309,15 +343,41 @@ export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDis
         <button
           type="button"
           onClick={() => setShowPreview(true)}
-          className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-2.5 py-1.5 hover:bg-muted transition-colors cursor-pointer"
+          className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-2.5 py-1.5 hover:bg-muted transition-colors cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] overflow-hidden"
         >
-          <Video className="w-3.5 h-3.5 text-primary" />
-          <span className="text-sm text-foreground">Video clip</span>
-          <span className="text-xs text-muted-foreground">
+          {thumbnailUrl && (
+            <img src={thumbnailUrl} alt="" className="w-8 h-6 object-cover rounded-sm shrink-0" />
+          )}
+          {!thumbnailUrl && <Video className="w-3.5 h-3.5 text-primary shrink-0" />}
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={handleSaveName}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); }}
+              onClick={(e) => e.stopPropagation()}
+              className="text-sm bg-transparent border-none outline-none w-24 text-foreground"
+              placeholder="Name…"
+            />
+          ) : (
+            <span className="text-sm text-foreground truncate max-w-[120px]">{displayName}</span>
+          )}
+          <span className="text-xs text-muted-foreground shrink-0">
             ({(videoBlob.size / (1024 * 1024)).toFixed(1)}MB)
           </span>
-          <Play className="w-3 h-3 text-muted-foreground" />
+          <Play className="w-3 h-3 text-muted-foreground shrink-0" />
         </button>
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={() => { setEditValue(videoName || ''); setIsEditing(true); }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
+            title="Rename video"
+          >
+            ✏️
+          </button>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -357,6 +417,99 @@ export function VideoClipChip({ videoBlob, onDiscard }: { videoBlob: Blob; onDis
       )}
     </>
   );
+}
+
+/** Generate a small thumbnail from a video blob */
+export function generateVideoThumbnail(videoBlob: Blob): Promise<string | null> {
+  return new Promise((resolve) => {
+    try {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+      const url = URL.createObjectURL(videoBlob);
+      video.src = url;
+      
+      video.onloadeddata = () => {
+        video.currentTime = 0.5; // seek to 0.5s for a meaningful frame
+      };
+      
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          // Small thumbnail for fast loading
+          const scale = Math.min(160 / video.videoWidth, 120 / video.videoHeight, 1);
+          canvas.width = Math.round(video.videoWidth * scale);
+          canvas.height = Math.round(video.videoHeight * scale);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { URL.revokeObjectURL(url); resolve(null); return; }
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const thumbUrl = canvas.toDataURL('image/jpeg', 0.6);
+          URL.revokeObjectURL(url);
+          resolve(thumbUrl);
+        } catch {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        }
+      };
+      
+      video.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+
+      // Timeout fallback
+      setTimeout(() => { URL.revokeObjectURL(url); resolve(null); }, 5000);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+/** Generate a thumbnail blob for upload to storage */
+export function generateVideoThumbnailBlob(videoBlob: Blob): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    try {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+      const url = URL.createObjectURL(videoBlob);
+      video.src = url;
+      
+      video.onloadeddata = () => {
+        video.currentTime = 0.5;
+      };
+      
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const scale = Math.min(320 / video.videoWidth, 240 / video.videoHeight, 1);
+          canvas.width = Math.round(video.videoWidth * scale);
+          canvas.height = Math.round(video.videoHeight * scale);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { URL.revokeObjectURL(url); resolve(null); return; }
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(url);
+            resolve(blob);
+          }, 'image/jpeg', 0.7);
+        } catch {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        }
+      };
+      
+      video.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+
+      setTimeout(() => { URL.revokeObjectURL(url); resolve(null); }, 5000);
+    } catch {
+      resolve(null);
+    }
+  });
 }
 
 export async function clearRecordingBackup(backupId: string): Promise<void> {
