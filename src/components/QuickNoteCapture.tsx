@@ -36,7 +36,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ListTodo } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { uploadVideoToStorage } from '@/lib/videoUpload';
+import { uploadVideoToStorage, uploadVideoThumbnail } from '@/lib/videoUpload';
 
 // Get today's date as YYYY-MM-DD in local timezone
 function getTodayLocalDate(): string {
@@ -75,6 +75,7 @@ export function QuickNoteCapture() {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
   const videoBlobRef = useRef<Blob | null>(null);
+  const videoNameRef = useRef('');
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
@@ -175,15 +176,25 @@ export function QuickNoteCapture() {
     // Resolve focus data: use hook data first, fall back to localStorage cache
     const focusData = attachFocus ? (currentFocus || readFocusCache(profile?.id)) : null;
 
-    // Upload video BEFORE creating note so video_path is included in the insert
+    // Upload video + thumbnail BEFORE creating note
     let videoPath: string | undefined;
+    let videoThumbnailPath: string | undefined;
     if (videoBlobRef.current && user?.id) {
       toast.loading('Uploading video…', { id: 'video-upload' });
-      const path = await uploadVideoToStorage(videoBlobRef.current, user.id);
-      toast.dismiss('video-upload');
+      const [path, thumbBlob] = await Promise.all([
+        uploadVideoToStorage(videoBlobRef.current, user.id),
+        import('@/components/AudioRecorder').then(m => m.generateVideoThumbnailBlob(videoBlobRef.current!)),
+      ]);
       if (path) {
         videoPath = path;
+        if (thumbBlob) {
+          videoThumbnailPath = await uploadVideoThumbnail(thumbBlob, user.id) || undefined;
+        }
+      }
+      toast.dismiss('video-upload');
+      if (path) {
         videoBlobRef.current = null;
+        videoNameRef.current = '';
       } else {
         toast.error('Video upload failed. Note will be saved without video.');
       }
@@ -203,6 +214,8 @@ export function QuickNoteCapture() {
         visibility,
         privateAudioIndices,
         videoPath,
+        videoName: videoNameRef.current || undefined,
+        videoThumbnailPath,
         // Attach focus if toggle is on and focus data is available
         focusEntryId: focusData ? focusData.id : undefined,
         focusDate: focusData ? getTodayLocalDate() : undefined,

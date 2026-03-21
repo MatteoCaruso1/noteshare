@@ -30,6 +30,33 @@ export async function uploadVideoToStorage(
 }
 
 /**
+ * Upload a video thumbnail to notes-media storage.
+ * Returns the storage path on success, null on failure.
+ */
+export async function uploadVideoThumbnail(
+  thumbnailBlob: Blob,
+  userId: string,
+): Promise<string | null> {
+  const fileId = crypto.randomUUID();
+  const filePath = `${userId}/thumb_${fileId}.jpg`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('notes-media')
+    .upload(filePath, thumbnailBlob, {
+      contentType: 'image/jpeg',
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error('[uploadVideoThumbnail] Upload failed:', uploadError);
+    return null;
+  }
+
+  console.log(`[uploadVideoThumbnail] Success: ${filePath}`);
+  return filePath;
+}
+
+/**
  * @deprecated Use uploadVideoToStorage before note creation instead.
  * Legacy: Upload video and update an existing note's video_path.
  */

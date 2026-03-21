@@ -13,7 +13,7 @@ import { useCreateNoteShares } from '@/hooks/useNoteShares';
 import { useShareEducation } from '@/contexts/ShareEducationContext';
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
 import { useMilestoneToasts } from '@/hooks/useMilestoneToasts';
-import { uploadVideoToStorage } from '@/lib/videoUpload';
+import { uploadVideoToStorage, uploadVideoThumbnail } from '@/lib/videoUpload';
 
 import { usePersistentNoteState } from '@/hooks/usePersistentNoteState';
 import { useDailyNoteLimit } from '@/hooks/useDailyNoteLimit';
@@ -145,6 +145,7 @@ export function PracticeControls() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const [videoName, setVideoName] = useState('');
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
@@ -554,15 +555,26 @@ export function PracticeControls() {
             return;
           }
 
-          // Upload video BEFORE creating note so video_path is included in the insert
+          // Upload video + thumbnail BEFORE creating note
           let videoPath: string | undefined;
+          let videoThumbnailPath: string | undefined;
           if (videoBlob && user?.id) {
             sonnerToast.loading('Uploading video…', { id: 'video-upload' });
-            const path = await uploadVideoToStorage(videoBlob, user.id);
-            sonnerToast.dismiss('video-upload');
+            const [path, thumbBlob] = await Promise.all([
+              uploadVideoToStorage(videoBlob, user.id),
+              import('@/components/AudioRecorder').then(m => m.generateVideoThumbnailBlob(videoBlob)),
+            ]);
             if (path) {
               videoPath = path;
+              // Upload thumbnail in background
+              if (thumbBlob) {
+                videoThumbnailPath = await uploadVideoThumbnail(thumbBlob, user.id) || undefined;
+              }
+            }
+            sonnerToast.dismiss('video-upload');
+            if (path) {
               setVideoBlob(null);
+              setVideoName('');
             } else {
               sonnerToast.error('Video upload failed. Note will be saved without video.');
             }
@@ -595,6 +607,8 @@ export function PracticeControls() {
               focusTitleSnapshot: focusData?.focus_title || undefined,
               privateAudioIndices: capturedPrivateAudioIndices,
               videoPath,
+              videoName: videoName || undefined,
+              videoThumbnailPath,
             },
             {
               onSuccess: (newNote) => {
@@ -966,7 +980,9 @@ export function PracticeControls() {
             <div className="mb-4">
               <VideoClipChip
                 videoBlob={videoBlob}
-                onDiscard={() => setVideoBlob(null)}
+                onDiscard={() => { setVideoBlob(null); setVideoName(''); }}
+                videoName={videoName}
+                onVideoNameChange={setVideoName}
               />
             </div>
           )}

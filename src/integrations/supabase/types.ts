@@ -799,7 +799,9 @@ export type Database = {
           text_content: string | null
           updated_at: string
           video_files: string[] | null
+          video_name: string | null
           video_path: string | null
+          video_thumbnail_path: string | null
           visibility: string
         }
         Insert: {
@@ -823,7 +825,9 @@ export type Database = {
           text_content?: string | null
           updated_at?: string
           video_files?: string[] | null
+          video_name?: string | null
           video_path?: string | null
+          video_thumbnail_path?: string | null
           visibility?: string
         }
         Update: {
@@ -847,7 +851,9 @@ export type Database = {
           text_content?: string | null
           updated_at?: string
           video_files?: string[] | null
+          video_name?: string | null
           video_path?: string | null
+          video_thumbnail_path?: string | null
           visibility?: string
         }
         Relationships: [
