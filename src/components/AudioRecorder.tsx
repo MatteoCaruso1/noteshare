@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Mic, Square, Loader2, Video, X, Play } from 'lucide-react';
 import { toast } from 'sonner';
