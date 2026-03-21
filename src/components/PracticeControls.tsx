@@ -607,6 +607,8 @@ export function PracticeControls() {
               focusTitleSnapshot: focusData?.focus_title || undefined,
               privateAudioIndices: capturedPrivateAudioIndices,
               videoPath,
+              videoName: videoName || undefined,
+              videoThumbnailPath,
             },
             {
               onSuccess: (newNote) => {
