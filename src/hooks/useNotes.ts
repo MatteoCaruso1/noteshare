@@ -300,6 +300,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       focusEntryId?: string;
       focusDate?: string;
       focusTextSnapshot?: string;
+      focusTitleSnapshot?: string;
       privateAudioIndices?: number[];
       videoPath?: string;
     }) => {
