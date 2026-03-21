@@ -331,6 +331,7 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
           focus_entry_id: focusEntryId,
           focus_date: focusDate,
           focus_text_snapshot: focusTextSnapshot,
+          focus_title_snapshot: focusTitleSnapshot || null,
           private_audio_indices: privateAudioIndices,
           video_path: videoPath || null,
         })

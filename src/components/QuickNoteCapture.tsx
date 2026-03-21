@@ -207,6 +207,7 @@ export function QuickNoteCapture() {
         focusEntryId: focusData ? focusData.id : undefined,
         focusDate: focusData ? getTodayLocalDate() : undefined,
         focusTextSnapshot: focusData ? focusData.focus_text : undefined,
+        focusTitleSnapshot: focusData?.focus_title || undefined,
       },
       {
         onSuccess: async (newNote) => {
