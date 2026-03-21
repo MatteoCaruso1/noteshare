@@ -619,8 +619,10 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               {TIME_RANGE_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => { e.preventDefault(); handleSetFocusRange(opt.value); }}
                   onClick={() => handleSetFocusRange(opt.value)}
-                  className={`px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors ${
+                  className={`px-2 py-0.5 text-[11px] font-medium rounded-full transition-colors touch-manipulation [-webkit-tap-highlight-color:transparent] select-none ${
                     focusRange === opt.value
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
