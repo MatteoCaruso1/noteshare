@@ -339,6 +339,8 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
           focus_title_snapshot: focusTitleSnapshot || null,
           private_audio_indices: privateAudioIndices,
           video_path: videoPath || null,
+          video_name: videoName || null,
+          video_thumbnail_path: videoThumbnailPath || null,
         })
         .select()
         .single();
