@@ -176,15 +176,25 @@ export function QuickNoteCapture() {
     // Resolve focus data: use hook data first, fall back to localStorage cache
     const focusData = attachFocus ? (currentFocus || readFocusCache(profile?.id)) : null;
 
-    // Upload video BEFORE creating note so video_path is included in the insert
+    // Upload video + thumbnail BEFORE creating note
     let videoPath: string | undefined;
+    let videoThumbnailPath: string | undefined;
     if (videoBlobRef.current && user?.id) {
       toast.loading('Uploading video…', { id: 'video-upload' });
-      const path = await uploadVideoToStorage(videoBlobRef.current, user.id);
-      toast.dismiss('video-upload');
+      const [path, thumbBlob] = await Promise.all([
+        uploadVideoToStorage(videoBlobRef.current, user.id),
+        import('@/components/AudioRecorder').then(m => m.generateVideoThumbnailBlob(videoBlobRef.current!)),
+      ]);
       if (path) {
         videoPath = path;
+        if (thumbBlob) {
+          videoThumbnailPath = await uploadVideoThumbnail(thumbBlob, user.id) || undefined;
+        }
+      }
+      toast.dismiss('video-upload');
+      if (path) {
         videoBlobRef.current = null;
+        videoNameRef.current = '';
       } else {
         toast.error('Video upload failed. Note will be saved without video.');
       }
