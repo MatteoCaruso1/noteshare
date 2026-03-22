@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, Zap, ListTodo } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { RichTextContent } from '@/components/RichTextContent';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { ShareCalendarSheet } from './ShareCalendarSheet';
 import { useQuery } from '@tanstack/react-query';
@@ -113,10 +116,10 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
   const { data: routineFrequency } = useQuery({
     queryKey: ['routine-frequency', profileId],
     queryFn: async () => {
-      // Get all daily_focus entries with titles
+      // Get all daily_focus entries with titles and text
       const { data: focusEntries, error: fErr } = await supabase
         .from('daily_focus')
-        .select('id, focus_title')
+        .select('id, focus_title, focus_text')
         .eq('user_id', profileId);
       if (fErr) throw fErr;
       if (!focusEntries?.length) return [];
@@ -130,29 +133,61 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       if (nErr) throw nErr;
       if (!notes?.length) return [];
 
-      // Build a map: focus_entry_id -> title
-      const titleMap = new Map<string, string>();
-      focusEntries.forEach(e => {
-        if (e.focus_title) titleMap.set(e.id, e.focus_title);
-      });
+      // Get practice sessions linked to focus entries for minutes
+      const { data: sessions, error: sErr } = await supabase
+        .from('practice_sessions')
+        .select('focus_entry_id, started_at, ended_at, paused_duration_ms')
+        .eq('user_id', profileId)
+        .not('focus_entry_id', 'is', null)
+        .not('ended_at', 'is', null);
+      if (sErr) throw sErr;
 
-      // Count notes per title
-      const counts = new Map<string, number>();
-      notes.forEach(n => {
-        const title = titleMap.get(n.focus_entry_id!);
-        if (title) {
-          counts.set(title, (counts.get(title) || 0) + 1);
+      // Build maps: focus_entry_id -> title, focus_entry_id -> text
+      const titleMap = new Map<string, string>();
+      const textMap = new Map<string, string>();
+      focusEntries.forEach(e => {
+        if (e.focus_title) {
+          titleMap.set(e.id, e.focus_title);
+          if (e.focus_text) textMap.set(e.focus_title, e.focus_text);
         }
       });
 
-      return Array.from(counts.entries())
-        .map(([name, count]) => ({ name, count }))
+      // Count notes per title
+      const noteCounts = new Map<string, number>();
+      notes.forEach(n => {
+        const title = titleMap.get(n.focus_entry_id!);
+        if (title) {
+          noteCounts.set(title, (noteCounts.get(title) || 0) + 1);
+        }
+      });
+
+      // Sum minutes per title
+      const minuteCounts = new Map<string, number>();
+      sessions?.forEach(s => {
+        const title = titleMap.get(s.focus_entry_id!);
+        if (title && s.started_at && s.ended_at) {
+          const durationMs = new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0);
+          const minutes = Math.max(0, Math.round(durationMs / 60000));
+          minuteCounts.set(title, (minuteCounts.get(title) || 0) + minutes);
+        }
+      });
+
+      return Array.from(noteCounts.entries())
+        .map(([name, count]) => ({
+          name,
+          count,
+          minutes: minuteCounts.get(name) || 0,
+          routineText: textMap.get(name) || '',
+        }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
     },
     enabled: !!profileId,
     staleTime: 5 * 60 * 1000,
   });
+
+  // State for routine preview
+  const [previewRoutine, setPreviewRoutine] = useState<{ name: string; routineText: string; count: number; minutes: number } | null>(null);
 
   // Compute trend callouts from stats data
   const trends = useMemo(() => {
@@ -594,9 +629,23 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                   itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number) => [`Practiced : ${value} note${value !== 1 ? 's' : ''}`, '']}
+                  formatter={(value: number, _name: string, props: any) => {
+                    const entry = props?.payload;
+                    const mins = entry?.minutes || 0;
+                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, entry?.name || ''];
+                  }}
                 />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={24}>
+                <Bar
+                  dataKey="count"
+                  radius={[0, 4, 4, 0]}
+                  maxBarSize={24}
+                  cursor="pointer"
+                  onClick={(data: any) => {
+                    if (data?.routineText) {
+                      setPreviewRoutine(data);
+                    }
+                  }}
+                >
                   {routineFrequency.map((_, index) => (
                     <Cell key={index} fill={`hsl(var(--primary) / ${0.5 + (0.5 * (1 - index / Math.max(routineFrequency.length - 1, 1)))})`} />
                   ))}
@@ -606,6 +655,26 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </Card>
       )}
+
+      {/* Routine Preview Dialog */}
+      <Dialog open={!!previewRoutine} onOpenChange={(open) => !open && setPreviewRoutine(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ListTodo className="w-5 h-5 text-primary" />
+              {previewRoutine?.name}
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              {previewRoutine?.count} note{previewRoutine?.count !== 1 ? 's' : ''}, {previewRoutine?.minutes} min{previewRoutine?.minutes !== 1 ? 's' : ''}
+            </p>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh]">
+            <div className="text-sm whitespace-pre-wrap text-foreground">
+              <RichTextContent content={previewRoutine?.routineText || ''} />
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       {/* Section: Focus Level Chart — hidden when no data */}
       {filteredFocusData.some(w => w.average > 0) && (
