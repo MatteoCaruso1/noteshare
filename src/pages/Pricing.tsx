@@ -63,14 +63,7 @@ export default function Pricing() {
                 </li>
               )}
             </ul>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full font-bold"
-              onClick={handleFree}>
-              
-              Start Practicing
-            </Button>
+            <MarketingCTA variant="inline" className="w-full" />
           </div>
 
           {/* Pro */}
