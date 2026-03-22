@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Play, Mic, ListTodo, Clock, ClipboardList, Users, User } from 'lucide-react';
+import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Clock, ClipboardList, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
@@ -10,6 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { startGoogleOAuth } from '@/lib/oauth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { GlintProvider } from '@/contexts/GlintContext';
+import { PracticeControls } from '@/components/PracticeControls';
+import { QuickNoteCapture } from '@/components/QuickNoteCapture';
+import { TodaysFocus } from '@/components/TodaysFocus';
 
 // Step 0: Welcome
 // Step 1: Name (intro)
@@ -125,73 +129,35 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
         </div>
       </div>
 
-      {/* Mock main content */}
-      <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-3">
+      {/* Real components */}
+      <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-3 overflow-y-auto">
         <h1 className="text-xl font-semibold text-foreground mb-3">My Practice</h1>
 
-        {/* Start Practice Session */}
-        <div
-          id="tour-practice-btn"
-          className="bg-card border border-border rounded-lg px-4 py-4 flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2">
-            <Play className="w-5 h-5 text-muted-foreground" />
-            <span className="font-semibold text-foreground">Start Practice Session</span>
+        <GlintProvider>
+          <div id="tour-practice-btn">
+            <PracticeControls />
           </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </div>
 
-        {/* Capture Quick Note */}
-        <div
-          id="tour-quick-note"
-          className="bg-card border border-border rounded-lg px-4 py-3.5 flex items-center justify-between"
-        >
-          <div className="flex items-center gap-2">
-            <Music className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground font-medium">Capture Quick Note</span>
+          <div id="tour-quick-note">
+            <QuickNoteCapture />
           </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </div>
 
-        {/* Practice Routine */}
-        <div
-          id="tour-routine"
-          className="bg-card border border-border rounded-lg p-4 space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ListTodo className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground font-medium">Practice Routine</span>
-            </div>
+          <div id="tour-routine">
+            <TodaysFocus />
           </div>
-          <div className="flex items-center gap-2 h-8 rounded bg-muted/20 px-3">
-            <div className="w-4 h-4 rounded border border-muted-foreground/30" />
-            <span className="text-sm text-muted-foreground">Warm-up scales</span>
-          </div>
-          <div className="flex items-center gap-2 h-8 rounded bg-muted/20 px-3">
-            <div className="w-4 h-4 rounded border border-muted-foreground/30" />
-            <span className="text-sm text-muted-foreground">Work on new piece</span>
-          </div>
-        </div>
+        </GlintProvider>
 
         {/* Notes / Timeline */}
         <div id="tour-timeline" className="space-y-2">
           <h2 className="text-foreground font-semibold">Notes</h2>
-          <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-            <div className="flex gap-2">
-              <span className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded">Today</span>
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">Practice</span>
+          <div className="bg-card border border-border rounded-lg p-8 text-center">
+            <div className="w-14 h-14 mx-auto rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+              <Music className="w-7 h-7 text-muted-foreground" />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center">
-                <Music className="w-5 h-5 text-muted-foreground/50" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-foreground/70">Worked on chord transitions</p>
-                <p className="text-xs text-muted-foreground">2 min ago</p>
-              </div>
-            </div>
-            <div className="h-1.5 w-3/4 rounded bg-primary/20" />
+            <p className="text-muted-foreground font-medium">No notes yet</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Your practice notes will appear here
+            </p>
           </div>
         </div>
       </div>
@@ -357,18 +323,20 @@ export default function FTUE() {
   const [signupLoading, setSignupLoading] = useState(false);
   const [commitPending, setCommitPending] = useState(false);
   const commitAttemptedRef = useRef(false);
+  // Only set to true when user explicitly triggers signup on step 4
+  const signupInitiatedRef = useRef(false);
 
   // After signup + auth, commit FTUE data then go to final step
-  // Only fires when user completes signup on step 4 (not if they arrive with an existing session)
+  // Only fires when user explicitly signed up on step 4 (signupInitiatedRef)
   const hadUserOnMount = useRef(!!user);
 
   useEffect(() => {
     if (!user) return;
     if (commitAttemptedRef.current) return;
 
-    // If user was already logged in when FTUE mounted, don't auto-commit
-    // (they're walking through the tour and will reach signup step naturally)
-    if (hadUserOnMount.current && ftue.currentStep < SIGNUP_STEP) return;
+    // Only auto-commit if the user explicitly started signup from step 4
+    // OR if user was already logged in and reached signup step
+    if (!signupInitiatedRef.current && !hadUserOnMount.current) return;
 
     const state = getFTUEState();
     // Only act when user has reached or passed the signup step
@@ -404,6 +372,7 @@ export default function FTUE() {
       setPasswordTouched(true);
       return;
     }
+    signupInitiatedRef.current = true;
     setSignupLoading(true);
     try {
       await authSignUp(email, password, ftue.name.trim());
@@ -415,6 +384,7 @@ export default function FTUE() {
   };
 
   const handleGoogleSignup = () => {
+    signupInitiatedRef.current = true;
     setSignupLoading(true);
     startGoogleOAuth();
   };
