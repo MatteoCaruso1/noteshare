@@ -318,7 +318,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     } else {
       sonnerToast('Recording set to public');
     }
-  }, [note.id, (note as any).private_audio_indices, updatePrivateAudios]);
+  }, [note.id, note.private_audio_indices, updatePrivateAudios]);
   const isPracticeSession = !!note.session_id;
   
   // Get streak info from author's profile for badge display
