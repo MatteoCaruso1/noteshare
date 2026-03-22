@@ -428,30 +428,34 @@ const Auth = () => {
                   Log in with Google
                 </Button>
                 
-                {/* Sign Up with Email */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
-                  onClick={() => setMode('signup')}
-                  disabled={loading}
-                >
-                  Sign up with Email
-                </Button>
-                
-                {/* Sign Up with Google */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full gap-2"
-                  style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
-                  onClick={handleGoogleAuth}
-                  disabled={loading}
-                >
-                  <GoogleIcon />
-                  Sign up with Google
-                </Button>
+                {!isLoginOnly && (
+                  <>
+                    {/* Sign Up with Email */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
+                      onClick={() => setMode('signup')}
+                      disabled={loading}
+                    >
+                      Sign up with Email
+                    </Button>
+                    
+                    {/* Sign Up with Google */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full gap-2"
+                      style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
+                      onClick={handleGoogleAuth}
+                      disabled={loading}
+                    >
+                      <GoogleIcon />
+                      Sign up with Google
+                    </Button>
+                  </>
+                )}
               </>
             )}
             {mode === 'signup' && (
