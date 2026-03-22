@@ -105,6 +105,10 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
   }, []);
 
+  const prevStep = useCallback(() => {
+    setState(prev => ({ ...prev, currentStep: Math.max(0, prev.currentStep - 1) }));
+  }, []);
+
   const reset = useCallback(() => {
     const fresh = { ...DEFAULT_STATE, startedAt: Date.now() };
     setState(fresh);
