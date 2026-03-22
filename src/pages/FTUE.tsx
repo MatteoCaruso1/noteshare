@@ -333,7 +333,7 @@ export default function FTUE() {
         <div className="flex-1 flex flex-col p-4 max-w-lg mx-auto w-full">
           <div className="mb-4">
             <p className="text-sm text-muted-foreground mb-1">
-              Practicing: <span className="text-foreground font-medium">{ftue.instrument}</span>
+              Practicing: <span className="text-foreground font-medium">{ftue.instruments.join(', ') || ftue.instrument}</span>
             </p>
             <p className="text-xs text-muted-foreground">
               Hey {ftue.name}! Try writing what you're working on.
