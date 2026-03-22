@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Clock, Music, Lightbulb, BookOpen, Target, CheckCircle2, ArrowLeft } from 'lucide-react';
 import blogHeroImage from '@/assets/blog-daily-routine.jpg';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 const h2Style = 'text-2xl sm:text-3xl font-semibold tracking-tight leading-tight mb-6';
 const textColor = { color: 'hsl(215 20% 65%)' };
@@ -24,11 +25,6 @@ const BlogDailyRoutine = () => {
     }
     window.scrollTo(0, 0);
   }, []);
-
-  const handleCTA = () => {
-    window.scrollTo(0, 0);
-    navigate(user ? '/' : '/auth?from=blog');
-  };
 
   return (
     <div className="min-h-screen dark" style={{ background: 'hsl(222 47% 11%)' }}>
