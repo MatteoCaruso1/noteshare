@@ -378,7 +378,7 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
 
 export default function FTUE() {
   const navigate = useNavigate();
-  const { user, signUp: authSignUp } = useAuth();
+  const { user, signUp: authSignUp, refreshProfile, clearNewUserFlag } = useAuth();
   const queryClient = useQueryClient();
   const ftue = useFTUEState();
 
@@ -428,6 +428,10 @@ export default function FTUE() {
         queryClient.invalidateQueries({ queryKey: ['notes'] });
         queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
         clearFTUEState();
+        // Refresh profile so has_completed_onboarding is true in memory
+        // and clear isNewUser to prevent OnboardingContext from triggering
+        await refreshProfile();
+        clearNewUserFlag();
       } else {
         console.warn('[FTUE] Commit failed — data preserved in localStorage for retry');
         toast.error('Your practice data will be saved shortly.');

@@ -34,7 +34,7 @@ const GoogleIcon = () => (
 );
 
 const Auth = () => {
-  const { signIn, signUp, resetPassword, user } = useAuth();
+  const { signIn, signUp, resetPassword, user, refreshProfile, clearNewUserFlag } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isLoginOnly = searchParams.get('mode') === 'login';
@@ -98,6 +98,8 @@ const Auth = () => {
                   console.error('[Auth] FTUE commit error:', commitError);
                 } else {
                   console.log('[Auth] FTUE data committed successfully');
+                  await refreshProfile();
+                  clearNewUserFlag();
                 }
               } catch (err) {
                 console.error('[Auth] FTUE commit exception:', err);

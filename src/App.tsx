@@ -141,7 +141,7 @@ function AppPrefetcher() {
 
 // Retry failed FTUE commits on app load when user is authenticated
 function FTUERetryCommit() {
-  const { user } = useAuth();
+  const { user, refreshProfile, clearNewUserFlag } = useAuth();
   const attemptedRef = useRef(false);
 
   useEffect(() => {
@@ -159,10 +159,12 @@ function FTUERetryCommit() {
         instruments: state.instruments || [state.instrument],
         idempotencyKey: `${state.startedAt}`,
       },
-    }).then(({ error }) => {
+    }).then(async ({ error }) => {
       if (!error) {
         console.log('[FTUE] Retry commit succeeded');
         clearFTUEState();
+        await refreshProfile();
+        clearNewUserFlag();
       } else {
         console.error('[FTUE] Retry commit failed:', error);
       }

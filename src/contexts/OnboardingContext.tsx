@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
+import { getFTUEState } from '@/hooks/useFTUEState';
 
 interface OnboardingContextType {
   showOnboarding: boolean;
@@ -84,9 +85,19 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   // Guard: only trigger if user is actually authenticated (has a profile with user_id)
   useEffect(() => {
     if (isNewUser && profile?.id && profile?.user_id) {
+      // Block onboarding if user came through the FTUE flow
+      const isFTUEPath = window.location.pathname === '/ftue';
+      const ftueState = getFTUEState();
+      const isFTUESignup = ftueState && ftueState.readyForSignup;
+
+      if (isFTUEPath || isFTUESignup) {
+        console.log('[Onboarding] Skipping — user is in FTUE flow');
+        clearNewUserFlag();
+        return;
+      }
+
       if (!profile.has_completed_onboarding) {
         console.log('[Onboarding] New user detected, starting onboarding');
-        // Scroll to top so the welcome modal doesn't appear over a scrolled-down page
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
         startOnboarding(profile.user_id ?? undefined);
       } else {
