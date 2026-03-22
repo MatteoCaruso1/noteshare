@@ -382,12 +382,15 @@ export default function FTUE() {
   const queryClient = useQueryClient();
   const ftue = useFTUEState();
 
-  // Always reset FTUE state when entering the page so the full flow runs every time
+  // Reset FTUE state on entry — but NOT if user is already authenticated
+  // (they're returning after signup and should proceed to commit + celebration)
   const didResetRef = useRef(false);
   useEffect(() => {
     if (didResetRef.current) return;
     didResetRef.current = true;
-    ftue.reset();
+    if (!user) {
+      ftue.reset();
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Signup form state
