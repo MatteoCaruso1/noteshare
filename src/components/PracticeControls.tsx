@@ -386,29 +386,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
     return () => clearInterval(interval);
   }, [activeSession, isSessionPaused]);
 
-  if (!profile && !previewMode) return null;
-
-  if (previewMode && !profile) {
-    return (
-      <Card className="bg-card border-border min-h-[60px]">
-        <Collapsible open={false} onOpenChange={() => undefined}>
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              data-tour="practice-start-btn"
-              className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
-            >
-              <div className="flex items-center gap-2">
-                <Play className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                <h2 className="font-semibold">Start Practice Session</h2>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </CollapsibleTrigger>
-        </Collapsible>
-      </Card>
-    );
-  }
+  if (!profile && !previewMode && !ftuePreview.isFTUEPreview) return null;
 
   const handleStartSession = () => {
     startSession.mutate({ userId: profile.id });
