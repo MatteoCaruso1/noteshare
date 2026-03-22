@@ -209,6 +209,7 @@ function AppInner() {
                       <OnboardingFlow />
                       <ShareEducationTour />
                       <AppPrefetcher />
+                      <FTUERetryCommit />
                       <UpdateAvailableToast />
                     <Routes>
                       <Route path="/" element={<Index />} />
