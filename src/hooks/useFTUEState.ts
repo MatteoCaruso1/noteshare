@@ -6,6 +6,9 @@ export interface FTUEState {
   name: string;
   instrument: string;
   practiceNotes: string;
+  tags: string[];
+  focusLevel: number | null;
+  durationMinutes: number;
   currentStep: number;
   startedAt: number; // timestamp
 }
@@ -14,6 +17,9 @@ const DEFAULT_STATE: FTUEState = {
   name: '',
   instrument: '',
   practiceNotes: '',
+  tags: [],
+  focusLevel: null,
+  durationMinutes: 0,
   currentStep: 0,
   startedAt: Date.now(),
 };
@@ -73,6 +79,18 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, practiceNotes }));
   }, []);
 
+  const setTags = useCallback((tags: string[]) => {
+    setState(prev => ({ ...prev, tags }));
+  }, []);
+
+  const setFocusLevel = useCallback((focusLevel: number | null) => {
+    setState(prev => ({ ...prev, focusLevel }));
+  }, []);
+
+  const setDurationMinutes = useCallback((durationMinutes: number) => {
+    setState(prev => ({ ...prev, durationMinutes }));
+  }, []);
+
   const setStep = useCallback((currentStep: number) => {
     setState(prev => ({ ...prev, currentStep }));
   }, []);
@@ -92,6 +110,9 @@ export function useFTUEState() {
     setName,
     setInstrument,
     setPracticeNotes,
+    setTags,
+    setFocusLevel,
+    setDurationMinutes,
     setStep,
     nextStep,
     reset,
