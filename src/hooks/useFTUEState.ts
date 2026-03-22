@@ -5,6 +5,7 @@ const FTUE_STORAGE_KEY = 'noteshare_ftue_state';
 export interface FTUEState {
   name: string;
   instrument: string;
+  instruments: string[];
   practiceNotes: string;
   tags: string[];
   focusLevel: number | null;
@@ -16,6 +17,7 @@ export interface FTUEState {
 const DEFAULT_STATE: FTUEState = {
   name: '',
   instrument: '',
+  instruments: [],
   practiceNotes: '',
   tags: [],
   focusLevel: null,
@@ -75,6 +77,10 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, instrument }));
   }, []);
 
+  const setInstruments = useCallback((instruments: string[]) => {
+    setState(prev => ({ ...prev, instruments, instrument: instruments[0] || '' }));
+  }, []);
+
   const setPracticeNotes = useCallback((practiceNotes: string) => {
     setState(prev => ({ ...prev, practiceNotes }));
   }, []);
@@ -109,6 +115,7 @@ export function useFTUEState() {
     ...state,
     setName,
     setInstrument,
+    setInstruments,
     setPracticeNotes,
     setTags,
     setFocusLevel,

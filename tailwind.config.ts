@@ -188,7 +188,7 @@ export default {
   			},
 			floatDown: {
 				'0%': {
-					transform: 'translateY(-20vh) rotate(0deg)'
+					transform: 'translateY(-120vh) rotate(0deg)'
 				},
 				'100%': {
 					transform: 'translateY(105vh) rotate(360deg)'

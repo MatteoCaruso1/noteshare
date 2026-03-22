@@ -80,6 +80,7 @@ async function commitFTUEData(): Promise<boolean> {
       body: {
         name: state.name.trim(),
         instrument: state.instrument,
+        instruments: state.instruments || [state.instrument],
         practiceNotes: state.practiceNotes,
         tags: state.tags,
         focusLevel: state.focusLevel,
@@ -219,9 +220,7 @@ export default function FTUE() {
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2">Welcome to</h1>
           <h2 className="text-3xl font-semibold text-primary mb-6">Noteshare</h2>
-          <p className="text-muted-foreground text-base leading-relaxed mb-12">
-            Helping musicians practice smarter. Organize, record, and share your practice, all in one place.
-          </p>
+          <div className="mb-12" />
           <Button
             size="lg"
             className="w-full bg-gradient-primary text-primary-foreground font-semibold px-8 py-6 text-lg"
@@ -237,8 +236,17 @@ export default function FTUE() {
   // Step 1: Name + Instrument
   if (ftue.currentStep === 1) {
     const trimmedName = ftue.name.trim();
-    const canContinue = trimmedName.length > 0 && trimmedName.length <= 50 && ftue.instrument.length > 0;
+    const canContinue = trimmedName.length > 0 && trimmedName.length <= 50 && ftue.instruments.length > 0;
     const nameTooLong = ftue.name.trim().length > 50;
+
+    const toggleInstrument = (inst: string) => {
+      const current = ftue.instruments;
+      if (current.includes(inst)) {
+        ftue.setInstruments(current.filter(i => i !== inst));
+      } else {
+        ftue.setInstruments([...current, inst]);
+      }
+    };
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -271,14 +279,14 @@ export default function FTUE() {
                   <button
                     key={inst}
                     type="button"
-                    onClick={() => ftue.setInstrument(inst)}
+                    onClick={() => toggleInstrument(inst)}
                     className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all border ${
-                      ftue.instrument === inst
+                      ftue.instruments.includes(inst)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
                     }`}
                   >
-                    {ftue.instrument === inst && <Check className="w-3 h-3 inline mr-1" />}
+                    {ftue.instruments.includes(inst) && <Check className="w-3 h-3 inline mr-1" />}
                     {inst}
                   </button>
                 ))}
@@ -326,7 +334,7 @@ export default function FTUE() {
         <div className="flex-1 flex flex-col p-4 max-w-lg mx-auto w-full">
           <div className="mb-4">
             <p className="text-sm text-muted-foreground mb-1">
-              Practicing: <span className="text-foreground font-medium">{ftue.instrument}</span>
+              Practicing: <span className="text-foreground font-medium">{ftue.instruments.join(', ') || ftue.instrument}</span>
             </p>
             <p className="text-xs text-muted-foreground">
               Hey {ftue.name}! Try writing what you're working on.
@@ -487,8 +495,8 @@ export default function FTUE() {
           <h1 className="text-2xl font-semibold text-foreground mb-2">Nice work!</h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-2">
             {ftue.practiceNotes.trim()
-              ? `You practiced ${ftue.instrument} for ${durationDisplay} and captured your notes.`
-              : `You just did a ${durationDisplay} ${ftue.instrument} session.`}
+              ? `You practiced ${ftue.instruments.join(', ') || ftue.instrument} for ${durationDisplay} and captured your notes.`
+              : `You just did a ${durationDisplay} ${ftue.instruments.join(', ') || ftue.instrument} session.`}
           </p>
           {ftue.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 justify-center mb-2">
