@@ -372,6 +372,7 @@ export default function FTUE() {
       setPasswordTouched(true);
       return;
     }
+    signupInitiatedRef.current = true;
     setSignupLoading(true);
     try {
       await authSignUp(email, password, ftue.name.trim());
