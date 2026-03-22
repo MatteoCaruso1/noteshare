@@ -1,69 +1,47 @@
 
 
-# Per-Audio Privacy Toggle
+## Problem Analysis
 
-## Overview
-Add a toggle on each audio file item that lets users mark individual recordings as public or private. Private recordings are hidden from friends even if the post itself is shared. The owner always sees all their own recordings.
+Two issues:
+1. **Mock content in FTUE tour**: The app tour (step 3) renders hardcoded fake UI instead of the real `PracticeControls`, `QuickNoteCapture`, `TodaysFocus`, and timeline components. The user wants the actual components.
+2. **Create account appearing prematurely**: After the last tour highlight (notes timeline), tapping "continue" goes straight to the signup step. The user reports this still happens despite previous fixes.
 
-## Database Change
+## Approach
 
-Add a `private_audio_indices` column to the `notes` table -- an integer array storing the indices of audio files the user has marked private. This avoids a new table and keeps the data co-located with existing audio arrays.
+### Issue 1: Real Components in Tour
 
-```sql
-ALTER TABLE public.notes
-ADD COLUMN private_audio_indices integer[] NOT NULL DEFAULT '{}';
-```
+Rendering the actual components (`PracticeControls`, `QuickNoteCapture`, `TodaysFocus`) inside the FTUE tour is complex because they're deeply coupled to auth/premium/session hooks. Instead of refactoring all those components, I'll:
 
-No new RLS policies needed -- existing notes UPDATE policy already restricts to owner only.
+- **Replace the mock layout in `FTUEAppTour`** with the real Index page layout structure, importing and rendering the actual `PracticeControls`, `QuickNoteCapture`, and `TodaysFocus` components wrapped in the required `GlintProvider`
+- The components will render in their "no auth" degraded state (collapsed cards with proper icons/labels), which is exactly what's needed for a tour — the user sees the real UI chrome
+- For the timeline/notes section, render the real `Timeline` component with an empty notes array (showing the empty state), or render the same `Notes` header with the real card styling
+- Wrap the tour content in the same providers used by `Index.tsx` (`GlintProvider`, etc.)
+- Keep the spotlight overlay, bottom nav mock (since real `BottomNav` would try to navigate), and header mock as-is since those are structural
 
-## UI Changes
+**Key insight**: The components won't crash without auth — they'll just show empty/loading states, which look real and are appropriate for a tour walkthrough.
 
-### 1. Trash button styling (AudioFileItem.tsx)
-- Change from `variant="outline"` to `variant="ghost"` with explicit `border border-border` class and `bg-transparent` to get a white/transparent outline-only look.
+### Issue 2: Tour Flow Completing Too Early
 
-### 2. Privacy toggle in AudioFileItem
-- Add a new prop `isPrivate: boolean` and `onTogglePrivacy: () => void`
-- Render a compact toggle to the left of the trash button: `Users` icon (public) on left, `Lock` icon (private) on right, with a `Switch` component between them
-- Toast on every flip: "Recording set to private" / "Recording set to public"
+The tour has exactly 4 highlights and then calls `onComplete` → step 4 (signup). This IS the designed flow, but if there's a race condition or the `hadUserOnMount` guard is failing, the signup step appears prematurely.
 
-### 3. NoteCard.tsx -- owner viewing
-- When rendering audio files, pass `isPrivate` and `onTogglePrivacy` to `AudioFileItem` (edit mode) or show a small lock icon on `WaveformPlayer` entries (display mode)
-- Create a new mutation hook `useUpdateNotePrivateAudios` that updates `private_audio_indices` on the note
+I'll add a debug check and ensure that `ftue.nextStep()` from `onComplete` only advances to step 4 after all highlights are shown. I'll also verify the `didResetRef` logic isn't resetting step back to 0 and then immediately jumping.
 
-### 4. NoteCard.tsx -- friend viewing (filtering)
-- When `!isOwner`, filter out audio files whose index is in `note.private_audio_indices` before rendering
-- Also filter the corresponding `audio_file_names` entries
-- This is a pure client-side filter with zero extra queries
+**Root cause investigation**: The `useEffect` at line 365-399 fires when `user` exists AND `ftue.currentStep >= SIGNUP_STEP`. If `hadUserOnMount.current` is false (user wasn't logged in on mount) but the user somehow gets authenticated during the tour (e.g., from a previous session cookie), this effect would fire and jump to celebration. I'll tighten the guard to only commit when the user explicitly completed signup on step 4.
 
-### 5. FriendsFeed / other views
-- The same filtering applies anywhere `NoteCard` is rendered for non-owner notes, since the logic lives inside `NoteCard` itself
+## Changes
 
-### 6. Hook: useUpdateNotePrivateAudios (in useUpdateNote.ts)
-- Simple mutation: updates `private_audio_indices` on the note
-- Optimistic update on `['note', noteId]` and `['notes']`
-- Invalidates `['notes']`, `['friends-notes']`, `['note']`
+### File: `src/pages/FTUE.tsx`
 
-## Data Flow
-- `notes.private_audio_indices` stores `[1, 3]` meaning audio at index 1 and 3 are private
-- Default is `[]` (all public)
-- Owner toggles an index: if present, remove it (make public); if absent, add it (make private)
-- Friends see `note.audio_files.filter((_, i) => !privateSet.has(i))`
+1. **Replace `FTUEAppTour` mock content** with real components:
+   - Import `PracticeControls`, `QuickNoteCapture`, `TodaysFocus` from their actual locations
+   - Import `GlintProvider` from contexts
+   - Render these inside the tour layout with the spotlight overlay on top
+   - Keep the mock header and bottom nav (they don't depend on auth)
+   - For the Notes/Timeline section, render the real card frame with a "Notes" header and empty state or a simple placeholder that looks like the real thing
 
-## Performance
-- No new queries, no new tables, no new RLS policies
-- Single column added to existing `notes` rows (already fetched)
-- Client-side index filtering is O(n) where n = number of audio files per note (typically 1-3)
-- Toggle mutation is a single UPDATE on one row
+2. **Fix the premature signup issue**:
+   - Add a `tourCompletedRef` flag that's only set to `true` when `FTUEAppTour.onComplete` fires
+   - Gate the auto-commit `useEffect` on this flag, so even if a user session appears (from a stale cookie), the flow won't skip ahead unless the tour was explicitly completed AND the user reached step 4
 
-## Files Modified
-1. `src/components/AudioFileItem.tsx` -- trash button style + privacy toggle UI
-2. `src/hooks/useUpdateNote.ts` -- new `useUpdateNotePrivateAudios` mutation
-3. `src/components/NoteCard.tsx` -- wire toggle for owner, filter for friends
-4. `src/types/index.ts` -- add `private_audio_indices` to Note type (if not auto-generated)
-5. Database migration -- add column
-
-## What Won't Change
-- QuickNoteCapture, AddNoteDialog, GroupPostCapture -- these are pre-save UIs where audio privacy isn't relevant yet (defaults to public)
-- No changes to RLS, storage, or edge functions
-- No changes to how audio files are uploaded or stored
+3. **Ensure step progression**: After the tour completes (step 3 → step 4), only show the signup screen — not auto-commit. The auto-commit should only fire after the user actually creates an account on step 4.
 
