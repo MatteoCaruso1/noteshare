@@ -61,14 +61,31 @@ export function useScrollRestoration(key: string, initialDisplayCount: number = 
       isRestoring.current = true;
       isRestoringScroll = true;
       
+      const targetY = currentSavedState.scrollY;
+      
       // Apply scroll immediately (synchronously before paint)
-      window.scrollTo({ top: currentSavedState.scrollY, left: 0, behavior: 'auto' });
+      window.scrollTo({ top: targetY, left: 0, behavior: 'auto' });
       
       // Mark restoration complete after a frame
       requestAnimationFrame(() => {
         isRestoring.current = false;
         isRestoringScroll = false;
       });
+      
+      // Re-apply after content settles (delayed layout effects in collapsibles, autosize, etc.)
+      const correctionTimeout = setTimeout(() => {
+        if (Math.abs(window.scrollY - targetY) > 30) {
+          isRestoring.current = true;
+          isRestoringScroll = true;
+          window.scrollTo({ top: targetY, left: 0, behavior: 'auto' });
+          requestAnimationFrame(() => {
+            isRestoring.current = false;
+            isRestoringScroll = false;
+          });
+        }
+      }, 400);
+      
+      return () => clearTimeout(correctionTimeout);
     }
   }, [key, wasCleared]);
 
