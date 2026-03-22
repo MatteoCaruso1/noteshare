@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
     const {
       name,
       instrument,
+      instruments,
       practiceNotes,
       tags,
       focusLevel,
@@ -51,6 +52,7 @@ Deno.serve(async (req) => {
     } = body as {
       name: string;
       instrument: string;
+      instruments?: string[];
       practiceNotes: string;
       tags: string[];
       focusLevel: number | null;
