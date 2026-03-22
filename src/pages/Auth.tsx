@@ -9,6 +9,7 @@ import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
+import { getFTUEState, clearFTUEState } from '@/hooks/useFTUEState';
 
 // Google icon component
 const GoogleIcon = () => (
@@ -76,6 +77,34 @@ const Auth = () => {
             localStorage.setItem('noteshare_remember_me', 'true');
             // Clear the hash from URL
             clearOAuthHash();
+            
+            // Check for FTUE data to commit (user signed up via Google during FTUE)
+            const ftueState = getFTUEState();
+            if (ftueState && ftueState.currentStep >= 4) {
+              console.log('[Auth] FTUE data detected, committing...');
+              try {
+                const { error: commitError } = await supabase.functions.invoke('commit-ftue', {
+                  body: {
+                    name: ftueState.name.trim(),
+                    instrument: ftueState.instrument,
+                    practiceNotes: ftueState.practiceNotes,
+                    tags: ftueState.tags,
+                    focusLevel: ftueState.focusLevel,
+                    durationMinutes: ftueState.durationMinutes,
+                    idempotencyKey: `${ftueState.startedAt}`,
+                  },
+                });
+                if (commitError) {
+                  console.error('[Auth] FTUE commit error:', commitError);
+                } else {
+                  console.log('[Auth] FTUE data committed successfully');
+                }
+              } catch (err) {
+                console.error('[Auth] FTUE commit exception:', err);
+              }
+              clearFTUEState();
+            }
+            
             // Check for profile redirect (from shared profile link)
             const profileRedirectOAuth = localStorage.getItem('noteshare_profile_redirect');
             if (profileRedirectOAuth) {
