@@ -26,7 +26,7 @@ export function useEmbeddedCheckout() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout-embedded', {
+      const { data, error } = await supabase.functions.invoke<CreateCheckoutEmbeddedResponse>('create-checkout-embedded', {
         body: { currency }
       });
 

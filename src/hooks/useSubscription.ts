@@ -99,7 +99,7 @@ export function useSubscription() {
       if (message.includes('Auth session missing')) {
         try {
           await supabase.auth.refreshSession();
-          const { data, error } = await supabase.functions.invoke('check-subscription');
+          const { data, error } = await supabase.functions.invoke<CheckSubscriptionResponse>('check-subscription');
           if (!error) {
             setState({
               subscribed: data?.subscribed || false,
