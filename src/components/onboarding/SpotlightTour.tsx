@@ -151,7 +151,9 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
         if (tourStep.interactive) {
-          parent.style.pointerEvents = 'none';
+          // Allow pointer events on all elevated parents so Radix primitives
+          // (Collapsible, etc.) can still propagate events to their children.
+          parent.style.pointerEvents = 'auto';
         }
         elevatedElementsRef.current.push(parent);
         parent = parent.parentElement;
@@ -162,7 +164,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
         parent.style.position = 'relative';
         parent.style.zIndex = '101';
         if (tourStep.interactive) {
-          parent.style.pointerEvents = 'none';
+          parent.style.pointerEvents = 'auto';
         }
         elevatedElementsRef.current.push(parent);
       }
