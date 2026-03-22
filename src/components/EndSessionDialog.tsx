@@ -60,6 +60,7 @@ export function EndSessionDialog({
   onNoteTextChange,
   onSave,
   isSaving,
+  onPreviewSave,
 }: EndSessionDialogProps) {
   // Calculate current duration
   const calculateDuration = () => {
