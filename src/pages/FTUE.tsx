@@ -495,8 +495,8 @@ export default function FTUE() {
           <h1 className="text-2xl font-semibold text-foreground mb-2">Nice work!</h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-2">
             {ftue.practiceNotes.trim()
-              ? `You practiced ${ftue.instrument} for ${durationDisplay} and captured your notes.`
-              : `You just did a ${durationDisplay} ${ftue.instrument} session.`}
+              ? `You practiced ${ftue.instruments.join(', ') || ftue.instrument} for ${durationDisplay} and captured your notes.`
+              : `You just did a ${durationDisplay} ${ftue.instruments.join(', ') || ftue.instrument} session.`}
           </p>
           {ftue.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 justify-center mb-2">
