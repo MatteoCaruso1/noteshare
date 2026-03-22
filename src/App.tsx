@@ -147,7 +147,7 @@ function FTUERetryCommit() {
   useEffect(() => {
     if (!user || attemptedRef.current) return;
     const state = getFTUEState();
-    if (!state || state.currentStep < 2) return;
+    if (!state || state.currentStep < 4) return;
 
     attemptedRef.current = true;
     console.log('[FTUE] Retrying uncommitted FTUE data...');
