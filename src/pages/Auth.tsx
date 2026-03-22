@@ -9,6 +9,7 @@ import { Music, AlertCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
+import { getFTUEState, clearFTUEState } from '@/hooks/useFTUEState';
 
 // Google icon component
 const GoogleIcon = () => (
