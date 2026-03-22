@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
+import { useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
