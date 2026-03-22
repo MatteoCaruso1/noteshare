@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Accordion,
@@ -10,6 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Target, Brain, BookOpen, TrendingUp, Clock, CheckCircle2, Music, Lightbulb, ClipboardList } from 'lucide-react';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 const ScienceOfPractice = () => {
   const { user } = useAuth();
@@ -23,11 +23,6 @@ const ScienceOfPractice = () => {
     }
     window.scrollTo(0, 0);
   }, []);
-
-  const handleCTA = () => {
-    window.scrollTo(0, 0);
-    navigate(user ? '/' : '/auth?from=science');
-  };
 
   return (
     <div className="min-h-screen dark" style={{ background: 'hsl(222 47% 11%)' }}>
@@ -235,13 +230,7 @@ const ScienceOfPractice = () => {
             ))}
           </div>
           <div className="mt-10">
-            <Button
-              size="lg"
-              onClick={handleCTA}
-              className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-bold px-8 shadow-lg transition-all duration-200 hover:scale-[1.02]"
-            >
-              Start tracking your practice
-            </Button>
+            <MarketingCTA variant="inline" />
           </div>
         </div>
       </section>
@@ -304,13 +293,7 @@ const ScienceOfPractice = () => {
             It comes from consistent practice, clear focus, and reflection over time.<br /><br />
             When musicians make their practice visible and structured, improvement becomes far more predictable.
           </p>
-          <Button
-            size="lg"
-            onClick={handleCTA}
-            className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-bold px-10 shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          >
-            Start practicing smarter
-          </Button>
+          <MarketingCTA variant="inline" />
         </div>
       </section>
 

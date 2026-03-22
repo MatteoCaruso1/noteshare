@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Clock, Music, Lightbulb, BookOpen, Target, CheckCircle2, ArrowLeft } from 'lucide-react';
 import blogHeroImage from '@/assets/blog-daily-routine.jpg';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 const h2Style = 'text-2xl sm:text-3xl font-semibold tracking-tight leading-tight mb-6';
 const textColor = { color: 'hsl(215 20% 65%)' };
@@ -24,11 +25,6 @@ const BlogDailyRoutine = () => {
     }
     window.scrollTo(0, 0);
   }, []);
-
-  const handleCTA = () => {
-    window.scrollTo(0, 0);
-    navigate(user ? '/' : '/auth?from=blog');
-  };
 
   return (
     <div className="min-h-screen dark" style={{ background: 'hsl(222 47% 11%)' }}>
@@ -385,13 +381,7 @@ const BlogDailyRoutine = () => {
             <p className="text-sm mb-6 max-w-md mx-auto" style={textColor}>
               Noteshare helps you capture, organize, and reflect on every practice session so you can build the routine that works for you.
             </p>
-            <Button
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 shadow-lg shadow-primary/25"
-              onClick={handleCTA}
-            >
-              Start practicing
-            </Button>
+            <MarketingCTA variant="inline" />
           </div>
         </div>
       </section>

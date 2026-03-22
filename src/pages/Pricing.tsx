@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 const freeIncludedFeatures = [
 'Practice session logging',
@@ -26,9 +27,6 @@ const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 
 export default function Pricing() {
   const navigate = useNavigate();
-
-  const handleFree = () => { window.scrollTo(0, 0); navigate('/auth?from=pricing'); };
-  const handlePro = () => { window.scrollTo(0, 0); navigate('/auth?from=pricing'); };
 
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
@@ -65,14 +63,7 @@ export default function Pricing() {
                 </li>
               )}
             </ul>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full font-bold"
-              onClick={handleFree}>
-              
-              Start Practicing
-            </Button>
+            <MarketingCTA variant="inline" className="w-full" />
           </div>
 
           {/* Pro */}
@@ -98,14 +89,7 @@ export default function Pricing() {
                 </li>
               )}
             </ul>
-            <Button
-              size="lg"
-              className="w-full relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02] group z-10"
-              onClick={handlePro}>
-              
-              <span className="relative z-10">Start Practicing</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
-            </Button>
+            <MarketingCTA variant="inline" className="w-full z-10" />
           </div>
         </div>
 

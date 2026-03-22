@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { StreakIndicator } from '@/components/StreakIndicator';
 import { usePremium } from '@/contexts/PremiumContext';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 export function AppHeader() {
   const location = useLocation();
@@ -160,24 +161,7 @@ export function AppHeader() {
         {/* Right side: CTA on welcome pages, Timer & Streak on app pages */}
         {isOnWelcomePage ? (
           <div className="hidden sm:flex items-center">
-            <Button
-              size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/80 hover:brightness-110 text-[11px] px-3 py-1 h-8 font-medium transition-all"
-              onClick={() => {
-                window.scrollTo(0, 0);
-                if (user) {
-                  navigate('/');
-                } else {
-                const from = location.pathname === '/pricing' ? 'pricing' 
-                    : location.pathname === '/science-of-practice' ? 'science' 
-                    : location.pathname === '/blog' ? 'blog'
-                    : undefined;
-                  navigate(from ? `/auth?from=${from}` : '/auth');
-                }
-              }}
-            >
-              Start practicing
-            </Button>
+            <MarketingCTA variant="compact" />
           </div>
         ) : (
           <div className="flex items-center gap-2 transition-opacity duration-700 session-focus-exempt opacity-100">

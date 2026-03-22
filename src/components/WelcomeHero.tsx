@@ -1,13 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingTestimonial } from './LandingTestimonial';
-import { useAuth } from '@/hooks/useAuth';
+import { MarketingCTA } from './MarketingCTA';
 
 export function WelcomeHero() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [isExiting, setIsExiting] = useState(false);
   const [scrollOpacity, setScrollOpacity] = useState(1);
 
@@ -24,14 +20,6 @@ export function WelcomeHero() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleStartPracticing = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      // If already signed in, go to main app; otherwise go to auth
-      navigate(user ? '/' : '/auth');
-    }, 400);
-  };
 
   return (
     <div 
@@ -79,16 +67,7 @@ export function WelcomeHero() {
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl lg:max-w-none mb-8 leading-relaxed">
             Organize, record, and share your practice. Double your practice quality and become a better player
           </p>
-          <div className="flex items-center gap-4">
-            <Button
-              size="lg"
-              className="relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02] group"
-              onClick={handleStartPracticing}
-            >
-              <span className="relative z-10">Start practicing</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out animate-glint" />
-            </Button>
-          </div>
+          <MarketingCTA variant="hero" />
         </main>
 
       </div>
