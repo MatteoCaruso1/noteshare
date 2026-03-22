@@ -43,7 +43,8 @@ export function useSessions() {
       const { data, error } = await supabase
         .from('practice_sessions')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(365);
 
       if (error) throw error;
       return data as PracticeSession[];
