@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Play, Mic, ListTodo, Clock, ClipboardList, Users, User } from 'lucide-react';
+import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Clock, ClipboardList, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
@@ -10,6 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { startGoogleOAuth } from '@/lib/oauth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { GlintProvider } from '@/contexts/GlintContext';
+import { PracticeControls } from '@/components/PracticeControls';
+import { QuickNoteCapture } from '@/components/QuickNoteCapture';
+import { TodaysFocus } from '@/components/TodaysFocus';
 
 // Step 0: Welcome
 // Step 1: Name (intro)
