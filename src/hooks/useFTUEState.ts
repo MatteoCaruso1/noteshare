@@ -17,6 +17,7 @@ export interface FTUEState {
 const DEFAULT_STATE: FTUEState = {
   name: '',
   instrument: '',
+  instruments: [],
   practiceNotes: '',
   tags: [],
   focusLevel: null,
