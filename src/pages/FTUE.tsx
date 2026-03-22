@@ -438,6 +438,14 @@ export default function FTUE() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm flex flex-col items-center text-center animate-fade-in">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 self-start"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <div className="w-32 h-32 rounded-full bg-muted/30 flex items-center justify-center mb-8">
             <div className="w-24 h-24 rounded-full bg-gradient-primary flex items-center justify-center">
               <Music className="w-12 h-12 text-primary-foreground" />
