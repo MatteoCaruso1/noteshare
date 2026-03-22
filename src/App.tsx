@@ -25,6 +25,9 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { ShareEducationTour } from "@/components/onboarding/ShareEducationTour";
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 import { useFriendIds } from "@/hooks/useFriendIds";
+import { getFTUEState, clearFTUEState } from "@/hooks/useFTUEState";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // Lazy load Checkout Dialogs to defer Stripe.js (~155KB) until checkout is needed
 const CheckoutDialog = lazy(() => 
