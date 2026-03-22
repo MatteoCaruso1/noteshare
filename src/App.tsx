@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +25,9 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { ShareEducationTour } from "@/components/onboarding/ShareEducationTour";
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 import { useFriendIds } from "@/hooks/useFriendIds";
+import { getFTUEState, clearFTUEState } from "@/hooks/useFTUEState";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // Lazy load Checkout Dialogs to defer Stripe.js (~155KB) until checkout is needed
 const CheckoutDialog = lazy(() => 
@@ -136,6 +139,42 @@ function AppPrefetcher() {
   return null;
 }
 
+// Retry failed FTUE commits on app load when user is authenticated
+function FTUERetryCommit() {
+  const { user } = useAuth();
+  const attemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || attemptedRef.current) return;
+    const state = getFTUEState();
+    if (!state || state.currentStep < 4) return;
+
+    attemptedRef.current = true;
+    console.log('[FTUE] Retrying uncommitted FTUE data...');
+
+    supabase.functions.invoke('commit-ftue', {
+      body: {
+        name: state.name.trim(),
+        instrument: state.instrument,
+        practiceNotes: state.practiceNotes,
+        tags: state.tags,
+        focusLevel: state.focusLevel,
+        durationMinutes: state.durationMinutes,
+        idempotencyKey: `${state.startedAt}`,
+      },
+    }).then(({ error }) => {
+      if (!error) {
+        console.log('[FTUE] Retry commit succeeded');
+        clearFTUEState();
+      } else {
+        console.error('[FTUE] Retry commit failed:', error);
+      }
+    });
+  }, [user]);
+
+  return null;
+}
+
 function AppInner() {
   useEffect(() => {
     // Prevent mobile browsers from trying to restore scroll positions on SPA navigations.
@@ -170,6 +209,7 @@ function AppInner() {
                       <OnboardingFlow />
                       <ShareEducationTour />
                       <AppPrefetcher />
+                      <FTUERetryCommit />
                       <UpdateAvailableToast />
                     <Routes>
                       <Route path="/" element={<Index />} />
