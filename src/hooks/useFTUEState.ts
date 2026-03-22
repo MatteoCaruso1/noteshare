@@ -77,6 +77,10 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, instrument }));
   }, []);
 
+  const setInstruments = useCallback((instruments: string[]) => {
+    setState(prev => ({ ...prev, instruments, instrument: instruments[0] || '' }));
+  }, []);
+
   const setPracticeNotes = useCallback((practiceNotes: string) => {
     setState(prev => ({ ...prev, practiceNotes }));
   }, []);
