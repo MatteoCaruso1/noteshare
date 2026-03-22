@@ -127,6 +127,7 @@ export default function FTUE() {
             className="w-full mt-8 bg-gradient-primary text-primary-foreground font-semibold gap-2"
             disabled={!canContinue}
             onClick={() => {
+              ftue.setName(ftue.name.trim());
               setElapsedSeconds(0);
               ftue.nextStep();
             }}
