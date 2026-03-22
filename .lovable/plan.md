@@ -1,97 +1,88 @@
 
-Goal: change `/ftue` from a 4-card teaser into a real pre-auth walkthrough that continues through starting a practice session, opening the save dialog, saving the session, showing the new note in the timeline, and only then showing account creation.
 
-What I found
-- The current signup jump is not accidental. It is hardcoded:
-  - `src/pages/FTUE.tsx` step 3 renders `FTUEAppTour`
-  - `FTUEAppTour` has only 4 highlights
-  - the last tooltip button literally says `Continue to create account`
-  - clicking it calls `onComplete()`, which does `ftue.nextStep()` to step 4
-- So the primary trigger is the current FTUE design, not just a race condition.
-- There are also secondary auto-signup/commit paths that must be tightened:
-  - `src/pages/FTUE.tsx` auto-commit effect runs when `user` exists and stored step is `>= 4`
-  - `src/pages/Auth.tsx` commits FTUE data after OAuth when stored step is `>= 4`
-  - `src/App.tsx` `FTUERetryCommit` retries when stored step is `>= 4`
-- `PracticeControls` and `QuickNoteCapture` `previewMode` currently only render collapsed headers, so they cannot support the “continue into a live session and save it” flow yet.
+## Problem
 
-Implementation plan
-1. Replace the current 4-step FTUE tour with a true interactive sequence
-- Rework `src/pages/FTUE.tsx` so step 3 is no longer “tour complete -> signup”.
-- Use the same order as the real onboarding tour:
-  1. Practice button
-  2. Practice routine
-  3. Notes timeline
-  4. Tap practice button
-  5. Tap start live session
-  6. Session notes area
-  7. Recorder/media area
-  8. Link to practice routine
-  9. End session
-  10. Save session
-  11. Timeline result
-  12. Then move to account creation
-- The CTA text will never mention account creation until after save is finished and the saved note is visible.
+The FTUE tour (step 3) renders hand-built mockup cards for Practice Session, Quick Note, Practice Routine, Timeline, and Save Dialog. These look different from the real app and will drift further over time. The user wants the actual components used by the real home page.
 
-2. Add a local-only FTUE preview state so the real UI can be used before auth
-- Keep using the real components, but drive them with local FTUE preview state instead of backend mutations.
-- Add explicit FTUE preview state such as:
-  - `previewSessionStarted`
-  - `previewSessionSaved`
-  - `previewPracticeNotes`
-  - `previewDurationMinutes`
-  - `previewFocusLevel`
-  - `previewTags`
-  - `previewTimelineNote`
-- This avoids fake mock cards while also avoiding backend writes before account creation.
+## Root Cause
 
-3. Extend the real components to support FTUE preview interactions
-- `src/components/PracticeControls.tsx`
-  - expand `previewMode` so it can:
-    - open the session chooser
-    - show “Start Live Session”
-    - enter an active-session layout locally
-    - open the real `EndSessionDialog`
-    - emit callbacks instead of calling `useStartSession` / `useEndSession`
-- `src/components/EndSessionDialog.tsx`
-  - allow FTUE preview save flow to reuse the same dialog UI with local callbacks
-- `src/components/QuickNoteCapture.tsx`
-  - keep visible in FTUE, but non-blocking while practice session preview is active, matching production behavior
-- `src/components/TodaysFocus.tsx`
-  - ensure it renders a stable open state during FTUE, using local draft/example content if no authenticated profile exists
-- `src/components/Timeline.tsx`
-  - feed it a locally created preview note after “Save Session” so the user sees the real timeline update
+1. `FTUEInteractiveTour` (lines 67-521 of FTUE.tsx) is a self-contained component with its own JSX for every card, session UI, and save dialog — none of it uses the real components.
+2. The real components (`PracticeControls`, `QuickNoteCapture`, `TodaysFocus`) return `null` or a minimal shell when `profile` is missing, so they can't be dropped into the FTUE directly.
+3. `EndSessionDialog` requires a real `PracticeSession` object from the database.
 
-4. Remove step-number-based premature signup triggers
-- Stop using `currentStep >= 4` as the signal that signup/commit may run.
-- Introduce explicit FTUE progression flags instead, e.g.:
-  - `canShowSignup`
-  - `signupStarted`
-  - `readyToCommit`
-- Update these files to respect the new guards:
-  - `src/pages/FTUE.tsx`
-  - `src/pages/Auth.tsx`
-  - `src/App.tsx`
-- Result: even if a stale session exists, the app will not jump to account creation until the preview session has been saved and the flow has explicitly advanced.
+## Approach
 
-5. Update FTUE persistence model so refresh/back navigation stays correct
-- `src/hooks/useFTUEState.ts`
-  - store the new preview-flow flags and preview note/session state
-  - keep back-button behavior working on all pre-auth screens
-  - preserve “most recent page” behavior without skipping ahead to signup on reload
+Rather than trying to make every real component work without auth (which would require deep refactoring of dozens of hooks), I'll take a **hybrid approach**:
 
-Files I would change
-- `src/pages/FTUE.tsx`
-- `src/hooks/useFTUEState.ts`
-- `src/components/PracticeControls.tsx`
-- `src/components/EndSessionDialog.tsx`
-- `src/components/QuickNoteCapture.tsx`
-- `src/components/TodaysFocus.tsx`
-- `src/pages/Auth.tsx`
-- `src/App.tsx`
+1. **Render the real Index page layout** for the tour background — use the actual `Index.tsx` structure but with an FTUE context that provides fake profile/session data so components render their full UI.
+2. **Create an FTUE context** that the real components can check to determine if they're in FTUE mode, providing local-only state instead of querying the database.
 
-Expected result
-- Get Started always begins at FTUE welcome
-- The spotlight tour continues into the actual practice-session flow
-- User can start a preview session, review/save it, and then see it appear in Notes
-- Account creation appears only after that saved-session moment
-- Existing OAuth/retry logic no longer forces signup early because it will depend on explicit FTUE completion flags, not the old numeric step threshold
+Actually, the cleanest approach given the deep hook coupling is:
+
+### Strategy: FTUE Preview Context + Component Adaptations
+
+Create a `FTUEPreviewContext` that signals to components they're in an FTUE walkthrough. Each component checks this context and, when active, uses local state instead of database queries. This keeps the real component rendering code (JSX, styles, icons) identical while swapping only the data source.
+
+### Files to Change
+
+**1. New file: `src/contexts/FTUEPreviewContext.tsx`**
+- Provides: `isFTUEPreview`, `previewSession` (fake active session object), `previewProfile` (minimal profile), callbacks for start/end/save
+- Components check `isFTUEPreview` to bypass auth guards and use preview data
+
+**2. `src/components/PracticeControls.tsx`**
+- Import `useFTUEPreview` context
+- When `isFTUEPreview` is true:
+  - Use `previewProfile` instead of `useAuth().profile` for the early return guard
+  - Use `previewSession` instead of `useActiveSession` data
+  - Replace `startSession.mutate()` with `previewCallbacks.startSession()`
+  - Replace end session flow with `previewCallbacks.endSession()`
+  - Skip all database mutations (note creation, shares, etc.)
+  - The component renders its FULL real UI (collapsible, session choice, active session layout, end session button) — zero mockup JSX needed
+
+**3. `src/components/QuickNoteCapture.tsx`**
+- When `isFTUEPreview`: use `previewProfile`, skip mutations, render full collapsed card UI
+
+**4. `src/components/TodaysFocus.tsx`**
+- When `isFTUEPreview`: use `previewProfile`, render with example content, skip database save
+
+**5. `src/components/EndSessionDialog.tsx`**
+- Accept optional `onPreviewSave` callback prop
+- When provided, call it instead of the real `onSave` (which triggers database mutations)
+- All UI rendering stays identical — same duration input, focus level selector, notes field, save button
+
+**6. `src/components/Timeline.tsx`**
+- Accept optional `previewNotes` prop
+- When provided, merge them into the display list (used to show the saved session note)
+
+**7. `src/pages/FTUE.tsx`**
+- Replace `FTUEInteractiveTour` entirely:
+  - Wrap real components in `FTUEPreviewProvider`
+  - Render: `<PracticeControls />`, `<QuickNoteCapture />`, `<TodaysFocus />`, Timeline section — same layout as `Index.tsx`
+  - Keep the spotlight overlay system (SVG mask + tooltip) on top
+  - The spotlight targets the same `data-tour` selectors already on the real components
+  - Phase transitions use callbacks from `FTUEPreviewContext` (e.g., when session starts, advance to phase 5)
+- Remove all mockup JSX (fake cards, fake save dialog, fake timeline note, fake bottom nav, fake header)
+- Use real `AppHeader` and `BottomNav` components (they already handle unauthenticated states)
+
+### Tour Flow (unchanged phases, real components)
+
+| Phase | Spotlight Target | What User Sees |
+|-------|-----------------|----------------|
+| 0 | `data-tour="practice-start-btn"` | Real PracticeControls collapsed card |
+| 1 | Quick note card | Real QuickNoteCapture collapsed card |
+| 2 | Practice routine | Real TodaysFocus card |
+| 3 | Notes section | Real Timeline empty state |
+| 4 | Practice button (interactive) | User taps → preview session starts via context |
+| 5 | Session notes area | Real PracticeControls expanded with textarea |
+| 6 | End session button | Real end session button in PracticeControls |
+| 7 | Save dialog | Real EndSessionDialog with preview callback |
+| 8 | Timeline with note | Real Timeline showing preview note |
+
+### Key Design Decisions
+
+- The `FTUEPreviewContext` creates a fake `PracticeSession` object matching the real type shape so components like `EndSessionDialog` work without changes to their type signatures
+- The fake profile has the FTUE user's name and a generated UUID
+- No database writes occur — everything is local state in the context
+- The save dialog callback creates a fake `NoteWithAuthor` and passes it to Timeline as a preview note
+- Bottom nav and header render their real unauthenticated versions
+
