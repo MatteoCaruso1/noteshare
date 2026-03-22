@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Clock, ClipboardList, Users, User } from 'lucide-react';
+import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Clock, ClipboardList, Users, User, Play, Square, Save, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
 import { INSTRUMENTS } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,16 +11,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { startGoogleOAuth } from '@/lib/oauth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { GlintProvider } from '@/contexts/GlintContext';
-import { PracticeControls } from '@/components/PracticeControls';
-import { QuickNoteCapture } from '@/components/QuickNoteCapture';
-import { TodaysFocus } from '@/components/TodaysFocus';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 // Step 0: Welcome
 // Step 1: Name (intro)
 // Step 2: Choose instruments
-// Step 3: App tour (mock layout with spotlight)
-// Step 4: Create account
+// Step 3: Interactive app walkthrough (practice session flow)
+// Step 4: Create account (only after session saved in tour)
 // Step 5: Final "Happy practicing!" celebration
 
 const SIGNUP_STEP = 4;
@@ -33,77 +31,114 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// ─── App Tour Step ───────────────────────────────────────────────
+// ─── Interactive Tour Phases ────────────────────────────────────
+// Phase 0: Highlight practice button → "Start practice sessions here"
+// Phase 1: Highlight quick note → "Capture quick notes anytime"
+// Phase 2: Highlight routine → "Your daily practice to-do list"
+// Phase 3: Highlight timeline → "Your practice history lives here"
+// Phase 4: "Now let's try it! Tap Start Practice Session" → user taps, session starts locally
+// Phase 5: Active session shown, highlight notes area → "Add notes during your session"
+// Phase 6: Highlight end session → "When you're done, save your session"
+// Phase 7: EndSessionDialog shown → user taps Save
+// Phase 8: Session saved! Note appears in timeline → "Your first note! 🎉" → Continue to create account
 
-interface TourHighlight {
+type TourPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+interface SpotlightTarget {
   label: string;
   subLabel?: string;
   targetId: string;
   position: 'top' | 'bottom';
+  ctaText?: string;
+  autoAdvance?: boolean; // Don't show CTA — user must interact with the real element
 }
 
-const tourHighlights: TourHighlight[] = [
-  {
-    label: 'Start practice sessions here',
-    subLabel: 'Track your playing in real-time',
-    targetId: 'tour-practice-btn',
-    position: 'bottom',
-  },
-  {
-    label: 'Capture quick notes anytime',
-    subLabel: 'Ideas, recordings, images',
-    targetId: 'tour-quick-note',
-    position: 'bottom',
-  },
-  {
-    label: 'Your daily practice to-do list',
-    subLabel: 'Stay organized and focused',
-    targetId: 'tour-routine',
-    position: 'bottom',
-  },
-  {
-    label: 'Your practice history lives here',
-    subLabel: 'Every session saved and searchable',
-    targetId: 'tour-timeline',
-    position: 'top',
-  },
-];
+const SPOTLIGHT_PHASES: Record<number, SpotlightTarget> = {
+  0: { label: 'Start practice sessions here', subLabel: 'Track your playing in real-time', targetId: 'tour-practice-btn', position: 'bottom' },
+  1: { label: 'Capture quick notes anytime', subLabel: 'Ideas, recordings, images', targetId: 'tour-quick-note', position: 'bottom' },
+  2: { label: 'Your daily practice to-do list', subLabel: 'Stay organized and focused', targetId: 'tour-routine', position: 'bottom' },
+  3: { label: 'Your practice history lives here', subLabel: 'Every session saved and searchable', targetId: 'tour-timeline', position: 'top' },
+  4: { label: "Now let's try it!", subLabel: 'Tap the practice button to start a session', targetId: 'tour-practice-btn', position: 'bottom', autoAdvance: true },
+  5: { label: 'Add notes during your session', subLabel: 'Write what you practiced', targetId: 'tour-session-notes', position: 'bottom' },
+  6: { label: 'Save your session when done', subLabel: 'Tap to finish practicing', targetId: 'tour-end-session-btn', position: 'top' },
+  8: { label: 'Your first practice note! 🎉', subLabel: 'Every session is saved here', targetId: 'tour-timeline', position: 'top', ctaText: 'Create your account' },
+};
 
-function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => void }) {
-  const [highlightIndex, setHighlightIndex] = useState(0);
+function FTUEInteractiveTour({ name, onComplete }: { name: string; onComplete: () => void }) {
+  const [phase, setPhase] = useState<TourPhase>(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const hasCompletedRef = useRef(false);
 
-  const current = tourHighlights[highlightIndex];
+  // Local session state
+  const [sessionActive, setSessionActive] = useState(false);
+  const [sessionStartedAt] = useState(() => Date.now());
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [sessionSaved, setSessionSaved] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveDuration, setSaveDuration] = useState('15');
+  const [saveFocusLevel, setSaveFocusLevel] = useState<number | null>(null);
 
-  // Measure the target element
+  const currentSpotlight = SPOTLIGHT_PHASES[phase];
+
+  // Measure target element
   useEffect(() => {
+    if (!currentSpotlight) return;
     setTooltipVisible(false);
-    const el = document.getElementById(current.targetId);
-    if (el) {
-      const r = el.getBoundingClientRect();
-      setRect(r);
-    }
-    const t = setTimeout(() => setTooltipVisible(true), 200);
+    const measure = () => {
+      const el = document.getElementById(currentSpotlight.targetId);
+      if (el) {
+        setRect(el.getBoundingClientRect());
+      }
+    };
+    measure();
+    const t = setTimeout(() => {
+      measure();
+      setTooltipVisible(true);
+    }, 250);
     return () => clearTimeout(t);
-  }, [highlightIndex, current.targetId]);
+  }, [phase, currentSpotlight?.targetId]);
 
-  const handleAdvance = () => {
-    if (highlightIndex < tourHighlights.length - 1) {
-      setHighlightIndex(i => i + 1);
-      return;
+  const handleAdvance = useCallback(() => {
+    if (phase === 4) return; // Phase 4 = user must tap practice button
+    if (phase === 7) return; // Phase 7 = save dialog, no spotlight
+    if (phase < 8) {
+      setPhase(p => (p + 1) as TourPhase);
+    } else {
+      if (!hasCompletedRef.current) {
+        hasCompletedRef.current = true;
+        onComplete();
+      }
     }
+  }, [phase, onComplete]);
 
-    if (!hasCompletedRef.current) {
-      hasCompletedRef.current = true;
-      onComplete();
+  // When user taps practice button in phase 4
+  const handleStartPreviewSession = useCallback(() => {
+    if (phase === 4) {
+      setSessionActive(true);
+      setPhase(5);
     }
-  };
+  }, [phase]);
+
+  // When user taps end session in phase 6
+  const handleOpenSaveDialog = useCallback(() => {
+    if (phase === 6) {
+      setShowSaveDialog(true);
+      setPhase(7);
+    }
+  }, [phase]);
+
+  // When user saves in phase 7
+  const handleSaveSession = useCallback(() => {
+    setShowSaveDialog(false);
+    setSessionActive(false);
+    setSessionSaved(true);
+    setPhase(8);
+  }, []);
 
   const tooltipStyle = (): React.CSSProperties => {
     if (!rect) return { top: '40%', left: '50%', transform: 'translateX(-50%)' };
-    if (current.position === 'top') {
+    if (currentSpotlight?.position === 'top') {
       return {
         bottom: window.innerHeight - rect.top + 14,
         left: '50%',
@@ -115,6 +150,13 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
       left: '50%',
       transform: 'translateX(-50%)',
     };
+  };
+
+  // Elapsed time display
+  const getElapsedDisplay = () => {
+    const ms = Date.now() - sessionStartedAt;
+    const mins = Math.max(0, Math.floor(ms / 60000));
+    return `${mins}m`;
   };
 
   return (
@@ -134,36 +176,151 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
         </div>
       </div>
 
-      {/* Real components */}
+      {/* Main content */}
       <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-3 overflow-y-auto">
         <h1 className="text-xl font-semibold text-foreground mb-3">My Practice</h1>
 
-        <GlintProvider>
-          <div id="tour-practice-btn">
-            <PracticeControls previewMode />
-          </div>
+        {/* Practice Session Card */}
+        <div id="tour-practice-btn">
+          <Card className="bg-card border-border min-h-[60px]">
+            <Collapsible open={sessionActive} onOpenChange={() => {
+              if (phase === 4) handleStartPreviewSession();
+            }}>
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => { if (phase === 4) handleStartPreviewSession(); }}
+                  className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
+                >
+                  <div className="flex items-center gap-2">
+                    <Play className={`w-5 h-5 transition-colors ${sessionActive ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
+                    <h2 className="font-semibold">
+                      {sessionActive ? 'Practice Session' : 'Start Practice Session'}
+                    </h2>
+                    {sessionActive && (
+                      <span className="text-sm font-medium text-primary">{getElapsedDisplay()}</span>
+                    )}
+                  </div>
+                  {sessionActive ? (
+                    <ChevronRight className="w-5 h-5 text-muted-foreground rotate-90" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                {sessionActive && !showSaveDialog && (
+                  <div className="px-3 sm:px-4 pb-4 space-y-4">
+                    {/* Session notes */}
+                    <div id="tour-session-notes">
+                      <label className="text-sm font-medium text-muted-foreground mb-1 block">
+                        What did you practice?
+                      </label>
+                      <textarea
+                        placeholder="Add notes about your session..."
+                        value={sessionNotes}
+                        onChange={(e) => setSessionNotes(e.target.value)}
+                        className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                      />
+                    </div>
 
+                    {/* End session button */}
+                    <div id="tour-end-session-btn">
+                      <Button
+                        className="w-full bg-gradient-primary text-primary-foreground"
+                        onClick={() => { if (phase === 6) handleOpenSaveDialog(); else if (phase >= 5) { setPhase(6); } }}
+                      >
+                        <Square className="w-4 h-4 mr-2" />
+                        End Session
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+        </div>
+
+        {/* Quick Note - hidden during active session (matches real behavior) */}
+        {!sessionActive && (
           <div id="tour-quick-note">
-            <QuickNoteCapture previewMode />
+            <Card className="bg-card border-border">
+              <button
+                type="button"
+                className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
+              >
+                <div className="flex items-center gap-2">
+                  <Music className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <h2 className="font-semibold">Capture Quick Note</h2>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </Card>
           </div>
+        )}
 
+        {/* Practice Routine */}
+        {!sessionActive && (
           <div id="tour-routine">
-            <TodaysFocus />
+            <Card className="bg-card border-border">
+              <button
+                type="button"
+                className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group"
+              >
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <h2 className="font-semibold">Practice Routine</h2>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </Card>
           </div>
-        </GlintProvider>
+        )}
 
         {/* Notes / Timeline */}
         <div id="tour-timeline" className="space-y-2">
           <h2 className="text-foreground font-semibold">Notes</h2>
-          <div className="bg-card border border-border rounded-lg p-8 text-center">
-            <div className="w-14 h-14 mx-auto rounded-full bg-secondary/50 flex items-center justify-center mb-4">
-              <Music className="w-7 h-7 text-muted-foreground" />
+          {sessionSaved ? (
+            <Card className="bg-card border-border rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Music className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-sm text-foreground">{name || 'You'}</span>
+                    <span className="text-xs text-muted-foreground">Just now</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                    <Clock className="w-3 h-3" />
+                    <span>{saveDuration} min session</span>
+                    {saveFocusLevel && (
+                      <span className="flex items-center gap-0.5">
+                        <Zap className="w-3 h-3 text-primary" />
+                        {saveFocusLevel}/5
+                      </span>
+                    )}
+                  </div>
+                  {sessionNotes && (
+                    <p className="text-sm text-foreground">{sessionNotes}</p>
+                  )}
+                  {!sessionNotes && (
+                    <p className="text-sm text-muted-foreground italic">Practice session logged</p>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <div className="bg-card border border-border rounded-lg p-8 text-center">
+              <div className="w-14 h-14 mx-auto rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+                <Music className="w-7 h-7 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground font-medium">No notes yet</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Your practice notes will appear here
+              </p>
             </div>
-            <p className="text-muted-foreground font-medium">No notes yet</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Your practice notes will appear here
-            </p>
-          </div>
+          )}
         </div>
       </div>
 
@@ -182,74 +339,184 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
         ))}
       </div>
 
-      {/* Spotlight overlay */}
-      <div
-        className="fixed inset-0 z-[100]"
-        style={{ pointerEvents: 'auto', touchAction: 'none' }}
-        onTouchMove={(e) => e.preventDefault()}
-      >
-        {rect && (
-          <svg className="fixed inset-0 w-full h-full pointer-events-none">
-            <defs>
-              <mask id="ftue-spotlight-mask">
-                <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                <rect
-                  x={rect.left - 8}
-                  y={rect.top - 8}
-                  width={rect.width + 16}
-                  height={rect.height + 16}
-                  rx="12"
-                  fill="black"
-                  style={{ transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+      {/* Save Session Dialog (Phase 7) */}
+      {showSaveDialog && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60">
+          <div className="bg-popover border border-border rounded-xl w-full max-w-md mx-4 shadow-xl animate-fade-in">
+            <div className="p-4 pb-2 border-b border-border flex items-center gap-3">
+              <button
+                type="button"
+                className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-accent"
+                onClick={() => { setShowSaveDialog(false); setPhase(6); }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <h3 className="text-xl font-semibold">Save Session</h3>
+            </div>
+            <div className="p-4 space-y-4">
+              {/* Duration */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Duration
+                </label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={saveDuration}
+                  onChange={(e) => {
+                    if (e.target.value === '' || /^\d+$/.test(e.target.value)) setSaveDuration(e.target.value);
+                  }}
+                  className="w-16 bg-muted/50"
                 />
-              </mask>
-            </defs>
-            <rect
-              x="0" y="0" width="100%" height="100%"
-              fill="rgba(0,0,0,0.75)"
-              mask="url(#ftue-spotlight-mask)"
-            />
-          </svg>
-        )}
+                <span className="text-sm text-muted-foreground">min</span>
+              </div>
 
-        {/* Spotlight border */}
-        {rect && (
-          <div
-            className="fixed pointer-events-none rounded-xl border-2 border-primary/60"
-            style={{
-              left: rect.left - 8,
-              top: rect.top - 8,
-              width: rect.width + 16,
-              height: rect.height + 16,
-              transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          />
-        )}
+              {/* Focus Level */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  Focus level
+                </label>
+                <div className="flex gap-1.5">
+                  {[1, 2, 3, 4, 5].map((level) => (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => setSaveFocusLevel(saveFocusLevel === level ? null : level)}
+                      className="p-0 touch-manipulation"
+                    >
+                      <Zap className={`w-5 h-5 transition-colors ${saveFocusLevel !== null && level <= saveFocusLevel ? 'text-primary fill-primary' : 'text-muted-foreground/30'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        {/* Tooltip */}
-        <div
-          className="fixed z-[110] transition-all duration-300"
-          style={{
-            ...tooltipStyle(),
-            opacity: tooltipVisible ? 1 : 0,
-            transform: `translateX(-50%) translateY(${tooltipVisible ? '0' : '8px'})`,
-          }}
-        >
-          <div className="bg-popover border border-border rounded-xl px-5 py-3 shadow-lg text-center max-w-[260px]">
-            <p className="text-foreground font-semibold text-sm">{current.label}</p>
-            {current.subLabel && (
-              <p className="text-muted-foreground text-xs mt-0.5">{current.subLabel}</p>
-            )}
-            <button
-              type="button"
-              onClick={handleAdvance}
-              className="text-primary text-xs mt-2 font-medium"
-            >
-              {highlightIndex < tourHighlights.length - 1 ? 'Tap to continue' : 'Continue to create account'}
-            </button>
+              {/* Notes */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">What did you practice?</label>
+                <textarea
+                  placeholder="Add notes about your session..."
+                  value={sessionNotes}
+                  onChange={(e) => setSessionNotes(e.target.value)}
+                  className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                />
+              </div>
+            </div>
+            <div className="p-4 pt-2 border-t border-border">
+              <Button
+                className="w-full bg-gradient-primary text-primary-foreground"
+                onClick={handleSaveSession}
+                disabled={!saveDuration || parseInt(saveDuration, 10) < 1}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Session
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Spotlight overlay - only show when we have a spotlight phase and NOT in dialog */}
+      {currentSpotlight && !showSaveDialog && (
+        <div
+          className="fixed inset-0 z-[100]"
+          style={{ pointerEvents: 'auto', touchAction: 'none' }}
+          onTouchMove={(e) => e.preventDefault()}
+          onClick={(e) => {
+            // In phase 4, check if user clicked the practice button area
+            if (phase === 4) {
+              const practiceEl = document.getElementById('tour-practice-btn');
+              if (practiceEl) {
+                const r = practiceEl.getBoundingClientRect();
+                if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                  handleStartPreviewSession();
+                  return;
+                }
+              }
+            }
+            // In phase 6, check if user clicked end session button
+            if (phase === 6) {
+              const endEl = document.getElementById('tour-end-session-btn');
+              if (endEl) {
+                const r = endEl.getBoundingClientRect();
+                if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                  handleOpenSaveDialog();
+                  return;
+                }
+              }
+            }
+          }}
+        >
+          {rect && (
+            <svg className="fixed inset-0 w-full h-full pointer-events-none">
+              <defs>
+                <mask id="ftue-spotlight-mask">
+                  <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                  <rect
+                    x={rect.left - 8}
+                    y={rect.top - 8}
+                    width={rect.width + 16}
+                    height={rect.height + 16}
+                    rx="12"
+                    fill="black"
+                    style={{ transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+                  />
+                </mask>
+              </defs>
+              <rect
+                x="0" y="0" width="100%" height="100%"
+                fill="rgba(0,0,0,0.75)"
+                mask="url(#ftue-spotlight-mask)"
+              />
+            </svg>
+          )}
+
+          {/* Spotlight border */}
+          {rect && (
+            <div
+              className="fixed pointer-events-none rounded-xl border-2 border-primary/60"
+              style={{
+                left: rect.left - 8,
+                top: rect.top - 8,
+                width: rect.width + 16,
+                height: rect.height + 16,
+                transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            />
+          )}
+
+          {/* Tooltip */}
+          <div
+            className="fixed z-[110] transition-all duration-300"
+            style={{
+              ...tooltipStyle(),
+              opacity: tooltipVisible ? 1 : 0,
+              transform: `translateX(-50%) translateY(${tooltipVisible ? '0' : '8px'})`,
+            }}
+          >
+            <div className="bg-popover border border-border rounded-xl px-5 py-3 shadow-lg text-center max-w-[280px]">
+              <p className="text-foreground font-semibold text-sm">{currentSpotlight.label}</p>
+              {currentSpotlight.subLabel && (
+                <p className="text-muted-foreground text-xs mt-0.5">{currentSpotlight.subLabel}</p>
+              )}
+              {/* Show CTA only for non-interactive phases */}
+              {!currentSpotlight.autoAdvance && (
+                <button
+                  type="button"
+                  onClick={handleAdvance}
+                  className="text-primary text-xs mt-2 font-medium"
+                >
+                  {currentSpotlight.ctaText || 'Tap to continue'}
+                </button>
+              )}
+              {currentSpotlight.autoAdvance && (
+                <p className="text-primary/70 text-xs mt-2">↑ Tap above to try it</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -320,8 +587,8 @@ export default function FTUE() {
     if (didResetRef.current) return;
     didResetRef.current = true;
     const state = getFTUEState();
-    // If there's stale state that already reached signup or beyond, start fresh
-    if (state && state.currentStep >= SIGNUP_STEP) {
+    // If there's stale state that already passed signup AND has readyForSignup, start fresh
+    if (state && state.currentStep >= SIGNUP_STEP && !state.readyForSignup) {
       ftue.reset();
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -333,24 +600,22 @@ export default function FTUE() {
   const [signupLoading, setSignupLoading] = useState(false);
   const [commitPending, setCommitPending] = useState(false);
   const commitAttemptedRef = useRef(false);
-  // Only set to true when user explicitly triggers signup on step 4
   const signupInitiatedRef = useRef(false);
 
-  // After signup + auth, commit FTUE data then go to final step
-  // Only fires when user explicitly signed up on step 4 (signupInitiatedRef)
   const hadUserOnMount = useRef(!!user);
 
+  // After signup + auth, commit FTUE data then go to final step
   useEffect(() => {
     if (!user) return;
     if (commitAttemptedRef.current) return;
 
-    // Only auto-commit if the user explicitly started signup from step 4
-    // OR if user was already logged in and reached signup step
+    // Only auto-commit if user explicitly started signup
     if (!signupInitiatedRef.current && !hadUserOnMount.current) return;
 
     const state = getFTUEState();
-    // Only act when user has reached or passed the signup step
-    if (!state || state.currentStep < SIGNUP_STEP) return;
+    // Only act when readyForSignup flag is set (user completed the interactive tour)
+    if (!state || !state.readyForSignup) return;
+    if (state.currentStep < SIGNUP_STEP) return;
 
     commitAttemptedRef.current = true;
     setCommitPending(true);
@@ -369,7 +634,6 @@ export default function FTUE() {
       }
 
       setCommitPending(false);
-      // Move to final celebration step
       ftue.setStep(5);
     };
 
@@ -559,12 +823,21 @@ export default function FTUE() {
     );
   }
 
-  // ── Step 3: App tour ──
+  // ── Step 3: Interactive app tour ──
   if (ftue.currentStep === 3) {
-    return <FTUEAppTour name={ftue.name} onComplete={() => ftue.nextStep()} />;
+    return (
+      <FTUEInteractiveTour
+        name={ftue.name}
+        onComplete={() => {
+          // Mark ready for signup and advance
+          ftue.setReadyForSignup(true);
+          ftue.nextStep();
+        }}
+      />
+    );
   }
 
-  // ── Step 4: Create account ──
+  // ── Step 4: Create account (only reached after interactive tour completes) ──
   if (ftue.currentStep === 4) {
     const isPasswordValid = password.length >= 6;
     const showPasswordHint = passwordTouched && !isPasswordValid && password.length > 0;
@@ -577,7 +850,7 @@ export default function FTUE() {
           </div>
           <h1 className="text-2xl font-semibold text-foreground mb-2">Create your account</h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-            Sign up to start tracking your practice
+            Sign up to save your practice and keep going
           </p>
 
           <div className="w-full space-y-3">
