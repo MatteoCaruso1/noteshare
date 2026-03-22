@@ -235,8 +235,17 @@ export default function FTUE() {
   // Step 1: Name + Instrument
   if (ftue.currentStep === 1) {
     const trimmedName = ftue.name.trim();
-    const canContinue = trimmedName.length > 0 && trimmedName.length <= 50 && ftue.instrument.length > 0;
+    const canContinue = trimmedName.length > 0 && trimmedName.length <= 50 && ftue.instruments.length > 0;
     const nameTooLong = ftue.name.trim().length > 50;
+
+    const toggleInstrument = (inst: string) => {
+      const current = ftue.instruments;
+      if (current.includes(inst)) {
+        ftue.setInstruments(current.filter(i => i !== inst));
+      } else {
+        ftue.setInstruments([...current, inst]);
+      }
+    };
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -269,14 +278,14 @@ export default function FTUE() {
                   <button
                     key={inst}
                     type="button"
-                    onClick={() => ftue.setInstrument(inst)}
+                    onClick={() => toggleInstrument(inst)}
                     className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all border ${
-                      ftue.instrument === inst
+                      ftue.instruments.includes(inst)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
                     }`}
                   >
-                    {ftue.instrument === inst && <Check className="w-3 h-3 inline mr-1" />}
+                    {ftue.instruments.includes(inst) && <Check className="w-3 h-3 inline mr-1" />}
                     {inst}
                   </button>
                 ))}
