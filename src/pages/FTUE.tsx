@@ -306,9 +306,6 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
                   {currentSpotlight.ctaText || 'Tap to continue'}
                 </button>
               )}
-              {currentSpotlight.autoAdvance && (
-                <p className="text-primary/70 text-xs mt-2">↑ Tap above to try it</p>
-              )}
             </div>
           </div>
         </div>
