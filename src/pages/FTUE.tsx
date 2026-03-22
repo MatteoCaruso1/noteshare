@@ -179,17 +179,19 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
           <h2 className="text-foreground font-semibold">Notes</h2>
           <div className="bg-card border border-border rounded-lg p-4 space-y-3">
             <div className="flex gap-2">
-              <div className="h-5 w-24 rounded bg-muted/40" />
-              <div className="h-5 w-16 rounded bg-muted/40" />
+              <span className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded">Today</span>
+              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">Practice</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-muted/40" />
-              <div className="space-y-1.5">
-                <div className="h-4 w-28 rounded bg-muted/40" />
-                <div className="h-3 w-20 rounded bg-muted/30" />
+              <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center">
+                <Music className="w-5 h-5 text-muted-foreground/50" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-foreground/70">Worked on chord transitions</p>
+                <p className="text-xs text-muted-foreground">2 min ago</p>
               </div>
             </div>
-            <div className="h-2 w-full rounded bg-primary/20" />
+            <div className="h-1.5 w-3/4 rounded bg-primary/20" />
           </div>
         </div>
       </div>
