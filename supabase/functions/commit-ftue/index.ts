@@ -78,12 +78,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Use service role for writes to bypass RLS timing issues on brand-new users
-    const serviceClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
     // Idempotency: check if we already committed for this user+key
     // We'll use the notes_summary field to store the idempotency key
     const { data: existing } = await serviceClient
