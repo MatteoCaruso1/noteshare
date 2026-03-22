@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedCurrency } from '@/lib/currencyUtils';
+import { CreateCheckoutEmbeddedResponse } from '@/types/api';
 
 interface EmbeddedCheckoutState {
   clientSecret: string | null;
