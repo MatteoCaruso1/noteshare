@@ -73,6 +73,7 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
   const [highlightIndex, setHighlightIndex] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
+  const hasCompletedRef = useRef(false);
 
   const current = tourHighlights[highlightIndex];
 
@@ -88,10 +89,14 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
     return () => clearTimeout(t);
   }, [highlightIndex, current.targetId]);
 
-  const handleTap = () => {
+  const handleAdvance = () => {
     if (highlightIndex < tourHighlights.length - 1) {
       setHighlightIndex(i => i + 1);
-    } else {
+      return;
+    }
+
+    if (!hasCompletedRef.current) {
+      hasCompletedRef.current = true;
       onComplete();
     }
   };
@@ -135,11 +140,11 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
 
         <GlintProvider>
           <div id="tour-practice-btn">
-            <PracticeControls />
+            <PracticeControls previewMode />
           </div>
 
           <div id="tour-quick-note">
-            <QuickNoteCapture />
+            <QuickNoteCapture previewMode />
           </div>
 
           <div id="tour-routine">
@@ -181,7 +186,6 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
       <div
         className="fixed inset-0 z-[100]"
         style={{ pointerEvents: 'auto', touchAction: 'none' }}
-        onClick={handleTap}
         onTouchMove={(e) => e.preventDefault()}
       >
         {rect && (
@@ -224,7 +228,7 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
 
         {/* Tooltip */}
         <div
-          className="fixed z-[110] pointer-events-none transition-all duration-300"
+          className="fixed z-[110] transition-all duration-300"
           style={{
             ...tooltipStyle(),
             opacity: tooltipVisible ? 1 : 0,
@@ -236,7 +240,13 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
             {current.subLabel && (
               <p className="text-muted-foreground text-xs mt-0.5">{current.subLabel}</p>
             )}
-            <p className="text-primary text-xs mt-2 font-medium">Tap to continue</p>
+            <button
+              type="button"
+              onClick={handleAdvance}
+              className="text-primary text-xs mt-2 font-medium"
+            >
+              {highlightIndex < tourHighlights.length - 1 ? 'Tap to continue' : 'Continue to create account'}
+            </button>
           </div>
         </div>
       </div>
