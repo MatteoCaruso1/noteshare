@@ -329,10 +329,8 @@ export default function FTUE() {
     if (commitAttemptedRef.current) return;
 
     const state = getFTUEState();
-    if (!state || state.currentStep < SIGNUP_STEP) {
-      navigate('/', { replace: true });
-      return;
-    }
+    // Only act when user has reached or passed the signup step
+    if (!state || state.currentStep < SIGNUP_STEP) return;
 
     commitAttemptedRef.current = true;
     setCommitPending(true);
