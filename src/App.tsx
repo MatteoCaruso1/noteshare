@@ -147,7 +147,7 @@ function FTUERetryCommit() {
   useEffect(() => {
     if (!user || attemptedRef.current) return;
     const state = getFTUEState();
-    if (!state || state.currentStep < 4) return;
+    if (!state || state.currentStep < 2) return;
 
     attemptedRef.current = true;
     console.log('[FTUE] Retrying uncommitted FTUE data...');
@@ -157,10 +157,6 @@ function FTUERetryCommit() {
         name: state.name.trim(),
         instrument: state.instrument,
         instruments: state.instruments || [state.instrument],
-        practiceNotes: state.practiceNotes,
-        tags: state.tags,
-        focusLevel: state.focusLevel,
-        durationMinutes: state.durationMinutes,
         idempotencyKey: `${state.startedAt}`,
       },
     }).then(({ error }) => {

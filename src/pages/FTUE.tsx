@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, Check, Square, Clock, Zap, Tag, Save, AlertCircle } from 'lucide-react';
+import { Music, ChevronRight, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
 import { INSTRUMENTS } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
-import { RichTextarea } from '@/components/RichTextarea';
-import { TagInput } from '@/components/TagInput';
 import { supabase } from '@/integrations/supabase/client';
 import { startGoogleOAuth } from '@/lib/oauth';
 import { toast } from 'sonner';
@@ -15,9 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 // Step 0: Welcome
 // Step 1: Name + Instrument
-// Step 2: Practice session (live capture)
-// Step 3: Save session review (duration, focus, tags)
-// Step 4: Create account to save (signup only — no login)
+// Step 2: Create account (signup only — no login)
 
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -28,45 +24,11 @@ const GoogleIcon = () => (
   </svg>
 );
 
-function FocusLevelSelector({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
-  return (
-    <div className="flex items-center gap-3">
-      <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-        <Zap className="w-4 h-4" />
-        Focus level
-      </label>
-      <div className="flex gap-1.5">
-        {[1, 2, 3, 4, 5].map((level) => {
-          const filled = value !== null && level <= value;
-          return (
-            <button
-              key={level}
-              type="button"
-              onClick={() => onChange(value === level ? null : level)}
-              className="touch-manipulation p-0"
-              aria-label={`Focus level ${level}`}
-            >
-              <Zap
-                className={`w-5 h-5 transition-colors ${
-                  filled
-                    ? 'text-primary fill-primary'
-                    : 'text-muted-foreground/30'
-                }`}
-              />
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /** Commit FTUE data to the backend after signup */
 async function commitFTUEData(): Promise<boolean> {
   const state = getFTUEState();
   if (!state) return false;
 
-  // Generate idempotency key from FTUE start timestamp
   const idempotencyKey = `${state.startedAt}`;
 
   try {
@@ -81,10 +43,6 @@ async function commitFTUEData(): Promise<boolean> {
         name: state.name.trim(),
         instrument: state.instrument,
         instruments: state.instruments || [state.instrument],
-        practiceNotes: state.practiceNotes,
-        tags: state.tags,
-        focusLevel: state.focusLevel,
-        durationMinutes: state.durationMinutes,
         idempotencyKey,
       },
     });
@@ -107,9 +65,7 @@ export default function FTUE() {
   const { user, signUp: authSignUp } = useAuth();
   const queryClient = useQueryClient();
   const ftue = useFTUEState();
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [durationInput, setDurationInput] = useState('');
-  
+
   // Signup form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -123,10 +79,8 @@ export default function FTUE() {
     if (!user) return;
     if (commitAttemptedRef.current) return;
 
-    // Only commit if we have FTUE state (user came through FTUE flow)
     const state = getFTUEState();
-    if (!state || state.currentStep < 4) {
-      // User logged in but didn't go through FTUE — just redirect
+    if (!state || state.currentStep < 2) {
       navigate('/', { replace: true });
       return;
     }
@@ -136,15 +90,13 @@ export default function FTUE() {
 
     const doCommit = async () => {
       const success = await commitFTUEData();
-      
+
       if (success) {
-        // Invalidate relevant caches so fresh data loads
         queryClient.invalidateQueries({ queryKey: ['sessions'] });
         queryClient.invalidateQueries({ queryKey: ['notes'] });
         queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
         clearFTUEState();
       } else {
-        // Keep FTUE state in localStorage for potential retry
         console.warn('[FTUE] Commit failed — data preserved in localStorage for retry');
         toast.error('Your practice data will be saved shortly.');
       }
@@ -156,21 +108,6 @@ export default function FTUE() {
     doCommit();
   }, [user, navigate, queryClient]);
 
-  // Mock timer for practice session step
-  useEffect(() => {
-    if (ftue.currentStep !== 2) return;
-    const interval = setInterval(() => {
-      setElapsedSeconds(prev => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [ftue.currentStep]);
-
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
-
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
@@ -180,7 +117,6 @@ export default function FTUE() {
     setSignupLoading(true);
     try {
       await authSignUp(email, password, ftue.name.trim());
-      // Auth state change will trigger commit via useEffect above
     } catch {
       // Error handled in useAuth
     } finally {
@@ -190,7 +126,6 @@ export default function FTUE() {
 
   const handleGoogleSignup = () => {
     setSignupLoading(true);
-    // Mark that FTUE data should be committed on return
     startGoogleOAuth();
   };
 
@@ -202,7 +137,7 @@ export default function FTUE() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-primary mb-3">
             <Music className="w-7 h-7 text-primary-foreground" />
           </div>
-          <p className="text-muted-foreground">Saving your practice...</p>
+          <p className="text-muted-foreground">Setting up your account...</p>
         </div>
       </div>
     );
@@ -300,7 +235,6 @@ export default function FTUE() {
             disabled={!canContinue}
             onClick={() => {
               ftue.setName(ftue.name.trim());
-              setElapsedSeconds(0);
               ftue.nextStep();
             }}
           >
@@ -312,177 +246,8 @@ export default function FTUE() {
     );
   }
 
-  // Step 2: Live practice session
+  // Step 2: Create account
   if (ftue.currentStep === 2) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Session header */}
-        <div className="border-b border-border px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Music className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-foreground text-sm">Practice Session</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/15 text-primary">
-            <div className="relative">
-              <div className="w-2 h-2 rounded-full bg-green-500 recording-pulse" />
-            </div>
-            <span className="text-xs font-mono">{formatTime(elapsedSeconds)}</span>
-          </div>
-        </div>
-
-        {/* Practice content */}
-        <div className="flex-1 flex flex-col p-4 max-w-lg mx-auto w-full">
-          <div className="mb-4">
-            <p className="text-sm text-muted-foreground mb-1">
-              Practicing: <span className="text-foreground font-medium">{ftue.instruments.join(', ') || ftue.instrument}</span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Hey {ftue.name}! Try writing what you're working on.
-            </p>
-          </div>
-
-          <div className="flex-1 min-h-0">
-            <RichTextarea
-              value={ftue.practiceNotes}
-              onChange={ftue.setPracticeNotes}
-              placeholder="What are you practicing? Write notes, ideas, things to remember..."
-              rows={8}
-              autoExpand
-              showTips
-              className="min-h-[200px] bg-card border-border text-sm"
-            />
-          </div>
-
-          <div className="mt-3 flex items-center gap-2 flex-wrap">
-            <TagInput
-              tags={ftue.tags}
-              onChange={ftue.setTags}
-              iconOnly
-            />
-            {ftue.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {ftue.tags.map(tag => (
-                  <span key={tag} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-              <span>In the full app, you can also record audio & video clips</span>
-            </div>
-            <Button
-              size="lg"
-              className="w-full font-semibold gap-2"
-              variant="destructive"
-              onClick={() => {
-                const mins = Math.max(1, Math.round(elapsedSeconds / 60));
-                ftue.setDurationMinutes(mins);
-                setDurationInput(String(mins));
-                ftue.nextStep();
-              }}
-            >
-              <Square className="w-4 h-4" />
-              End Session
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 3: Save session review
-  if (ftue.currentStep === 3) {
-    const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      if (value === '' || /^\d+$/.test(value)) {
-        setDurationInput(value);
-        const parsed = parseInt(value, 10);
-        if (parsed >= 1) {
-          ftue.setDurationMinutes(parsed);
-        }
-      }
-    };
-
-    const isValidDuration = durationInput.trim() !== '' && (parseInt(durationInput, 10) || 0) >= 1;
-
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="border-b border-border px-4 py-3 flex items-center gap-3">
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => ftue.setStep(2)}
-          >
-            ←
-          </button>
-          <h1 className="text-xl font-semibold text-foreground">Save Session</h1>
-        </div>
-
-        <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-5">
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Duration
-            </label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={durationInput}
-              onChange={handleDurationChange}
-              className="w-16 bg-muted/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <span className="text-sm text-muted-foreground">min</span>
-          </div>
-
-          <FocusLevelSelector value={ftue.focusLevel} onChange={ftue.setFocusLevel} />
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Tags
-            </label>
-            <TagInput
-              tags={ftue.tags}
-              onChange={ftue.setTags}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Session notes</label>
-            <RichTextarea
-              value={ftue.practiceNotes}
-              onChange={ftue.setPracticeNotes}
-              placeholder="Add notes about your session..."
-              rows={4}
-              autoExpand
-              className="bg-card border-border text-sm"
-            />
-          </div>
-        </div>
-
-        <div className="p-4 border-t border-border max-w-lg mx-auto w-full">
-          <Button
-            className="w-full bg-gradient-primary text-primary-foreground font-semibold gap-2"
-            size="lg"
-            disabled={!isValidDuration}
-            onClick={() => ftue.nextStep()}
-          >
-            <Save className="w-4 h-4" />
-            Save Session
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 4: Create account to save (signup only — no login buttons)
-  if (ftue.currentStep === 4) {
-    const durationDisplay = ftue.durationMinutes >= 1 ? `${ftue.durationMinutes} min` : formatTime(elapsedSeconds);
     const isPasswordValid = password.length >= 6;
     const showPasswordHint = passwordTouched && !isPasswordValid && password.length > 0;
 
@@ -492,28 +257,12 @@ export default function FTUE() {
           <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center mb-6">
             <Music className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">Nice work!</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-2">
-            {ftue.practiceNotes.trim()
-              ? `You practiced ${ftue.instruments.join(', ') || ftue.instrument} for ${durationDisplay} and captured your notes.`
-              : `You just did a ${durationDisplay} ${ftue.instruments.join(', ') || ftue.instrument} session.`}
-          </p>
-          {ftue.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 justify-center mb-2">
-              {ftue.tags.map(tag => (
-                <span key={tag} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          <p className="text-foreground font-medium text-base mb-6">
-            Create an account to save your practice
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Create your account</h1>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+            Sign up to start tracking your practice
           </p>
 
-          {/* Signup form — no login options */}
           <div className="w-full space-y-3">
-            {/* Google signup */}
             <Button
               type="button"
               variant="outline"
@@ -532,7 +281,6 @@ export default function FTUE() {
               <div className="flex-1 h-px bg-border" />
             </div>
 
-            {/* Email signup */}
             <form onSubmit={handleEmailSignup} noValidate className="space-y-3">
               <Input
                 type="email"
