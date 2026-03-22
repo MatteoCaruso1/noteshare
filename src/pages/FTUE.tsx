@@ -80,6 +80,7 @@ async function commitFTUEData(): Promise<boolean> {
       body: {
         name: state.name.trim(),
         instrument: state.instrument,
+        instruments: state.instruments || [state.instrument],
         practiceNotes: state.practiceNotes,
         tags: state.tags,
         focusLevel: state.focusLevel,

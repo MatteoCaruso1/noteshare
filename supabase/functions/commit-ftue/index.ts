@@ -98,11 +98,12 @@ Deno.serve(async (req) => {
     }
 
     // 1. Update profile with name + instrument + mark onboarding complete
+    const profileInstruments = instruments && instruments.length > 0 ? instruments : [instrument];
     const { error: profileError } = await serviceClient
       .from("profiles")
       .update({
         name: name.trim().slice(0, 50),
-        instruments: [instrument],
+        instruments: profileInstruments,
         has_completed_onboarding: true,
       })
       .eq("user_id", userId);
