@@ -164,8 +164,14 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
               <span className="text-muted-foreground font-medium">Practice Routine</span>
             </div>
           </div>
-          <div className="h-8 rounded bg-muted/30" />
-          <div className="h-8 rounded bg-muted/30" />
+          <div className="flex items-center gap-2 h-8 rounded bg-muted/20 px-3">
+            <div className="w-4 h-4 rounded border border-muted-foreground/30" />
+            <span className="text-sm text-muted-foreground">Warm-up scales</span>
+          </div>
+          <div className="flex items-center gap-2 h-8 rounded bg-muted/20 px-3">
+            <div className="w-4 h-4 rounded border border-muted-foreground/30" />
+            <span className="text-sm text-muted-foreground">Work on new piece</span>
+          </div>
         </div>
 
         {/* Notes / Timeline */}
