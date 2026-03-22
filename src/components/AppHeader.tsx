@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { StreakIndicator } from '@/components/StreakIndicator';
 import { usePremium } from '@/contexts/PremiumContext';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 export function AppHeader() {
   const location = useLocation();
