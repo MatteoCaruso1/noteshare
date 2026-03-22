@@ -1,0 +1,99 @@
+import { useState, useEffect, useCallback } from 'react';
+
+const FTUE_STORAGE_KEY = 'noteshare_ftue_state';
+
+export interface FTUEState {
+  name: string;
+  instrument: string;
+  practiceNotes: string;
+  currentStep: number;
+  startedAt: number; // timestamp
+}
+
+const DEFAULT_STATE: FTUEState = {
+  name: '',
+  instrument: '',
+  practiceNotes: '',
+  currentStep: 0,
+  startedAt: Date.now(),
+};
+
+function loadState(): FTUEState {
+  try {
+    const raw = localStorage.getItem(FTUE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULT_STATE, ...parsed };
+    }
+  } catch {
+    // corrupted — start fresh
+  }
+  return { ...DEFAULT_STATE, startedAt: Date.now() };
+}
+
+function saveState(state: FTUEState) {
+  try {
+    localStorage.setItem(FTUE_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // storage full — ignore
+  }
+}
+
+export function clearFTUEState() {
+  localStorage.removeItem(FTUE_STORAGE_KEY);
+}
+
+export function getFTUEState(): FTUEState | null {
+  try {
+    const raw = localStorage.getItem(FTUE_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+export function useFTUEState() {
+  const [state, setState] = useState<FTUEState>(loadState);
+
+  // Persist on every change
+  useEffect(() => {
+    saveState(state);
+  }, [state]);
+
+  const setName = useCallback((name: string) => {
+    setState(prev => ({ ...prev, name }));
+  }, []);
+
+  const setInstrument = useCallback((instrument: string) => {
+    setState(prev => ({ ...prev, instrument }));
+  }, []);
+
+  const setPracticeNotes = useCallback((practiceNotes: string) => {
+    setState(prev => ({ ...prev, practiceNotes }));
+  }, []);
+
+  const setStep = useCallback((currentStep: number) => {
+    setState(prev => ({ ...prev, currentStep }));
+  }, []);
+
+  const nextStep = useCallback(() => {
+    setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
+  }, []);
+
+  const reset = useCallback(() => {
+    const fresh = { ...DEFAULT_STATE, startedAt: Date.now() };
+    setState(fresh);
+    clearFTUEState();
+  }, []);
+
+  return {
+    ...state,
+    setName,
+    setInstrument,
+    setPracticeNotes,
+    setStep,
+    nextStep,
+    reset,
+  };
+}

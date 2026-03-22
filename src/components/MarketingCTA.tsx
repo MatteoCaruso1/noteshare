@@ -17,7 +17,7 @@ export function MarketingCTA({ variant = 'inline', className = '' }: MarketingCT
     if (user) {
       navigate('/');
     } else {
-      navigate('/auth');
+      navigate('/ftue');
     }
   };
 
