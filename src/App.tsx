@@ -139,6 +139,42 @@ function AppPrefetcher() {
   return null;
 }
 
+// Retry failed FTUE commits on app load when user is authenticated
+function FTUERetryCommit() {
+  const { user } = useAuth();
+  const attemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || attemptedRef.current) return;
+    const state = getFTUEState();
+    if (!state || state.currentStep < 4) return;
+
+    attemptedRef.current = true;
+    console.log('[FTUE] Retrying uncommitted FTUE data...');
+
+    supabase.functions.invoke('commit-ftue', {
+      body: {
+        name: state.name.trim(),
+        instrument: state.instrument,
+        practiceNotes: state.practiceNotes,
+        tags: state.tags,
+        focusLevel: state.focusLevel,
+        durationMinutes: state.durationMinutes,
+        idempotencyKey: `${state.startedAt}`,
+      },
+    }).then(({ error }) => {
+      if (!error) {
+        console.log('[FTUE] Retry commit succeeded');
+        clearFTUEState();
+      } else {
+        console.error('[FTUE] Retry commit failed:', error);
+      }
+    });
+  }, [user]);
+
+  return null;
+}
+
 function AppInner() {
   useEffect(() => {
     // Prevent mobile browsers from trying to restore scroll positions on SPA navigations.
