@@ -526,6 +526,14 @@ export default function FTUE() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm flex flex-col animate-fade-in">
+          <button
+            type="button"
+            onClick={() => ftue.prevStep()}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 self-start"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-semibold text-foreground mb-2">What do you play?</h1>
             <p className="text-muted-foreground text-sm">Select all that apply</p>
