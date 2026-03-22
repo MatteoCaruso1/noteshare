@@ -338,6 +338,18 @@ export default function FTUE() {
   const queryClient = useQueryClient();
   const ftue = useFTUEState();
 
+  // Reset FTUE state when entering fresh (not resuming mid-signup)
+  const didResetRef = useRef(false);
+  useEffect(() => {
+    if (didResetRef.current) return;
+    didResetRef.current = true;
+    const state = getFTUEState();
+    // If there's stale state that already reached signup or beyond, start fresh
+    if (state && state.currentStep >= SIGNUP_STEP) {
+      ftue.reset();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Signup form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
