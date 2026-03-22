@@ -115,6 +115,7 @@ export function useFTUEState() {
     ...state,
     setName,
     setInstrument,
+    setInstruments,
     setPracticeNotes,
     setTags,
     setFocusLevel,

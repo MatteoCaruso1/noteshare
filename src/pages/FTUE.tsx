@@ -219,9 +219,7 @@ export default function FTUE() {
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2">Welcome to</h1>
           <h2 className="text-3xl font-semibold text-primary mb-6">Noteshare</h2>
-          <p className="text-muted-foreground text-base leading-relaxed mb-12">
-            Helping musicians practice smarter. Organize, record, and share your practice, all in one place.
-          </p>
+          <div className="mb-12" />
           <Button
             size="lg"
             className="w-full bg-gradient-primary text-primary-foreground font-semibold px-8 py-6 text-lg"
