@@ -389,6 +389,10 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   if (!profile && !previewMode && !ftuePreview.isFTUEPreview) return null;
 
   const handleStartSession = () => {
+    if (ftuePreview.isFTUEPreview) {
+      ftuePreview.startPreviewSession();
+      return;
+    }
     startSession.mutate({ userId: profile.id });
   };
 
