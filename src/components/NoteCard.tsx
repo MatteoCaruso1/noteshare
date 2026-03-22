@@ -294,7 +294,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const isOwner = profile?.id === note.author_id;
 
   // Per-audio privacy: compute which indices are private and filtered audio for non-owners
-  const privateAudioIndices = useMemo(() => new Set((note as any).private_audio_indices || []), [(note as any).private_audio_indices]);
+  const privateAudioIndices = useMemo(() => new Set(note.private_audio_indices || []), [note.private_audio_indices]);
   
   const visibleAudioFiles = useMemo(() => {
     if (isOwner) return note.audio_files;
@@ -307,7 +307,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   }, [isOwner, note.audio_file_names, privateAudioIndices]);
 
   const handleToggleAudioPrivacy = useCallback((audioIndex: number) => {
-    const current: number[] = (note as any).private_audio_indices || [];
+    const current: number[] = note.private_audio_indices || [];
     const newIndices = current.includes(audioIndex)
       ? current.filter((i: number) => i !== audioIndex)
       : [...current, audioIndex];
@@ -318,7 +318,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
     } else {
       sonnerToast('Recording set to public');
     }
-  }, [note.id, (note as any).private_audio_indices, updatePrivateAudios]);
+  }, [note.id, note.private_audio_indices, updatePrivateAudios]);
   const isPracticeSession = !!note.session_id;
   
   // Get streak info from author's profile for badge display
@@ -838,7 +838,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             streakDays={streakDays}
             bestAchievedMilestone={bestAchievedMilestone}
             achievementCount={streakAchievementCount}
-            selectedAward={(note.author as any)?.selected_award}
+            selectedAward={note.author?.selected_award}
             className="text-sm font-medium truncate"
           />
           {/* Short date in timeline only */}
@@ -988,7 +988,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         <CombinedTextContent
           textContent={note.text_content}
           focusTextSnapshot={note.focus_text_snapshot}
-          focusTitleSnapshot={(note as any).focus_title_snapshot || null}
+          focusTitleSnapshot={note.focus_title_snapshot || null}
           expanded={expanded}
           inlineExpanded={isInlineExpanded}
           hasMediaBelow={visibleAudioFiles.length > 0 || note.image_files.length > 0}
@@ -1047,7 +1047,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       )}
 
       {/* Video attachment */}
-      {(note as any).video_path && <NoteVideoPlayer videoPath={(note as any).video_path} videoName={(note as any).video_name || undefined} videoThumbnailPath={(note as any).video_thumbnail_path || undefined} />}
+      {note.video_path && <NoteVideoPlayer videoPath={note.video_path} videoName={note.video_name || undefined} videoThumbnailPath={note.video_thumbnail_path || undefined} />}
 
       {/* Full timestamp at bottom in expanded view */}
       {expanded && (
