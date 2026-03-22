@@ -294,7 +294,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   const isOwner = profile?.id === note.author_id;
 
   // Per-audio privacy: compute which indices are private and filtered audio for non-owners
-  const privateAudioIndices = useMemo(() => new Set((note as any).private_audio_indices || []), [(note as any).private_audio_indices]);
+  const privateAudioIndices = useMemo(() => new Set(note.private_audio_indices || []), [note.private_audio_indices]);
   
   const visibleAudioFiles = useMemo(() => {
     if (isOwner) return note.audio_files;
