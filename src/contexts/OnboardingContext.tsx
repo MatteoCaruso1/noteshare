@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
+import { getFTUEState } from '@/hooks/useFTUEState';
 
 interface OnboardingContextType {
   showOnboarding: boolean;
