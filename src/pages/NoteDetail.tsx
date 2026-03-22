@@ -196,9 +196,9 @@ const NoteDetail = () => {
     return { topLevelComments: top, repliesByParent: byParent };
   }, [comments]);
 
-  const handleReply = (comment: { id: string; author_id: string; author?: { name: string } | null }) => {
+  const handleReply = (comment: CommentWithAuthor) => {
     // Flatten: if this comment is itself a reply, reply to its parent instead
-    const parentId = (comment as any).parent_comment_id;
+    const parentId = comment.parent_comment_id;
     const targetId = parentId || comment.id;
     const targetAuthorName = comment.author?.name || 'user';
     const targetAuthorId = comment.author_id;
