@@ -15,6 +15,8 @@ interface EndSessionDialogProps {
   onNoteTextChange: (text: string) => void;
   onSave: (sessionTitle: string, durationMinutes: number, playingWithIds: string[], focusLevel?: number) => void;
   isSaving: boolean;
+  /** Optional callback for FTUE preview mode — bypasses real save */
+  onPreviewSave?: (durationMinutes: number, noteText: string, focusLevel?: number) => void;
 }
 
 function FocusLevelSelector({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
