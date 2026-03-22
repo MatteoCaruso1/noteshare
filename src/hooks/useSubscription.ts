@@ -77,7 +77,7 @@ export function useSubscription() {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      const { data, error } = await supabase.functions.invoke<CheckSubscriptionResponse>('check-subscription');
 
       if (error) throw error;
 
