@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Accordion,
@@ -10,6 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Target, Brain, BookOpen, TrendingUp, Clock, CheckCircle2, Music, Lightbulb, ClipboardList } from 'lucide-react';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 const ScienceOfPractice = () => {
   const { user } = useAuth();
@@ -23,11 +23,6 @@ const ScienceOfPractice = () => {
     }
     window.scrollTo(0, 0);
   }, []);
-
-  const handleCTA = () => {
-    window.scrollTo(0, 0);
-    navigate(user ? '/' : '/auth?from=science');
-  };
 
   return (
     <div className="min-h-screen dark" style={{ background: 'hsl(222 47% 11%)' }}>
