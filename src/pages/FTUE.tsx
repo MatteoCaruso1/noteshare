@@ -47,7 +47,7 @@ const tourHighlights: TourHighlight[] = [
   },
   {
     label: 'Capture quick notes anytime',
-    subLabel: 'Ideas, recordings, images — all in one tap',
+    subLabel: 'Ideas, recordings, images',
     targetId: 'tour-quick-note',
     position: 'bottom',
   },
