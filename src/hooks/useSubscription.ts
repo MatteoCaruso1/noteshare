@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { PREMIUM_PRICES, SupportedCurrency, detectUserCurrency } from '@/lib/currencyUtils';
 import { CheckSubscriptionResponse } from '@/types/api';
+import { CheckSubscriptionSchema } from '@/lib/validation';
 
 // Product/Price mapping for Noteshare Premium
 export const SUBSCRIPTION_TIERS = {
