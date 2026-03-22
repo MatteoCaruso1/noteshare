@@ -70,7 +70,9 @@ export default function FTUE() {
 
   // Step 1: Name + Instrument
   if (ftue.currentStep === 1) {
-    const canContinue = ftue.name.trim().length > 0 && ftue.instrument.length > 0;
+    const trimmedName = ftue.name.trim();
+    const canContinue = trimmedName.length > 0 && trimmedName.length <= 50 && ftue.instrument.length > 0;
+    const nameTooLong = ftue.name.trim().length > 50;
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -87,10 +89,14 @@ export default function FTUE() {
               <Input
                 placeholder="Enter your name"
                 value={ftue.name}
-                onChange={(e) => ftue.setName(e.target.value)}
+                onChange={(e) => ftue.setName(e.target.value.slice(0, 60))}
                 autoFocus
                 autoComplete="off"
+                maxLength={60}
               />
+              {nameTooLong && (
+                <p className="text-xs text-destructive">Name must be 50 characters or less</p>
+              )}
             </div>
 
             {/* Instrument */}
@@ -121,6 +127,7 @@ export default function FTUE() {
             className="w-full mt-8 bg-gradient-primary text-primary-foreground font-semibold gap-2"
             disabled={!canContinue}
             onClick={() => {
+              ftue.setName(ftue.name.trim());
               setElapsedSeconds(0);
               ftue.nextStep();
             }}
