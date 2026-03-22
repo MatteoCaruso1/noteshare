@@ -80,7 +80,7 @@ const Auth = () => {
             
             // Check for FTUE data to commit (user signed up via Google during FTUE)
             const ftueState = getFTUEState();
-            if (ftueState && ftueState.currentStep >= 4) {
+            if (ftueState && ftueState.readyForSignup && ftueState.currentStep >= 4) {
               console.log('[Auth] FTUE data detected, committing...');
               try {
                 const { error: commitError } = await supabase.functions.invoke('commit-ftue', {
