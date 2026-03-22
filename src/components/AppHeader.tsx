@@ -160,7 +160,7 @@ export function AppHeader() {
         
         {/* Right side: CTA on welcome pages, Timer & Streak on app pages */}
         {isOnWelcomePage ? (
-          <div className="hidden sm:flex items-center">
+          <div className="hidden lg:flex items-center">
             <MarketingCTA variant="compact" />
           </div>
         ) : (
