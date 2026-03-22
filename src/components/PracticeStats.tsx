@@ -629,9 +629,23 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                   itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number) => [`Practiced : ${value} note${value !== 1 ? 's' : ''}`, '']}
+                  formatter={(value: number, _name: string, props: any) => {
+                    const entry = props?.payload;
+                    const mins = entry?.minutes || 0;
+                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, entry?.name || ''];
+                  }}
                 />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={24}>
+                <Bar
+                  dataKey="count"
+                  radius={[0, 4, 4, 0]}
+                  maxBarSize={24}
+                  cursor="pointer"
+                  onClick={(data: any) => {
+                    if (data?.routineText) {
+                      setPreviewRoutine(data);
+                    }
+                  }}
+                >
                   {routineFrequency.map((_, index) => (
                     <Cell key={index} fill={`hsl(var(--primary) / ${0.5 + (0.5 * (1 - index / Math.max(routineFrequency.length - 1, 1)))})`} />
                   ))}
@@ -641,6 +655,26 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </Card>
       )}
+
+      {/* Routine Preview Dialog */}
+      <Dialog open={!!previewRoutine} onOpenChange={(open) => !open && setPreviewRoutine(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ListTodo className="w-5 h-5 text-primary" />
+              {previewRoutine?.name}
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              {previewRoutine?.count} note{previewRoutine?.count !== 1 ? 's' : ''}, {previewRoutine?.minutes} min{previewRoutine?.minutes !== 1 ? 's' : ''}
+            </p>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh]">
+            <div className="text-sm whitespace-pre-wrap text-foreground">
+              <RichTextContent content={previewRoutine?.routineText || ''} />
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       {/* Section: Focus Level Chart — hidden when no data */}
       {filteredFocusData.some(w => w.average > 0) && (
