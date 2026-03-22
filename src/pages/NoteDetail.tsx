@@ -28,11 +28,11 @@ import { useNoteApplause } from '@/hooks/useApplause';
 
 // Extracted CommentCard component for reuse between top-level and reply comments
 function CommentCard({ comment, isOwner, onReply, onDelete, profile, isReply }: {
-  comment: any;
+  comment: CommentWithAuthor;
   isOwner: boolean;
-  onReply: (comment: any) => void;
+  onReply: (comment: CommentWithAuthor) => void;
   onDelete: (id: string) => void;
-  profile: any;
+  profile: Profile | null;
   isReply?: boolean;
 }) {
   return (
