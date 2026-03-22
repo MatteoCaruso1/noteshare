@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
-import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
+import { useNoteComments, useCreateNoteComment, useDeleteNoteComment, type CommentWithAuthor } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
