@@ -69,7 +69,7 @@ const SPOTLIGHT_PHASES: Record<number, SpotlightTarget> = {
   5: { label: 'Start a live session', subLabel: 'Tap to begin practicing', targetSelector: '[data-tour="start-live-btn"]', position: 'bottom', autoAdvance: true },
   6: { label: 'Add notes during your session', subLabel: 'Write what you practiced', targetSelector: '[data-tour="session-textarea"]', position: 'bottom' },
   7: { label: 'Save your session when done', subLabel: 'Tap to finish practicing', targetSelector: '[data-tour="end-session-btn"]', position: 'top', autoAdvance: true },
-  9: { label: 'Your first practice note! 🎉', subLabel: 'Every session is saved here', targetSelector: '[data-tour="timeline"]', position: 'top', ctaText: 'Create your account' },
+  9: { label: 'Your first practice note! 🎉', targetSelector: '[data-tour="timeline"]', position: 'top', ctaText: 'Create an account to save your practice' },
 };
 
 /** Inner component that reads FTUE preview context for phase syncing */
