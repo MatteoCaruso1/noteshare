@@ -217,6 +217,22 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     document.body.scrollTop = 0;
   }, []);
 
+  // On mobile Safari the visual viewport isn't settled until the first scroll
+  // event. Force a micro-scroll (1px down then back) so the browser recalculates
+  // its viewport metrics, making getBoundingClientRect return correct values.
+  const forceViewportSettle = useCallback(() => {
+    return new Promise<void>((resolve) => {
+      window.scrollTo({ top: 1, left: 0, behavior: 'auto' });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        // Give the browser one more frame to settle
+        requestAnimationFrame(() => resolve());
+      });
+    });
+  }, []);
+
   useEffect(() => {
     clearScrollState('index-timeline');
     clearScrollState('index-feed');
@@ -305,10 +321,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
     };
 
-    const findAndHighlight = () => {
+    const findAndHighlight = async () => {
       if (cancelled) return;
 
-      forceScrollToTop();
+      // Force the browser to settle its viewport before first measurement
+      await forceViewportSettle();
 
       const resolved = resolveTarget(currentTourStep);
       const rect = measureCurrentStep();
@@ -376,7 +393,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       resizeObserver?.disconnect();
       waitObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, resolveTarget, forceScrollToTop, cleanupElevation, elevateElement]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, resolveTarget, forceScrollToTop, forceViewportSettle, cleanupElevation, elevateElement]);
 
   useEffect(() => {
     return () => cleanupElevation();
