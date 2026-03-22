@@ -1056,6 +1056,11 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
               onNoteTextChange={setNoteText}
               onSave={handleSaveNoteAndEndSession}
               isSaving={createNote.isPending || endSession.isPending}
+              onPreviewSave={ftuePreview.isFTUEPreview ? ((duration, text, focus) => {
+                ftuePreview.savePreviewSession(duration, text, focus);
+                setShowEndSessionDialog(false);
+                setManuallyCollapsed(true);
+              }) : undefined}
             />
           </div>
           </div>
