@@ -1047,7 +1047,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
       )}
 
       {/* Video attachment */}
-      {(note as any).video_path && <NoteVideoPlayer videoPath={(note as any).video_path} videoName={(note as any).video_name || undefined} videoThumbnailPath={(note as any).video_thumbnail_path || undefined} />}
+      {note.video_path && <NoteVideoPlayer videoPath={note.video_path} videoName={note.video_name || undefined} videoThumbnailPath={note.video_thumbnail_path || undefined} />}
 
       {/* Full timestamp at bottom in expanded view */}
       {expanded && (

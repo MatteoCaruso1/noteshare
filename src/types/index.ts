@@ -71,6 +71,9 @@ export interface Note {
   audio_file_names: string[];
   image_files: string[];
   video_files: string[];
+  video_path: string | null;
+  video_name: string | null;
+  video_thumbnail_path: string | null;
   tags: string[];
   visibility: 'private' | 'friends';
   private_audio_indices: number[];
