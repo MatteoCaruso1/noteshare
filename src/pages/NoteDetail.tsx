@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
 import { useNoteComments, useCreateNoteComment, useDeleteNoteComment, type CommentWithAuthor } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
+import { Profile } from '@/types';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { useBottomNavOverride } from '@/contexts/BottomNavContext';
