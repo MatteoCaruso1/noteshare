@@ -55,9 +55,11 @@ export function FloatingInstruments() {
           className="absolute opacity-[0.05] animate-float-down grayscale"
           style={{
             left: `${item.left}%`,
+            top: '-120vh',
             fontSize: `${item.size}px`,
             animationDelay: `${item.delay}s`,
             animationDuration: `${item.duration}s`,
+            animationFillMode: 'both',
           }}
         >
           {item.emoji}
