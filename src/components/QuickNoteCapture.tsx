@@ -49,12 +49,15 @@ function getTodayLocalDate(): string {
 }
 
 export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolean } = {}) {
-  const { profile, user } = useAuth();
+  const { profile: authProfile, user } = useAuth();
+  const ftuePreview = useFTUEPreview();
+  const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const { data: projects } = useProjects();
-  const { data: goals } = useGoals(profile?.id);
-  const { data: gigs } = useMyPromoPosts(profile?.id);
+  const { data: goals } = useGoals(authProfile?.id);
+  const { data: gigs } = useMyPromoPosts(authProfile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
-  const { data: activeSession } = useActiveSession(profile?.id);
+  const { data: realActiveSession } = useActiveSession(authProfile?.id);
+  const activeSession = ftuePreview.isFTUEPreview ? ftuePreview.previewSession : realActiveSession;
   const { checkAndTrigger } = useShareEducation();
   const { triggerPrompt: triggerHomescreenPrompt } = useHomescreenPromptTrigger();
   const { checkNoteMilestones } = useMilestoneToasts();
