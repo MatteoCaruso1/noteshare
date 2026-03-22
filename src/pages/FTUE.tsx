@@ -323,18 +323,20 @@ export default function FTUE() {
   const [signupLoading, setSignupLoading] = useState(false);
   const [commitPending, setCommitPending] = useState(false);
   const commitAttemptedRef = useRef(false);
+  // Only set to true when user explicitly triggers signup on step 4
+  const signupInitiatedRef = useRef(false);
 
   // After signup + auth, commit FTUE data then go to final step
-  // Only fires when user completes signup on step 4 (not if they arrive with an existing session)
+  // Only fires when user explicitly signed up on step 4 (signupInitiatedRef)
   const hadUserOnMount = useRef(!!user);
 
   useEffect(() => {
     if (!user) return;
     if (commitAttemptedRef.current) return;
 
-    // If user was already logged in when FTUE mounted, don't auto-commit
-    // (they're walking through the tour and will reach signup step naturally)
-    if (hadUserOnMount.current && ftue.currentStep < SIGNUP_STEP) return;
+    // Only auto-commit if the user explicitly started signup from step 4
+    // OR if user was already logged in and reached signup step
+    if (!signupInitiatedRef.current && !hadUserOnMount.current) return;
 
     const state = getFTUEState();
     // Only act when user has reached or passed the signup step
