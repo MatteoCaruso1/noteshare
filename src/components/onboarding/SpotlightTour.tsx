@@ -461,8 +461,9 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     <div
       ref={overlayRef}
       className="fixed inset-0 z-[100]"
-      style={{ pointerEvents: 'auto' }}
+      style={{ pointerEvents: 'auto', touchAction: 'none', overscrollBehavior: 'none' }}
       onClick={handleOverlayClick}
+      onTouchMove={(e) => e.preventDefault()}
     >
       {!isFinalStep ? (
         targetRect ? (
