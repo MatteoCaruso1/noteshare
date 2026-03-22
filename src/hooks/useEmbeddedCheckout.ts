@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedCurrency } from '@/lib/currencyUtils';
+import { CreateCheckoutEmbeddedResponse } from '@/types/api';
 
 interface EmbeddedCheckoutState {
   clientSecret: string | null;
@@ -25,7 +26,7 @@ export function useEmbeddedCheckout() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout-embedded', {
+      const { data, error } = await supabase.functions.invoke<CreateCheckoutEmbeddedResponse>('create-checkout-embedded', {
         body: { currency }
       });
 
