@@ -393,7 +393,7 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       resizeObserver?.disconnect();
       waitObserver?.disconnect();
     };
-  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, resolveTarget, forceScrollToTop, cleanupElevation, elevateElement]);
+  }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, resolveTarget, forceScrollToTop, forceViewportSettle, cleanupElevation, elevateElement]);
 
   useEffect(() => {
     return () => cleanupElevation();
