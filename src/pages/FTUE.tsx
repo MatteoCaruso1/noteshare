@@ -378,7 +378,7 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
 
 export default function FTUE() {
   const navigate = useNavigate();
-  const { user, signUp: authSignUp } = useAuth();
+  const { user, signUp: authSignUp, refreshProfile, clearNewUserFlag } = useAuth();
   const queryClient = useQueryClient();
   const ftue = useFTUEState();
 
