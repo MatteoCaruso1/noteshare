@@ -384,6 +384,7 @@ export default function FTUE() {
   };
 
   const handleGoogleSignup = () => {
+    signupInitiatedRef.current = true;
     setSignupLoading(true);
     startGoogleOAuth();
   };
