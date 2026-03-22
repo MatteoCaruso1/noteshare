@@ -767,8 +767,8 @@ export function TodaysFocus() {
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
   const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
 
-  // Loading state — only show skeleton if no cached data available
-  if (isLoading && !focus) {
+  // Loading state — only show skeleton if no cached data available (skip in FTUE preview)
+  if (isLoading && !focus && !ftuePreview.isFTUEPreview) {
     return (
       <Card className="bg-card border-border min-h-[60px]">
         <div className="px-3 py-4 sm:px-4 flex items-center gap-2">
