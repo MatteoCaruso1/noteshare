@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { PREMIUM_PRICES, SupportedCurrency, detectUserCurrency } from '@/lib/currencyUtils';
 import { CheckSubscriptionResponse } from '@/types/api';
+import { CheckSubscriptionSchema } from '@/lib/validation';
 
 // Product/Price mapping for Noteshare Premium
 export const SUBSCRIPTION_TIERS = {
@@ -77,9 +78,9 @@ export function useSubscription() {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke<CheckSubscriptionResponse>('check-subscription');
-
+      const { data: raw, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
+      const data = CheckSubscriptionSchema.parse(raw);
 
       setState({
         subscribed: data.subscribed || false,
@@ -99,8 +100,9 @@ export function useSubscription() {
       if (message.includes('Auth session missing')) {
         try {
           await supabase.auth.refreshSession();
-          const { data, error } = await supabase.functions.invoke<CheckSubscriptionResponse>('check-subscription');
+          const { data: raw, error } = await supabase.functions.invoke('check-subscription');
           if (!error) {
+            const data = CheckSubscriptionSchema.parse(raw);
             setState({
               subscribed: data?.subscribed || false,
               productId: data?.product_id || null,

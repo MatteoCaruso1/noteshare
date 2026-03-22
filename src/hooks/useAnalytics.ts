@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { GetAnalyticsSchema } from '@/lib/validation';
 
 interface DailyCount {
   date: string;
@@ -154,7 +155,8 @@ export const useAnalytics = (days: number = 30) => {
         throw new Error(errorData.error || 'Failed to fetch analytics');
       }
 
-      return response.json();
+      const raw = await response.json();
+      return GetAnalyticsSchema.parse(raw) as AnalyticsData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false,
