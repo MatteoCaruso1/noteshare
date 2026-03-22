@@ -12,6 +12,8 @@ export interface FTUEState {
   durationMinutes: number;
   currentStep: number;
   startedAt: number; // timestamp
+  // Explicit flags for signup gating
+  readyForSignup: boolean;
 }
 
 const DEFAULT_STATE: FTUEState = {
@@ -24,6 +26,7 @@ const DEFAULT_STATE: FTUEState = {
   durationMinutes: 0,
   currentStep: 0,
   startedAt: Date.now(),
+  readyForSignup: false,
 };
 
 function loadState(): FTUEState {
@@ -109,6 +112,10 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, currentStep: Math.max(0, prev.currentStep - 1) }));
   }, []);
 
+  const setReadyForSignup = useCallback((readyForSignup: boolean) => {
+    setState(prev => ({ ...prev, readyForSignup }));
+  }, []);
+
   const reset = useCallback(() => {
     const fresh = { ...DEFAULT_STATE, startedAt: Date.now() };
     setState(fresh);
@@ -127,6 +134,7 @@ export function useFTUEState() {
     setStep,
     nextStep,
     prevStep,
+    setReadyForSignup,
     reset,
   };
 }
