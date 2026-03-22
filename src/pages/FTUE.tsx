@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, Check, AlertCircle, Play, Mic, ListTodo, Clock } from 'lucide-react';
+import { Music, ChevronRight, Check, AlertCircle, Play, Mic, ListTodo, Clock, FolderOpen, Users, User, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
@@ -47,7 +47,7 @@ const tourHighlights: TourHighlight[] = [
   },
   {
     label: 'Capture quick notes anytime',
-    subLabel: 'Ideas, recordings, images — all in one tap',
+    subLabel: 'Ideas, recordings, images',
     targetId: 'tour-quick-note',
     position: 'bottom',
   },
@@ -190,10 +190,15 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
 
       {/* Mock bottom nav */}
       <div className="border-t border-border px-6 py-2 flex items-center justify-around">
-        {['Practice', 'Organize', 'Social', 'Profile'].map((tab) => (
-          <div key={tab} className="flex flex-col items-center gap-0.5 py-1">
-            <div className="w-5 h-5 rounded bg-muted/30" />
-            <span className="text-[10px] text-muted-foreground">{tab}</span>
+        {[
+          { label: 'Practice', icon: Home },
+          { label: 'Organize', icon: FolderOpen },
+          { label: 'Social', icon: Users },
+          { label: 'Profile', icon: User },
+        ].map(({ label, icon: Icon }) => (
+          <div key={label} className="flex flex-col items-center gap-0.5 py-1">
+            <Icon className="w-5 h-5 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground">{label}</span>
           </div>
         ))}
       </div>
@@ -435,7 +440,7 @@ export default function FTUE() {
               autoFocus
               autoComplete="off"
               maxLength={60}
-              className="text-center text-lg h-12"
+              className="text-lg h-12"
             />
             {nameTooLong && (
               <p className="text-xs text-destructive text-center">Name must be 50 characters or less</p>
