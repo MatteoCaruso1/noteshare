@@ -100,7 +100,11 @@ export function EndSessionDialog({
 
   const handleSave = () => {
     if (isValidDuration) {
-      onSave('', durationMinutes, playingWithIds, focusLevel ?? undefined);
+      if (onPreviewSave) {
+        onPreviewSave(durationMinutes, noteText, focusLevel ?? undefined);
+      } else {
+        onSave('', durationMinutes, playingWithIds, focusLevel ?? undefined);
+      }
     }
   };
 

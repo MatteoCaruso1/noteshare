@@ -678,6 +678,12 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   };
 
   const handleStartLiveSession = () => {
+    if (ftuePreview.isFTUEPreview) {
+      ftuePreview.startPreviewSession();
+      setShowSessionChoice(false);
+      setManuallyCollapsed(false);
+      return;
+    }
     if (!startSession.isPending) {
       setIsStartingSession(true); // Keep expanded during transition
       startSession.mutate({ userId: profile.id }, {
