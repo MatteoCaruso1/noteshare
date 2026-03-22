@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
+import { MarketingCTA } from '@/components/MarketingCTA';
 
 const freeIncludedFeatures = [
 'Practice session logging',
@@ -26,9 +27,6 @@ const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 
 export default function Pricing() {
   const navigate = useNavigate();
-
-  const handleFree = () => { window.scrollTo(0, 0); navigate('/auth?from=pricing'); };
-  const handlePro = () => { window.scrollTo(0, 0); navigate('/auth?from=pricing'); };
 
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
