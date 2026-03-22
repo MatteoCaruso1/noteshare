@@ -33,7 +33,7 @@ const features = [
     height: 488,
   },
   {
-    title: "Don't Practice Alone",
+    title: "Practice with Friends",
     description: 'Connect with other musicians to see their practice activity and learn from what they are working on. Share notes selectively with your friends and watch how this increases your practice motivation and pushes you to become a better player.',
     image: landingFriends,
     alt: 'Noteshare friends feed showing practice session summaries from connected musicians with timestamps and session durations',
