@@ -98,6 +98,8 @@ const Auth = () => {
                   console.error('[Auth] FTUE commit error:', commitError);
                 } else {
                   console.log('[Auth] FTUE data committed successfully');
+                  await refreshProfile();
+                  clearNewUserFlag();
                 }
               } catch (err) {
                 console.error('[Auth] FTUE commit exception:', err);
