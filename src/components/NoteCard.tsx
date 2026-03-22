@@ -307,7 +307,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   }, [isOwner, note.audio_file_names, privateAudioIndices]);
 
   const handleToggleAudioPrivacy = useCallback((audioIndex: number) => {
-    const current: number[] = (note as any).private_audio_indices || [];
+    const current: number[] = note.private_audio_indices || [];
     const newIndices = current.includes(audioIndex)
       ? current.filter((i: number) => i !== audioIndex)
       : [...current, audioIndex];
