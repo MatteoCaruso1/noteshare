@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, Check, AlertCircle, Play, Mic, ListTodo, Clock, ClipboardList, Users, User } from 'lucide-react';
+import { Music, ChevronRight, ChevronLeft, Check, AlertCircle, Play, Mic, ListTodo, Clock, ClipboardList, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
@@ -338,6 +338,18 @@ export default function FTUE() {
   const queryClient = useQueryClient();
   const ftue = useFTUEState();
 
+  // Reset FTUE state when entering fresh (not resuming mid-signup)
+  const didResetRef = useRef(false);
+  useEffect(() => {
+    if (didResetRef.current) return;
+    didResetRef.current = true;
+    const state = getFTUEState();
+    // If there's stale state that already reached signup or beyond, start fresh
+    if (state && state.currentStep >= SIGNUP_STEP) {
+      ftue.reset();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Signup form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -455,6 +467,14 @@ export default function FTUE() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm flex flex-col animate-fade-in">
+          <button
+            type="button"
+            onClick={() => ftue.prevStep()}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 self-start"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-semibold text-foreground mb-2">What's your name?</h1>
             <p className="text-muted-foreground text-sm">This helps personalize your experience</p>
@@ -506,6 +526,14 @@ export default function FTUE() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm flex flex-col animate-fade-in">
+          <button
+            type="button"
+            onClick={() => ftue.prevStep()}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 self-start"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
           <div className="text-center mb-8">
             <h1 className="text-2xl font-semibold text-foreground mb-2">What do you play?</h1>
             <p className="text-muted-foreground text-sm">Select all that apply</p>
