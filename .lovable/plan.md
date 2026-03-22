@@ -1,47 +1,97 @@
 
+Goal: change `/ftue` from a 4-card teaser into a real pre-auth walkthrough that continues through starting a practice session, opening the save dialog, saving the session, showing the new note in the timeline, and only then showing account creation.
 
-## Problem Analysis
+What I found
+- The current signup jump is not accidental. It is hardcoded:
+  - `src/pages/FTUE.tsx` step 3 renders `FTUEAppTour`
+  - `FTUEAppTour` has only 4 highlights
+  - the last tooltip button literally says `Continue to create account`
+  - clicking it calls `onComplete()`, which does `ftue.nextStep()` to step 4
+- So the primary trigger is the current FTUE design, not just a race condition.
+- There are also secondary auto-signup/commit paths that must be tightened:
+  - `src/pages/FTUE.tsx` auto-commit effect runs when `user` exists and stored step is `>= 4`
+  - `src/pages/Auth.tsx` commits FTUE data after OAuth when stored step is `>= 4`
+  - `src/App.tsx` `FTUERetryCommit` retries when stored step is `>= 4`
+- `PracticeControls` and `QuickNoteCapture` `previewMode` currently only render collapsed headers, so they cannot support the “continue into a live session and save it” flow yet.
 
-Two issues:
-1. **Mock content in FTUE tour**: The app tour (step 3) renders hardcoded fake UI instead of the real `PracticeControls`, `QuickNoteCapture`, `TodaysFocus`, and timeline components. The user wants the actual components.
-2. **Create account appearing prematurely**: After the last tour highlight (notes timeline), tapping "continue" goes straight to the signup step. The user reports this still happens despite previous fixes.
+Implementation plan
+1. Replace the current 4-step FTUE tour with a true interactive sequence
+- Rework `src/pages/FTUE.tsx` so step 3 is no longer “tour complete -> signup”.
+- Use the same order as the real onboarding tour:
+  1. Practice button
+  2. Practice routine
+  3. Notes timeline
+  4. Tap practice button
+  5. Tap start live session
+  6. Session notes area
+  7. Recorder/media area
+  8. Link to practice routine
+  9. End session
+  10. Save session
+  11. Timeline result
+  12. Then move to account creation
+- The CTA text will never mention account creation until after save is finished and the saved note is visible.
 
-## Approach
+2. Add a local-only FTUE preview state so the real UI can be used before auth
+- Keep using the real components, but drive them with local FTUE preview state instead of backend mutations.
+- Add explicit FTUE preview state such as:
+  - `previewSessionStarted`
+  - `previewSessionSaved`
+  - `previewPracticeNotes`
+  - `previewDurationMinutes`
+  - `previewFocusLevel`
+  - `previewTags`
+  - `previewTimelineNote`
+- This avoids fake mock cards while also avoiding backend writes before account creation.
 
-### Issue 1: Real Components in Tour
+3. Extend the real components to support FTUE preview interactions
+- `src/components/PracticeControls.tsx`
+  - expand `previewMode` so it can:
+    - open the session chooser
+    - show “Start Live Session”
+    - enter an active-session layout locally
+    - open the real `EndSessionDialog`
+    - emit callbacks instead of calling `useStartSession` / `useEndSession`
+- `src/components/EndSessionDialog.tsx`
+  - allow FTUE preview save flow to reuse the same dialog UI with local callbacks
+- `src/components/QuickNoteCapture.tsx`
+  - keep visible in FTUE, but non-blocking while practice session preview is active, matching production behavior
+- `src/components/TodaysFocus.tsx`
+  - ensure it renders a stable open state during FTUE, using local draft/example content if no authenticated profile exists
+- `src/components/Timeline.tsx`
+  - feed it a locally created preview note after “Save Session” so the user sees the real timeline update
 
-Rendering the actual components (`PracticeControls`, `QuickNoteCapture`, `TodaysFocus`) inside the FTUE tour is complex because they're deeply coupled to auth/premium/session hooks. Instead of refactoring all those components, I'll:
+4. Remove step-number-based premature signup triggers
+- Stop using `currentStep >= 4` as the signal that signup/commit may run.
+- Introduce explicit FTUE progression flags instead, e.g.:
+  - `canShowSignup`
+  - `signupStarted`
+  - `readyToCommit`
+- Update these files to respect the new guards:
+  - `src/pages/FTUE.tsx`
+  - `src/pages/Auth.tsx`
+  - `src/App.tsx`
+- Result: even if a stale session exists, the app will not jump to account creation until the preview session has been saved and the flow has explicitly advanced.
 
-- **Replace the mock layout in `FTUEAppTour`** with the real Index page layout structure, importing and rendering the actual `PracticeControls`, `QuickNoteCapture`, and `TodaysFocus` components wrapped in the required `GlintProvider`
-- The components will render in their "no auth" degraded state (collapsed cards with proper icons/labels), which is exactly what's needed for a tour — the user sees the real UI chrome
-- For the timeline/notes section, render the real `Timeline` component with an empty notes array (showing the empty state), or render the same `Notes` header with the real card styling
-- Wrap the tour content in the same providers used by `Index.tsx` (`GlintProvider`, etc.)
-- Keep the spotlight overlay, bottom nav mock (since real `BottomNav` would try to navigate), and header mock as-is since those are structural
+5. Update FTUE persistence model so refresh/back navigation stays correct
+- `src/hooks/useFTUEState.ts`
+  - store the new preview-flow flags and preview note/session state
+  - keep back-button behavior working on all pre-auth screens
+  - preserve “most recent page” behavior without skipping ahead to signup on reload
 
-**Key insight**: The components won't crash without auth — they'll just show empty/loading states, which look real and are appropriate for a tour walkthrough.
+Files I would change
+- `src/pages/FTUE.tsx`
+- `src/hooks/useFTUEState.ts`
+- `src/components/PracticeControls.tsx`
+- `src/components/EndSessionDialog.tsx`
+- `src/components/QuickNoteCapture.tsx`
+- `src/components/TodaysFocus.tsx`
+- `src/pages/Auth.tsx`
+- `src/App.tsx`
 
-### Issue 2: Tour Flow Completing Too Early
-
-The tour has exactly 4 highlights and then calls `onComplete` → step 4 (signup). This IS the designed flow, but if there's a race condition or the `hadUserOnMount` guard is failing, the signup step appears prematurely.
-
-I'll add a debug check and ensure that `ftue.nextStep()` from `onComplete` only advances to step 4 after all highlights are shown. I'll also verify the `didResetRef` logic isn't resetting step back to 0 and then immediately jumping.
-
-**Root cause investigation**: The `useEffect` at line 365-399 fires when `user` exists AND `ftue.currentStep >= SIGNUP_STEP`. If `hadUserOnMount.current` is false (user wasn't logged in on mount) but the user somehow gets authenticated during the tour (e.g., from a previous session cookie), this effect would fire and jump to celebration. I'll tighten the guard to only commit when the user explicitly completed signup on step 4.
-
-## Changes
-
-### File: `src/pages/FTUE.tsx`
-
-1. **Replace `FTUEAppTour` mock content** with real components:
-   - Import `PracticeControls`, `QuickNoteCapture`, `TodaysFocus` from their actual locations
-   - Import `GlintProvider` from contexts
-   - Render these inside the tour layout with the spotlight overlay on top
-   - Keep the mock header and bottom nav (they don't depend on auth)
-   - For the Notes/Timeline section, render the real card frame with a "Notes" header and empty state or a simple placeholder that looks like the real thing
-
-2. **Fix the premature signup issue**:
-   - Add a `tourCompletedRef` flag that's only set to `true` when `FTUEAppTour.onComplete` fires
-   - Gate the auto-commit `useEffect` on this flag, so even if a user session appears (from a stale cookie), the flow won't skip ahead unless the tour was explicitly completed AND the user reached step 4
-
-3. **Ensure step progression**: After the tour completes (step 3 → step 4), only show the signup screen — not auto-commit. The auto-commit should only fire after the user actually creates an account on step 4.
-
+Expected result
+- Get Started always begins at FTUE welcome
+- The spotlight tour continues into the actual practice-session flow
+- User can start a preview session, review/save it, and then see it appear in Notes
+- Account creation appears only after that saved-session moment
+- Existing OAuth/retry logic no longer forces signup early because it will depend on explicit FTUE completion flags, not the old numeric step threshold
