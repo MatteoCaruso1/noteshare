@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
