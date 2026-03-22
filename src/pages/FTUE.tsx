@@ -42,13 +42,14 @@ const GoogleIcon = () => (
 // Phase 1: Highlight quick note → "Capture quick notes anytime"
 // Phase 2: Highlight routine → "Your daily practice to-do list"
 // Phase 3: Highlight timeline → "Your practice history lives here"
-// Phase 4: "Now let's try it! Tap Start Practice Session" → user taps, session starts locally
-// Phase 5: Active session shown, highlight notes area → "Add notes during your session"
-// Phase 6: Highlight end session → "When you're done, save your session"
-// Phase 7: EndSessionDialog shown → user taps Save (no spotlight, dialog handles it)
-// Phase 8: Session saved! Note appears in timeline → "Your first note! 🎉" → Continue to create account
+// Phase 4: "Now let's try it! Tap to open" → user taps collapsible trigger
+// Phase 5: Spotlight "Start Live Session" button → user taps it
+// Phase 6: Active session shown, highlight notes area
+// Phase 7: Highlight end session → user taps it
+// Phase 8: EndSessionDialog shown (no spotlight)
+// Phase 9: Session saved! Note in timeline → Continue to create account
 
-type TourPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+type TourPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 interface SpotlightTarget {
   label: string;
@@ -64,10 +65,11 @@ const SPOTLIGHT_PHASES: Record<number, SpotlightTarget> = {
   1: { label: 'Capture quick notes anytime', subLabel: 'Ideas, recordings, images', targetSelector: '[data-tour="quick-note-trigger"]', position: 'bottom' },
   2: { label: 'Your daily practice to-do list', subLabel: 'Stay organized and focused', targetSelector: '[data-tour="practice-routine"]', position: 'bottom' },
   3: { label: 'Your practice history lives here', subLabel: 'Every session saved and searchable', targetSelector: '[data-tour="timeline"]', position: 'top' },
-  4: { label: "Now let's try it!", subLabel: 'Tap the practice button to start a session', targetSelector: '[data-tour="practice-start-btn"]', position: 'bottom', autoAdvance: true },
-  5: { label: 'Add notes during your session', subLabel: 'Write what you practiced', targetSelector: '[data-tour="session-textarea"]', position: 'bottom' },
-  6: { label: 'Save your session when done', subLabel: 'Tap to finish practicing', targetSelector: '[data-tour="end-session-btn"]', position: 'top', autoAdvance: true },
-  8: { label: 'Your first practice note! 🎉', subLabel: 'Every session is saved here', targetSelector: '[data-tour="timeline"]', position: 'top', ctaText: 'Create your account' },
+  4: { label: "Now let's try it!", subLabel: 'Tap to open the practice menu', targetSelector: '[data-tour="practice-start-btn"]', position: 'bottom', autoAdvance: true },
+  5: { label: 'Start a live session', subLabel: 'Tap to begin practicing', targetSelector: '[data-tour="start-live-btn"]', position: 'bottom', autoAdvance: true },
+  6: { label: 'Add notes during your session', subLabel: 'Write what you practiced', targetSelector: '[data-tour="session-textarea"]', position: 'bottom' },
+  7: { label: 'Save your session when done', subLabel: 'Tap to finish practicing', targetSelector: '[data-tour="end-session-btn"]', position: 'top', autoAdvance: true },
+  9: { label: 'Your first practice note! 🎉', subLabel: 'Every session is saved here', targetSelector: '[data-tour="timeline"]', position: 'top', ctaText: 'Create your account' },
 };
 
 /** Inner component that reads FTUE preview context for phase syncing */
@@ -80,18 +82,30 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
 
   const currentSpotlight = SPOTLIGHT_PHASES[phase];
 
-  // Watch for session state changes to auto-advance phases
+  // Phase 4→5: after user taps collapsible trigger, wait for start-live-btn to appear
   useEffect(() => {
-    // When session becomes active (user tapped start) and we're at phase 4, advance to 5
-    if (ftuePreview.sessionActive && phase === 4) {
-      setPhase(5);
+    if (phase !== 4) return;
+    const interval = setInterval(() => {
+      const el = document.querySelector('[data-tour="start-live-btn"]');
+      if (el) {
+        clearInterval(interval);
+        setPhase(5);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  // Phase 5→6: when session becomes active (user tapped Start Live Session)
+  useEffect(() => {
+    if (ftuePreview.sessionActive && phase === 5) {
+      setPhase(6);
     }
   }, [ftuePreview.sessionActive, phase]);
 
-  // When session is saved (previewNotes appear), advance to phase 8
+  // When session is saved (previewNotes appear), advance to phase 9
   useEffect(() => {
-    if (ftuePreview.previewNotes.length > 0 && (phase === 6 || phase === 7)) {
-      setPhase(8);
+    if (ftuePreview.previewNotes.length > 0 && (phase === 7 || phase === 8)) {
+      setPhase(9);
     }
   }, [ftuePreview.previewNotes.length, phase]);
 
@@ -114,10 +128,11 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
   }, [phase, currentSpotlight?.targetSelector, ftuePreview.sessionActive]);
 
   const handleAdvance = useCallback(() => {
-    if (phase === 4) return; // user must tap practice button
-    if (phase === 6) return; // user must tap end session
-    if (phase === 7) return; // save dialog handles it
-    if (phase < 8) {
+    if (phase === 4) return; // user must tap collapsible trigger
+    if (phase === 5) return; // user must tap Start Live Session
+    if (phase === 7) return; // user must tap end session
+    if (phase === 8) return; // save dialog handles it
+    if (phase < 9) {
       setPhase(p => (p + 1) as TourPhase);
     } else {
       if (!hasCompletedRef.current) {
@@ -127,32 +142,33 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
     }
   }, [phase, onComplete]);
 
-  // Handle clicks on spotlight overlay — pass through to interactive elements in phases 4 and 6
+  // Handle clicks on spotlight overlay — pass through to interactive elements
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+    const passthrough = (selector: string) => {
+      const el = document.querySelector(selector) as HTMLElement;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+          el.click();
+          return true;
+        }
+      }
+      return false;
+    };
+
     if (phase === 4) {
-      // Find practice start button and click it
-      const el = document.querySelector('[data-tour="practice-start-btn"]') as HTMLElement;
-      if (el) {
-        const r = el.getBoundingClientRect();
-        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-          el.click();
-          return;
-        }
-      }
+      passthrough('[data-tour="practice-start-btn"]');
+      return;
     }
-    if (phase === 6) {
-      // Find end session button and click it
-      const el = document.querySelector('[data-tour="end-session-btn"]') as HTMLElement;
-      if (el) {
-        const r = el.getBoundingClientRect();
-        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-          el.click();
-          return;
-        }
-      }
+    if (phase === 5) {
+      passthrough('[data-tour="start-live-btn"]');
+      return;
+    }
+    if (phase === 7) {
+      passthrough('[data-tour="end-session-btn"]');
+      return;
     }
   }, [phase]);
-
   const tooltipStyle = (): React.CSSProperties => {
     if (!rect) return { top: '40%', left: '50%', transform: 'translateX(-50%)' };
     if (currentSpotlight?.position === 'top') {
@@ -169,8 +185,8 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
     };
   };
 
-  // Don't show spotlight overlay during save dialog (phase 7)
-  const showSpotlight = currentSpotlight && phase !== 7;
+  // Don't show spotlight overlay during save dialog (phase 8)
+  const showSpotlight = currentSpotlight && phase !== 8;
 
   return (
     <>
