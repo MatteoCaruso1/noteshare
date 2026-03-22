@@ -126,6 +126,7 @@ export function useFTUEState() {
     setDurationMinutes,
     setStep,
     nextStep,
+    prevStep,
     reset,
   };
 }
