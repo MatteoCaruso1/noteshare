@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, ChevronRight, Check, AlertCircle, Play, Mic, ListTodo, Clock } from 'lucide-react';
+import { Music, ChevronRight, Check, AlertCircle, Play, Mic, ListTodo, Clock, FolderOpen, Users, User, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFTUEState, clearFTUEState, getFTUEState } from '@/hooks/useFTUEState';
