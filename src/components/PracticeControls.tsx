@@ -94,9 +94,12 @@ function getTodayLocalDate(): string {
 }
 
 export function PracticeControls({ previewMode = false }: { previewMode?: boolean } = {}) {
-  const { profile, user } = useAuth();
+  const { profile: authProfile, user } = useAuth();
+  const ftuePreview = useFTUEPreview();
+  const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const queryClient = useQueryClient();
-  const { data: activeSession, isPending: isSessionPending } = useActiveSession(profile?.id);
+  const { data: realActiveSession, isPending: isSessionPending } = useActiveSession(authProfile?.id);
+  const activeSession = ftuePreview.isFTUEPreview ? ftuePreview.previewSession : realActiveSession;
   const { data: projects } = useProjects();
   const { data: goals } = useGoals(profile?.id);
   const { data: gigs } = useMyPromoPosts(profile?.id);
