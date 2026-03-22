@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { toast as sonnerToast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveSession, useStartSession, useEndSession, useRecentSessionNotes, usePauseSession, useResumeSession, useDeleteSession } from '@/hooks/useSessions';
 import { useCreateNote } from '@/hooks/useNotes';
