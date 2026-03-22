@@ -141,13 +141,13 @@ export default function FTUE() {
         queryClient.invalidateQueries({ queryKey: ['sessions'] });
         queryClient.invalidateQueries({ queryKey: ['notes'] });
         queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
+        clearFTUEState();
       } else {
-        // Store FTUE state for retry on next app load
+        // Keep FTUE state in localStorage for potential retry
         console.warn('[FTUE] Commit failed — data preserved in localStorage for retry');
         toast.error('Your practice data will be saved shortly.');
       }
 
-      clearFTUEState();
       setCommitPending(false);
       navigate('/', { replace: true });
     };
