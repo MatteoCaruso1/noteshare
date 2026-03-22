@@ -395,6 +395,19 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
     };
   }, [step, isFinalStep, currentTourStep, location.pathname, navigate, getRectForStep, resolveTarget, forceScrollToTop, forceViewportSettle, cleanupElevation, elevateElement]);
 
+  // Lock body scroll during entire tour to prevent background interaction
+  useEffect(() => {
+    if (isFinalStep) return;
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
+  }, [isFinalStep]);
+
   useEffect(() => {
     return () => cleanupElevation();
   }, [cleanupElevation]);
