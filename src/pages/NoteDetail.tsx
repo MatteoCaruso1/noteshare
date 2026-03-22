@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useNote } from '@/hooks/useNotes';
-import { useNoteComments, useCreateNoteComment, useDeleteNoteComment } from '@/hooks/useNoteComments';
+import { useNoteComments, useCreateNoteComment, useDeleteNoteComment, type CommentWithAuthor } from '@/hooks/useNoteComments';
 import { useAuth } from '@/hooks/useAuth';
+import { Profile } from '@/types';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useInstantScrollToTop } from '@/hooks/useInstantScrollToTop';
 import { useBottomNavOverride } from '@/contexts/BottomNavContext';
@@ -28,11 +29,11 @@ import { useNoteApplause } from '@/hooks/useApplause';
 
 // Extracted CommentCard component for reuse between top-level and reply comments
 function CommentCard({ comment, isOwner, onReply, onDelete, profile, isReply }: {
-  comment: any;
+  comment: CommentWithAuthor;
   isOwner: boolean;
-  onReply: (comment: any) => void;
+  onReply: (comment: CommentWithAuthor) => void;
   onDelete: (id: string) => void;
-  profile: any;
+  profile: Profile | null;
   isReply?: boolean;
 }) {
   return (
@@ -184,7 +185,7 @@ const NoteDetail = () => {
     const top: typeof comments = [];
     const byParent: Record<string, typeof comments> = {};
     for (const c of comments) {
-      const parentId = (c as any).parent_comment_id;
+      const parentId = c.parent_comment_id;
       if (!parentId) {
         top.push(c);
       } else {
@@ -195,9 +196,9 @@ const NoteDetail = () => {
     return { topLevelComments: top, repliesByParent: byParent };
   }, [comments]);
 
-  const handleReply = (comment: { id: string; author_id: string; author?: { name: string } | null }) => {
+  const handleReply = (comment: CommentWithAuthor) => {
     // Flatten: if this comment is itself a reply, reply to its parent instead
-    const parentId = (comment as any).parent_comment_id;
+    const parentId = comment.parent_comment_id;
     const targetId = parentId || comment.id;
     const targetAuthorName = comment.author?.name || 'user';
     const targetAuthorId = comment.author_id;
