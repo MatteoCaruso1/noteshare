@@ -5,6 +5,7 @@ const FTUE_STORAGE_KEY = 'noteshare_ftue_state';
 export interface FTUEState {
   name: string;
   instrument: string;
+  instruments: string[];
   practiceNotes: string;
   tags: string[];
   focusLevel: number | null;
