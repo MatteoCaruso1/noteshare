@@ -272,39 +272,54 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
 
 // ─── Commit helper ───────────────────────────────────────────────
 
-async function commitFTUEData(): Promise<boolean> {
+async function commitFTUEData(retries = 3): Promise<boolean> {
   const state = getFTUEState();
   if (!state) return false;
 
   const idempotencyKey = `${state.startedAt}`;
 
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.error('[FTUE] No session for commit');
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.warn(`[FTUE] No session for commit (attempt ${attempt + 1})`);
+        if (attempt < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        return false;
+      }
+
+      const { data, error } = await supabase.functions.invoke('commit-ftue', {
+        body: {
+          name: state.name.trim(),
+          instrument: state.instrument,
+          instruments: state.instruments || [state.instrument],
+          idempotencyKey,
+        },
+      });
+
+      if (error) {
+        console.warn(`[FTUE] Commit error (attempt ${attempt + 1}):`, error);
+        if (attempt < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        return false;
+      }
+
+      console.log('[FTUE] Commit success:', data);
+      return true;
+    } catch (err) {
+      console.warn(`[FTUE] Commit exception (attempt ${attempt + 1}):`, err);
+      if (attempt < retries - 1) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
       return false;
     }
-
-    const { data, error } = await supabase.functions.invoke('commit-ftue', {
-      body: {
-        name: state.name.trim(),
-        instrument: state.instrument,
-        instruments: state.instruments || [state.instrument],
-        idempotencyKey,
-      },
-    });
-
-    if (error) {
-      console.error('[FTUE] Commit error:', error);
-      return false;
-    }
-
-    console.log('[FTUE] Commit success:', data);
-    return true;
-  } catch (err) {
-    console.error('[FTUE] Commit exception:', err);
-    return false;
   }
+  return false;
 }
 
 // ─── Main FTUE Component ────────────────────────────────────────
