@@ -185,8 +185,8 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
     };
   };
 
-  // Don't show spotlight overlay during save dialog (phase 7)
-  const showSpotlight = currentSpotlight && phase !== 7;
+  // Don't show spotlight overlay during save dialog (phase 8)
+  const showSpotlight = currentSpotlight && phase !== 8;
 
   return (
     <>
