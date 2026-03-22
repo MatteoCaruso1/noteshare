@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { NoteComment } from '@/types';
 import { useCallback } from 'react';
 
-interface CommentWithAuthor extends NoteComment {
+export interface CommentWithAuthor extends NoteComment {
   author: {
     id: string;
     name: string;
