@@ -185,7 +185,7 @@ const NoteDetail = () => {
     const top: typeof comments = [];
     const byParent: Record<string, typeof comments> = {};
     for (const c of comments) {
-      const parentId = (c as any).parent_comment_id;
+      const parentId = c.parent_comment_id;
       if (!parentId) {
         top.push(c);
       } else {
