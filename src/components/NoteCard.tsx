@@ -1056,15 +1056,17 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
         </p>
       )}
 
-      {/* Applause Footer with comment count */}
-      <ApplauseFooter 
-        noteId={note.id} 
-        noteAuthorId={note.author_id}
-        commentCount={note.comment_count}
-        onCommentClick={handleNavigateToNote}
-        skipAnimation={fromFriends}
-        applauseData={applauseData}
-      />
+      {/* Applause Footer with comment count - hidden for FTUE preview notes */}
+      {!note.id.startsWith('ftue-') && (
+        <ApplauseFooter 
+          noteId={note.id} 
+          noteAuthorId={note.author_id}
+          commentCount={note.comment_count}
+          onCommentClick={handleNavigateToNote}
+          skipAnimation={fromFriends}
+          applauseData={applauseData}
+        />
+      )}
 
       {/* Voice Reply Button - hidden on homepage for cleaner UI */}
       {/* Keeping functionality intact - can be re-enabled by removing the false && check */}
