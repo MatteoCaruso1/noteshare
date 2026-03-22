@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateNote } from '@/hooks/useNotes';
 import { useProjects } from '@/hooks/useProjects';
@@ -48,12 +49,15 @@ function getTodayLocalDate(): string {
 }
 
 export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolean } = {}) {
-  const { profile, user } = useAuth();
+  const { profile: authProfile, user } = useAuth();
+  const ftuePreview = useFTUEPreview();
+  const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const { data: projects } = useProjects();
-  const { data: goals } = useGoals(profile?.id);
-  const { data: gigs } = useMyPromoPosts(profile?.id);
+  const { data: goals } = useGoals(authProfile?.id);
+  const { data: gigs } = useMyPromoPosts(authProfile?.id);
   const { data: currentFocus } = useCurrentFocusEntry();
-  const { data: activeSession } = useActiveSession(profile?.id);
+  const { data: realActiveSession } = useActiveSession(authProfile?.id);
+  const activeSession = ftuePreview.isFTUEPreview ? ftuePreview.previewSession : realActiveSession;
   const { checkAndTrigger } = useShareEducation();
   const { triggerPrompt: triggerHomescreenPrompt } = useHomescreenPromptTrigger();
   const { checkNoteMilestones } = useMilestoneToasts();
@@ -122,28 +126,7 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
   } = usePersistentNoteState('quick_note', profile?.id);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  if (!profile && !previewMode) return null;
-
-  if (previewMode && !profile) {
-    return (
-      <Card className="bg-card border-border">
-        <Collapsible open={false} onOpenChange={() => undefined}>
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group touch-manipulation"
-            >
-              <div className="flex items-center gap-2">
-                <Music className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                <h2 className="font-semibold">Capture Quick Note</h2>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </CollapsibleTrigger>
-        </Collapsible>
-      </Card>
-    );
-  }
+  if (!profile && !previewMode && !ftuePreview.isFTUEPreview) return null;
   
   // Simply don't render when there's an active session
   if (hasActiveSession) {

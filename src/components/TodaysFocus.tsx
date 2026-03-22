@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
+import { useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,7 +22,9 @@ const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, updateFocusAsync, isUpdating } = useTodaysFocus();
-  const { profile } = useAuth();
+  const { profile: authProfile } = useAuth();
+  const ftuePreview = useFTUEPreview();
+  const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const profileId = profile?.id;
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
@@ -764,8 +767,8 @@ export function TodaysFocus() {
   const storedIsOpen = localStorage.getItem(FOCUS_COLLAPSED_KEY);
   const willBeOpen = storedIsOpen === null ? true : storedIsOpen === 'open';
 
-  // Loading state — only show skeleton if no cached data available
-  if (isLoading && !focus) {
+  // Loading state — only show skeleton if no cached data available (skip in FTUE preview)
+  if (isLoading && !focus && !ftuePreview.isFTUEPreview) {
     return (
       <Card className="bg-card border-border min-h-[60px]">
         <div className="px-3 py-4 sm:px-4 flex items-center gap-2">
