@@ -321,10 +321,11 @@ export function SpotlightTour({ step, onNext, onComplete }: SpotlightTourProps) 
       waitObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
     };
 
-    const findAndHighlight = () => {
+    const findAndHighlight = async () => {
       if (cancelled) return;
 
-      forceScrollToTop();
+      // Force the browser to settle its viewport before first measurement
+      await forceViewportSettle();
 
       const resolved = resolveTarget(currentTourStep);
       const rect = measureCurrentStep();
