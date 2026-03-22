@@ -316,13 +316,7 @@ const BlogPracticeJournal = () => {
                 </li>
               ))}
             </ul>
-            <Button
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 shadow-lg shadow-primary/25"
-              onClick={handleCTA}
-            >
-              Start tracking your practice
-            </Button>
+            <MarketingCTA variant="inline" />
           </div>
         </div>
       </section>

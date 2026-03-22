@@ -381,13 +381,7 @@ const BlogDailyRoutine = () => {
             <p className="text-sm mb-6 max-w-md mx-auto" style={textColor}>
               Noteshare helps you capture, organize, and reflect on every practice session so you can build the routine that works for you.
             </p>
-            <Button
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 shadow-lg shadow-primary/25"
-              onClick={handleCTA}
-            >
-              Start practicing
-            </Button>
+            <MarketingCTA variant="inline" />
           </div>
         </div>
       </section>

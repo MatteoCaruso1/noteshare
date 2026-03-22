@@ -293,13 +293,7 @@ const ScienceOfPractice = () => {
             It comes from consistent practice, clear focus, and reflection over time.<br /><br />
             When musicians make their practice visible and structured, improvement becomes far more predictable.
           </p>
-          <Button
-            size="lg"
-            onClick={handleCTA}
-            className="bg-[hsl(198_93%_59%)] hover:bg-[hsl(198_93%_50%)] text-[hsl(204_80%_15%)] font-bold px-10 shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          >
-            Start practicing smarter
-          </Button>
+          <MarketingCTA variant="inline" />
         </div>
       </section>
 
