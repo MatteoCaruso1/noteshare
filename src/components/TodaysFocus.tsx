@@ -22,7 +22,9 @@ const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
 export function TodaysFocus() {
   const { focus, isLoading, updateFocus, updateFocusAsync, isUpdating } = useTodaysFocus();
-  const { profile } = useAuth();
+  const { profile: authProfile } = useAuth();
+  const ftuePreview = useFTUEPreview();
+  const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const profileId = profile?.id;
   const { saveToBacklog, isSaving } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
