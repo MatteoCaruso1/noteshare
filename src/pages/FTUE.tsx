@@ -435,7 +435,7 @@ export default function FTUE() {
               autoFocus
               autoComplete="off"
               maxLength={60}
-              className="text-center text-lg h-12"
+              className="text-lg h-12"
             />
             {nameTooLong && (
               <p className="text-xs text-destructive text-center">Name must be 50 characters or less</p>
