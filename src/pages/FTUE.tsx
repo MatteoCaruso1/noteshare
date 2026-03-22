@@ -199,8 +199,8 @@ function FTUEAppTour({ name, onComplete }: { name: string; onComplete: () => voi
       {/* Mock bottom nav */}
       <div className="border-t border-border px-6 py-2 flex items-center justify-around">
         {[
-          { label: 'Practice', icon: Home },
-          { label: 'Organize', icon: FolderOpen },
+          { label: 'Practice', icon: Music },
+          { label: 'Organize', icon: ClipboardList },
           { label: 'Social', icon: Users },
           { label: 'Profile', icon: User },
         ].map(({ label, icon: Icon }) => (
