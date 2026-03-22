@@ -36,6 +36,7 @@ const Auth = () => {
   const { signIn, signUp, resetPassword, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isLoginOnly = searchParams.get('mode') === 'login';
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'update-password'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
