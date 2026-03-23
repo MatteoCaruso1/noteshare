@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { getFTUEState } from '@/hooks/useFTUEState';
 import { Profile, PracticeSession, NoteWithAuthor } from '@/types';
 
 interface FTUEPreviewContextType {
