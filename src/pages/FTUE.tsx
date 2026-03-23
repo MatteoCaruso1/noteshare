@@ -343,13 +343,17 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
       }
 
       const { data, error } = await supabase.functions.invoke('commit-ftue', {
-        body: {
-          name: state.name.trim(),
-          instrument: state.instrument,
-          instruments: state.instruments || [state.instrument],
-          idempotencyKey,
-        },
-      });
+          body: {
+            name: state.name.trim(),
+            instrument: state.instrument,
+            instruments: state.instruments || [state.instrument],
+            practiceNotes: state.practiceNotes || '',
+            tags: state.tags || [],
+            focusLevel: state.focusLevel ?? null,
+            durationMinutes: state.durationMinutes || 1,
+            idempotencyKey,
+          },
+        });
 
       if (error) {
         console.warn(`[FTUE] Commit error (attempt ${attempt + 1}):`, error);
