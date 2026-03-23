@@ -84,6 +84,22 @@ export function FTUEPreviewProvider({ name, children }: { name: string; children
     const tags: string[] = [];
     if (focusLevel) tags.push(`F=${focusLevel}`);
     
+    // Persist note data to FTUE localStorage so commit-ftue can send it
+    try {
+      const FTUE_STORAGE_KEY = 'noteshare_ftue_state';
+      const raw = localStorage.getItem(FTUE_STORAGE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        state.practiceNotes = noteText || '';
+        state.durationMinutes = durationMinutes;
+        state.focusLevel = focusLevel ?? null;
+        state.tags = tags;
+        localStorage.setItem(FTUE_STORAGE_KEY, JSON.stringify(state));
+      }
+    } catch {
+      // ignore storage errors
+    }
+
     const fakeNote: NoteWithAuthor = {
       id: `ftue-note-${Date.now()}`,
       author_id: FAKE_PROFILE_ID,
