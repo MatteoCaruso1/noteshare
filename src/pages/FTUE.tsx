@@ -303,7 +303,7 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
                   onClick={handleAdvance}
                   className="text-primary text-xs mt-2 font-medium"
                 >
-                  {currentSpotlight.ctaText || 'Tap to continue'}
+                  {currentSpotlight.ctaText || 'Tap here to continue'}
                 </button>
               )}
             </div>
