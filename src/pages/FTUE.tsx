@@ -739,13 +739,12 @@ export default function FTUE() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm flex flex-col items-center text-center animate-fade-in">
-          <div className="text-5xl mb-6">🎉</div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">You're all set!</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-2">
-            Welcome to Noteshare, {ftue.name || 'musician'}!
-          </p>
-          <p className="text-foreground font-medium text-base mb-8">
-            Happy practicing 🎵
+          <div className="text-5xl mb-8">🎉</div>
+          <h1 className="text-2xl font-semibold text-foreground mb-3">
+            Welcome, {ftue.name || 'Musician'}.
+          </h1>
+          <p className="text-muted-foreground text-base leading-relaxed mb-10">
+            Use these tools and I promise you will see significant progress.
           </p>
           <Button
             size="lg"
