@@ -53,6 +53,21 @@ function getBestAchievementCount(profile: Profile): number {
   return (achievementCounts as Record<string, number>)[String(bestMilestone)] || 1;
 }
 
+function useProfileAchievementStats(profileId: string | undefined) {
+  return useQuery({
+    queryKey: ['profile-achievement-stats', profileId],
+    queryFn: async () => {
+      if (!profileId) throw new Error('Profile ID required');
+      const { data, error } = await supabase.rpc('get_profile_achievement_stats', {
+        p_profile_id: profileId,
+      });
+      if (error) throw error;
+      return data as { total_notes: number; total_minutes: number; best_streak: number };
+    },
+    enabled: !!profileId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 function usePublicProfile(profileId: string | undefined, username: string | undefined) {
   return useQuery({
@@ -100,6 +115,7 @@ const PublicProfile = () => {
   const { profile: myProfile, user } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
+  const { data: achievementStats } = useProfileAchievementStats(profile?.id);
   const { data: friends } = useFriends();
   const { data: friendships } = useFriendships();
   const removeFriend = useRemoveFriend();
@@ -462,15 +478,13 @@ const PublicProfile = () => {
             )}
           </Card>
 
-          {/* Awards Section - visible to friends */}
-          {isFriend && (
-            <PublicAwardsSection
-              bestStreak={getBestAchievedMilestone(profile)}
-              totalNotes={notes?.length || 0}
-              totalHours={0}
-              selectedAward={(profile as any).selected_award}
-            />
-          )}
+          {/* Awards Section - visible to everyone */}
+          <PublicAwardsSection
+            bestStreak={achievementStats?.best_streak || getBestAchievedMilestone(profile)}
+            totalNotes={achievementStats?.total_notes || notes?.length || 0}
+            totalHours={achievementStats ? Math.floor(achievementStats.total_minutes / 60) : 0}
+            selectedAward={(profile as any).selected_award}
+          />
 
           {/* Messages Dialog - opens direct chat with this profile */}
           <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>

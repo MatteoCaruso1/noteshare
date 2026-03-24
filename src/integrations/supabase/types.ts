@@ -1540,6 +1540,10 @@ export type Database = {
         Args: { p_milestone: number; p_profile_id: string }
         Returns: Json
       }
+      get_profile_achievement_stats: {
+        Args: { p_profile_id: string }
+        Returns: Json
+      }
       has_group_invite: { Args: { p_group_id: string }; Returns: boolean }
       has_pending_join_request: {
         Args: { p_group_id: string }
