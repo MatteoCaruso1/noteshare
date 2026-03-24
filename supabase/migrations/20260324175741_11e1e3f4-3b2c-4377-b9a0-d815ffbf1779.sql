@@ -1,0 +1,1 @@
+ALTER TABLE public.promo_posts ADD COLUMN location text DEFAULT NULL;

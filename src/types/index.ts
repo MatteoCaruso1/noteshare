@@ -132,6 +132,7 @@ export interface PromoPost {
   show_on_feed: boolean;
   is_paid_opportunity: boolean;
   repost_reminder_days: number | null;
+  location: string | null;
   created_at: string;
 }
 

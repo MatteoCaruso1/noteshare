@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useFriends } from '@/hooks/useFriendships';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -44,32 +45,34 @@ export function CollaboratorPicker({ selectedIds, onSelect, label = "Tag Collabo
           </PopoverTrigger>
           <PopoverContent className="w-64 p-2" align="end">
             {friends && friends.length > 0 ? (
-              <div className="space-y-1 max-h-48 overflow-y-auto">
-                {friends.map((friend) => {
-                  const isSelected = selectedIds.includes(friend.id);
-                  return (
-                    <div
-                      key={friend.id}
-                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
-                        isSelected ? 'bg-primary/10' : 'hover:bg-secondary/50'
-                      }`}
-                      onClick={() => toggleFriend(friend.id)}
-                    >
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={friend.avatar || ''} />
-                        <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{friend.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
+              <ScrollArea className="max-h-48">
+                <div className="space-y-1">
+                  {friends.map((friend) => {
+                    const isSelected = selectedIds.includes(friend.id);
+                    return (
+                      <div
+                        key={friend.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                          isSelected ? 'bg-primary/10' : 'hover:bg-secondary/50'
+                        }`}
+                        onClick={() => toggleFriend(friend.id)}
+                      >
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={friend.avatar || ''} />
+                          <AvatarFallback><User className="w-4 h-4" /></AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{friend.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">@{friend.username}</p>
+                        </div>
+                        {isSelected && (
+                          <Badge variant="default" className="text-[10px]">Added</Badge>
+                        )}
                       </div>
-                      {isSelected && (
-                        <Badge variant="default" className="text-[10px]">Added</Badge>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
             ) : (
               <div className="text-center py-4 text-muted-foreground text-sm">
                 Add friends first to tag them

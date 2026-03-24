@@ -1319,6 +1319,7 @@ export type Database = {
           image: string | null
           is_paid_opportunity: boolean
           links: string[] | null
+          location: string | null
           promo_type: Database["public"]["Enums"]["promo_type"]
           repost_reminder_days: number | null
           show_on_feed: boolean
@@ -1335,6 +1336,7 @@ export type Database = {
           image?: string | null
           is_paid_opportunity?: boolean
           links?: string[] | null
+          location?: string | null
           promo_type: Database["public"]["Enums"]["promo_type"]
           repost_reminder_days?: number | null
           show_on_feed?: boolean
@@ -1351,6 +1353,7 @@ export type Database = {
           image?: string | null
           is_paid_opportunity?: boolean
           links?: string[] | null
+          location?: string | null
           promo_type?: Database["public"]["Enums"]["promo_type"]
           repost_reminder_days?: number | null
           show_on_feed?: boolean

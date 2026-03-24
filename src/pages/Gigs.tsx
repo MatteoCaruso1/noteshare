@@ -29,7 +29,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { ProjectCoverPicker, ProjectCover } from '@/components/ProjectCoverPicker';
-import { Plus, Calendar, Music2, ExternalLink, DollarSign, Briefcase, Trash2, CalendarIcon, Clock } from 'lucide-react';
+import { Plus, Calendar, Music2, ExternalLink, DollarSign, Briefcase, Trash2, CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -117,12 +117,20 @@ const GigCard = ({
           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{post.description}</p>
         )}
         
-        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-          <Calendar className="w-3 h-3" />
-          {post.event_date 
-            ? formatLocalDateTime(post.event_date)
-            : format(new Date(post.created_at), 'MMM d, yyyy')
-          }
+        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+          <span className="flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {post.event_date 
+              ? formatLocalDateTime(post.event_date)
+              : format(new Date(post.created_at), 'MMM d, yyyy')
+            }
+          </span>
+          {post.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {post.location}
+            </span>
+          )}
         </div>
         
         {post.links?.length > 0 && (
@@ -164,7 +172,7 @@ const Gigs = () => {
   const [gigImage, setGigImage] = useState<string | null>(null);
   const [gigImagePreviewUrl, setGigImagePreviewUrl] = useState<string | null>(null);
   const [repostReminderDays, setRepostReminderDays] = useState<string>('');
-
+  const [location, setLocation] = useState('');
   if (!user) {
     navigate('/auth');
     return null;
@@ -202,6 +210,7 @@ const Gigs = () => {
         isPaidOpportunity,
         collaboratorIds,
         repostReminderDays: repostReminderDays ? parseInt(repostReminderDays, 10) : null,
+        location: location.trim() || undefined,
       },
       {
         onSuccess: () => {
@@ -216,6 +225,7 @@ const Gigs = () => {
           setGigImage(null);
           setGigImagePreviewUrl(null);
           setRepostReminderDays('');
+          setLocation('');
           setIsDialogOpen(false);
         },
       }
@@ -321,6 +331,17 @@ const Gigs = () => {
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
                   />
+
+                  {/* Location */}
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      placeholder="Location (optional)"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                   
                   {/* Show on Feed Toggle */}
                   <div className="flex items-center justify-between py-2">

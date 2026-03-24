@@ -161,6 +161,7 @@ export function useCreatePromoPost() {
       isPaidOpportunity = false,
       collaboratorIds = [],
       repostReminderDays,
+      location,
     }: {
       authorId: string;
       promoType: 'gig';
@@ -173,6 +174,7 @@ export function useCreatePromoPost() {
       isPaidOpportunity?: boolean;
       collaboratorIds?: string[];
       repostReminderDays?: number | null;
+      location?: string;
     }) => {
       const { data, error } = await supabase
         .from('promo_posts')
@@ -188,7 +190,8 @@ export function useCreatePromoPost() {
           is_paid_opportunity: isPaidOpportunity,
           collaborator_ids: collaboratorIds,
           repost_reminder_days: repostReminderDays ?? null,
-        })
+          location: location || null,
+        } as any)
         .select()
         .single();
 
