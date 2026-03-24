@@ -115,6 +115,7 @@ const PublicProfile = () => {
   const { profile: myProfile, user } = useAuth();
   const { data: profile, isLoading, error } = usePublicProfile(id, username);
   const { data: notes, isLoading: notesLoading } = usePublicNotes(profile?.id);
+  const { data: achievementStats } = useProfileAchievementStats(profile?.id);
   const { data: friends } = useFriends();
   const { data: friendships } = useFriendships();
   const removeFriend = useRemoveFriend();
