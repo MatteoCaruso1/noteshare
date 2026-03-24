@@ -14,6 +14,8 @@ export interface FTUEState {
   startedAt: number; // timestamp
   // Explicit flags for signup gating
   readyForSignup: boolean;
+  // Track which FTUE phases the user completed (for analytics funnel)
+  completedPhases: number[];
 }
 
 const DEFAULT_STATE: FTUEState = {
