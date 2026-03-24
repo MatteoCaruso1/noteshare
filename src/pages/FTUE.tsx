@@ -421,15 +421,14 @@ export default function FTUE() {
   const hadUserOnMount = useRef(!!user);
 
   // After signup + auth, commit FTUE data then go to final step
+  // Key fix: use FTUE localStorage state as the source of truth (survives OAuth redirects)
+  // instead of relying on refs that reset on remount
   useEffect(() => {
     if (!user) return;
     if (commitAttemptedRef.current) return;
 
-    // Only auto-commit if user explicitly started signup
-    if (!signupInitiatedRef.current && !hadUserOnMount.current) return;
-
     const state = getFTUEState();
-    // Only act when readyForSignup flag is set (user completed the interactive tour)
+    // Only commit if the FTUE tour was completed (readyForSignup) and we're on the signup step
     if (!state || !state.readyForSignup) return;
     if (state.currentStep < SIGNUP_STEP) return;
 
