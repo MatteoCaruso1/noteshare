@@ -826,14 +826,20 @@ serve(async (req) => {
     })).sort((a, b) => b.noteCount - a.noteCount);
 
     // ── FTUE funnel ──
+    // FTUE steps are stored with 100+ offset (100=phase0, 101=phase1, etc.)
+    // 110=account created, 111=complete
     const { data: ftueRows } = await supabaseAdmin
       .from('onboarding_step_events')
-      .select('step_number, user_id');
+      .select('step_number, user_id')
+      .gte('step_number', 100)
+      .lte('step_number', 111);
 
     const ftueStepCounts: Record<number, number> = {};
     if (ftueRows) {
       for (const r of ftueRows) {
-        ftueStepCounts[r.step_number] = (ftueStepCounts[r.step_number] || 0) + 1;
+        // Map 100+ back to 0-based for display
+        const displayStep = r.step_number - 100;
+        ftueStepCounts[displayStep] = (ftueStepCounts[displayStep] || 0) + 1;
       }
     }
     // Build array 0-11
