@@ -326,10 +326,10 @@ function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void;
   );
 }
 
-function FTUEInteractiveTour({ name, onComplete }: { name: string; onComplete: () => void }) {
+function FTUEInteractiveTour({ name, onComplete, onTrackPhase }: { name: string; onComplete: () => void; onTrackPhase: (phase: number) => void }) {
   return (
     <FTUEPreviewProvider name={name}>
-      <FTUETourContent onComplete={onComplete} />
+      <FTUETourContent onComplete={onComplete} onTrackPhase={onTrackPhase} />
     </FTUEPreviewProvider>
   );
 }
