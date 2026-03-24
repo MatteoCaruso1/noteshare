@@ -53,8 +53,23 @@ function getBestAchievementCount(profile: Profile): number {
   return (achievementCounts as Record<string, number>)[String(bestMilestone)] || 1;
 }
 
+function useProfileAchievementStats(profileId: string | undefined) {
+  return useQuery({
+    queryKey: ['profile-achievement-stats', profileId],
+    queryFn: async () => {
+      if (!profileId) throw new Error('Profile ID required');
+      const { data, error } = await supabase.rpc('get_profile_achievement_stats', {
+        p_profile_id: profileId,
+      });
+      if (error) throw error;
+      return data as { total_notes: number; total_minutes: number; best_streak: number };
+    },
+    enabled: !!profileId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
-function usePublicProfile(profileId: string | undefined, username: string | undefined) {
+
   return useQuery({
     queryKey: ['public-profile', profileId, username],
     queryFn: async () => {
