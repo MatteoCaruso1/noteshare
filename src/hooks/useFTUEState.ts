@@ -29,6 +29,7 @@ const DEFAULT_STATE: FTUEState = {
   currentStep: 0,
   startedAt: Date.now(),
   readyForSignup: false,
+  completedPhases: [],
 };
 
 function loadState(): FTUEState {
