@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
       focusLevel,
       durationMinutes,
       idempotencyKey,
+      completedPhases,
     } = body as {
       name: string;
       instrument: string;
@@ -65,6 +66,7 @@ Deno.serve(async (req) => {
       focusLevel: number | null;
       durationMinutes: number;
       idempotencyKey: string;
+      completedPhases?: number[];
     };
 
     // Validate
