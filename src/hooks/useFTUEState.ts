@@ -145,6 +145,7 @@ export function useFTUEState() {
     nextStep,
     prevStep,
     setReadyForSignup,
+    trackPhase,
     reset,
   };
 }
