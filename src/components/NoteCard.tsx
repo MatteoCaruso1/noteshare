@@ -8,6 +8,7 @@ import { RichTextarea } from '@/components/RichTextarea';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
