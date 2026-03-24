@@ -73,12 +73,24 @@ const SPOTLIGHT_PHASES: Record<number, SpotlightTarget> = {
 };
 
 /** Inner component that reads FTUE preview context for phase syncing */
-function FTUETourContent({ onComplete }: { onComplete: () => void }) {
+function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void; onTrackPhase: (phase: number) => void }) {
   const ftuePreview = useFTUEPreview();
-  const [phase, setPhase] = useState<TourPhase>(0);
+  const [phase, setPhaseRaw] = useState<TourPhase>(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const hasCompletedRef = useRef(false);
+
+  // Wrap setPhase to also track
+  const setPhase = useCallback((p: TourPhase | ((prev: TourPhase) => TourPhase)) => {
+    setPhaseRaw(prev => {
+      const next = typeof p === 'function' ? p(prev) : p;
+      onTrackPhase(next);
+      return next;
+    });
+  }, [onTrackPhase]);
+
+  // Track initial phase 0
+  useEffect(() => { onTrackPhase(0); }, [onTrackPhase]);
 
   const currentSpotlight = SPOTLIGHT_PHASES[phase];
 
@@ -314,10 +326,10 @@ function FTUETourContent({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-function FTUEInteractiveTour({ name, onComplete }: { name: string; onComplete: () => void }) {
+function FTUEInteractiveTour({ name, onComplete, onTrackPhase }: { name: string; onComplete: () => void; onTrackPhase: (phase: number) => void }) {
   return (
     <FTUEPreviewProvider name={name}>
-      <FTUETourContent onComplete={onComplete} />
+      <FTUETourContent onComplete={onComplete} onTrackPhase={onTrackPhase} />
     </FTUEPreviewProvider>
   );
 }
@@ -333,7 +345,7 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!session?.access_token) {
         console.warn(`[FTUE] No session for commit (attempt ${attempt + 1})`);
         if (attempt < retries - 1) {
           await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
@@ -342,21 +354,33 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
         return false;
       }
 
-      const { data, error } = await supabase.functions.invoke('commit-ftue', {
-          body: {
-            name: state.name.trim(),
-            instrument: state.instrument,
-            instruments: state.instruments || [state.instrument],
-            practiceNotes: state.practiceNotes || '',
-            tags: state.tags || [],
-            focusLevel: state.focusLevel ?? null,
-            durationMinutes: state.durationMinutes || 1,
-            idempotencyKey,
-          },
-        });
+      // Use explicit fetch with auth header for reliability (survives OAuth redirects)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      if (error) {
-        console.warn(`[FTUE] Commit error (attempt ${attempt + 1}):`, error);
+      const response = await fetch(`${supabaseUrl}/functions/v1/commit-ftue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': anonKey,
+        },
+        body: JSON.stringify({
+          name: state.name.trim(),
+          instrument: state.instrument,
+          instruments: state.instruments || [state.instrument],
+          practiceNotes: state.practiceNotes || '',
+          tags: state.tags || [],
+          focusLevel: state.focusLevel ?? null,
+          durationMinutes: state.durationMinutes || 1,
+          idempotencyKey,
+          completedPhases: state.completedPhases || [],
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        console.warn(`[FTUE] Commit error (attempt ${attempt + 1}):`, errBody);
         if (attempt < retries - 1) {
           await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
           continue;
@@ -364,6 +388,7 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
         return false;
       }
 
+      const data = await response.json();
       console.log('[FTUE] Commit success:', data);
       return true;
     } catch (err) {
@@ -409,15 +434,14 @@ export default function FTUE() {
   const hadUserOnMount = useRef(!!user);
 
   // After signup + auth, commit FTUE data then go to final step
+  // Key fix: use FTUE localStorage state as the source of truth (survives OAuth redirects)
+  // instead of relying on refs that reset on remount
   useEffect(() => {
     if (!user) return;
     if (commitAttemptedRef.current) return;
 
-    // Only auto-commit if user explicitly started signup
-    if (!signupInitiatedRef.current && !hadUserOnMount.current) return;
-
     const state = getFTUEState();
-    // Only act when readyForSignup flag is set (user completed the interactive tour)
+    // Only commit if the FTUE tour was completed (readyForSignup) and we're on the signup step
     if (!state || !state.readyForSignup) return;
     if (state.currentStep < SIGNUP_STEP) return;
 
@@ -636,6 +660,7 @@ export default function FTUE() {
     return (
       <FTUEInteractiveTour
         name={ftue.name}
+        onTrackPhase={ftue.trackPhase}
         onComplete={() => {
           // Mark ready for signup and advance
           ftue.setReadyForSignup(true);

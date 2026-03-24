@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
       focusLevel,
       durationMinutes,
       idempotencyKey,
+      completedPhases,
     } = body as {
       name: string;
       instrument: string;
@@ -65,6 +66,7 @@ Deno.serve(async (req) => {
       focusLevel: number | null;
       durationMinutes: number;
       idempotencyKey: string;
+      completedPhases?: number[];
     };
 
     // Validate
@@ -163,6 +165,31 @@ Deno.serve(async (req) => {
       // Session was created but note failed — not ideal but not data-losing
       // The session still exists as a record of practice
     }
+
+    // 4. Record FTUE funnel steps for analytics (fire-and-forget)
+    // Maps FTUE phases to the same step_number space used by onboarding_step_events
+    // FTUE steps use 100+ offset to distinguish from post-signup onboarding steps (0-11)
+    if (completedPhases && completedPhases.length > 0) {
+      const stepRows = completedPhases.map((phase: number) => ({
+        user_id: userId,
+        step_number: 100 + phase, // offset to avoid collision with post-signup onboarding
+      }));
+      const { error: stepsError } = await serviceClient
+        .from("onboarding_step_events")
+        .upsert(stepRows, { onConflict: "user_id,step_number" });
+      if (stepsError) {
+        console.error("FTUE step tracking error:", stepsError);
+      }
+    }
+
+    // Also record that this user completed the full FTUE flow (step 110 = account created, 111 = complete)
+    await serviceClient
+      .from("onboarding_step_events")
+      .upsert([
+        { user_id: userId, step_number: 110 },
+        { user_id: userId, step_number: 111 },
+      ], { onConflict: "user_id,step_number" })
+      .then(({ error: e }) => { if (e) console.error("FTUE completion tracking error:", e); });
 
     return new Response(
       JSON.stringify({ success: true, sessionId: session.id }),

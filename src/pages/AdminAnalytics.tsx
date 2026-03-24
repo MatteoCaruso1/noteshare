@@ -456,9 +456,9 @@ const AdminAnalytics = () => {
                   const maxUsers = data.ftueFunnel[0]?.users || 1;
                   const pct = maxUsers > 0 ? Math.round((s.users / maxUsers) * 100) : 0;
                   const stepLabels = [
-                    'Welcome modal', 'Start session button', 'Session started', 'Capture note',
-                    'Record audio', 'End session', 'Save session', 'View timeline',
-                    'View note detail', 'Share education', 'Add friend', 'Complete'
+                    'Tour: Practice btn', 'Tour: Quick note', 'Tour: Routine', 'Tour: Timeline',
+                    'Tour: Open menu', 'Tour: Start session', 'Tour: Add notes', 'Tour: End session',
+                    'Tour: Save dialog', 'Tour: Note created', 'Account created', 'Complete'
                   ];
                   return (
                     <div key={s.step} className="flex items-center gap-3">

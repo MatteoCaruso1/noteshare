@@ -14,6 +14,8 @@ export interface FTUEState {
   startedAt: number; // timestamp
   // Explicit flags for signup gating
   readyForSignup: boolean;
+  // Track which FTUE phases the user completed (for analytics funnel)
+  completedPhases: number[];
 }
 
 const DEFAULT_STATE: FTUEState = {
@@ -27,6 +29,7 @@ const DEFAULT_STATE: FTUEState = {
   currentStep: 0,
   startedAt: Date.now(),
   readyForSignup: false,
+  completedPhases: [],
 };
 
 function loadState(): FTUEState {
@@ -116,6 +119,13 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, readyForSignup }));
   }, []);
 
+  const trackPhase = useCallback((phase: number) => {
+    setState(prev => {
+      if (prev.completedPhases.includes(phase)) return prev;
+      return { ...prev, completedPhases: [...prev.completedPhases, phase] };
+    });
+  }, []);
+
   const reset = useCallback(() => {
     const fresh = { ...DEFAULT_STATE, startedAt: Date.now() };
     setState(fresh);
@@ -135,6 +145,7 @@ export function useFTUEState() {
     nextStep,
     prevStep,
     setReadyForSignup,
+    trackPhase,
     reset,
   };
 }
