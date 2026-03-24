@@ -117,12 +117,20 @@ const GigCard = ({
           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{post.description}</p>
         )}
         
-        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-          <Calendar className="w-3 h-3" />
-          {post.event_date 
-            ? formatLocalDateTime(post.event_date)
-            : format(new Date(post.created_at), 'MMM d, yyyy')
-          }
+        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+          <span className="flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {post.event_date 
+              ? formatLocalDateTime(post.event_date)
+              : format(new Date(post.created_at), 'MMM d, yyyy')
+            }
+          </span>
+          {post.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {post.location}
+            </span>
+          )}
         </div>
         
         {post.links?.length > 0 && (
