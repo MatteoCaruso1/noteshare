@@ -478,15 +478,13 @@ const PublicProfile = () => {
             )}
           </Card>
 
-          {/* Awards Section - visible to friends */}
-          {isFriend && (
-            <PublicAwardsSection
-              bestStreak={achievementStats?.best_streak || getBestAchievedMilestone(profile)}
-              totalNotes={achievementStats?.total_notes || notes?.length || 0}
-              totalHours={achievementStats ? Math.floor(achievementStats.total_minutes / 60) : 0}
-              selectedAward={(profile as any).selected_award}
-            />
-          )}
+          {/* Awards Section - visible to everyone */}
+          <PublicAwardsSection
+            bestStreak={achievementStats?.best_streak || getBestAchievedMilestone(profile)}
+            totalNotes={achievementStats?.total_notes || notes?.length || 0}
+            totalHours={achievementStats ? Math.floor(achievementStats.total_minutes / 60) : 0}
+            selectedAward={(profile as any).selected_award}
+          />
 
           {/* Messages Dialog - opens direct chat with this profile */}
           <Dialog open={messagesOpen} onOpenChange={setMessagesOpen}>
