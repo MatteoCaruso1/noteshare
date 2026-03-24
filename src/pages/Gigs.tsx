@@ -323,6 +323,17 @@ const Gigs = () => {
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
                   />
+
+                  {/* Location */}
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      placeholder="Location (optional)"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                   
                   {/* Show on Feed Toggle */}
                   <div className="flex items-center justify-between py-2">
