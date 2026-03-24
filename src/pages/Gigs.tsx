@@ -29,7 +29,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { ProjectCoverPicker, ProjectCover } from '@/components/ProjectCoverPicker';
-import { Plus, Calendar, Music2, ExternalLink, DollarSign, Briefcase, Trash2, CalendarIcon, Clock } from 'lucide-react';
+import { Plus, Calendar, Music2, ExternalLink, DollarSign, Briefcase, Trash2, CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
