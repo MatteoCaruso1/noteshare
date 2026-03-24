@@ -73,9 +73,24 @@ const SPOTLIGHT_PHASES: Record<number, SpotlightTarget> = {
 };
 
 /** Inner component that reads FTUE preview context for phase syncing */
-function FTUETourContent({ onComplete }: { onComplete: () => void }) {
+function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void; onTrackPhase: (phase: number) => void }) {
   const ftuePreview = useFTUEPreview();
-  const [phase, setPhase] = useState<TourPhase>(0);
+  const [phase, setPhaseRaw] = useState<TourPhase>(0);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const hasCompletedRef = useRef(false);
+
+  // Wrap setPhase to also track
+  const setPhase = useCallback((p: TourPhase | ((prev: TourPhase) => TourPhase)) => {
+    setPhaseRaw(prev => {
+      const next = typeof p === 'function' ? p(prev) : p;
+      onTrackPhase(next);
+      return next;
+    });
+  }, [onTrackPhase]);
+
+  // Track initial phase 0
+  useEffect(() => { onTrackPhase(0); }, [onTrackPhase]);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const hasCompletedRef = useRef(false);
