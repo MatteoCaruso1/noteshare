@@ -91,9 +91,6 @@ function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void;
 
   // Track initial phase 0
   useEffect(() => { onTrackPhase(0); }, [onTrackPhase]);
-  const [rect, setRect] = useState<DOMRect | null>(null);
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const hasCompletedRef = useRef(false);
 
   const currentSpotlight = SPOTLIGHT_PHASES[phase];
 
