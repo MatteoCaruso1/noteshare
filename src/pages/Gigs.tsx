@@ -217,6 +217,7 @@ const Gigs = () => {
           setGigImage(null);
           setGigImagePreviewUrl(null);
           setRepostReminderDays('');
+          setLocation('');
           setIsDialogOpen(false);
         },
       }
