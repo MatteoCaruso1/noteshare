@@ -119,6 +119,13 @@ export function useFTUEState() {
     setState(prev => ({ ...prev, readyForSignup }));
   }, []);
 
+  const trackPhase = useCallback((phase: number) => {
+    setState(prev => {
+      if (prev.completedPhases.includes(phase)) return prev;
+      return { ...prev, completedPhases: [...prev.completedPhases, phase] };
+    });
+  }, []);
+
   const reset = useCallback(() => {
     const fresh = { ...DEFAULT_STATE, startedAt: Date.now() };
     setState(fresh);
