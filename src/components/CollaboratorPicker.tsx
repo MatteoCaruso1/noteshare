@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useFriends } from '@/hooks/useFriendships';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
