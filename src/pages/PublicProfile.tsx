@@ -69,7 +69,7 @@ function useProfileAchievementStats(profileId: string | undefined) {
   });
 }
 
-
+function usePublicProfile(profileId: string | undefined, username: string | undefined) {
   return useQuery({
     queryKey: ['public-profile', profileId, username],
     queryFn: async () => {
