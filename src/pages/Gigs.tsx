@@ -164,7 +164,7 @@ const Gigs = () => {
   const [gigImage, setGigImage] = useState<string | null>(null);
   const [gigImagePreviewUrl, setGigImagePreviewUrl] = useState<string | null>(null);
   const [repostReminderDays, setRepostReminderDays] = useState<string>('');
-
+  const [location, setLocation] = useState('');
   if (!user) {
     navigate('/auth');
     return null;
