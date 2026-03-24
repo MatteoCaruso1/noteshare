@@ -345,7 +345,7 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!session?.access_token) {
         console.warn(`[FTUE] No session for commit (attempt ${attempt + 1})`);
         if (attempt < retries - 1) {
           await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
@@ -354,21 +354,33 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
         return false;
       }
 
-      const { data, error } = await supabase.functions.invoke('commit-ftue', {
-          body: {
-            name: state.name.trim(),
-            instrument: state.instrument,
-            instruments: state.instruments || [state.instrument],
-            practiceNotes: state.practiceNotes || '',
-            tags: state.tags || [],
-            focusLevel: state.focusLevel ?? null,
-            durationMinutes: state.durationMinutes || 1,
-            idempotencyKey,
-          },
-        });
+      // Use explicit fetch with auth header for reliability (survives OAuth redirects)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      if (error) {
-        console.warn(`[FTUE] Commit error (attempt ${attempt + 1}):`, error);
+      const response = await fetch(`${supabaseUrl}/functions/v1/commit-ftue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': anonKey,
+        },
+        body: JSON.stringify({
+          name: state.name.trim(),
+          instrument: state.instrument,
+          instruments: state.instruments || [state.instrument],
+          practiceNotes: state.practiceNotes || '',
+          tags: state.tags || [],
+          focusLevel: state.focusLevel ?? null,
+          durationMinutes: state.durationMinutes || 1,
+          idempotencyKey,
+          completedPhases: state.completedPhases || [],
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        console.warn(`[FTUE] Commit error (attempt ${attempt + 1}):`, errBody);
         if (attempt < retries - 1) {
           await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
           continue;
@@ -376,6 +388,7 @@ async function commitFTUEData(retries = 3): Promise<boolean> {
         return false;
       }
 
+      const data = await response.json();
       console.log('[FTUE] Commit success:', data);
       return true;
     } catch (err) {
