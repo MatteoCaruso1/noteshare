@@ -15,8 +15,12 @@ type Body =
 function parseStorageRef(input: string): StorageRef | null {
   if (!input) return null;
 
-  // Direct stored paths (legacy)
+  // Direct stored paths (legacy or bucket-prefixed)
   if (!input.startsWith("http") && !input.startsWith("blob:")) {
+    // If prefixed with a known bucket name, extract it
+    if (input.startsWith("notes-media/")) {
+      return { bucket: "notes-media", path: input.slice("notes-media/".length) };
+    }
     return { bucket: "practice-media", path: input };
   }
 

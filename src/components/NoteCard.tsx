@@ -8,6 +8,7 @@ import { RichTextarea } from '@/components/RichTextarea';
 import { MediaUploadButton } from '@/components/MediaUploadButton';
 import { AudioFileItem } from '@/components/AudioFileItem';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -36,34 +37,17 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
 
 function NoteVideoPlayer({ videoPath, videoName, videoThumbnailPath }: { videoPath: string; videoName?: string; videoThumbnailPath?: string }) {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  // Prefix bare paths with notes-media/ so the edge function routes to the correct bucket
+  const prefixedVideoPath = videoPath.startsWith('notes-media/') || videoPath.startsWith('http') ? videoPath : `notes-media/${videoPath}`;
+  const prefixedThumbPath = videoThumbnailPath
+    ? (videoThumbnailPath.startsWith('notes-media/') || videoThumbnailPath.startsWith('http') ? videoThumbnailPath : `notes-media/${videoThumbnailPath}`)
+    : null;
 
-  // Load thumbnail signed URL on mount
-  useEffect(() => {
-    if (!videoThumbnailPath) return;
-    supabase.storage.from('notes-media').createSignedUrl(videoThumbnailPath, 3600)
-      .then(({ data }) => { if (data?.signedUrl) setThumbUrl(data.signedUrl); });
-  }, [videoThumbnailPath]);
+  const { signedUrl: videoUrl, loading: videoLoading, error: videoError } = useSignedUrl(prefixedVideoPath);
+  const { signedUrl: thumbUrl } = useSignedUrl(prefixedThumbPath);
+  const [userPlayed, setUserPlayed] = useState(false);
 
-  const handlePlay = async () => {
-    if (signedUrl || loading) return;
-    setLoading(true);
-    setError(false);
-    const { data, error: err } = await supabase.storage
-      .from('notes-media')
-      .createSignedUrl(videoPath, 60);
-    setLoading(false);
-    if (err || !data?.signedUrl) {
-      setError(true);
-      return;
-    }
-    setSignedUrl(data.signedUrl);
-  };
-
-  if (signedUrl) {
+  if (userPlayed && videoUrl) {
     return (
       <div className="mt-2 rounded-lg overflow-hidden bg-secondary/30" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
         {videoName && <p className="text-xs text-muted-foreground px-2 pt-1.5">{videoName}</p>}
@@ -72,7 +56,7 @@ function NoteVideoPlayer({ videoPath, videoName, videoThumbnailPath }: { videoPa
           playsInline
           preload="metadata"
           className="w-full max-h-80 rounded-lg"
-          src={signedUrl}
+          src={videoUrl}
         />
       </div>
     );
@@ -80,16 +64,16 @@ function NoteVideoPlayer({ videoPath, videoName, videoThumbnailPath }: { videoPa
 
   return (
     <button
-      onClick={(e) => { e.stopPropagation(); handlePlay(); }}
+      onClick={(e) => { e.stopPropagation(); setUserPlayed(true); }}
       className="mt-2 flex items-center gap-2 rounded-lg bg-secondary/40 text-sm text-muted-foreground hover:bg-secondary/60 transition-colors overflow-hidden"
     >
       {thumbUrl ? (
         <img src={thumbUrl} alt="" className="w-16 h-12 object-cover rounded-l-lg shrink-0" />
       ) : null}
       <div className="flex items-center gap-2 px-3 py-2">
-        {loading ? (
+        {videoLoading ? (
           <span className="animate-pulse">Loading video…</span>
-        ) : error ? (
+        ) : videoError ? (
           <span className="text-destructive">Failed to load video. Tap to retry.</span>
         ) : (
           <>
