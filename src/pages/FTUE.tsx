@@ -648,6 +648,7 @@ export default function FTUE() {
     return (
       <FTUEInteractiveTour
         name={ftue.name}
+        onTrackPhase={ftue.trackPhase}
         onComplete={() => {
           // Mark ready for signup and advance
           ftue.setReadyForSignup(true);
