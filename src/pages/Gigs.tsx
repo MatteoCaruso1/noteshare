@@ -202,6 +202,7 @@ const Gigs = () => {
         isPaidOpportunity,
         collaboratorIds,
         repostReminderDays: repostReminderDays ? parseInt(repostReminderDays, 10) : null,
+        location: location.trim() || undefined,
       },
       {
         onSuccess: () => {
