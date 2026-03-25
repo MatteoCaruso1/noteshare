@@ -70,7 +70,8 @@ export function OfflineSessionInput() {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="w-full max-w-full min-w-0 box-border [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:text-left"
+                className="w-full max-w-full min-w-0 box-border overflow-hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:text-left"
+                style={{ maxWidth: '100%' }}
               />
             </div>
 
