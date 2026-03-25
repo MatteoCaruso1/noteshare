@@ -49,7 +49,7 @@ export function OfflineSessionInput() {
           Log Past Session
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border">
+      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Log Past Practice Session</DialogTitle>
         </DialogHeader>
