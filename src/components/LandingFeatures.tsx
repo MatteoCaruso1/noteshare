@@ -128,12 +128,26 @@ export function LandingFeatures() {
   usePreloadImages();
 
   return (
-    <section className="bg-background/60 backdrop-blur-sm rounded-t-3xl py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-0 md:mt-2">
-      <div className="w-full space-y-8">
+    <section className="relative rounded-t-3xl py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-24 w-full mt-0 md:mt-2 overflow-hidden"
+      style={{
+        background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 40%, hsl(var(--muted)) 80%, hsl(var(--background)) 100%)',
+      }}
+    >
+      {/* Top transition fade */}
+      <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
+        style={{ background: 'linear-gradient(180deg, hsl(var(--background)) 0%, transparent 100%)' }}
+      />
+      {/* Subtle accent glow behind features */}
+      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[160px] pointer-events-none" />
+      <div className="relative w-full space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
         ))}
       </div>
+      {/* Bottom transition fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+        style={{ background: 'linear-gradient(0deg, hsl(var(--background)) 0%, transparent 100%)' }}
+      />
     </section>
   );
 }

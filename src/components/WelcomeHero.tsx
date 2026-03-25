@@ -56,6 +56,31 @@ export function WelcomeHero() {
           />
         </div>
 
+        {/* Floating musical decorative elements - left side */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Left cluster - staggered musical notes/symbols */}
+          <div className="absolute top-[18%] -left-4 md:left-4 opacity-[0.07] text-primary text-5xl md:text-6xl rotate-[-15deg] select-none" aria-hidden="true">♪</div>
+          <div className="absolute top-[35%] -left-2 md:left-8 opacity-[0.05] text-primary text-3xl md:text-4xl rotate-[10deg] select-none" aria-hidden="true">♫</div>
+          <div className="absolute top-[55%] left-0 md:left-12 opacity-[0.06] text-primary text-4xl md:text-5xl rotate-[-8deg] select-none" aria-hidden="true">𝄞</div>
+          <div className="absolute top-[72%] -left-1 md:left-6 opacity-[0.04] text-primary text-3xl rotate-[20deg] select-none" aria-hidden="true">♩</div>
+
+          {/* Right cluster */}
+          <div className="absolute top-[15%] -right-2 md:right-6 opacity-[0.06] text-primary text-4xl md:text-5xl rotate-[12deg] select-none" aria-hidden="true">𝄢</div>
+          <div className="absolute top-[38%] -right-1 md:right-10 opacity-[0.05] text-primary text-5xl md:text-6xl rotate-[-18deg] select-none" aria-hidden="true">♬</div>
+          <div className="absolute top-[58%] right-0 md:right-4 opacity-[0.07] text-primary text-3xl md:text-4xl rotate-[6deg] select-none" aria-hidden="true">♭</div>
+          <div className="absolute top-[75%] right-2 md:right-14 opacity-[0.04] text-primary text-4xl rotate-[-10deg] select-none" aria-hidden="true">♯</div>
+
+          {/* Decorative curved line - left */}
+          <svg className="absolute top-[20%] -left-8 md:left-0 w-24 md:w-32 h-64 opacity-[0.06]" viewBox="0 0 100 200" fill="none" aria-hidden="true">
+            <path d="M80 0 C60 40, 20 60, 40 100 C60 140, 20 160, 30 200" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+
+          {/* Decorative curved line - right */}
+          <svg className="absolute top-[25%] -right-8 md:right-0 w-24 md:w-32 h-64 opacity-[0.06]" viewBox="0 0 100 200" fill="none" aria-hidden="true">
+            <path d="M20 0 C40 40, 80 60, 60 100 C40 140, 80 160, 70 200" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+
         {/* Hero Content - fades on scroll */}
         <main 
           className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 w-full transition-opacity duration-100 pt-12 md:pt-16 relative z-10"
