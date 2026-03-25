@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RichTextarea } from '@/components/RichTextarea';
-import { PlayingWithPicker } from '@/components/PlayingWithPicker';
 import { Clock, ArrowLeft, Save, Zap } from 'lucide-react';
 
 interface EndSessionDialogProps {
@@ -74,7 +73,6 @@ export function EndSessionDialog({
   };
 
   const [durationInput, setDurationInput] = useState(() => String(calculateDuration()));
-  const [playingWithIds, setPlayingWithIds] = useState<string[]>([]);
   const [focusLevel, setFocusLevel] = useState<number | null>(null);
   
   // Derived state for validation
@@ -85,7 +83,6 @@ export function EndSessionDialog({
   useEffect(() => {
     if (open) {
       setDurationInput(String(calculateDuration()));
-      setPlayingWithIds([]);
       setFocusLevel(null);
     }
   }, [open, session]);
@@ -103,7 +100,7 @@ export function EndSessionDialog({
       if (onPreviewSave) {
         onPreviewSave(durationMinutes, noteText, focusLevel ?? undefined);
       } else {
-        onSave('', durationMinutes, playingWithIds, focusLevel ?? undefined);
+        onSave('', durationMinutes, [], focusLevel ?? undefined);
       }
     }
   };
@@ -150,12 +147,6 @@ export function EndSessionDialog({
 
           {/* Focus Level */}
           <FocusLevelSelector value={focusLevel} onChange={setFocusLevel} />
-
-          {/* Playing With */}
-          <PlayingWithPicker
-            selectedIds={playingWithIds}
-            onSelect={setPlayingWithIds}
-          />
 
           {/* Notes */}
           <div className="space-y-2">
