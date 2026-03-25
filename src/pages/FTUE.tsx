@@ -433,6 +433,17 @@ export default function FTUE() {
 
   const hadUserOnMount = useRef(!!user);
 
+  // Reset loading state when page is restored from bfcache (e.g. user pressed back after Google OAuth redirect)
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setSignupLoading(false);
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
   // After signup + auth, commit FTUE data then go to final step
   // Key fix: use FTUE localStorage state as the source of truth (survives OAuth redirects)
   // instead of relying on refs that reset on remount
