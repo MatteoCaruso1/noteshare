@@ -83,7 +83,7 @@ export function WelcomeHero() {
 
         {/* Hero Content - fades on scroll */}
         <main 
-          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 w-full transition-opacity duration-100 pt-12 md:pt-16 relative z-10"
+          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-32 xl:px-40 w-full transition-opacity duration-100 pt-12 md:pt-16 relative z-10"
           style={{ opacity: scrollOpacity }}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl lg:max-w-6xl">
