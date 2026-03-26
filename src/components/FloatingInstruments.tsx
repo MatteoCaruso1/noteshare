@@ -48,7 +48,7 @@ export function FloatingInstruments() {
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[1]">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[5]">
       {emojis.map((item) => (
         <div
           key={item.id}
