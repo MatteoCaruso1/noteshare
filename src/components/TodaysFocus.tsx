@@ -26,7 +26,7 @@ export function TodaysFocus() {
   const ftuePreview = useFTUEPreview();
   const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const profileId = profile?.id;
-  const { saveToBacklog, isSaving } = useFocusBacklog();
+  const { backlogEntries, saveToBacklog, isSaving, deleteFromBacklog } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   const { toast: structuredToast } = useToast();
@@ -44,7 +44,6 @@ export function TodaysFocus() {
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(() => {
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
     return stored === null ? true : stored === 'open';
