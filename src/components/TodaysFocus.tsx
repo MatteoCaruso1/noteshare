@@ -836,7 +836,6 @@ export function TodaysFocus() {
         setHasChanges(false);
       } catch { /* draft preserved */ }
     }, 500);
-    setIsBacklogOpen(false);
     toast.success('Practice Routine loaded');
   };
 
