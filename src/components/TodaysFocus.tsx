@@ -873,23 +873,14 @@ export function TodaysFocus() {
                       </TooltipTrigger>
                       <TooltipContent>Save to backlog</TooltipContent>
                     </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className={`h-8 w-8 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsBacklogOpen(true);
-                          }}
-                        >
-                          <FolderOpen className="w-[18px] h-[18px]" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>View backlog</TooltipContent>
-                    </Tooltip>
+                    <RoutineSwitcherPopover
+                      backlogEntries={backlogEntries}
+                      currentTitle={title}
+                      onSelect={handleLoadFromBacklog}
+                      onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
+                      isPremium={isPremium}
+                      onUpgrade={openPremiumDialog}
+                    />
                   </div>
                 </TooltipProvider>
                 
