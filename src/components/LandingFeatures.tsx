@@ -110,7 +110,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         </p>
       </div>
       <div className="relative">
-        <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-3xl opacity-50" />
+        <div className="absolute -inset-4 bg-primary/10 blur-xl md:blur-2xl rounded-3xl opacity-50" />
         <div 
           className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ${
             feature.cropTop ? 'h-[220px]' : ''
@@ -148,7 +148,7 @@ export function LandingFeatures() {
         style={{ background: 'linear-gradient(180deg, hsl(var(--background)) 0%, transparent 100%)' }}
       />
       {/* Subtle accent glow behind features */}
-      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
       <div className="relative w-full space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
