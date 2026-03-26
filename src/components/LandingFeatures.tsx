@@ -105,7 +105,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           {feature.title}
         </h2>
         <p className="mt-2 text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
-          {feature.description}
+          {displayDescription}
         </p>
       </div>
       <div className="relative">
