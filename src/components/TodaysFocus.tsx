@@ -938,12 +938,6 @@ export function TodaysFocus() {
           </CollapsibleContent>
         </Collapsible>
       </Card>
-
-      <FocusBacklogDialog 
-        open={isBacklogOpen} 
-        onOpenChange={setIsBacklogOpen}
-        onLoad={handleLoadFromBacklog}
-      />
     </>
   );
 }
