@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import landingFocus from '@/assets/landing-focus.png';
 import landingSessions from '@/assets/landing-sessions.png';
 import landingProgress from '@/assets/landing-progress.png';
