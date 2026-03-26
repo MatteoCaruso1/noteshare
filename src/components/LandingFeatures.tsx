@@ -58,6 +58,14 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+
+  const displayDescription = useMemo(() => {
+    if (!isMobile) return feature.description;
+    const firstSentenceEnd = feature.description.indexOf('. ');
+    if (firstSentenceEnd === -1) return feature.description;
+    return feature.description.slice(0, firstSentenceEnd + 1);
+  }, [isMobile, feature.description]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
