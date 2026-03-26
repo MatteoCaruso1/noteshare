@@ -39,7 +39,7 @@ const BlogPianoTracker = () => {
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Blog
           </Link>
           <p className="text-xs uppercase tracking-wider font-medium mb-4" style={accentColor}>
-            Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Mar 12
+            Matteo, Musician and Noteshare Developer &nbsp;|&nbsp; Edited Mar 26
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] mb-6" style={headingColor}>
             Best Piano Practice Tracker for 2026
