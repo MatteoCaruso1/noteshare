@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingTestimonial } from './LandingTestimonial';
 import { MarketingCTA } from './MarketingCTA';
 
 export function WelcomeHero() {
   const [isExiting, setIsExiting] = useState(false);
-  const [scrollOpacity, setScrollOpacity] = useState(1);
+  const heroContentRef = useRef<HTMLElement>(null);
 
-  // Scroll-linked opacity for hero content
+  // Scroll-linked opacity via direct DOM manipulation (no re-renders)
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const fadeStart = 0;
-      const fadeEnd = 400;
-      const opacity = Math.max(0, 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart));
-      setScrollOpacity(opacity);
+      const opacity = Math.max(0, 1 - scrollY / 400);
+      if (heroContentRef.current) {
+        heroContentRef.current.style.opacity = String(opacity);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
