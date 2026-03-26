@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingTestimonial } from './LandingTestimonial';
 import { MarketingCTA } from './MarketingCTA';
 
 export function WelcomeHero() {
   const [isExiting, setIsExiting] = useState(false);
-  const [scrollOpacity, setScrollOpacity] = useState(1);
+  const heroContentRef = useRef<HTMLElement>(null);
 
-  // Scroll-linked opacity for hero content
+  // Scroll-linked opacity via direct DOM manipulation (no re-renders)
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const fadeStart = 0;
-      const fadeEnd = 400;
-      const opacity = Math.max(0, 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart));
-      setScrollOpacity(opacity);
+      const opacity = Math.max(0, 1 - scrollY / 400);
+      if (heroContentRef.current) {
+        heroContentRef.current.style.opacity = String(opacity);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -34,11 +34,11 @@ export function WelcomeHero() {
         {/* Ambient glow effects */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Large primary glow - upper left */}
-          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-[140px]" />
+          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[140px]" />
           {/* Accent orb - right side */}
-          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-[120px]" />
+          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-[70px] md:blur-[120px]" />
           {/* Warm bottom glow */}
-          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-[100px]" />
+          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-[60px] md:blur-[100px]" />
           {/* Subtle grid overlay for depth */}
           <div 
             className="absolute inset-0 opacity-[0.03]"
@@ -83,8 +83,8 @@ export function WelcomeHero() {
 
         {/* Hero Content - fades on scroll */}
         <main 
-          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-32 xl:px-40 w-full transition-opacity duration-100 pt-12 md:pt-16 relative z-10"
-          style={{ opacity: scrollOpacity }}
+          ref={heroContentRef}
+          className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-32 xl:px-40 w-full pt-12 md:pt-16 relative z-10 will-change-[opacity]"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground mb-6 max-w-4xl lg:max-w-6xl">
             The Ultimate Practice Tracking Tool for Musicians
