@@ -1,34 +1,52 @@
 
+Goal: fix the authenticated practice page so the subtle left/right musical decorations are actually perceptible on desktop, and the falling emojis are reliably visible instead of depending on lucky timing/placement.
 
-## Diagnosis
+What I found
+- The existing code is already rendering both layers:
+  - global falling emojis in `src/components/FloatingInstruments.tsx`
+  - desktop side decorations in `src/pages/Index.tsx`
+- The main issue is not a missing component anymore. It is a visibility/design problem:
+  1. The side symbols are extremely faint (`opacity-[0.03]` / `0.04`) and pushed almost flush to the screen edge, so on a dark desktop page they are effectively invisible.
+  2. The falling emojis have very long staggered delays (`(i * 3) + random up to 8`), so many won’t appear for several seconds after load.
+  3. The emojis are distributed across the whole viewport, not intentionally on the left/right margins, so many pass behind the central content column where they are hard to notice.
+  4. Their opacity is also very low (`0.05`), which compounds the issue.
 
-The "Failed to load video" error occurs because of **two compounding issues**:
+Implementation plan
+1. Make the side decorations intentionally visible on desktop
+- Keep them subtle, but increase visibility modestly:
+  - bump opacity into a still-soft but readable range
+  - enlarge a few symbols slightly
+  - pull them a bit farther inward from the page edge
+- Keep them desktop-only and non-interactive.
+- Keep them outside the main content flow so layout does not change.
 
-1. **RLS blocks non-owners**: The `notes-media` storage bucket has RLS policies that only allow the file owner (`auth.uid()`) to read files. When a friend tries to view the video, the direct `supabase.storage.createSignedUrl()` call in `NoteVideoPlayer` is rejected by RLS.
+2. Rework the emoji background to behave like side ambience, not random confetti
+- Update `FloatingInstruments.tsx` so emoji positions are biased to left and right “gutters” instead of the middle content column.
+- Reduce initial delays so users see motion almost immediately after page load.
+- Keep randomization, but constrain it so the effect is dependable rather than accidental.
+- Slightly increase opacity/size only enough to read on the dark background.
 
-2. **Edge function misroutes `notes-media` paths**: The `get-signed-url` edge function (which uses the service-role key and bypasses RLS) assumes all non-HTTP paths belong to the `practice-media` bucket (line 20). Video paths stored as plain strings like `userId/fileId.webm` would be incorrectly routed to `practice-media` instead of `notes-media`.
+3. Prevent the background from competing with content
+- Maintain very low contrast and keep all elements behind core UI interaction.
+- Avoid placing decorative elements inside the center reading area.
+- Preserve current header/bottom-nav behavior and all page functionality.
 
-Audio and image files work for friends because they are stored in the `practice-media` bucket and go through the edge function via `useSignedUrl`. Videos bypass this entire system.
+4. Verify against the actual failure mode
+- Check desktop authenticated `/` specifically, since that is where the issue occurs.
+- Confirm:
+  - side decorations are visible on both left and right at first glance
+  - at least some falling emojis are visible immediately
+  - emojis continue to animate behind the page without crossing attention-grabbing levels
+  - no layout shift or overlap with the main cards
 
-## Plan
+Files to update
+- `src/components/FloatingInstruments.tsx`
+- `src/pages/Index.tsx`
 
-### 1. Route `NoteVideoPlayer` through the existing `useSignedUrl` hook
-- **File**: `src/components/NoteCard.tsx`
-- Replace the direct `supabase.storage.from('notes-media').createSignedUrl()` calls with `useSignedUrl()` for both the video URL and thumbnail URL
-- Since video paths are stored as plain paths (e.g. `userId/fileId.webm`), they need to be prefixed so the edge function knows which bucket to use
-- Construct a full storage URL using the Supabase URL so `parseStorageRef` in the edge function can extract the correct bucket
-
-### 2. Fix the edge function's bucket detection for bare paths
-- **File**: `supabase/functions/get-signed-url/index.ts`
-- Update `parseStorageRef` to handle `notes-media/` prefixed paths (e.g. `notes-media/userId/file.webm`) in addition to the existing `practice-media` default
-- This makes the edge function correctly route to the right bucket regardless of how the path is stored
-
-### 3. Construct proper storage references in NoteVideoPlayer
-- Prepend `notes-media/` to video paths before passing them to `useSignedUrl` or `getSignedUrls`, so the edge function routes them to the correct bucket
-- Do the same for video thumbnail paths
-- Remove the manual `handlePlay` state machine since `useSignedUrl` handles loading/error states
-
-### Files to change
-- `src/components/NoteCard.tsx` — rewrite `NoteVideoPlayer` to use `useSignedUrl`
-- `supabase/functions/get-signed-url/index.ts` — handle `notes-media/` prefix in `parseStorageRef`
-
+Technical notes
+- I do not think another z-index increase is the right fix; the current evidence points to “present but imperceptible,” not “missing from DOM.”
+- The robust fix is to make the decorative system deterministic enough for real users:
+  - visible side gutters
+  - shorter animation startup
+  - less center-column overlap
+  - slightly stronger but still restrained opacity
