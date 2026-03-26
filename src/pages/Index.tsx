@@ -239,6 +239,33 @@ const Index = () => {
 
   return (
     <PageLayout>
+      {/* Subtle musical decorations - desktop only */}
+      <div className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Left cluster */}
+        <div className="absolute top-[12%] left-3 opacity-[0.04] text-primary text-5xl rotate-[-15deg] select-none" aria-hidden="true">♪</div>
+        <div className="absolute top-[28%] left-7 opacity-[0.03] text-primary text-3xl rotate-[10deg] select-none" aria-hidden="true">♫</div>
+        <div className="absolute top-[45%] left-4 opacity-[0.04] text-primary text-4xl rotate-[-8deg] select-none" aria-hidden="true">𝄞</div>
+        <div className="absolute top-[62%] left-8 opacity-[0.03] text-primary text-3xl rotate-[20deg] select-none" aria-hidden="true">♩</div>
+        <div className="absolute top-[78%] left-2 opacity-[0.03] text-primary text-4xl rotate-[-12deg] select-none" aria-hidden="true">♭</div>
+
+        {/* Right cluster */}
+        <div className="absolute top-[15%] right-4 opacity-[0.04] text-primary text-4xl rotate-[12deg] select-none" aria-hidden="true">𝄢</div>
+        <div className="absolute top-[32%] right-8 opacity-[0.03] text-primary text-5xl rotate-[-18deg] select-none" aria-hidden="true">♬</div>
+        <div className="absolute top-[50%] right-3 opacity-[0.04] text-primary text-3xl rotate-[6deg] select-none" aria-hidden="true">♯</div>
+        <div className="absolute top-[68%] right-10 opacity-[0.03] text-primary text-4xl rotate-[-10deg] select-none" aria-hidden="true">♪</div>
+        <div className="absolute top-[82%] right-5 opacity-[0.03] text-primary text-3xl rotate-[15deg] select-none" aria-hidden="true">𝄞</div>
+
+        {/* Decorative curved line - left */}
+        <svg className="absolute top-[20%] left-0 w-28 h-64 opacity-[0.04]" viewBox="0 0 100 200" fill="none" aria-hidden="true">
+          <path d="M80 0 C60 40, 20 60, 40 100 C60 140, 20 160, 30 200" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+
+        {/* Decorative curved line - right */}
+        <svg className="absolute top-[30%] right-0 w-28 h-64 opacity-[0.04]" viewBox="0 0 100 200" fill="none" aria-hidden="true">
+          <path d="M20 0 C40 40, 80 60, 60 100 C40 140, 80 160, 70 200" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </div>
+
       {/* Page Title */}
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
