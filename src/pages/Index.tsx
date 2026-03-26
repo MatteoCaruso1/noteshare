@@ -240,7 +240,7 @@ const Index = () => {
   return (
     <PageLayout>
       {/* Subtle musical decorations - desktop only */}
-      <div className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-0">
+      <div className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-[5]">
         {/* Left cluster */}
         <div className="absolute top-[12%] left-3 opacity-[0.04] text-primary text-5xl rotate-[-15deg] select-none" aria-hidden="true">♪</div>
         <div className="absolute top-[28%] left-7 opacity-[0.03] text-primary text-3xl rotate-[10deg] select-none" aria-hidden="true">♫</div>
