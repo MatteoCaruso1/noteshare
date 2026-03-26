@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ListTodo, Save, FolderOpen, ChevronDown } from 'lucide-react';
-import { FocusBacklogDialog } from './FocusBacklogDialog';
+import { ListTodo, Save, ChevronDown } from 'lucide-react';
+import { RoutineSwitcherPopover } from './RoutineSwitcherPopover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,7 @@ export function TodaysFocus() {
   const ftuePreview = useFTUEPreview();
   const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const profileId = profile?.id;
-  const { saveToBacklog, isSaving } = useFocusBacklog();
+  const { backlogEntries, saveToBacklog, isSaving, deleteFromBacklog } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   const { toast: structuredToast } = useToast();
@@ -44,7 +44,6 @@ export function TodaysFocus() {
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isBacklogOpen, setIsBacklogOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(() => {
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
     return stored === null ? true : stored === 'open';
@@ -837,7 +836,6 @@ export function TodaysFocus() {
         setHasChanges(false);
       } catch { /* draft preserved */ }
     }, 500);
-    setIsBacklogOpen(false);
     toast.success('Practice Routine loaded');
   };
 
@@ -875,23 +873,14 @@ export function TodaysFocus() {
                       </TooltipTrigger>
                       <TooltipContent>Save to backlog</TooltipContent>
                     </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className={`h-8 w-8 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsBacklogOpen(true);
-                          }}
-                        >
-                          <FolderOpen className="w-[18px] h-[18px]" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>View backlog</TooltipContent>
-                    </Tooltip>
+                    <RoutineSwitcherPopover
+                      backlogEntries={backlogEntries}
+                      currentTitle={title}
+                      onSelect={handleLoadFromBacklog}
+                      onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
+                      isPremium={isPremium}
+                      onUpgrade={openPremiumDialog}
+                    />
                   </div>
                 </TooltipProvider>
                 
@@ -949,12 +938,6 @@ export function TodaysFocus() {
           </CollapsibleContent>
         </Collapsible>
       </Card>
-
-      <FocusBacklogDialog 
-        open={isBacklogOpen} 
-        onOpenChange={setIsBacklogOpen}
-        onLoad={handleLoadFromBacklog}
-      />
     </>
   );
 }
