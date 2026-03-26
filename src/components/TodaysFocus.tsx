@@ -876,7 +876,9 @@ export function TodaysFocus() {
                     <RoutineSwitcherPopover
                       backlogEntries={backlogEntries}
                       currentTitle={title}
+                      currentText={text}
                       onSelect={handleLoadFromBacklog}
+                      onAutoSave={(t, txt) => saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date }, { onSuccess: () => toast.success('Previous routine saved') })}
                       onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
                       isPremium={isPremium}
                       onUpgrade={openPremiumDialog}
