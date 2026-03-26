@@ -73,7 +73,7 @@ export function MarketingCTA({ variant = 'inline', className = '' }: MarketingCT
 
   // Default inline variant
   return (
-    <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 ${className}`}>
+    <div className={`flex flex-col sm:flex-row justify-center items-center gap-3 ${className}`}>
       <Button
         size="lg"
         className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 shadow-lg shadow-primary/25 transition-all duration-200 hover:scale-[1.02]"
