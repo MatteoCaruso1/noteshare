@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import landingFocus from '@/assets/landing-focus.png';
 import landingSessions from '@/assets/landing-sessions.png';
 import landingProgress from '@/assets/landing-progress.png';
@@ -57,6 +58,14 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+
+  const displayDescription = useMemo(() => {
+    if (!isMobile) return feature.description;
+    const firstSentenceEnd = feature.description.indexOf('. ');
+    if (firstSentenceEnd === -1) return feature.description;
+    return feature.description.slice(0, firstSentenceEnd + 1);
+  }, [isMobile, feature.description]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -96,7 +105,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           {feature.title}
         </h2>
         <p className="mt-2 text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
-          {feature.description}
+          {displayDescription}
         </p>
       </div>
       <div className="relative">
