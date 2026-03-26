@@ -34,11 +34,11 @@ export function WelcomeHero() {
         {/* Ambient glow effects */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Large primary glow - upper left */}
-          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-[140px]" />
+          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[140px]" />
           {/* Accent orb - right side */}
-          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-[120px]" />
+          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-[70px] md:blur-[120px]" />
           {/* Warm bottom glow */}
-          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-[100px]" />
+          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-[60px] md:blur-[100px]" />
           {/* Subtle grid overlay for depth */}
           <div 
             className="absolute inset-0 opacity-[0.03]"
