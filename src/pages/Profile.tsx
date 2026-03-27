@@ -34,6 +34,7 @@ import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } f
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
+import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 

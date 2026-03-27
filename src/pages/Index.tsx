@@ -30,6 +30,8 @@ import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
 import { FeedbackPromptDialog } from '@/components/FeedbackPromptDialog';
 import { ProUpsellDialog } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
+import { ProTipsDialog } from '@/components/ProTipsDialog';
+import { useProTips } from '@/hooks/useProTips';
 
 const LOAD_MORE_COUNT = 10;
 
@@ -74,9 +76,12 @@ const Index = () => {
   const [feedbackPromptOpen, setFeedbackPromptOpen] = useState(false);
   const feedbackPromptFiredRef = useRef(false);
 
-  // 20-note pro upsell (one-time, localStorage-gated, free users only)
+   // 20-note pro upsell (one-time, localStorage-gated, free users only)
   const [proUpsellOpen, setProUpsellOpen] = useState(false);
   const proUpsellFiredRef = useRef(false);
+
+  // Pro tips popup (every 8 logins, each tip once in lifetime)
+  const { tipIndex, markTipShown } = useProTips(profile?.id);
 
   useEffect(() => {
     if (!profile || !practiceStats) return;
@@ -384,6 +389,7 @@ const Index = () => {
         open={feedbackPromptOpen}
         onOpenChange={setFeedbackPromptOpen}
       />
+      <ProTipsDialog tipIndex={tipIndex} onDismiss={markTipShown} />
     </PageLayout>
   );
 };
