@@ -34,6 +34,7 @@ import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } f
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
+import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
@@ -80,6 +81,9 @@ const Profile = () => {
   const [weeklyGoalDisabled, setWeeklyGoalDisabled] = useState(() => {
     return localStorage.getItem(WEEKLY_GOAL_DISABLED_KEY) === 'true';
   });
+
+  // Pro tips preference
+  const [proTipsDisabled, setProTipsDisabled] = useState(() => isTipsDisabled());
 
   // Get signed URL for avatar
   const { signedUrl: signedAvatar } = useSignedUrl(avatar);
@@ -487,6 +491,27 @@ const Profile = () => {
                       setWeeklyGoalDisabled(!checked);
                       localStorage.setItem(WEEKLY_GOAL_DISABLED_KEY, (!checked).toString());
                       toast.success(checked ? 'Weekly goal prompts enabled' : 'Weekly goal prompts disabled');
+                    }}
+                  />
+                </div>
+
+                {/* Pro Tips Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="pro-tips-toggle" className="text-sm font-medium">
+                      Feature Tips
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Show helpful tips every few logins
+                    </p>
+                  </div>
+                  <Switch
+                    id="pro-tips-toggle"
+                    checked={!proTipsDisabled}
+                    onCheckedChange={(checked) => {
+                      setProTipsDisabled(!checked);
+                      setTipsDisabled(!checked);
+                      toast.success(checked ? 'Feature tips enabled' : 'Feature tips disabled');
                     }}
                   />
                 </div>
