@@ -494,7 +494,6 @@ const Profile = () => {
                     }}
                   />
                 </div>
-              </div>
 
                 {/* Pro Tips Toggle */}
                 <div className="flex items-center justify-between">
