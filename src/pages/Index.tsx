@@ -11,6 +11,7 @@ import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
 import { usePremium } from '@/contexts/PremiumContext';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
+import { useAchievementToasts } from '@/hooks/useAchievementToasts';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -40,6 +41,15 @@ const Index = () => {
   const { showOnboarding } = useOnboarding();
   const { isPremium, isLoading: premiumLoading } = usePremium();
   const { data: practiceStats } = usePracticeStats(profile?.id);
+  
+  // Show toast when user earns a new achievement
+  useAchievementToasts(practiceStats ? {
+    bestStreak: practiceStats.bestDailyStreak,
+    totalNotes: practiceStats.totalNotesCount,
+    totalHours: Math.floor(practiceStats.totalAllTimeMinutes / 60),
+    bestMonthDays: practiceStats.bestMonthDays,
+    bestCompletedYearPct: practiceStats.bestCompletedYearPct,
+  } : undefined);
   
   // Track page views for analytics
   usePageViewTracking('practice');
