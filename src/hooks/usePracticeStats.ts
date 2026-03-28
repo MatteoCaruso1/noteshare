@@ -79,6 +79,8 @@ export function usePracticeStats(profileId: string | undefined) {
           notesLast30Days: 0,
           totalAllTimeMinutes: 0,
           weeklyFocusAverage: [],
+          bestMonthDays: 0,
+          bestCompletedYearPct: 0,
         };
       }
 
