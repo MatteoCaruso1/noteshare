@@ -42,6 +42,15 @@ const Index = () => {
   const { isPremium, isLoading: premiumLoading } = usePremium();
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
+  // Show toast when user earns a new achievement
+  useAchievementToasts(practiceStats ? {
+    bestStreak: practiceStats.bestDailyStreak,
+    totalNotes: practiceStats.totalNotesCount,
+    totalHours: Math.floor(practiceStats.totalAllTimeMinutes / 60),
+    bestMonthDays: practiceStats.bestMonthDays,
+    bestCompletedYearPct: practiceStats.bestCompletedYearPct,
+  } : undefined);
+  
   // Track page views for analytics
   usePageViewTracking('practice');
   
