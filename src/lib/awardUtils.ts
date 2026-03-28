@@ -184,6 +184,8 @@ export function getBaseAchievedCount(stats: {
   bestStreak: number;
   totalNotes: number;
   totalHours: number;
+  bestMonthDays?: number;
+  bestCompletedYearPct?: number;
 }): number {
   let count = 0;
   for (const tier of STREAK_TIERS) {
@@ -195,6 +197,8 @@ export function getBaseAchievedCount(stats: {
   for (const tier of HOURS_TIERS) {
     if (stats.totalHours >= tier.threshold) count++;
   }
+  if ((stats.bestMonthDays ?? 0) >= 25) count++;
+  if ((stats.bestCompletedYearPct ?? 0) >= 75) count++;
   return count;
 }
 
@@ -206,6 +210,8 @@ export function getBestAchievedAward(stats: {
   bestStreak: number;
   totalNotes: number;
   totalHours: number;
+  bestMonthDays?: number;
+  bestCompletedYearPct?: number;
 }): AwardTier | undefined {
   const achieved = getAchievedAwards(stats);
   // Return the last (highest) achieved tier across all categories
