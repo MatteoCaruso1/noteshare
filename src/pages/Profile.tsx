@@ -345,6 +345,8 @@ const Profile = () => {
               bestStreak={practiceStats.bestDailyStreak}
               totalNotes={practiceStats.totalNotesCount}
               totalHours={Math.floor(practiceStats.totalAllTimeMinutes / 60)}
+              bestMonthDays={practiceStats.bestMonthDays}
+              bestCompletedYearPct={practiceStats.bestCompletedYearPct}
               selectedAward={localSelectedAward}
               achievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
               onAwardSelected={(awardId) => {
