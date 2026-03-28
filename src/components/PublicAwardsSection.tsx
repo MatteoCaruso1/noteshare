@@ -11,6 +11,8 @@ interface PublicAwardsSectionProps {
   bestStreak: number;
   totalNotes: number;
   totalHours: number;
+  bestMonthDays?: number;
+  bestCompletedYearPct?: number;
   selectedAward: string | null;
 }
 
@@ -19,6 +21,9 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'streak': return `Maintain a ${threshold}+ day practice streak`;
     case 'notes': return `Complete ${threshold} practice notes`;
     case 'hours': return `Practice for ${threshold} total hours`;
+    case 'consistency':
+      if (threshold === 25) return `Practice at least 25 days in a single month`;
+      return `Practice at least 75% of days in a calendar year`;
     case 'legend': return `Earn ${threshold} total awards`;
   }
 }
@@ -27,13 +32,15 @@ export function PublicAwardsSection({
   bestStreak,
   totalNotes,
   totalHours,
+  bestMonthDays = 0,
+  bestCompletedYearPct = 0,
   selectedAward,
 }: PublicAwardsSectionProps) {
   const [open, setOpen] = useState(false);
 
   const achieved = useMemo(
-    () => getAchievedAwards({ bestStreak, totalNotes, totalHours }),
-    [bestStreak, totalNotes, totalHours]
+    () => getAchievedAwards({ bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct }),
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
   );
 
   const achievedCount = achieved.size;
