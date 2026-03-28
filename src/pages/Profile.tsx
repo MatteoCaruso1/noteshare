@@ -424,7 +424,7 @@ const Profile = () => {
                       </Badge>
                     ))}
                     {profile?.genres?.map(genre => (
-                      <Badge key={genre} variant="secondary" className="text-xs bg-muted text-muted-foreground">
+                      <Badge key={genre} variant="secondary" className="text-xs">
                         {genre}
                       </Badge>
                     ))}
