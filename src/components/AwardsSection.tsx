@@ -15,15 +15,19 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'streak': return `Maintain a ${threshold}+ day practice streak`;
     case 'notes': return `Complete ${threshold} practice notes`;
     case 'hours': return `Practice for ${threshold} total hours`;
+    case 'consistency':
+      if (threshold === 25) return `Practice at least 25 days in a single month`;
+      return `Practice at least 75% of days in a calendar year`;
     case 'legend': return `Earn ${threshold} total awards`;
   }
 }
 
-function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number }): string {
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number; bestMonthDays: number; bestCompletedYearPct: number }): string {
   switch (category) {
     case 'streak': return `Currently ${stats.bestStreak} days`;
     case 'notes': return `Currently ${stats.totalNotes} notes`;
     case 'hours': return `Currently ${stats.totalHours}h`;
+    case 'consistency': return `Best month: ${stats.bestMonthDays}d · Best year: ${stats.bestCompletedYearPct}%`;
     case 'legend': return `Currently ${stats.baseAwardCount} awards`;
   }
 }
@@ -32,6 +36,8 @@ interface AwardsSectionProps {
   bestStreak: number;
   totalNotes: number;
   totalHours: number;
+  bestMonthDays?: number;
+  bestCompletedYearPct?: number;
   selectedAward: string | null;
   achievementCounts?: Record<string, number>;
   onAwardSelected?: (awardId: string | null) => void;
@@ -41,6 +47,8 @@ export function AwardsSection({
   bestStreak,
   totalNotes,
   totalHours,
+  bestMonthDays = 0,
+  bestCompletedYearPct = 0,
   selectedAward,
   achievementCounts,
   onAwardSelected,
@@ -48,14 +56,16 @@ export function AwardsSection({
   const [open, setOpen] = useState(false);
   const { profile } = useAuth();
 
+  const consistencyStats = { bestMonthDays, bestCompletedYearPct };
+
   const achieved = useMemo(
-    () => getAchievedAwards({ bestStreak, totalNotes, totalHours }),
-    [bestStreak, totalNotes, totalHours]
+    () => getAchievedAwards({ bestStreak, totalNotes, totalHours, ...consistencyStats }),
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
   );
 
   const baseAwardCount = useMemo(
-    () => getBaseAchievedCount({ bestStreak, totalNotes, totalHours }),
-    [bestStreak, totalNotes, totalHours]
+    () => getBaseAchievedCount({ bestStreak, totalNotes, totalHours, ...consistencyStats }),
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
   );
 
   const handleSelectAward = useCallback(async (tier: AwardTier) => {
@@ -138,7 +148,7 @@ export function AwardsSection({
                         content={
                           <div className="text-xs space-y-0.5">
                             <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
-                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount })}</p>
+                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount, bestMonthDays, bestCompletedYearPct })}</p>
                             {isAchieved && <p className="text-primary">✓ Achieved{streakCount ? ` (${streakCount}x)` : ''}</p>}
                           </div>
                         }
