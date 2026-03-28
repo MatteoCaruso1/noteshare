@@ -554,14 +554,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           {/* Yearly Volume — bottom right */}
           <div className="rounded-lg bg-muted/50 p-2 sm:p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4 scale-125 origin-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-4 h-4 scale-125 origin-center text-primary">
                 <g transform="translate(6, 4)">
-                  <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 4.5, 21)"/>
-                  <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="#0599d5" transform="rotate(-15, 15.5, 19)"/>
-                  <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
-                  <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="#0599d5"/>
-                  <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
-                  <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="#0599d5"/>
+                  <ellipse cx="4.5" cy="21" rx="3.5" ry="2.8" fill="currentColor" transform="rotate(-15, 4.5, 21)"/>
+                  <ellipse cx="15.5" cy="19" rx="3.5" ry="2.8" fill="currentColor" transform="rotate(-15, 15.5, 19)"/>
+                  <rect x="7" y="5" width="1.8" height="16.5" rx="0.9" fill="currentColor"/>
+                  <rect x="18" y="3" width="1.8" height="16.5" rx="0.9" fill="currentColor"/>
+                  <rect x="7" y="3" width="12.8" height="2.2" rx="1" fill="currentColor"/>
+                  <rect x="7" y="7" width="12.8" height="2.2" rx="1" fill="currentColor"/>
                 </g>
               </svg>
               <span className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide">Yearly Volume</span>
