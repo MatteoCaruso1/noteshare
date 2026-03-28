@@ -42,6 +42,12 @@ interface PracticeStats {
 
   // Weekly average focus level (from F=N tags)
   weeklyFocusAverage: { week: string; average: number }[];
+
+  // Consistency: best single-month days practiced count
+  bestMonthDays: number;
+
+  // Consistency: best completed calendar year practice % (0-100)
+  bestCompletedYearPct: number;
 }
 
 export function usePracticeStats(profileId: string | undefined) {
@@ -508,6 +514,36 @@ export function usePracticeStats(profileId: string | undefined) {
         }
       }
 
+      // Consistency: best month days practiced
+      const monthDaysMap: Record<string, number> = {};
+      for (const date of Object.keys(dailyMinutesMap)) {
+        if (dailyMinutesMap[date] > 0) {
+          const monthKey = date.slice(0, 7); // yyyy-MM
+          monthDaysMap[monthKey] = (monthDaysMap[monthKey] || 0) + 1;
+        }
+      }
+      const bestMonthDays = Math.max(0, ...Object.values(monthDaysMap));
+
+      // Consistency: best completed calendar year practice %
+      // Only consider fully completed years (not current year)
+      const currentYear = now.getFullYear();
+      const yearDaysMap: Record<number, number> = {};
+      for (const date of Object.keys(dailyMinutesMap)) {
+        if (dailyMinutesMap[date] > 0) {
+          const year = parseInt(date.slice(0, 4), 10);
+          if (year < currentYear) {
+            yearDaysMap[year] = (yearDaysMap[year] || 0) + 1;
+          }
+        }
+      }
+      let bestCompletedYearPct = 0;
+      for (const [yearStr, days] of Object.entries(yearDaysMap)) {
+        const year = parseInt(yearStr, 10);
+        const daysInYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;
+        const pct = Math.round((days / daysInYear) * 100);
+        if (pct > bestCompletedYearPct) bestCompletedYearPct = pct;
+      }
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,
@@ -528,6 +564,8 @@ export function usePracticeStats(profileId: string | undefined) {
         notesLast30Days,
         totalAllTimeMinutes: sessionsWithDuration.reduce((sum, s) => sum + s.durationMinutes, 0),
         weeklyFocusAverage,
+        bestMonthDays,
+        bestCompletedYearPct,
       };
     },
     enabled: !!profileId,
