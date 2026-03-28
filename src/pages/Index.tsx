@@ -11,6 +11,7 @@ import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { useShouldShowWeeklyGoalModal } from '@/hooks/useWeeklyGoal';
 import { usePremium } from '@/contexts/PremiumContext';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
+import { useAchievementToasts } from '@/hooks/useAchievementToasts';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
