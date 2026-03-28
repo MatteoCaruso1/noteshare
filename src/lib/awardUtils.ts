@@ -1,7 +1,7 @@
 // Award system definitions
 // All award categories, tiers, and display info
 
-export type AwardCategory = 'streak' | 'notes' | 'hours' | 'legend';
+export type AwardCategory = 'streak' | 'notes' | 'hours' | 'consistency' | 'legend';
 
 export interface AwardTier {
   id: string;          // e.g. "streak-30", "notes-100", "hours-50"
@@ -18,7 +18,7 @@ export interface AwardTier {
 export interface AwardCategoryInfo {
   category: AwardCategory;
   title: string;
-  iconType: 'trophy' | 'notebook' | 'clock' | 'crown';
+  iconType: 'trophy' | 'notebook' | 'clock' | 'calendar' | 'crown';
   tiers: AwardTier[];
 }
 
@@ -111,20 +111,27 @@ const HOURS_TIERS: AwardTier[] = [
   { id: 'hours-1000', category: 'hours', label: '1000h', threshold: 1000, ...TIER_COLORS.diamond },
 ];
 
+// Consistency awards
+const CONSISTENCY_TIERS: AwardTier[] = [
+  { id: 'consistency-25days', category: 'consistency', label: '25d', threshold: 25, ...TIER_COLORS.silver },
+  { id: 'consistency-75pct', category: 'consistency', label: '75%', threshold: 75, ...TIER_COLORS.gold },
+];
+
 // Legend awards — based on total awards earned (excluding legend awards themselves)
 const LEGEND_TIERS: AwardTier[] = [
-  { id: 'legend-8', category: 'legend', label: '8', threshold: 8, ...TIER_COLORS.purple },
-  { id: 'legend-13', category: 'legend', label: '13', threshold: 13, ...TIER_COLORS.platinum },
-  { id: 'legend-16', category: 'legend', label: '16', threshold: 16, ...TIER_COLORS.crimson },
+  { id: 'legend-9', category: 'legend', label: '9', threshold: 9, ...TIER_COLORS.purple },
+  { id: 'legend-14', category: 'legend', label: '14', threshold: 14, ...TIER_COLORS.platinum },
+  { id: 'legend-17', category: 'legend', label: '17', threshold: 17, ...TIER_COLORS.crimson },
 ];
 
 // Base tiers (non-legend) used for counting toward legend awards
-const BASE_AWARD_TIERS: AwardTier[] = [...STREAK_TIERS, ...NOTES_TIERS, ...HOURS_TIERS];
+const BASE_AWARD_TIERS: AwardTier[] = [...STREAK_TIERS, ...NOTES_TIERS, ...HOURS_TIERS, ...CONSISTENCY_TIERS];
 
 export const AWARD_CATEGORIES: AwardCategoryInfo[] = [
   { category: 'streak', title: 'Streak', iconType: 'trophy', tiers: STREAK_TIERS },
   { category: 'notes', title: 'Notes Completed', iconType: 'notebook', tiers: NOTES_TIERS },
   { category: 'hours', title: 'Time Practiced', iconType: 'clock', tiers: HOURS_TIERS },
+  { category: 'consistency', title: 'Consistency', iconType: 'calendar', tiers: CONSISTENCY_TIERS },
   { category: 'legend', title: 'Noteshare Legend', iconType: 'crown', tiers: LEGEND_TIERS },
 ];
 
@@ -141,6 +148,8 @@ export function getAchievedAwards(stats: {
   bestStreak: number;
   totalNotes: number;
   totalHours: number;
+  bestMonthDays?: number;
+  bestCompletedYearPct?: number;
 }): Set<string> {
   const achieved = new Set<string>();
 
@@ -154,6 +163,10 @@ export function getAchievedAwards(stats: {
   for (const tier of HOURS_TIERS) {
     if (stats.totalHours >= tier.threshold) achieved.add(tier.id);
   }
+
+  // Consistency awards
+  if ((stats.bestMonthDays ?? 0) >= 25) achieved.add('consistency-25days');
+  if ((stats.bestCompletedYearPct ?? 0) >= 75) achieved.add('consistency-75pct');
 
   // Then compute legend awards based on base award count
   const baseCount = achieved.size;
