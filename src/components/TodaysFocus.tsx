@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ListTodo, Save, ChevronDown } from 'lucide-react';
+import { ListTodo, Plus, ChevronDown } from 'lucide-react';
 import { RoutineSwitcherPopover } from './RoutineSwitcherPopover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -784,44 +784,52 @@ export function TodaysFocus() {
     );
   }
 
-  const handleSaveToBacklog = () => {
+  const autoSaveCurrentRoutine = () => {
+    if (text.trim() && title.trim()) {
+      saveToBacklog(
+        { focusText: text, focusTitle: title.trim(), originalFocusDate: focus?.focus_date },
+        { onSuccess: () => {}, onError: () => toast.error('Failed to save routine') }
+      );
+    }
+  };
+
+  const handleSwitchGuard = (): boolean => {
     if (!isPremium) {
-      structuredToast({
-        title: "Pro Feature",
-        description: "Saving to backlog is available for Pro users.",
-        action: (
-          <button
-            onClick={() => setTimeout(openPremiumDialog, 150)}
-            onTouchEnd={(e) => { e.currentTarget.blur(); }}
-            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground active:bg-primary/90 transition-colors touch-manipulation [-webkit-tap-highlight-color:transparent]"
-          >
-            See Pro
-          </button>
-        ),
-      });
+      openPremiumDialog();
+      return false;
+    }
+    if (text.trim() && !title.trim()) {
+      toast.error('Title your routine to save before switching');
+      return false;
+    }
+    return true;
+  };
+
+  const handleCreateNew = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isPremium) {
+      openPremiumDialog();
       return;
     }
-    
-    if (!text.trim()) {
-      toast.error('Nothing to save');
+    if (text.trim() && !title.trim()) {
+      toast.error('Title your routine to save before creating new');
       return;
     }
-    
-    saveToBacklog(
-      { 
-        focusText: text,
-        focusTitle: title,
-        originalFocusDate: focus?.focus_date 
-      },
-      {
-        onSuccess: () => {
-          toast.success('Saved to backlog');
-        },
-        onError: () => {
-          toast.error('Failed to save to backlog');
-        },
-      }
-    );
+    // Auto-save current routine if it has content + title
+    autoSaveCurrentRoutine();
+    // Clear the board
+    setTitle('');
+    setText('');
+    setHasChanges(true);
+    if (profileId) writeDraft(profileId, '');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync('', '');
+        setHasChanges(false);
+      } catch { /* draft preserved */ }
+    }, 500);
+    toast.success('New routine started');
   };
 
   const handleLoadFromBacklog = (entryTitle: string, entryText: string) => {
