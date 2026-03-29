@@ -11,12 +11,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { ListTodo, Plus, ChevronDown } from 'lucide-react';
 import { RoutineSwitcherPopover } from './RoutineSwitcherPopover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
+
 
 const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
@@ -29,7 +29,7 @@ export function TodaysFocus() {
   const { backlogEntries, saveToBacklog, isSaving, deleteFromBacklog } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
-  const { toast: structuredToast } = useToast();
+  
 
   // Initialize text from: draft > persisted cache > empty
   const [text, setText] = useState(() => {
