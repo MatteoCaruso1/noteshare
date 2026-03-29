@@ -11,12 +11,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ListTodo, Save, ChevronDown } from 'lucide-react';
+
+import { ListTodo, Plus, ChevronDown } from 'lucide-react';
 import { RoutineSwitcherPopover } from './RoutineSwitcherPopover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
+
 
 const FOCUS_COLLAPSED_KEY = 'noteshare_focus_collapsed';
 
@@ -29,7 +29,7 @@ export function TodaysFocus() {
   const { backlogEntries, saveToBacklog, isSaving, deleteFromBacklog } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
-  const { toast: structuredToast } = useToast();
+  
 
   // Initialize text from: draft > persisted cache > empty
   const [text, setText] = useState(() => {
@@ -784,44 +784,52 @@ export function TodaysFocus() {
     );
   }
 
-  const handleSaveToBacklog = () => {
+  const autoSaveCurrentRoutine = () => {
+    if (text.trim() && title.trim()) {
+      saveToBacklog(
+        { focusText: text, focusTitle: title.trim(), originalFocusDate: focus?.focus_date },
+        { onSuccess: () => {}, onError: () => toast.error('Failed to save routine') }
+      );
+    }
+  };
+
+  const handleSwitchGuard = (): boolean => {
     if (!isPremium) {
-      structuredToast({
-        title: "Pro Feature",
-        description: "Saving to backlog is available for Pro users.",
-        action: (
-          <button
-            onClick={() => setTimeout(openPremiumDialog, 150)}
-            onTouchEnd={(e) => { e.currentTarget.blur(); }}
-            className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground active:bg-primary/90 transition-colors touch-manipulation [-webkit-tap-highlight-color:transparent]"
-          >
-            See Pro
-          </button>
-        ),
-      });
+      openPremiumDialog();
+      return false;
+    }
+    if (text.trim() && !title.trim()) {
+      toast.error('Title your routine to save before switching');
+      return false;
+    }
+    return true;
+  };
+
+  const handleCreateNew = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isPremium) {
+      openPremiumDialog();
       return;
     }
-    
-    if (!text.trim()) {
-      toast.error('Nothing to save');
+    if (text.trim() && !title.trim()) {
+      toast.error('Title your routine to save before creating new');
       return;
     }
-    
-    saveToBacklog(
-      { 
-        focusText: text,
-        focusTitle: title,
-        originalFocusDate: focus?.focus_date 
-      },
-      {
-        onSuccess: () => {
-          toast.success('Saved to backlog');
-        },
-        onError: () => {
-          toast.error('Failed to save to backlog');
-        },
-      }
-    );
+    // Auto-save current routine if it has content + title
+    autoSaveCurrentRoutine();
+    // Clear the board
+    setTitle('');
+    setText('');
+    setHasChanges(true);
+    if (profileId) writeDraft(profileId, '');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateFocusAsync('', '');
+        setHasChanges(false);
+      } catch { /* draft preserved */ }
+    }, 500);
+    toast.success('New routine started');
   };
 
   const handleLoadFromBacklog = (entryTitle: string, entryText: string) => {
@@ -852,39 +860,29 @@ export function TodaysFocus() {
               </div>
               
               <div className="flex items-center gap-1.5">
-                {/* Action buttons - stop propagation to prevent triggering collapse */}
-                <TooltipProvider delayDuration={300}>
-                  <div className={`flex gap-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className={`h-8 w-8 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveToBacklog();
-                          }}
-                          disabled={isSaving || !text.trim()}
-                        >
-                          <Save className="w-[18px] h-[18px]" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Save to backlog</TooltipContent>
-                    </Tooltip>
-                    <RoutineSwitcherPopover
-                      backlogEntries={backlogEntries}
-                      currentTitle={title}
-                      currentText={text}
-                      onSelect={handleLoadFromBacklog}
-                      onAutoSave={(t, txt) => saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date }, { onSuccess: () => toast.success('Previous routine saved') })}
-                      onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
-                      isPremium={isPremium}
-                      onUpgrade={openPremiumDialog}
-                    />
-                  </div>
-                </TooltipProvider>
+                <div className={`flex gap-1.5 items-center transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <RoutineSwitcherPopover
+                    backlogEntries={backlogEntries}
+                    currentTitle={title}
+                    currentText={text}
+                    onSelect={handleLoadFromBacklog}
+                    onAutoSave={(t, txt) => saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date })}
+                    onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
+                    isPremium={isPremium}
+                    onUpgrade={openPremiumDialog}
+                    onSwitchGuard={handleSwitchGuard}
+                    onAutoSaveCurrent={autoSaveCurrentRoutine}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                    onClick={handleCreateNew}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
                 
                 {/* Chevron - fades out when open so it doesn't compete with action buttons */}
                 <ChevronDown className={`w-5 h-5 text-muted-foreground transition-all duration-200 ${isOpen ? 'opacity-0 pointer-events-none rotate-0' : 'opacity-100 -rotate-90'}`} />
