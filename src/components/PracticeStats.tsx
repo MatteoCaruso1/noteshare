@@ -274,6 +274,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   key={opt.value}
                   type="button"
                   onClick={() => handleSetChartRange(opt.value)}
+                  onTouchEnd={(e) => { e.currentTarget.blur(); }}
                   className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation [-webkit-tap-highlight-color:transparent] select-none ${
                     isActive
                       ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
@@ -694,6 +695,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                     key={opt.value}
                     type="button"
                     onClick={() => handleSetFocusRange(opt.value)}
+                    onTouchEnd={(e) => { e.currentTarget.blur(); }}
                     className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation [-webkit-tap-highlight-color:transparent] select-none ${
                       isActive
                         ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
