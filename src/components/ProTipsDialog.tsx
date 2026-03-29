@@ -67,12 +67,26 @@ export function ProTipsDialog({ tipIndex, onDismiss }: ProTipsDialogProps) {
 
         <p className="text-sm text-foreground leading-relaxed">{tip.text}</p>
 
-        <img
-          src={tip.image}
-          alt="Feature screenshot"
-          className="w-full rounded-lg border border-border"
-          loading="eager"
-        />
+        {tip.images ? (
+          <div className="flex flex-col gap-2">
+            {tip.images.map((img, i) => (
+              <img
+                key={i}
+                src={img}
+                alt={`Feature screenshot ${i + 1}`}
+                className="w-full rounded-lg border border-border"
+                loading="eager"
+              />
+            ))}
+          </div>
+        ) : (
+          <img
+            src={tip.image}
+            alt="Feature screenshot"
+            className="w-full rounded-lg border border-border"
+            loading="eager"
+          />
+        )}
 
         <Button
           onClick={() => onDismiss(tipIndex)}
