@@ -860,39 +860,29 @@ export function TodaysFocus() {
               </div>
               
               <div className="flex items-center gap-1.5">
-                {/* Action buttons - stop propagation to prevent triggering collapse */}
-                <TooltipProvider delayDuration={300}>
-                  <div className={`flex gap-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className={`h-8 w-8 p-0 active:bg-transparent ${!isPremium ? 'text-muted-foreground opacity-50' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveToBacklog();
-                          }}
-                          disabled={isSaving || !text.trim()}
-                        >
-                          <Save className="w-[18px] h-[18px]" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Save to backlog</TooltipContent>
-                    </Tooltip>
-                    <RoutineSwitcherPopover
-                      backlogEntries={backlogEntries}
-                      currentTitle={title}
-                      currentText={text}
-                      onSelect={handleLoadFromBacklog}
-                      onAutoSave={(t, txt) => saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date }, { onSuccess: () => toast.success('Previous routine saved') })}
-                      onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
-                      isPremium={isPremium}
-                      onUpgrade={openPremiumDialog}
-                    />
-                  </div>
-                </TooltipProvider>
+                <div className={`flex gap-1.5 items-center transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                  <RoutineSwitcherPopover
+                    backlogEntries={backlogEntries}
+                    currentTitle={title}
+                    currentText={text}
+                    onSelect={handleLoadFromBacklog}
+                    onAutoSave={(t, txt) => saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date })}
+                    onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
+                    isPremium={isPremium}
+                    onUpgrade={openPremiumDialog}
+                    onSwitchGuard={handleSwitchGuard}
+                    onAutoSaveCurrent={autoSaveCurrentRoutine}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                    onClick={handleCreateNew}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
                 
                 {/* Chevron - fades out when open so it doesn't compete with action buttons */}
                 <ChevronDown className={`w-5 h-5 text-muted-foreground transition-all duration-200 ${isOpen ? 'opacity-0 pointer-events-none rotate-0' : 'opacity-100 -rotate-90'}`} />
