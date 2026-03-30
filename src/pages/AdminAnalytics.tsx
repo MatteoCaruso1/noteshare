@@ -240,6 +240,7 @@ interface RecentAccount {
   has_logged_first_note: boolean;
   instruments: string[] | null;
   friendCount: number;
+  noteCount: number;
 }
 
 const AdminAnalytics = () => {
@@ -270,7 +271,7 @@ const AdminAnalytics = () => {
         return;
       }
 
-      // Fetch friend counts for all these profile IDs
+      // Fetch friend counts and note counts for all these profile IDs
       const profileIds = accounts.map(a => a.id);
       const { data: friendships } = await supabase
         .from('friendships')
@@ -288,9 +289,22 @@ const AdminAnalytics = () => {
         }
       });
 
+      // Fetch note counts per author
+      const noteCountMap: Record<string, number> = {};
+      // Query notes for each profile in batches (author_id matches profile id)
+      const { data: notesData } = await supabase
+        .from('notes')
+        .select('author_id')
+        .in('author_id', profileIds);
+
+      (notesData || []).forEach(n => {
+        noteCountMap[n.author_id] = (noteCountMap[n.author_id] || 0) + 1;
+      });
+
       setRecentAccounts(accounts.map(a => ({
         ...a,
         friendCount: friendCountMap[a.id] || 0,
+        noteCount: noteCountMap[a.id] || 0,
       })));
       setAccountsLoading(false);
     };
@@ -528,15 +542,15 @@ const AdminAnalytics = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Username</TableHead>
                         <TableHead>Created</TableHead>
-                        <TableHead>Has Notes</TableHead>
+                        <TableHead>Note Count</TableHead>
                         <TableHead>Friends</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {recentAccounts
                         .filter(a => {
-                          if (filterHasNotes === 'yes' && !a.has_logged_first_note) return false;
-                          if (filterHasNotes === 'no' && a.has_logged_first_note) return false;
+                          if (filterHasNotes === 'yes' && a.noteCount === 0) return false;
+                          if (filterHasNotes === 'no' && a.noteCount > 0) return false;
                           if (filterFriends === '0' && a.friendCount > 0) return false;
                           if (filterFriends === '1+' && a.friendCount === 0) return false;
                           return true;
@@ -549,8 +563,8 @@ const AdminAnalytics = () => {
                             {format(parseISO(account.created_at), 'MMM d, yyyy h:mm a')}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={account.has_logged_first_note ? 'default' : 'secondary'}>
-                              {account.has_logged_first_note ? 'Yes' : 'No'}
+                            <Badge variant={account.noteCount > 0 ? 'default' : 'secondary'}>
+                              {account.noteCount} {account.noteCount === 1 ? 'note' : 'notes'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm">{account.friendCount}</TableCell>
