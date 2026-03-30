@@ -542,7 +542,7 @@ const AdminAnalytics = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Username</TableHead>
                         <TableHead>Created</TableHead>
-                        <TableHead>Has Notes</TableHead>
+                        <TableHead>Note Count</TableHead>
                         <TableHead>Friends</TableHead>
                       </TableRow>
                     </TableHeader>
