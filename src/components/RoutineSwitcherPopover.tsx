@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface RoutineSwitcherPopoverProps {
   backlogEntries: FocusBacklogEntry[];
+  isLoading?: boolean;
   currentTitle: string;
   currentText: string;
   onSelect: (title: string, text: string) => void;
@@ -20,6 +21,7 @@ interface RoutineSwitcherPopoverProps {
 
 export function RoutineSwitcherPopover({
   backlogEntries,
+  isLoading,
   currentTitle,
   currentText,
   onSelect,
@@ -111,7 +113,11 @@ export function RoutineSwitcherPopover({
         <div className="px-3 py-2 border-b border-border">
           <p className="text-xs font-medium text-muted-foreground">Saved Routines</p>
         </div>
-        {uniqueEntries.length === 0 ? (
+        {isLoading ? (
+          <div className="px-3 py-4 text-center">
+            <p className="text-xs text-muted-foreground">Loading routines…</p>
+          </div>
+        ) : uniqueEntries.length === 0 ? (
           <div className="px-3 py-4 text-center">
             <p className="text-xs text-muted-foreground">No saved routines yet.</p>
             <p className="text-xs text-muted-foreground mt-1">Title a routine and switch to save it.</p>

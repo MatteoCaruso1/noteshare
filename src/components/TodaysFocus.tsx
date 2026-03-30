@@ -26,7 +26,7 @@ export function TodaysFocus() {
   const ftuePreview = useFTUEPreview();
   const profile = ftuePreview.isFTUEPreview ? ftuePreview.previewProfile : authProfile;
   const profileId = profile?.id;
-  const { backlogEntries, saveToBacklog, isSaving, deleteFromBacklog } = useFocusBacklog();
+  const { backlogEntries, isLoading: isBacklogLoading, saveToBacklog, isSaving, deleteFromBacklog } = useFocusBacklog();
   const { setFocusFocused } = useGlint();
   const { isPremium, openPremiumDialog } = usePremium();
   
@@ -863,6 +863,7 @@ export function TodaysFocus() {
                 <div className={`flex gap-1.5 items-center transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                   <RoutineSwitcherPopover
                     backlogEntries={backlogEntries}
+                    isLoading={isBacklogLoading}
                     currentTitle={title}
                     currentText={text}
                     onSelect={handleLoadFromBacklog}
