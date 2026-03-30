@@ -137,7 +137,9 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
       {/* Weeks */}
       {weeks.map((week, wi) => {
         const total = fullWeekTotal(week.days);
-        const metGoal = getMetGoal(week.weekStartStr, total);
+        const goalStatus = getGoalStatus(week.weekStartStr, total);
+        const goal = goalMap.get(week.weekStartStr);
+        const goalLabel = (goal && !goal.skipped && goal.targetMinutes > 0) ? formatGoalTime(goal.targetMinutes) : '—';
         return (
           <div key={wi} className="grid grid-cols-[repeat(7,1fr)_auto_auto] gap-1 items-center">
             {week.days.map((cell) => (
@@ -168,10 +170,10 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
             <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
               {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
             </div>
-            <div className={`w-10 text-center text-[10px] font-semibold ${
-              metGoal === 'yes' ? 'text-green-500' : metGoal === 'no' ? 'text-red-400' : metGoal === 'tbd' ? 'text-yellow-500' : 'text-muted-foreground'
+            <div className={`w-8 text-center text-[10px] font-semibold ${
+              goalStatus === 'met' ? 'text-green-500' : goalStatus === 'pending' ? 'text-yellow-500' : goalStatus === 'missed' ? 'text-red-400' : 'text-muted-foreground'
             }`}>
-              {metGoal === 'yes' ? 'Yes' : metGoal === 'no' ? 'No' : metGoal === 'tbd' ? 'TBD' : 'N/A'}
+              {goalLabel}
             </div>
           </div>
         );
