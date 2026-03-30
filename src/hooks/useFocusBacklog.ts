@@ -41,16 +41,25 @@ export function useFocusBacklog() {
 
       const normalizedTitle = (focusTitle || '').trim();
 
-      // Check if an entry with the same title already exists
+      // Check if entries with the same title already exist
       if (normalizedTitle) {
-        const { data: existing } = await supabase
+        const { data: existingEntries } = await supabase
           .from('focus_backlog')
           .select('id')
           .eq('user_id', profile.id)
           .eq('focus_title', normalizedTitle)
-          .maybeSingle();
+          .order('saved_at', { ascending: false });
 
-        if (existing) {
+        if (existingEntries && existingEntries.length > 0) {
+          const keepId = existingEntries[0].id;
+          // Delete any duplicates beyond the first
+          if (existingEntries.length > 1) {
+            const dupeIds = existingEntries.slice(1).map(e => e.id);
+            await supabase
+              .from('focus_backlog')
+              .delete()
+              .in('id', dupeIds);
+          }
           // Update existing entry
           const { data, error } = await supabase
             .from('focus_backlog')
