@@ -823,6 +823,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
             bestAchievedMilestone={bestAchievedMilestone}
             achievementCount={streakAchievementCount}
             selectedAward={note.author?.selected_award}
+            streakAchievementCounts={(achievementCounts || {}) as Record<string, number>}
             className="text-sm font-medium truncate"
           />
           {/* Short date in timeline only */}
