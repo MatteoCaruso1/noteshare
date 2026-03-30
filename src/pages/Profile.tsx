@@ -327,6 +327,17 @@ const Profile = () => {
                     <StreakTintedName
                       name={profile?.name || ''}
                       streakDays={practiceStats?.currentStreak || 0}
+                      bestAchievedMilestone={(() => {
+                        const counts = (profile?.streak_achievement_counts || {}) as Record<string, number>;
+                        const milestones = Object.keys(counts).map(Number).filter(m => counts[String(m)] > 0);
+                        return milestones.length > 0 ? Math.max(...milestones) : 0;
+                      })()}
+                      achievementCount={(() => {
+                        const counts = (profile?.streak_achievement_counts || {}) as Record<string, number>;
+                        const milestones = Object.keys(counts).map(Number).filter(m => counts[String(m)] > 0);
+                        const best = milestones.length > 0 ? Math.max(...milestones) : 0;
+                        return best > 0 ? (counts[String(best)] || 1) : 0;
+                      })()}
                       selectedAward={localSelectedAward}
                       streakAchievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
                     />
