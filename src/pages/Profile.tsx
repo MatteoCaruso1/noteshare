@@ -322,14 +322,15 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  <h2 className="text-xl font-semibold">{profile?.name}</h2>
-                  <div className="flex items-center gap-1">
-                    <p className="text-sm text-muted-foreground">@{profile?.username}</p>
-                    {localSelectedAward && (() => {
-                      const awardTier = getAwardById(localSelectedAward);
-                      return awardTier ? <AwardIcon tier={awardTier} achieved={true} size={16} /> : null;
-                    })()}
-                  </div>
+                  <h2 className="text-xl font-semibold">
+                    <StreakTintedName
+                      name={profile?.name || ''}
+                      streakDays={practiceStats?.currentStreak || 0}
+                      selectedAward={localSelectedAward}
+                      streakAchievementCounts={(profile?.streak_achievement_counts || {}) as Record<string, number>}
+                    />
+                  </h2>
+                  <p className="text-sm text-muted-foreground">@{profile?.username}</p>
                   {/* Noteshare Creator badge - temporarily hidden */}
                 </div>
               )}
