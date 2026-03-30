@@ -28,6 +28,7 @@ import { StreakMilestoneDialog } from '@/components/StreakMilestoneDialog';
 import { AwardsSection } from '@/components/AwardsSection';
 import { getAwardById } from '@/lib/awardUtils';
 import { AwardIcon } from '@/components/shared/AwardIcon';
+import { StreakTintedName } from '@/components/StreakTintedName';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
