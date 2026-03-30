@@ -549,8 +549,8 @@ const AdminAnalytics = () => {
                     <TableBody>
                       {recentAccounts
                         .filter(a => {
-                          if (filterHasNotes === 'yes' && !a.has_logged_first_note) return false;
-                          if (filterHasNotes === 'no' && a.has_logged_first_note) return false;
+                          if (filterHasNotes === 'yes' && a.noteCount === 0) return false;
+                          if (filterHasNotes === 'no' && a.noteCount > 0) return false;
                           if (filterFriends === '0' && a.friendCount > 0) return false;
                           if (filterFriends === '1+' && a.friendCount === 0) return false;
                           return true;
@@ -563,8 +563,8 @@ const AdminAnalytics = () => {
                             {format(parseISO(account.created_at), 'MMM d, yyyy h:mm a')}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={account.has_logged_first_note ? 'default' : 'secondary'}>
-                              {account.has_logged_first_note ? 'Yes' : 'No'}
+                            <Badge variant={account.noteCount > 0 ? 'default' : 'secondary'}>
+                              {account.noteCount} {account.noteCount === 1 ? 'note' : 'notes'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm">{account.friendCount}</TableCell>
