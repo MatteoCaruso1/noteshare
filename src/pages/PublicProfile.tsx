@@ -401,12 +401,6 @@ const PublicProfile = () => {
                     streakAchievementCounts={(profile.streak_achievement_counts || {}) as Record<string, number>}
                     className="text-xl font-bold truncate"
                   />
-                  {(profile.current_streak || 0) > 0 && (
-                    <span className="flex items-center gap-1 text-primary text-sm font-medium shrink-0">
-                      <Flame className="w-4 h-4" />
-                      {profile.current_streak}d
-                    </span>
-                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>
                 {/* Noteshare Creator badge - temporarily hidden */}
