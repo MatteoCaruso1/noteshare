@@ -785,9 +785,16 @@ export function TodaysFocus() {
   }
 
   const autoSaveCurrentRoutine = () => {
-    if (text.trim() && title.trim()) {
+    // Cancel any pending debounced save to prevent it from firing after we switch
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    const currentTitle = titleRef.current.trim();
+    const currentText = textRef.current.trim();
+    if (currentText && currentTitle) {
       saveToBacklog(
-        { focusText: text, focusTitle: title.trim(), originalFocusDate: focus?.focus_date },
+        { focusText: textRef.current, focusTitle: currentTitle, originalFocusDate: focus?.focus_date },
         { onSuccess: () => {}, onError: () => toast.error('Failed to save routine') }
       );
     }
