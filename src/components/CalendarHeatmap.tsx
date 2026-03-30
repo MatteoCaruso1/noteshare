@@ -131,7 +131,7 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
           <div key={i} className="text-center">{d}</div>
         ))}
         <div className="w-12 text-center">Total</div>
-        <div className="w-10 text-center">Goal</div>
+        <div className="w-8 text-center">Goal</div>
       </div>
 
       {/* Weeks */}
