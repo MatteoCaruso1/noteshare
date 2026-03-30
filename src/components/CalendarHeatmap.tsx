@@ -96,17 +96,20 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
     return m;
   }, [weeklyGoals]);
 
-  function getMetGoal(weekStartStr: string, total: number): 'yes' | 'no' | 'na' | 'tbd' {
-    // Current week is TBD
-    const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-    if (weekStartStr === currentWeekStart) {
-      const goal = goalMap.get(weekStartStr);
-      if (goal && !goal.skipped && goal.targetMinutes > 0) return 'tbd';
-      return 'na';
-    }
+  function getGoalStatus(weekStartStr: string, total: number): 'met' | 'pending' | 'missed' | 'na' {
     const goal = goalMap.get(weekStartStr);
     if (!goal || goal.skipped || goal.targetMinutes <= 0) return 'na';
-    return total >= goal.targetMinutes ? 'yes' : 'no';
+    const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    if (total >= goal.targetMinutes) return 'met';
+    if (weekStartStr === currentWeekStart) return 'pending';
+    return 'missed';
+  }
+
+  function formatGoalTime(minutes: number): string {
+    if (minutes < 60) return `${minutes}m`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h${m}m` : `${h}h`;
   }
 
   return (
