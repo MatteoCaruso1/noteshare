@@ -68,7 +68,7 @@ export function useFocusBacklog() {
               original_focus_date: originalFocusDate || null,
               saved_at: new Date().toISOString(),
             })
-            .eq('id', existing.id)
+            .eq('id', keepId)
             .select()
             .single();
 
