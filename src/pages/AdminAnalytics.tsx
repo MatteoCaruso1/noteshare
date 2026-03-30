@@ -271,7 +271,7 @@ const AdminAnalytics = () => {
         return;
       }
 
-      // Fetch friend counts for all these profile IDs
+      // Fetch friend counts and note counts for all these profile IDs
       const profileIds = accounts.map(a => a.id);
       const { data: friendships } = await supabase
         .from('friendships')
@@ -289,9 +289,22 @@ const AdminAnalytics = () => {
         }
       });
 
+      // Fetch note counts per author
+      const noteCountMap: Record<string, number> = {};
+      // Query notes for each profile in batches (author_id matches profile id)
+      const { data: notesData } = await supabase
+        .from('notes')
+        .select('author_id')
+        .in('author_id', profileIds);
+
+      (notesData || []).forEach(n => {
+        noteCountMap[n.author_id] = (noteCountMap[n.author_id] || 0) + 1;
+      });
+
       setRecentAccounts(accounts.map(a => ({
         ...a,
         friendCount: friendCountMap[a.id] || 0,
+        noteCount: noteCountMap[a.id] || 0,
       })));
       setAccountsLoading(false);
     };
