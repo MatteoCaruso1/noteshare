@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 
-import { ListTodo, Plus, ChevronDown } from 'lucide-react';
+import { ListTodo, ChevronDown } from 'lucide-react';
 import { RoutineSwitcherPopover } from './RoutineSwitcherPopover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -877,10 +877,10 @@ export function TodaysFocus() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-primary"
                     onClick={handleCreateNew}
                   >
-                    <Plus className="w-4 h-4" />
+                    New
                   </Button>
                 </div>
                 
