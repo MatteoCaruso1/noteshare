@@ -240,6 +240,7 @@ interface RecentAccount {
   has_logged_first_note: boolean;
   instruments: string[] | null;
   friendCount: number;
+  noteCount: number;
 }
 
 const AdminAnalytics = () => {
