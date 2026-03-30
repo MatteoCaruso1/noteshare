@@ -12,6 +12,7 @@ interface StreakTintedNameProps {
   bestAchievedMilestone?: number;
   achievementCount?: number;
   selectedAward?: string | null;
+  streakAchievementCounts?: Record<string, number>;
   className?: string;
 }
 
@@ -35,12 +36,18 @@ export const StreakTintedName = memo(function StreakTintedName({
   bestAchievedMilestone,
   achievementCount,
   selectedAward,
+  streakAchievementCounts,
   className,
 }: StreakTintedNameProps) {
   // If user has selected a specific award, show that
   const selectedAwardTier = selectedAward ? getAwardById(selectedAward) : undefined;
 
   if (selectedAwardTier) {
+    // For streak awards, look up the count for this specific threshold
+    const awardCount = selectedAwardTier.category === 'streak' && streakAchievementCounts
+      ? (streakAchievementCounts[String(selectedAwardTier.threshold)] || 1)
+      : undefined;
+
     return (
       <span className={cn('inline-flex items-center gap-1', className)}>
         {name}
@@ -48,11 +55,11 @@ export const StreakTintedName = memo(function StreakTintedName({
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex cursor-default">
-                <AwardIcon tier={selectedAwardTier} achieved={true} size={14} />
+                <AwardIcon tier={selectedAwardTier} achieved={true} size={14} count={awardCount} />
               </span>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              {selectedAwardTier.category === 'streak' && `${selectedAwardTier.threshold}+ day streak`}
+              {selectedAwardTier.category === 'streak' && `${selectedAwardTier.threshold}+ day streak${awardCount ? ` (${awardCount}x)` : ''}`}
               {selectedAwardTier.category === 'notes' && `${selectedAwardTier.threshold} notes completed`}
               {selectedAwardTier.category === 'hours' && `${selectedAwardTier.threshold}h practiced`}
               {selectedAwardTier.category === 'legend' && `${selectedAwardTier.threshold} awards earned`}
