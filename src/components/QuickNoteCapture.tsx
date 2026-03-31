@@ -281,11 +281,11 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                   </TooltipTrigger>
                   <TooltipContent>Settings</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-48 p-2 bg-popover" align="start">
+                <PopoverContent className="w-44 p-1.5 bg-popover" align="start">
                   <div className="space-y-1">
                     <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2 h-8 px-2 text-sm"
+                      variant="outline"
+                      className="w-full justify-start gap-2 h-8 px-2 text-sm active:bg-accent active:text-accent-foreground"
                       onClick={() => setVisibility(visibility === 'private' ? 'friends' : 'private')}
                     >
                       {visibility === 'private' ? (
