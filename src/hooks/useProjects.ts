@@ -179,28 +179,54 @@ export function useCreateProject() {
       collaboratorIds?: string[];
       releaseDate?: string;
     }) => {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          owner_id: ownerId,
-          title,
-          description,
-          cover_image: coverImage,
-          tags,
-          show_on_feed: showOnFeed,
-          collaborator_ids: collaboratorIds,
-          release_date: releaseDate || null,
-        })
-        .select()
-        .single();
+      // Retry up to 2 times on transient failures
+      let lastError: any;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { data, error } = await supabase
+          .from('projects')
+          .insert({
+            owner_id: ownerId,
+            title,
+            description,
+            cover_image: coverImage,
+            tags,
+            show_on_feed: showOnFeed,
+            collaborator_ids: collaboratorIds,
+            release_date: releaseDate || null,
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data as Project;
+        if (!error) return data as Project;
+        lastError = error;
+        if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      }
+      throw lastError;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
-      queryClient.invalidateQueries({ queryKey: ['feed-projects'] });
+    onSuccess: async (newProject) => {
+      // Optimistically add the new project to all relevant caches immediately
+      const addToCache = (key: string[]) => {
+        queryClient.setQueryData(key, (old: Project[] | undefined) => {
+          if (!old) return [newProject];
+          if (old.some((p) => p.id === newProject.id)) return old;
+          return [newProject, ...old];
+        });
+      };
+
+      // Update the user's projects cache directly
+      queryClient.getQueryCache().findAll({ queryKey: ['projects'] }).forEach((query) => {
+        addToCache(query.queryKey as string[]);
+      });
+      queryClient.getQueryCache().findAll({ queryKey: ['feed-projects'] }).forEach((query) => {
+        addToCache(query.queryKey as string[]);
+      });
+
+      // Then also refetch in the background for full consistency
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['projects'] }),
+        queryClient.invalidateQueries({ queryKey: ['friends-projects'] }),
+        queryClient.invalidateQueries({ queryKey: ['feed-projects'] }),
+      ]);
       toast.success('Folder created!');
     },
     onError: (error) => {
