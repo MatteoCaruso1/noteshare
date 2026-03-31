@@ -8,11 +8,14 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Music, MessageCircle, Loader2, Download } from 'lucide-react';
+import { Music, MessageCircle, Loader2, Download, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
 import { unlockScrollAfterClose } from '@/lib/scrollLock';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useCreateNote } from '@/hooks/useNotes';
 
 const getDeviceInfo = () => {
   const ua = navigator.userAgent.toLowerCase();
