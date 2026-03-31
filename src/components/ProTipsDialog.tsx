@@ -10,7 +10,7 @@ import { Lightbulb } from 'lucide-react';
 import tipShareStats from '@/assets/tips/tip-share-stats.png';
 import tipShareButtonLocation from '@/assets/tips/tip-share-button-location.png';
 import tipPracticeCalendarResult from '@/assets/tips/tip-practice-calendar-result.png';
-import tipPracticeRoutine from '@/assets/tips/tip-practice-routine.png';
+import tipPracticeRoutine from '@/assets/pro-tip-routine-switcher.png';
 import tipFolder from '@/assets/tips/tip-folder.png';
 import tipLockScreen from '@/assets/tips/tip-lock-screen.png';
 import tipWeeklyGoal from '@/assets/tips/tip-weekly-goal.png';
