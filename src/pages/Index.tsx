@@ -33,6 +33,7 @@ import { ProUpsellDialog } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 import { ProTipsDialog } from '@/components/ProTipsDialog';
 import { useProTips } from '@/hooks/useProTips';
+import { ShareCalendarSheet } from '@/components/ShareCalendarSheet';
 
 const LOAD_MORE_COUNT = 10;
 
