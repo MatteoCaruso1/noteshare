@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2 } from 'lucide-react';
+import { Check, Trash2, Search } from 'lucide-react';
 import { FocusBacklogEntry } from '@/hooks/useFocusBacklog';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +34,7 @@ export function RoutineSwitcherPopover({
 }: RoutineSwitcherPopoverProps) {
   const [open, setOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Deduplicate by title (keep most recent)
   const uniqueEntries = backlogEntries.reduce<FocusBacklogEntry[]>((acc, entry) => {
@@ -43,12 +44,19 @@ export function RoutineSwitcherPopover({
     return acc;
   }, []);
 
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery.trim()) return uniqueEntries;
+    const q = searchQuery.trim().toLowerCase();
+    return uniqueEntries.filter(e => (e.focus_title || 'Untitled routine').toLowerCase().includes(q));
+  }, [uniqueEntries, searchQuery]);
+
   const decodeText = (raw: string) => {
     try { return decodeURIComponent(raw); } catch { return raw; }
   };
 
   const handleOpen = (newOpen: boolean) => {
     if (newOpen && !onSwitchGuard()) return;
+    if (!newOpen) setSearchQuery('');
     setOpen(newOpen);
   };
 
@@ -116,6 +124,21 @@ export function RoutineSwitcherPopover({
           <div className="px-3 py-2 border-b border-border">
             <p className="text-xs font-medium text-muted-foreground">Saved Routines</p>
           </div>
+          {!isLoading && uniqueEntries.length > 3 && (
+            <div className="px-2 py-1.5 border-b border-border">
+              <div className="flex items-center gap-1.5 px-1.5 rounded-md bg-muted/50">
+                <Search className="w-3 h-3 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search routines…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-7 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+          )}
           {isLoading ? (
             <div className="px-3 py-4 text-center">
               <p className="text-xs text-muted-foreground">Loading routines…</p>
@@ -125,9 +148,13 @@ export function RoutineSwitcherPopover({
               <p className="text-xs text-muted-foreground">No saved routines yet.</p>
               <p className="text-xs text-muted-foreground mt-1">Title a routine and switch to save it.</p>
             </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="px-3 py-4 text-center">
+              <p className="text-xs text-muted-foreground">No matching routines.</p>
+            </div>
           ) : (
             <div className="max-h-[240px] overflow-y-auto py-1">
-              {uniqueEntries.map((entry) => {
+              {filteredEntries.map((entry) => {
                 const isActive = currentTitle.trim().toLowerCase() === entry.focus_title.trim().toLowerCase();
                 return (
                   <div
