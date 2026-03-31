@@ -86,11 +86,13 @@ export function ShareCalendarSheet({
 }: ShareCalendarSheetProps) {
   const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
-  const [activeButton, setActiveButton] = useState<'imessage' | 'save' | null>(null);
+  const [activeButton, setActiveButton] = useState<'imessage' | 'save' | 'timeline' | null>(null);
   const [showGoalColumn, setShowGoalColumn] = useState(false);
   const [onlyCurrentMonthDays, setOnlyCurrentMonthDays] = useState(false);
   const [showDaysPracticed, setShowDaysPracticed] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { profile } = useAuth();
+  const createNote = useCreateNote();
 
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
   const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
