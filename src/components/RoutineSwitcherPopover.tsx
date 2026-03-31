@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2 } from 'lucide-react';
+import { Check, Trash2, Search } from 'lucide-react';
 import { FocusBacklogEntry } from '@/hooks/useFocusBacklog';
 import { cn } from '@/lib/utils';
 
