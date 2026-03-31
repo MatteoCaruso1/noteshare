@@ -640,11 +640,15 @@ export default function FTUE() {
                 key={inst}
                 type="button"
                 onClick={() => toggleInstrument(inst)}
-                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all border ${
+                onTouchEnd={(e) => e.currentTarget.blur()}
+                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all border touch-manipulation [-webkit-tap-highlight-color:transparent] ${
                   ftue.instruments.includes(inst)
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground border-primary active:bg-primary active:text-primary-foreground'
+                    : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground active:bg-card active:text-muted-foreground'
                 }`}
+                style={ftue.instruments.includes(inst) 
+                  ? { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' } 
+                  : undefined}
               >
                 {ftue.instruments.includes(inst) && <Check className="w-3 h-3 inline mr-1" />}
                 {inst}
