@@ -134,7 +134,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapsho
     }
   }, [textContent, focusTextSnapshot, expanded, inlineExpanded]);
 
-  const hasContent = textContent || focusTextSnapshot;
+  const hasContent = textContent || focusTextSnapshot || focusTitleSnapshot;
   if (!hasContent) return null;
 
   const marginClass = hasMediaBelow ? 'mb-3' : 'pb-1';
