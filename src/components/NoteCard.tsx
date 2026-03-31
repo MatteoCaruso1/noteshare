@@ -146,7 +146,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapsho
         {textContent && (
           <RichTextContent 
             content={textContent} 
-            className={focusTextSnapshot ? 'mb-3' : ''}
+            className={(focusTextSnapshot || focusTitleSnapshot) ? 'mb-3' : ''}
           />
         )}
         {(focusTextSnapshot || focusTitleSnapshot) && (
