@@ -57,11 +57,16 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
   const focusWeeksToShow = WEEKS_FOR_RANGE[focusRange];
   const filteredWeeklyData = useMemo(() => {
     const all = stats?.weeklyMinutesOverTime || [];
-    return all.slice(-weeksToShow);
+    // Find first week with any activity
+    const firstActiveIdx = all.findIndex(w => w.minutes > 0);
+    const trimmed = firstActiveIdx >= 0 ? all.slice(firstActiveIdx) : all;
+    return trimmed.slice(-weeksToShow);
   }, [stats?.weeklyMinutesOverTime, weeksToShow]);
   const filteredFocusData = useMemo(() => {
     const all = stats?.weeklyFocusAverage || [];
-    return all.slice(-focusWeeksToShow);
+    const firstActiveIdx = all.findIndex(w => w.average > 0);
+    const trimmed = firstActiveIdx >= 0 ? all.slice(firstActiveIdx) : all;
+    return trimmed.slice(-focusWeeksToShow);
   }, [stats?.weeklyFocusAverage, focusWeeksToShow]);
 
   // Smart x-axis tick interval: prevent label overlap
