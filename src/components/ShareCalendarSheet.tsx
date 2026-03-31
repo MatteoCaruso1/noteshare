@@ -8,11 +8,14 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Music, MessageCircle, Loader2, Download } from 'lucide-react';
+import { Music, MessageCircle, Loader2, Download, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { toPng } from 'html-to-image';
 import { unlockScrollAfterClose } from '@/lib/scrollLock';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useCreateNote } from '@/hooks/useNotes';
 
 const getDeviceInfo = () => {
   const ua = navigator.userAgent.toLowerCase();
@@ -83,11 +86,13 @@ export function ShareCalendarSheet({
 }: ShareCalendarSheetProps) {
   const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
-  const [activeButton, setActiveButton] = useState<'imessage' | 'save' | null>(null);
+  const [activeButton, setActiveButton] = useState<'imessage' | 'save' | 'timeline' | null>(null);
   const [showGoalColumn, setShowGoalColumn] = useState(false);
   const [onlyCurrentMonthDays, setOnlyCurrentMonthDays] = useState(false);
   const [showDaysPracticed, setShowDaysPracticed] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { profile } = useAuth();
+  const createNote = useCreateNote();
 
   const deviceInfo = useMemo(() => getDeviceInfo(), []);
   const canShareNative = deviceInfo.isMobile && typeof navigator.share === 'function';
@@ -268,6 +273,42 @@ export function ShareCalendarSheet({
       setActiveButton(null);
     }
   }, [generateImage, shareUrl, title, isExporting]);
+
+  const handlePostToTimeline = useCallback(async () => {
+    if (isExporting || !profile?.id) return;
+    setIsExporting(true);
+    setActiveButton('timeline');
+    try {
+      const blob = await generateImage();
+      if (!blob) throw new Error('Failed to generate image');
+
+      // Upload the image to storage
+      const fileName = `calendar-${format(currentMonth, 'yyyy-MM')}-${Date.now()}.png`;
+      const filePath = `${profile.id}/${fileName}`;
+      const { error: uploadError } = await supabase.storage
+        .from('practice-media')
+        .upload(filePath, blob, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+
+      // Create a note with the image
+      await createNote.mutateAsync({
+        authorId: profile.id,
+        textContent: `${monthLabel} Practice Calendar 🎵`,
+        imageFiles: [filePath],
+        visibility: 'friends',
+      });
+
+      onOpenChange(false);
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Timeline post error:', err);
+        toast.error('Failed to post. Please try again.');
+      }
+    } finally {
+      setIsExporting(false);
+      setActiveButton(null);
+    }
+  }, [generateImage, isExporting, profile?.id, currentMonth, monthLabel, createNote, onOpenChange]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     onOpenChange(nextOpen);
@@ -450,6 +491,23 @@ export function ShareCalendarSheet({
                   </span>
                 </button>
               )}
+
+              <button
+                onClick={handlePostToTimeline}
+                disabled={isExporting && activeButton === 'timeline'}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                  {isExporting && activeButton === 'timeline' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </div>
+                <span className="text-xs text-center">
+                  {isExporting && activeButton === 'timeline' ? 'Posting...' : 'Post to\nTimeline'}
+                </span>
+              </button>
             </div>
           </div>
         </div>
