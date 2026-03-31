@@ -866,7 +866,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           />
           
           {/* Focus Text editing */}
-          {note.focus_text_snapshot && (
+          {(note.focus_text_snapshot || note.focus_title_snapshot) && (
             <div className="pl-3 border-l-2 border-primary/30">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
