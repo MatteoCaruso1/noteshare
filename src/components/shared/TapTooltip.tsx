@@ -84,7 +84,11 @@ export function TapTooltip({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(newOpen) => {
+      // Only allow Radix to close (e.g. clicking outside / pressing Escape).
+      // Opening is handled manually in handleClick to avoid double-toggle.
+      if (!newOpen) setOpen(false);
+    }}>
       <PopoverTrigger asChild>
         <button
           ref={triggerRef}
