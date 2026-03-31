@@ -94,6 +94,30 @@ const Index = () => {
   // Pro tips popup (every 8 logins, each tip once in lifetime)
   const { tipIndex, markTipShown } = useProTips(profile?.id);
 
+  // Monthly recap popup — first login of a new month for premium users
+  const [monthlyRecapOpen, setMonthlyRecapOpen] = useState(false);
+  const monthlyRecapFiredRef = useRef(false);
+  const previousMonth = useMemo(() => subMonths(new Date(), 1), []);
+
+  useEffect(() => {
+    if (monthlyRecapFiredRef.current) return;
+    if (!profile?.id || !isPremium || premiumLoading) return;
+    // Only trigger on days 1-3 of the month to catch first login
+    const dayOfMonth = new Date().getDate();
+    if (dayOfMonth > 3) return;
+
+    const currentMonthKey = format(new Date(), 'yyyy-MM');
+    const storageKey = `noteshare_monthly_recap_${profile.id}`;
+    const lastShown = localStorage.getItem(storageKey);
+    if (lastShown === currentMonthKey) return;
+
+    monthlyRecapFiredRef.current = true;
+    localStorage.setItem(storageKey, currentMonthKey);
+    // Small delay to let other popups (weekly goal) settle
+    const timer = setTimeout(() => setMonthlyRecapOpen(true), 1500);
+    return () => clearTimeout(timer);
+  }, [profile?.id, isPremium, premiumLoading]);
+
   useEffect(() => {
     if (!profile || !practiceStats) return;
     const streak = practiceStats.currentStreak;
