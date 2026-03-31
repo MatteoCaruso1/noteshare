@@ -866,7 +866,7 @@ export function TodaysFocus() {
                 <h2 className="font-semibold">Practice Routine</h2>
               </div>
               
-              <div className="flex items-center gap-1.5 relative">
+              <div className="flex items-center gap-1.5">
                 <div className={`flex gap-1.5 items-center transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                   <RoutineSwitcherPopover
                     backlogEntries={backlogEntries}
@@ -892,8 +892,8 @@ export function TodaysFocus() {
                   </Button>
                 </div>
                 
-                {/* Chevron - absolutely positioned so it doesn't push buttons left when hidden */}
-                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-all duration-200 ${isOpen ? 'opacity-0 pointer-events-none rotate-0 absolute right-0' : 'opacity-100 -rotate-90'}`} />
+                {/* Chevron - fades out when open so it doesn't compete with action buttons */}
+                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-all duration-200 ${isOpen ? 'opacity-0 pointer-events-none rotate-0' : 'opacity-100 -rotate-90'}`} />
               </div>
             </div>
           </CollapsibleTrigger>
