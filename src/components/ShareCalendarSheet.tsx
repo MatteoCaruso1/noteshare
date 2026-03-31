@@ -491,6 +491,23 @@ export function ShareCalendarSheet({
                   </span>
                 </button>
               )}
+
+              <button
+                onClick={handlePostToTimeline}
+                disabled={isExporting && activeButton === 'timeline'}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                  {isExporting && activeButton === 'timeline' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </div>
+                <span className="text-xs text-center">
+                  {isExporting && activeButton === 'timeline' ? 'Posting...' : 'Post to\nTimeline'}
+                </span>
+              </button>
             </div>
           </div>
         </div>
