@@ -425,6 +425,16 @@ const Index = () => {
         onOpenChange={setFeedbackPromptOpen}
       />
       <ProTipsDialog tipIndex={tipIndex} onDismiss={markTipShown} />
+
+      {/* Monthly recap — share previous month's calendar */}
+      <ShareCalendarSheet
+        open={monthlyRecapOpen}
+        onOpenChange={setMonthlyRecapOpen}
+        dailyMinutesMap={practiceStats?.dailyMinutesMap || {}}
+        userName={profile?.name || 'My'}
+        currentMonth={previousMonth}
+        headerText={`${profile?.name || 'Hey'}, check out your last month's practice stats`}
+      />
     </PageLayout>
   );
 };
