@@ -70,6 +70,7 @@ interface ShareCalendarSheetProps {
   weeklyGoals?: WeekGoalInfo[];
   userName: string;
   currentMonth: Date;
+  headerText?: string;
 }
 
 function fullWeekTotal(days: { minutes: number | undefined }[]): number {
@@ -83,6 +84,7 @@ export function ShareCalendarSheet({
   weeklyGoals = [],
   userName,
   currentMonth,
+  headerText,
 }: ShareCalendarSheetProps) {
   const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
@@ -322,13 +324,21 @@ export function ShareCalendarSheet({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[90vh] rounded-t-2xl overflow-y-auto">
-        <SheetHeader className="flex flex-row items-center justify-between pb-4">
+        <SheetHeader className="flex flex-row items-center justify-between pb-2">
           <Button variant="ghost" className="text-primary font-medium" onClick={() => onOpenChange(false)}>
             Close
           </Button>
           <SheetTitle>Share Calendar</SheetTitle>
           <div className="w-12" />
         </SheetHeader>
+
+        {/* Optional header text (e.g. monthly recap prompt) */}
+        {headerText && (
+          <div className="text-center px-4 pb-3">
+            <p className="text-sm font-medium text-foreground">{headerText}</p>
+            <p className="text-xs text-muted-foreground mt-1">Share your progress with friends! 🎶</p>
+          </div>
+        )}
 
         {/* Toggle Options */}
         <div className="space-y-3 px-1 pb-4">

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useNotes } from '@/hooks/useNotes';
@@ -33,6 +33,7 @@ import { ProUpsellDialog } from '@/components/ProUpsellDialog';
 import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/components/FeedItemCard';
 import { ProTipsDialog } from '@/components/ProTipsDialog';
 import { useProTips } from '@/hooks/useProTips';
+import { ShareCalendarSheet } from '@/components/ShareCalendarSheet';
 
 const LOAD_MORE_COUNT = 10;
 
@@ -92,6 +93,30 @@ const Index = () => {
 
   // Pro tips popup (every 8 logins, each tip once in lifetime)
   const { tipIndex, markTipShown } = useProTips(profile?.id);
+
+  // Monthly recap popup — first login of a new month for premium users
+  const [monthlyRecapOpen, setMonthlyRecapOpen] = useState(false);
+  const monthlyRecapFiredRef = useRef(false);
+  const previousMonth = useMemo(() => subMonths(new Date(), 1), []);
+
+  useEffect(() => {
+    if (monthlyRecapFiredRef.current) return;
+    if (!profile?.id || !isPremium || premiumLoading) return;
+    // Only trigger on days 1-3 of the month to catch first login
+    const dayOfMonth = new Date().getDate();
+    if (dayOfMonth > 3) return;
+
+    const currentMonthKey = format(new Date(), 'yyyy-MM');
+    const storageKey = `noteshare_monthly_recap_${profile.id}`;
+    const lastShown = localStorage.getItem(storageKey);
+    if (lastShown === currentMonthKey) return;
+
+    monthlyRecapFiredRef.current = true;
+    localStorage.setItem(storageKey, currentMonthKey);
+    // Small delay to let other popups (weekly goal) settle
+    const timer = setTimeout(() => setMonthlyRecapOpen(true), 1500);
+    return () => clearTimeout(timer);
+  }, [profile?.id, isPremium, premiumLoading]);
 
   useEffect(() => {
     if (!profile || !practiceStats) return;
@@ -400,6 +425,16 @@ const Index = () => {
         onOpenChange={setFeedbackPromptOpen}
       />
       <ProTipsDialog tipIndex={tipIndex} onDismiss={markTipShown} />
+
+      {/* Monthly recap — share previous month's calendar */}
+      <ShareCalendarSheet
+        open={monthlyRecapOpen}
+        onOpenChange={setMonthlyRecapOpen}
+        dailyMinutesMap={practiceStats?.dailyMinutesMap || {}}
+        userName={profile?.name || 'My'}
+        currentMonth={previousMonth}
+        headerText={`${profile?.name || 'Hey'}, check out your last month's practice stats`}
+      />
     </PageLayout>
   );
 };
