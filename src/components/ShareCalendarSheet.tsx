@@ -70,6 +70,7 @@ interface ShareCalendarSheetProps {
   weeklyGoals?: WeekGoalInfo[];
   userName: string;
   currentMonth: Date;
+  headerText?: string;
 }
 
 function fullWeekTotal(days: { minutes: number | undefined }[]): number {
