@@ -31,7 +31,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { X, Save, Lock, Users, ChevronDown, ChevronRight, Music, Settings, ListTodo } from 'lucide-react';
@@ -283,37 +282,27 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                   <TooltipContent>Settings</TooltipContent>
                 </Tooltip>
                 <PopoverContent className="w-48 p-2 bg-popover" align="start">
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground px-2">Visibility</p>
-                      <Select value={visibility} onValueChange={(v) => setVisibility(v as 'private' | 'friends')}>
-                        <SelectTrigger className="w-full h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="private">
-                            <div className="flex items-center gap-2">
-                              <Lock className="w-3 h-3" /> Private
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="friends">
-                            <div className="flex items-center gap-2">
-                              <Users className="w-3 h-3" /> Friends
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* Upload Media inside settings */}
-                    <div className="border-t border-border pt-2">
-                      <p className="text-xs text-muted-foreground px-2 mb-2">Upload Media</p>
-                      <MediaUploadButton
-                        onAudioUpload={handleAudioFileUpload}
-                        onImageUpload={handleImageUpload}
-                        uploading={uploading}
-                      />
-                    </div>
+                  <div className="space-y-1">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 h-8 px-2 text-sm"
+                      onClick={() => setVisibility(visibility === 'private' ? 'friends' : 'private')}
+                    >
+                      {visibility === 'private' ? (
+                        <>
+                          <Users className="w-4 h-4" /> Make Viewable
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" /> Make Private
+                        </>
+                      )}
+                    </Button>
+                    <MediaUploadButton
+                      onAudioUpload={handleAudioFileUpload}
+                      onImageUpload={handleImageUpload}
+                      uploading={uploading}
+                    />
                   </div>
                 </PopoverContent>
               </Popover>
