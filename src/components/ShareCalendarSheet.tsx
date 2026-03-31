@@ -84,6 +84,7 @@ export function ShareCalendarSheet({
   weeklyGoals = [],
   userName,
   currentMonth,
+  headerText,
 }: ShareCalendarSheetProps) {
   const [selectedStyle] = useState<CardStyle>('dark');
   const [isExporting, setIsExporting] = useState(false);
