@@ -44,6 +44,12 @@ export function RoutineSwitcherPopover({
     return acc;
   }, []);
 
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery.trim()) return uniqueEntries;
+    const q = searchQuery.trim().toLowerCase();
+    return uniqueEntries.filter(e => (e.focus_title || 'Untitled routine').toLowerCase().includes(q));
+  }, [uniqueEntries, searchQuery]);
+
   const decodeText = (raw: string) => {
     try { return decodeURIComponent(raw); } catch { return raw; }
   };
