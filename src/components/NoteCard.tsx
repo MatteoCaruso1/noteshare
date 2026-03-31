@@ -134,7 +134,7 @@ function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapsho
     }
   }, [textContent, focusTextSnapshot, expanded, inlineExpanded]);
 
-  const hasContent = textContent || focusTextSnapshot;
+  const hasContent = textContent || focusTextSnapshot || focusTitleSnapshot;
   if (!hasContent) return null;
 
   const marginClass = hasMediaBelow ? 'mb-3' : 'pb-1';
@@ -146,19 +146,21 @@ function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapsho
         {textContent && (
           <RichTextContent 
             content={textContent} 
-            className={focusTextSnapshot ? 'mb-3' : ''}
+            className={(focusTextSnapshot || focusTitleSnapshot) ? 'mb-3' : ''}
           />
         )}
-        {focusTextSnapshot && (
+        {(focusTextSnapshot || focusTitleSnapshot) && (
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
               {focusTitleSnapshot || 'Practice Routine'}
             </p>
-            <RichTextContent 
-              content={focusTextSnapshot} 
-              className="text-sm text-muted-foreground"
-            />
+            {focusTextSnapshot && (
+              <RichTextContent 
+                content={focusTextSnapshot} 
+                className="text-sm text-muted-foreground"
+              />
+            )}
           </div>
         )}
         {/* Show less button when inline expanded on timeline */}
@@ -193,19 +195,21 @@ function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapsho
         {textContent && (
           <RichTextContent 
             content={textContent} 
-            className={focusTextSnapshot ? 'mb-2' : ''}
+            className={(focusTextSnapshot || focusTitleSnapshot) ? 'mb-2' : ''}
           />
         )}
-        {focusTextSnapshot && (
+        {(focusTextSnapshot || focusTitleSnapshot) && (
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
               {focusTitleSnapshot || 'Practice Routine'}
             </p>
-            <RichTextContent 
-              content={focusTextSnapshot} 
-              className="text-sm text-muted-foreground"
-            />
+            {focusTextSnapshot && (
+              <RichTextContent 
+                content={focusTextSnapshot} 
+                className="text-sm text-muted-foreground"
+              />
+            )}
           </div>
         )}
       </div>
@@ -862,7 +866,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
           />
           
           {/* Focus Text editing */}
-          {note.focus_text_snapshot && (
+          {(note.focus_text_snapshot || note.focus_title_snapshot) && (
             <div className="pl-3 border-l-2 border-primary/30">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
