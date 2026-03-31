@@ -124,6 +124,21 @@ export function RoutineSwitcherPopover({
           <div className="px-3 py-2 border-b border-border">
             <p className="text-xs font-medium text-muted-foreground">Saved Routines</p>
           </div>
+          {!isLoading && uniqueEntries.length > 3 && (
+            <div className="px-2 py-1.5 border-b border-border">
+              <div className="flex items-center gap-1.5 px-1.5 rounded-md bg-muted/50">
+                <Search className="w-3 h-3 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search routines…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-7 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+          )}
           {isLoading ? (
             <div className="px-3 py-4 text-center">
               <p className="text-xs text-muted-foreground">Loading routines…</p>
@@ -133,9 +148,13 @@ export function RoutineSwitcherPopover({
               <p className="text-xs text-muted-foreground">No saved routines yet.</p>
               <p className="text-xs text-muted-foreground mt-1">Title a routine and switch to save it.</p>
             </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="px-3 py-4 text-center">
+              <p className="text-xs text-muted-foreground">No matching routines.</p>
+            </div>
           ) : (
             <div className="max-h-[240px] overflow-y-auto py-1">
-              {uniqueEntries.map((entry) => {
+              {filteredEntries.map((entry) => {
                 const isActive = currentTitle.trim().toLowerCase() === entry.focus_title.trim().toLowerCase();
                 return (
                   <div
