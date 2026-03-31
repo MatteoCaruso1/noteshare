@@ -146,6 +146,8 @@ function FTUERetryCommit() {
 
   useEffect(() => {
     if (!user || attemptedRef.current) return;
+    // Don't retry if we're on the FTUE page — it handles its own commit
+    if (window.location.pathname === '/ftue') return;
     const state = getFTUEState();
     if (!state || !state.readyForSignup || state.currentStep < 4) return;
 
