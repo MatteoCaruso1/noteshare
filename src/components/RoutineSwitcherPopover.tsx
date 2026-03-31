@@ -34,6 +34,7 @@ export function RoutineSwitcherPopover({
 }: RoutineSwitcherPopoverProps) {
   const [open, setOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Deduplicate by title (keep most recent)
   const uniqueEntries = backlogEntries.reduce<FocusBacklogEntry[]>((acc, entry) => {
