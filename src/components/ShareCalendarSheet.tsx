@@ -274,6 +274,42 @@ export function ShareCalendarSheet({
     }
   }, [generateImage, shareUrl, title, isExporting]);
 
+  const handlePostToTimeline = useCallback(async () => {
+    if (isExporting || !profile?.id) return;
+    setIsExporting(true);
+    setActiveButton('timeline');
+    try {
+      const blob = await generateImage();
+      if (!blob) throw new Error('Failed to generate image');
+
+      // Upload the image to storage
+      const fileName = `calendar-${format(currentMonth, 'yyyy-MM')}-${Date.now()}.png`;
+      const filePath = `${profile.id}/${fileName}`;
+      const { error: uploadError } = await supabase.storage
+        .from('practice-media')
+        .upload(filePath, blob, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+
+      // Create a note with the image
+      await createNote.mutateAsync({
+        authorId: profile.id,
+        textContent: `${monthLabel} Practice Calendar 🎵`,
+        imageFiles: [filePath],
+        visibility: 'friends',
+      });
+
+      onOpenChange(false);
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Timeline post error:', err);
+        toast.error('Failed to post. Please try again.');
+      }
+    } finally {
+      setIsExporting(false);
+      setActiveButton(null);
+    }
+  }, [generateImage, isExporting, profile?.id, currentMonth, monthLabel, createNote, onOpenChange]);
+
   const handleOpenChange = (nextOpen: boolean) => {
     onOpenChange(nextOpen);
     if (!nextOpen) unlockScrollAfterClose();
