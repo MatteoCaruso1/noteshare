@@ -28,7 +28,7 @@ const TIPS: TipData[] = [
     images: [tipShareButtonLocation, tipPracticeCalendarResult],
   },
   {
-    text: 'The practice routine feature is a great way to continuously come back to concepts you are working on. Tap the routine title to toggle between all your existing routines.',
+    text: 'The practice routine feature is a great way to continuously come back to concepts you are working on. Tap Switch to toggle between saved routines, or New to start a fresh one.',
     image: tipPracticeRoutine,
   },
   {
