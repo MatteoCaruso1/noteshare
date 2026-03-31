@@ -198,16 +198,18 @@ function CombinedTextContent({ textContent, focusTextSnapshot, focusTitleSnapsho
             className={focusTextSnapshot ? 'mb-2' : ''}
           />
         )}
-        {focusTextSnapshot && (
+        {(focusTextSnapshot || focusTitleSnapshot) && (
           <div className="pl-3 border-l-2 border-primary/30">
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
               <ListTodo className="w-3 h-3" />
               {focusTitleSnapshot || 'Practice Routine'}
             </p>
-            <RichTextContent 
-              content={focusTextSnapshot} 
-              className="text-sm text-muted-foreground"
-            />
+            {focusTextSnapshot && (
+              <RichTextContent 
+                content={focusTextSnapshot} 
+                className="text-sm text-muted-foreground"
+              />
+            )}
           </div>
         )}
       </div>
