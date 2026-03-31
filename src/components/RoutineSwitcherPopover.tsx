@@ -56,6 +56,7 @@ export function RoutineSwitcherPopover({
 
   const handleOpen = (newOpen: boolean) => {
     if (newOpen && !onSwitchGuard()) return;
+    if (!newOpen) setSearchQuery('');
     setOpen(newOpen);
   };
 
