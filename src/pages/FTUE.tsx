@@ -67,7 +67,7 @@ const SPOTLIGHT_PHASES: Record<number, SpotlightTarget> = {
   3: { label: 'Your practice history lives here', subLabel: 'Every session saved', targetSelector: '[data-tour="timeline"]', position: 'top' },
   4: { label: "Now let's try it!", subLabel: 'Tap to open the practice menu', targetSelector: '[data-tour="practice-start-btn"]', position: 'bottom', autoAdvance: true },
   5: { label: 'Start a live session', subLabel: 'Tap to begin practicing', targetSelector: '[data-tour="start-live-btn"]', position: 'bottom', autoAdvance: true },
-  6: { label: 'Add notes during your session', subLabel: 'Write what you practiced', targetSelector: '[data-tour="session-textarea"]', position: 'bottom' },
+  6: { label: 'You can add notes during your session', targetSelector: '[data-tour="session-textarea"]', position: 'bottom' },
   7: { label: 'Save your session when done', subLabel: 'Tap to finish practicing', targetSelector: '[data-tour="end-session-btn"]', position: 'top', autoAdvance: true },
   9: { label: 'Your first practice note! 🎉', targetSelector: '[data-tour="timeline"]', position: 'top', ctaText: 'Create an account to save your practice' },
 };
