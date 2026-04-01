@@ -289,16 +289,13 @@ const AdminAnalytics = () => {
         }
       });
 
-      // Fetch note counts per author
+      // Fetch note counts via SECURITY DEFINER function (bypasses RLS)
       const noteCountMap: Record<string, number> = {};
-      // Query notes for each profile in batches (author_id matches profile id)
-      const { data: notesData } = await supabase
-        .from('notes')
-        .select('author_id')
-        .in('author_id', profileIds);
+      const { data: noteCountData } = await supabase
+        .rpc('admin_note_counts', { p_profile_ids: profileIds });
 
-      (notesData || []).forEach(n => {
-        noteCountMap[n.author_id] = (noteCountMap[n.author_id] || 0) + 1;
+      (noteCountData || []).forEach((n: { profile_id: string; note_count: number }) => {
+        noteCountMap[n.profile_id] = n.note_count;
       });
 
       setRecentAccounts(accounts.map(a => ({

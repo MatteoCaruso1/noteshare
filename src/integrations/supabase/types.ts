@@ -1535,6 +1535,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_note_counts: {
+        Args: { p_profile_ids: string[] }
+        Returns: {
+          note_count: number
+          profile_id: string
+        }[]
+      }
       can_view_note: { Args: { p_note_id: string }; Returns: boolean }
       claim_streak_milestone: {
         Args: { p_milestone: number; p_profile_id: string }
