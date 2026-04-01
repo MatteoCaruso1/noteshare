@@ -24,6 +24,29 @@ const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
 ];
 const WEEKS_FOR_RANGE: Record<TimeRange, number> = { '1m': 5, '2m': 9, '3m': 13, '6m': 26, 'all': 52 };
 
+function RangePill({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) {
+  const handleInteractionEnd = (e: React.TouchEvent | React.PointerEvent) => {
+    (e.currentTarget as HTMLButtonElement).blur();
+  };
+  return (
+    <button
+      type="button"
+      aria-pressed={isActive}
+      data-no-hover-reset
+      onClick={onClick}
+      onTouchEnd={handleInteractionEnd}
+      onPointerUp={handleInteractionEnd}
+      className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation select-none [-webkit-tap-highlight-color:transparent] transition-colors ${
+        isActive
+          ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
+          : 'bg-muted text-muted-foreground active:bg-muted active:text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 interface PracticeStatsProps {
   profileId: string;
 }
