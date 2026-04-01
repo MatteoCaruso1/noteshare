@@ -119,6 +119,7 @@ export function RoutineSwitcherPopover({
           className="w-64 p-0"
           align="end"
           side="bottom"
+          onOpenAutoFocus={(e) => e.preventDefault()}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-3 py-2 border-b border-border">
