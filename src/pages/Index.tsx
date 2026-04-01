@@ -123,8 +123,22 @@ const Index = () => {
     const streak = practiceStats.currentStreak;
     const milestones = profile.celebrated_streak_milestones || [];
 
+    // localStorage keys to persist "shown" state across remounts/reloads
+    const threeKey = `noteshare_streak3_shown_${profile.id}`;
+    const sevenKey = `noteshare_streak7_shown_${profile.id}`;
+
+    // Clear localStorage flags when streak drops below the milestone
+    // so the popup can fire again on a future streak
+    if (streak < 3) localStorage.removeItem(threeKey);
+    if (streak < 7) localStorage.removeItem(sevenKey);
+
     // --- 3-day milestone ---
-    if (streak >= 3 && !milestones.includes(3) && !threeDayClaimingRef.current) {
+    if (
+      streak >= 3 &&
+      !milestones.includes(3) &&
+      !threeDayClaimingRef.current &&
+      !localStorage.getItem(threeKey)
+    ) {
       threeDayClaimingRef.current = true;
       (async () => {
         const { data, error } = await supabase.rpc('claim_streak_milestone', {
@@ -134,14 +148,23 @@ const Index = () => {
         if (error) { threeDayClaimingRef.current = false; return; }
         const result = data as { claimed: boolean } | null;
         if (result?.claimed) {
+          localStorage.setItem(threeKey, 'true');
           setThreeDayDialogOpen(true);
           await refreshProfile();
+        } else {
+          // Already claimed in DB — mark localStorage so we don't retry
+          localStorage.setItem(threeKey, 'true');
         }
       })();
     }
 
     // --- 7-day milestone ---
-    if (streak >= 7 && !milestones.includes(7) && !sevenDayClaimingRef.current) {
+    if (
+      streak >= 7 &&
+      !milestones.includes(7) &&
+      !sevenDayClaimingRef.current &&
+      !localStorage.getItem(sevenKey)
+    ) {
       sevenDayClaimingRef.current = true;
       (async () => {
         const { data, error } = await supabase.rpc('claim_streak_milestone', {
@@ -151,8 +174,11 @@ const Index = () => {
         if (error) { sevenDayClaimingRef.current = false; return; }
         const result = data as { claimed: boolean } | null;
         if (result?.claimed) {
+          localStorage.setItem(sevenKey, 'true');
           setSevenDayDialogOpen(true);
           await refreshProfile();
+        } else {
+          localStorage.setItem(sevenKey, 'true');
         }
       })();
     }
