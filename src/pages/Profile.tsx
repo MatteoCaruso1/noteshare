@@ -104,8 +104,8 @@ const Profile = () => {
   // Check for new streak milestones using atomic backend RPC
   // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
   useEffect(() => {
-    if (!profile) return;
-    const currentStreak = practiceStats?.currentStreak || 0;
+    if (!profile || !practiceStats) return;
+    const currentStreak = practiceStats.currentStreak;
     const celebratedMilestones = profile?.celebrated_streak_milestones || [];
     
     // Clear milestones that are now above current streak (so they can be re-earned later)
