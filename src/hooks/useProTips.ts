@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 const LOGIN_COUNT_KEY = 'noteshare_login_count';
 const SHOWN_TIPS_KEY = 'noteshare_pro_tips_shown';
 const TIPS_DISABLED_KEY = 'noteshare_pro_tips_disabled';
+const SESSION_COUNTED_KEY = 'noteshare_session_counted';
 const LOGIN_INTERVAL = 8;
 const TOTAL_TIPS = 5;
 
@@ -27,7 +28,8 @@ export function isTipsDisabled(): boolean {
 }
 
 /**
- * Increments login count and determines if a pro tip should show.
+ * Increments login count once per browser session and determines if a pro tip should show.
+ * Uses sessionStorage to prevent re-counting on page reloads or app updates within the same session.
  * Returns the tip index (0-4) to show, or null.
  */
 export function useProTips(profileId: string | undefined) {
@@ -44,12 +46,25 @@ export function useProTips(profileId: string | undefined) {
     // All tips already shown — done forever
     if (shownTips.length >= TOTAL_TIPS) return;
 
-    // Increment login count
-    const count = getLoginCount() + 1;
-    try { localStorage.setItem(LOGIN_COUNT_KEY, count.toString()); } catch {}
+    // Only increment the login count once per browser session
+    // sessionStorage survives page reloads within the same tab session
+    // but resets when the browser/tab is closed (= a new "login")
+    let count = getLoginCount();
+    const alreadyCounted = sessionStorage.getItem(SESSION_COUNTED_KEY) === 'true';
+    if (!alreadyCounted) {
+      count += 1;
+      try {
+        localStorage.setItem(LOGIN_COUNT_KEY, count.toString());
+        sessionStorage.setItem(SESSION_COUNTED_KEY, 'true');
+      } catch {}
+    }
 
     // Only show on every Nth login
     if (count % LOGIN_INTERVAL !== 0) return;
+
+    // Don't re-show a tip we already showed this session
+    const sessionTipShown = sessionStorage.getItem('noteshare_tip_shown_this_session') === 'true';
+    if (sessionTipShown) return;
 
     // Find next unshown tip
     const nextTip = [0, 1, 2, 3, 4].find(i => !shownTips.includes(i));
@@ -62,7 +77,10 @@ export function useProTips(profileId: string | undefined) {
     const shown = getShownTips();
     if (!shown.includes(index)) {
       shown.push(index);
-      try { localStorage.setItem(SHOWN_TIPS_KEY, JSON.stringify(shown)); } catch {}
+      try {
+        localStorage.setItem(SHOWN_TIPS_KEY, JSON.stringify(shown));
+        sessionStorage.setItem('noteshare_tip_shown_this_session', 'true');
+      } catch {}
     }
     setTipIndex(null);
   };
