@@ -24,6 +24,29 @@ const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
 ];
 const WEEKS_FOR_RANGE: Record<TimeRange, number> = { '1m': 5, '2m': 9, '3m': 13, '6m': 26, 'all': 52 };
 
+function RangePill({ label, isActive, onClick }: { label: string; isActive: boolean; onClick: () => void }) {
+  const handleInteractionEnd = (e: React.TouchEvent | React.PointerEvent) => {
+    (e.currentTarget as HTMLButtonElement).blur();
+  };
+  return (
+    <button
+      type="button"
+      aria-pressed={isActive}
+      data-no-hover-reset
+      onClick={onClick}
+      onTouchEnd={handleInteractionEnd}
+      onPointerUp={handleInteractionEnd}
+      className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation select-none [-webkit-tap-highlight-color:transparent] transition-colors ${
+        isActive
+          ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
+          : 'bg-muted text-muted-foreground active:bg-muted active:text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 interface PracticeStatsProps {
   profileId: string;
 }
@@ -272,24 +295,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             <h3 className="font-semibold">Practice Time</h3>
           </div>
           <div className="flex gap-1">
-            {TIME_RANGE_OPTIONS.map(opt => {
-              const isActive = chartRange === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => handleSetChartRange(opt.value)}
-                  onTouchEnd={(e) => { e.currentTarget.blur(); }}
-                  className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation [-webkit-tap-highlight-color:transparent] select-none ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
-                      : 'bg-muted text-muted-foreground active:bg-muted active:text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
+            {TIME_RANGE_OPTIONS.map(opt => (
+              <RangePill
+                key={opt.value}
+                label={opt.label}
+                isActive={chartRange === opt.value}
+                onClick={() => handleSetChartRange(opt.value)}
+              />
+            ))}
           </div>
         </div>
         
@@ -700,24 +713,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               <h3 className="font-semibold">Focus Level</h3>
             </div>
             <div className="flex gap-1">
-              {TIME_RANGE_OPTIONS.map(opt => {
-                const isActive = focusRange === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleSetFocusRange(opt.value)}
-                    onTouchEnd={(e) => { e.currentTarget.blur(); }}
-                    className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation [-webkit-tap-highlight-color:transparent] select-none ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
-                        : 'bg-muted text-muted-foreground active:bg-muted active:text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
+              {TIME_RANGE_OPTIONS.map(opt => (
+                <RangePill
+                  key={opt.value}
+                  label={opt.label}
+                  isActive={focusRange === opt.value}
+                  onClick={() => handleSetFocusRange(opt.value)}
+                />
+              ))}
             </div>
           </div>
           <p className="text-sm text-muted-foreground mb-3">Average weekly session focus level</p>
