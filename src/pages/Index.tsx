@@ -459,7 +459,7 @@ const Index = () => {
         dailyMinutesMap={practiceStats?.dailyMinutesMap || {}}
         userName={profile?.name || 'My'}
         currentMonth={previousMonth}
-        headerText={`${profile?.name || 'Hey'}, check out your last month's practice stats`}
+        headerText={`${profile?.name || 'Hey'}, check out last month's practice stats`}
       />
     </PageLayout>
   );
