@@ -690,24 +690,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
               <h3 className="font-semibold">Focus Level</h3>
             </div>
             <div className="flex gap-1">
-              {TIME_RANGE_OPTIONS.map(opt => {
-                const isActive = focusRange === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleSetFocusRange(opt.value)}
-                    onTouchEnd={(e) => { e.currentTarget.blur(); }}
-                    className={`px-2 py-0.5 text-[11px] font-medium rounded-full touch-manipulation [-webkit-tap-highlight-color:transparent] select-none ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
-                        : 'bg-muted text-muted-foreground active:bg-muted active:text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
+              {TIME_RANGE_OPTIONS.map(opt => (
+                <RangePill
+                  key={opt.value}
+                  label={opt.label}
+                  isActive={focusRange === opt.value}
+                  onClick={() => handleSetFocusRange(opt.value)}
+                />
+              ))}
             </div>
           </div>
           <p className="text-sm text-muted-foreground mb-3">Average weekly session focus level</p>
