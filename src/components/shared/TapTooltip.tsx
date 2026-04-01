@@ -95,6 +95,11 @@ export function TapTooltip({
           type="button"
           onTouchStart={handleTouchStart}
           onClick={handleClick}
+          onPointerDown={(e) => {
+            // Prevent Radix PopoverTrigger from toggling on its own —
+            // we handle open/close manually in handleClick.
+            e.preventDefault();
+          }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onKeyDown={handleKeyDown}
