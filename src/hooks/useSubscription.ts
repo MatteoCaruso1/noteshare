@@ -253,12 +253,14 @@ export function useSubscription() {
 
   // Check against premium product IDs (supports all subscription and lifetime variants)
   const VALID_PREMIUM_PRODUCT_IDS = [
-    SUBSCRIPTION_TIERS.premium.product_id,  // prod_ToONzcZjkyqsAJ - main premium
-    SUBSCRIPTION_TIERS.lifetime.product_id, // prod_TsrnqaaViDJAas - old $19.99 lifetime
-    'prod_TtwaOYfMnVypk4',                  // CAD $9.99 lifetime product
-    'prod_Tu2MnCtrEfyciQ',                  // USD $9.99 lifetime product
-    'prod_Tu2GAnzdYIrnKZ',                  // CAD $1.99/mo subscription
-    'prod_Tu2LNk7QzsQY2k',                  // USD $1.99/mo subscription
+    SUBSCRIPTION_TIERS.premium.product_id,  // prod_UGH5hVuR8mAV9u - $2.99/mo subscription
+    SUBSCRIPTION_TIERS.lifetime.product_id, // prod_UGH76Futsy9n9k - $14.99 lifetime
+    'prod_ToONzcZjkyqsAJ',                  // old main premium product
+    'prod_TtwaOYfMnVypk4',                  // Old CAD $9.99 lifetime product
+    'prod_Tu2MnCtrEfyciQ',                  // Old USD $9.99 lifetime product
+    'prod_TsrnqaaViDJAas',                  // Old $19.99 lifetime product
+    'prod_Tu2GAnzdYIrnKZ',                  // Old CAD $1.99/mo subscription
+    'prod_Tu2LNk7QzsQY2k',                  // Old USD $1.99/mo subscription
     'prod_TofQhqCDH1KicB',                  // legacy USD product
     'prod_TofQx0QRLi6tEe',                  // legacy CAD product
   ];
