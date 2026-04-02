@@ -103,14 +103,14 @@ const Profile = () => {
   const celebratedThisSessionRef = useRef<Set<number>>(new Set());
 
   // Check for new streak milestones using atomic backend RPC
-  // Also clear celebrated milestones that are now above current streak (so they can be re-earned)
+  // Claims ALL eligible award-level streak milestones (5, 10, 30, 90, 360)
+  // Also clears celebrated milestones above current streak so they can be re-earned
   useEffect(() => {
     if (!profile || !practiceStats) return;
     const currentStreak = practiceStats.currentStreak;
     const celebratedMilestones = profile?.celebrated_streak_milestones || [];
     
     // Clear milestones that are now above current streak (so they can be re-earned later)
-    // This allows users to earn the same milestone multiple times across different streaks
     // Never clear milestone 3 — it's a one-time-only lifetime achievement
     const milestonesToClear = celebratedMilestones.filter(
       (milestone: number) => milestone > currentStreak && milestone !== 3
@@ -127,69 +127,86 @@ const Profile = () => {
           .update({ celebrated_streak_milestones: updatedMilestones })
           .eq('id', profile.id);
         
-        // Refresh profile to get updated state
         await refreshProfile();
       };
       
       clearMilestones();
     }
     
-    // Check for new milestone achievements
     if (currentStreak === 0) return;
-    const currentTier = getStreakTier(currentStreak);
-
-    // Only celebrate actual tier achievements (not 'none')
-    if (currentTier.tier === 'none') return;
-
-    // GUARD 1: Already celebrated in this browser session? Skip
-    if (celebratedThisSessionRef.current.has(currentTier.minDays)) {
-      return;
-    }
-
-    // GUARD 2: Currently processing? Skip
-    if (processingMilestonesRef.current.has(currentTier.minDays)) {
-      return;
-    }
-
-    // Mark as processing IMMEDIATELY (before any async work)
-    processingMilestonesRef.current.add(currentTier.minDays);
     
-    // Use atomic RPC to claim milestone - backend guarantees no duplicates
-    const claimMilestone = async () => {
-      const { data, error } = await supabase.rpc('claim_streak_milestone', {
-        p_profile_id: profile.id,
-        p_milestone: currentTier.minDays,
-      });
+    // Get all streak award thresholds from the award system (5, 10, 30, 90, 360)
+    const streakCategory = AWARD_CATEGORIES.find(c => c.category === 'streak');
+    const allStreakThresholds = streakCategory?.tiers.map(t => t.threshold) || [];
+    
+    // Find all eligible milestones not yet celebrated
+    const eligibleMilestones = allStreakThresholds.filter(
+      threshold => currentStreak >= threshold && 
+                   !celebratedMilestones.includes(threshold) &&
+                   !celebratedThisSessionRef.current.has(threshold) &&
+                   !processingMilestonesRef.current.has(threshold)
+    );
+    
+    if (eligibleMilestones.length === 0) return;
+    
+    // Claim all eligible milestones, show dialog for highest
+    const claimAllMilestones = async () => {
+      eligibleMilestones.forEach(m => processingMilestonesRef.current.add(m));
       
-      if (error) {
-        console.error('Failed to claim milestone:', error);
-        processingMilestonesRef.current.delete(currentTier.minDays);
-        return;
-      }
+      let highestClaimedMilestone: number | null = null;
+      let highestClaimedCount = 0;
       
-      // Backend returns { claimed: boolean, streak_achievement_counts: {...}, ... }
-      const result = data as { claimed: boolean; streak_achievement_counts?: Record<string, number> } | null;
-      
-      if (result?.claimed) {
-        // Successfully claimed! Get the count for this milestone
-        const achievementCount = result.streak_achievement_counts?.[String(currentTier.minDays)] || 1;
+      for (const milestone of eligibleMilestones) {
+        const { data, error } = await supabase.rpc('claim_streak_milestone', {
+          p_profile_id: profile.id,
+          p_milestone: milestone,
+        });
         
-        // Show dialog with the count and mark as celebrated
-        celebratedThisSessionRef.current.add(currentTier.minDays);
-        setCelebratingTier(currentTier);
-        setCelebratingAchievementCount(achievementCount);
-        setMilestoneDialogOpen(true);
-        // Refresh profile to get updated counts
-        await refreshProfile();
-      } else {
-        // Already claimed (milestone was in DB) - just mark as celebrated this session
-        celebratedThisSessionRef.current.add(currentTier.minDays);
+        if (error) {
+          console.error('Failed to claim milestone:', milestone, error);
+          processingMilestonesRef.current.delete(milestone);
+          continue;
+        }
+        
+        const result = data as { claimed: boolean; streak_achievement_counts?: Record<string, number> } | null;
+        celebratedThisSessionRef.current.add(milestone);
+        
+        if (result?.claimed) {
+          const count = result.streak_achievement_counts?.[String(milestone)] || 1;
+          if (highestClaimedMilestone === null || milestone > highestClaimedMilestone) {
+            highestClaimedMilestone = milestone;
+            highestClaimedCount = count;
+          }
+        }
+        
+        processingMilestonesRef.current.delete(milestone);
       }
       
-      processingMilestonesRef.current.delete(currentTier.minDays);
+      // Show dialog for the highest newly claimed milestone
+      if (highestClaimedMilestone !== null) {
+        const tier = getStreakTier(highestClaimedMilestone);
+        if (tier.tier !== 'none') {
+          setCelebratingTier(tier);
+        } else {
+          // For milestones not in streakUtils (e.g. 5d), create display info
+          setCelebratingTier({
+            tier: 'starter',
+            label: `${highestClaimedMilestone}d`,
+            minDays: highestClaimedMilestone,
+            colorClass: 'text-primary',
+            textColorClass: 'text-primary',
+            bgColorClass: 'bg-primary/10',
+            borderColorClass: 'border-primary/30',
+            ringColorClass: 'ring-primary/20',
+          });
+        }
+        setCelebratingAchievementCount(highestClaimedCount);
+        setMilestoneDialogOpen(true);
+        await refreshProfile();
+      }
     };
     
-    claimMilestone();
+    claimAllMilestones();
   }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
 
   if (!user) {
