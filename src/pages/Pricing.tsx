@@ -89,7 +89,7 @@ export default function Pricing() {
                 </li>
               )}
             </ul>
-            <MarketingCTA variant="inline" className="w-full z-10" />
+            <MarketingCTA variant="compact" className="w-full z-10 justify-center" />
           </div>
         </div>
 
