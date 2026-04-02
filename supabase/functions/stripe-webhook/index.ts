@@ -7,17 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// All known lifetime price IDs
+// All known lifetime price IDs (current + legacy for existing customers)
 const LIFETIME_PRICE_IDS = [
-  "price_1Sw8hBGiNcIsULtkxrZRuf6O", // CAD $9.99
-  "price_1SwEHaGiNcIsULtkrQuVwm7M", // USD $9.99
+  "price_1THkZ8GiNcIsULtkEhfGUmek", // CAD $14.99
+  "price_1Sw8hBGiNcIsULtkxrZRuf6O", // Old CAD $9.99
+  "price_1SwEHaGiNcIsULtkrQuVwm7M", // Old USD $9.99
   "price_1Sv63tGiNcIsULtk4t3RRrAK", // Old $19.99 CAD
 ];
 
-// All known subscription price IDs
+// All known subscription price IDs (current + legacy)
 const SUBSCRIPTION_PRICE_IDS = [
-  "price_1SwECHGiNcIsULtk8vfidptO", // CAD $1.99/mo
-  "price_1SwEHEGiNcIsULtkXsU7dXl7", // USD $1.99/mo
+  "price_1THkXOGiNcIsULtkoVlM0NYp", // CAD $2.99/mo
+  "price_1SwECHGiNcIsULtk8vfidptO", // Old CAD $1.99/mo
+  "price_1SwEHEGiNcIsULtkXsU7dXl7", // Old USD $1.99/mo
 ];
 
 const logStep = (step: string, details?: Record<string, unknown>) => {

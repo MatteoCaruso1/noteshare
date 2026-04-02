@@ -7,10 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Lifetime access price IDs ($9.99)
+// Lifetime access price IDs ($14.99)
 const LIFETIME_PRICES = {
-  CAD: "price_1Sw8hBGiNcIsULtkxrZRuf6O",
-  USD: "price_1SwEHaGiNcIsULtkrQuVwm7M",
+  CAD: "price_1THkZ8GiNcIsULtkEhfGUmek",
+  USD: "price_1THkZ8GiNcIsULtkEhfGUmek",
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {

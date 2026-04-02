@@ -580,10 +580,11 @@ serve(async (req) => {
     // ============================================
     // Stripe Subscription Analysis
     // ============================================
-    // Lifetime access price IDs (CAD and USD variants)
+    // Lifetime access price IDs (current + legacy)
     const LIFETIME_PRICE_IDS = [
-      "price_1Sw8hBGiNcIsULtkxrZRuf6O", // CAD $9.99 lifetime
-      "price_1SwEHaGiNcIsULtkrQuVwm7M", // USD $9.99 lifetime
+      "price_1THkZ8GiNcIsULtkEhfGUmek", // CAD $14.99 lifetime
+      "price_1Sw8hBGiNcIsULtkxrZRuf6O", // Old CAD $9.99 lifetime
+      "price_1SwEHaGiNcIsULtkrQuVwm7M", // Old USD $9.99 lifetime
       "price_1Sv63tGiNcIsULtk4t3RRrAK", // Old $19.99 CAD lifetime
     ];
 
