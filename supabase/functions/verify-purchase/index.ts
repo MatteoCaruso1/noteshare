@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 const LIFETIME_PRICE_IDS = [
+  "price_1THkZ8GiNcIsULtkEhfGUmek",
   "price_1Sw8hBGiNcIsULtkxrZRuf6O",
   "price_1SwEHaGiNcIsULtkrQuVwm7M",
   "price_1Sv63tGiNcIsULtk4t3RRrAK",

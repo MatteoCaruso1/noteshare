@@ -7,14 +7,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Known price IDs
+// Known price IDs (current + legacy)
 const LIFETIME_PRICE_IDS = [
+  "price_1THkZ8GiNcIsULtkEhfGUmek",
   "price_1Sw8hBGiNcIsULtkxrZRuf6O",
   "price_1SwEHaGiNcIsULtkrQuVwm7M",
   "price_1Sv63tGiNcIsULtk4t3RRrAK",
 ];
 
 const SUBSCRIPTION_PRICE_IDS = [
+  "price_1THkXOGiNcIsULtkoVlM0NYp",
   "price_1SwECHGiNcIsULtk8vfidptO",
   "price_1SwEHEGiNcIsULtkXsU7dXl7",
 ];

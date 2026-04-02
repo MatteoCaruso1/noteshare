@@ -8,15 +8,15 @@ import { CheckSubscriptionSchema } from '@/lib/validation';
 // Product/Price mapping for Noteshare Premium
 export const SUBSCRIPTION_TIERS = {
   premium: {
-    product_id: "prod_ToONzcZjkyqsAJ",
+    product_id: "prod_UGH5hVuR8mAV9u",
     prices: PREMIUM_PRICES,
     name: "Premium",
   },
   lifetime: {
-    product_id: "prod_TsrnqaaViDJAas",
-    price_id: "price_1Sv63tGiNcIsULtk4t3RRrAK",
+    product_id: "prod_UGH76Futsy9n9k",
+    price_id: "price_1THkZ8GiNcIsULtkEhfGUmek",
     name: "Lifetime Premium",
-    price_cad: 1999, // $19.99 CAD in cents
+    price_cad: 1499, // $14.99 CAD in cents
   }
 } as const;
 

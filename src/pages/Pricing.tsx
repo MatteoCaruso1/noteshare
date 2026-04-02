@@ -73,9 +73,9 @@ export default function Pricing() {
             <h2 className="text-lg font-semibold text-foreground mb-1 relative z-10">Pro</h2>
             <div className="relative z-10 mb-6">
               <div className="flex items-baseline gap-1 flex-wrap">
-                <span className="text-3xl font-bold text-foreground">$9.99</span>
+                <span className="text-3xl font-bold text-foreground">$14.99</span>
                 <span className="text-sm text-muted-foreground">CAD lifetime</span>
-                <span className="text-[10px] text-primary ml-1">(or $1.99 / mo. with trial)</span>
+                <span className="text-[10px] text-primary ml-1">(or $2.99 / mo. with trial)</span>
               </div>
               
 

@@ -8,38 +8,38 @@ export function detectUserCurrency(): SupportedCurrency {
   return 'CAD';
 }
 
-// Pricing by currency: $1.99/month subscription, $9.99 lifetime
+// Pricing by currency: $2.99/month subscription, $14.99 lifetime
 export const PREMIUM_PRICES = {
   CAD: {
     subscription: {
-      amount: 1.99,
-      priceId: 'price_1SwECHGiNcIsULtk8vfidptO',
+      amount: 2.99,
+      priceId: 'price_1THkXOGiNcIsULtkoVlM0NYp',
       currency: 'CAD',
       symbol: '$',
-      label: '$1.99 CAD/mo'
+      label: '$2.99 CAD/mo'
     },
     lifetime: {
-      amount: 9.99,
-      priceId: 'price_1Sw8hBGiNcIsULtkxrZRuf6O',
+      amount: 14.99,
+      priceId: 'price_1THkZ8GiNcIsULtkEhfGUmek',
       currency: 'CAD',
       symbol: '$',
-      label: '$9.99 CAD'
+      label: '$14.99 CAD'
     }
   },
   USD: {
     subscription: {
-      amount: 1.99,
-      priceId: 'price_1SwEHEGiNcIsULtkXsU7dXl7',
+      amount: 2.99,
+      priceId: 'price_1THkXOGiNcIsULtkoVlM0NYp',
       currency: 'USD',
       symbol: '$',
-      label: '$1.99 USD/mo'
+      label: '$2.99 USD/mo'
     },
     lifetime: {
-      amount: 9.99,
-      priceId: 'price_1SwEHaGiNcIsULtkrQuVwm7M',
+      amount: 14.99,
+      priceId: 'price_1THkZ8GiNcIsULtkEhfGUmek',
       currency: 'USD',
       symbol: '$',
-      label: '$9.99 USD'
+      label: '$14.99 USD'
     }
   }
 } as const;

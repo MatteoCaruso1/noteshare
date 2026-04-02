@@ -7,10 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Price IDs for $1.99/month subscription
+// Price IDs for $2.99/month subscription
 const SUBSCRIPTION_PRICES = {
-  CAD: "price_1SwECHGiNcIsULtk8vfidptO",
-  USD: "price_1SwEHEGiNcIsULtkXsU7dXl7",
+  CAD: "price_1THkXOGiNcIsULtkoVlM0NYp",
+  USD: "price_1THkXOGiNcIsULtkoVlM0NYp",
 };
 
 // Trial period in days

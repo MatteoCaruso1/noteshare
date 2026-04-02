@@ -7,15 +7,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Lifetime access price IDs (CAD and USD variants)
+// Lifetime access price IDs (current + legacy)
 const LIFETIME_PRICE_IDS = [
-  "price_1Sw8hBGiNcIsULtkxrZRuf6O", // CAD $9.99 lifetime
-  "price_1SwEHaGiNcIsULtkrQuVwm7M", // USD $9.99 lifetime
-  "price_1Sv63tGiNcIsULtk4t3RRrAK", // Old $19.99 CAD lifetime (for existing customers)
+  "price_1THkZ8GiNcIsULtkEhfGUmek", // CAD $14.99 lifetime
+  "price_1Sw8hBGiNcIsULtkxrZRuf6O", // Old CAD $9.99 lifetime
+  "price_1SwEHaGiNcIsULtkrQuVwm7M", // Old USD $9.99 lifetime
+  "price_1Sv63tGiNcIsULtk4t3RRrAK", // Old $19.99 CAD lifetime
 ];
 const LIFETIME_PRODUCT_IDS = [
-  "prod_TtwaOYfMnVypk4", // CAD $9.99 product
-  "prod_Tu2MnCtrEfyciQ", // USD $9.99 product
+  "prod_UGH76Futsy9n9k", // CAD $14.99 product
+  "prod_TtwaOYfMnVypk4", // Old CAD $9.99 product
+  "prod_Tu2MnCtrEfyciQ", // Old USD $9.99 product
   "prod_TsrnqaaViDJAas", // Old $19.99 product
 ];
 
