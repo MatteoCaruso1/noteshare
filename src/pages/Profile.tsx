@@ -32,6 +32,7 @@ import { StreakTintedName } from '@/components/StreakTintedName';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
+import { AWARD_CATEGORIES } from '@/lib/awardUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
