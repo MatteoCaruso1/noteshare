@@ -212,8 +212,11 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
           acquireWakeLock(true);
         }
       } else {
-        // New session, clear old settings
-        saveSessionSettings({ wakeLockEnabled: false, attachFocus: false, sessionId: activeSession.id });
+        // New session — default attachFocus to true if there's routine text
+        const cachedFocus = readFocusCache(profile?.id);
+        const hasRoutineText = !!(cachedFocus?.focus_text?.trim() || currentFocus?.focus_text?.trim());
+        setAttachFocusState(hasRoutineText);
+        saveSessionSettings({ wakeLockEnabled: false, attachFocus: hasRoutineText, sessionId: activeSession.id });
       }
     }
   }, [activeSession?.id]);
