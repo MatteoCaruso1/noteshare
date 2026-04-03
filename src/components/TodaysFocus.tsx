@@ -845,6 +845,7 @@ export function TodaysFocus() {
 
   const handleLoadFromBacklog = (entryTitle: string, entryText: string) => {
     setTitle(entryTitle);
+    savedTitleRef.current = entryTitle;
     setText(entryText);
     setHasChanges(true);
     if (profileId) writeDraft(profileId, entryText);
