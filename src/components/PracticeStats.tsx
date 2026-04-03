@@ -193,14 +193,22 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         }
       });
 
-      // Sum minutes per title
+      // Sum minutes per title (link through notes: note.focus_entry_id → title, note.session_id → session)
+      const sessionMap = new Map<string, { started_at: string; ended_at: string; paused_duration_ms: number | null }>();
+      sessions.forEach(s => sessionMap.set(s.id, s));
+
       const minuteCounts = new Map<string, number>();
-      sessions?.forEach(s => {
-        const title = titleMap.get(s.focus_entry_id!);
-        if (title && s.started_at && s.ended_at) {
-          const durationMs = new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0);
-          const minutes = Math.max(0, Math.round(durationMs / 60000));
-          minuteCounts.set(title, (minuteCounts.get(title) || 0) + minutes);
+      const countedSessions = new Set<string>(); // avoid double-counting same session
+      notes.forEach(n => {
+        const title = titleMap.get(n.focus_entry_id!);
+        if (title && n.session_id && !countedSessions.has(n.session_id)) {
+          const s = sessionMap.get(n.session_id);
+          if (s) {
+            countedSessions.add(n.session_id);
+            const durationMs = new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0);
+            const minutes = Math.max(0, Math.round(durationMs / 60000));
+            minuteCounts.set(title, (minuteCounts.get(title) || 0) + minutes);
+          }
         }
       });
 
