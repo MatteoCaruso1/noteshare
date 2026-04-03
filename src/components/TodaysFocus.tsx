@@ -829,6 +829,7 @@ export function TodaysFocus() {
     autoSaveCurrentRoutine();
     // Clear the board
     setTitle('');
+    savedTitleRef.current = '';
     setText('');
     setHasChanges(true);
     if (profileId) writeDraft(profileId, '');
