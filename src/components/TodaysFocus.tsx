@@ -43,6 +43,8 @@ export function TodaysFocus() {
     return cached?.focus_title || '';
   });
   const [hasChanges, setHasChanges] = useState(false);
+  // Track the last-saved title so we can clean up old backlog entries on rename
+  const savedTitleRef = useRef(title);
   const [isFocused, setIsFocused] = useState(false);
   const [isOpen, setIsOpen] = useState(() => {
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
