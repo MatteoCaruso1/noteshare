@@ -210,7 +210,10 @@ export function RoutineSwitcherPopover({
           <AlertDialogFooter>
             <AlertDialogCancel className="h-8 text-xs">Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="h-8 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-no-hover-reset
+              className="h-8 text-xs bg-destructive text-destructive-foreground active:bg-destructive/90 [@media(hover:hover)]:hover:bg-destructive/90 touch-manipulation select-none [-webkit-tap-highlight-color:transparent]"
+              onTouchEnd={(e) => e.currentTarget.blur()}
+              onPointerUp={(e) => e.currentTarget.blur()}
               onClick={() => {
                 if (deleteTarget) onDelete(deleteTarget.id);
                 setDeleteTarget(null);
