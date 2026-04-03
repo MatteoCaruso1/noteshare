@@ -363,7 +363,7 @@ serve(async (req) => {
     // Build notes by user and date for retention checking
     const notesByUserAndDate = new Map<string, Set<string>>();
     for (const note of allNotesData || []) {
-      const key = `${note.author_id}:${note.created_at.split('T')[0]}`;
+      const key = `${note.author_id}:${toESTDateStr(new Date(note.created_at))}`;
       if (!notesByUserAndDate.has(key)) {
         notesByUserAndDate.set(key, new Set());
       }
