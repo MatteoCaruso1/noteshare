@@ -62,11 +62,11 @@ export function AwardsSection({
   const [open, setOpen] = useState(false);
   const { profile } = useAuth();
 
-  const consistencyStats = { bestMonthDays, bestCompletedYearPct };
+  const consistencyStats = { bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount };
 
   const achieved = useMemo(
     () => getAchievedAwards({ bestStreak, totalNotes, totalHours, ...consistencyStats }),
-    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount]
   );
 
   const baseAwardCount = useMemo(
