@@ -23,6 +23,7 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'hours': return `Practice for ${threshold} total hours`;
     case 'consistency':
       if (threshold === 25) return `Practice at least 25 days in a single month`;
+      if (threshold === 10) return `Achieve your weekly practice goal 10 times`;
       return `Practice at least 75% of days in a calendar year`;
     case 'legend': return `Earn ${threshold} total awards`;
   }

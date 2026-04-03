@@ -50,6 +50,7 @@ const Index = () => {
     totalHours: Math.floor(practiceStats.totalAllTimeMinutes / 60),
     bestMonthDays: practiceStats.bestMonthDays,
     bestCompletedYearPct: practiceStats.bestCompletedYearPct,
+    weeklyGoalsMetCount: practiceStats.weeklyGoalsMetCount,
   } : undefined);
   
   // Track page views for analytics
