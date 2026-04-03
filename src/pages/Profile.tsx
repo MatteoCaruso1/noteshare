@@ -605,6 +605,7 @@ const Profile = () => {
           streakDays={practiceStats?.currentStreak || 0}
           hasNextMilestone={true}
           achievementCount={celebratingAchievementCount}
+          milestoneDays={celebratingMilestoneDays}
         />
       )}
     </PageLayout>
