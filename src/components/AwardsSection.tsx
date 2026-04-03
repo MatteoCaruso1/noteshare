@@ -22,12 +22,14 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
   }
 }
 
-function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number; bestMonthDays: number; bestCompletedYearPct: number }): string {
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number; bestMonthDays: number; bestCompletedYearPct: number }, threshold?: number): string {
   switch (category) {
     case 'streak': return `Currently ${stats.bestStreak} days`;
     case 'notes': return `Currently ${stats.totalNotes} notes`;
     case 'hours': return `Currently ${stats.totalHours}h`;
-    case 'consistency': return `Best month: ${stats.bestMonthDays}d · Best year: ${stats.bestCompletedYearPct}%`;
+    case 'consistency':
+      if (threshold === 25) return `Best month: ${stats.bestMonthDays}d`;
+      return `Best year: ${stats.bestCompletedYearPct}%`;
     case 'legend': return `Currently ${stats.baseAwardCount} awards`;
   }
 }
