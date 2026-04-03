@@ -42,6 +42,7 @@ interface AwardsSectionProps {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
   selectedAward: string | null;
   achievementCounts?: Record<string, number>;
   onAwardSelected?: (awardId: string | null) => void;
@@ -53,6 +54,7 @@ export function AwardsSection({
   totalHours,
   bestMonthDays = 0,
   bestCompletedYearPct = 0,
+  weeklyGoalsMetCount = 0,
   selectedAward,
   achievementCounts,
   onAwardSelected,
