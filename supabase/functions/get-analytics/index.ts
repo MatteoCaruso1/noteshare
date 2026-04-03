@@ -386,7 +386,7 @@ serve(async (req) => {
 
       const retentionDate = new Date(cohortDate);
       retentionDate.setDate(retentionDate.getDate() + 7);
-      const retentionDateStr = retentionDate.toISOString().split('T')[0];
+      const retentionDateStr = toESTDateStr(retentionDate);
 
       let retainedCount = 0;
       for (const userId of cohortUsers) {
