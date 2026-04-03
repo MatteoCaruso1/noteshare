@@ -188,10 +188,13 @@ export default {
   			},
 			floatDown: {
 				'0%': {
-					transform: 'translateY(-120vh) rotate(0deg)'
+					transform: 'translateY(-120vh) rotate(var(--float-rotate-start, 0deg))'
+				},
+				'50%': {
+					transform: 'translateY(-10vh) rotate(var(--float-rotate-mid, 15deg))'
 				},
 				'100%': {
-					transform: 'translateY(105vh) rotate(360deg)'
+					transform: 'translateY(105vh) rotate(var(--float-rotate-end, -10deg))'
 				}
 			},
 			heroEnter: {
