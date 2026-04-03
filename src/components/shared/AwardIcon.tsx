@@ -76,7 +76,15 @@ export const AwardIcon = memo(function AwardIcon({
           <polyline points="12 6 12 12 16 14" />
         </g>
       )}
-      {tier.category === 'consistency' && (
+      {tier.category === 'consistency' && tier.id === 'consistency-10goals' && (
+        // Target/bullseye icon (outline only, silver)
+        <g fill="none" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" />
+        </g>
+      )}
+      {tier.category === 'consistency' && tier.id !== 'consistency-10goals' && (
         // Calendar check icon
         <g fill="none" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill={fillColor} />
