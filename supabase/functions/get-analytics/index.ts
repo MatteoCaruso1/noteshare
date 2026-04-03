@@ -93,6 +93,17 @@ interface AccountFunnel {
   note5PlusUsers: FunnelUser[];
 }
 
+/** Return the YYYY-MM-DD string for a Date in America/New_York (EST/EDT). */
+function toESTDateStr(d: Date): string {
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // en-CA gives YYYY-MM-DD
+}
+
+/** Return a Date object set to midnight UTC of the EST calendar date for `d`. */
+function estToday(): Date {
+  const estStr = toESTDateStr(new Date());
+  return new Date(estStr + 'T00:00:00Z');
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
