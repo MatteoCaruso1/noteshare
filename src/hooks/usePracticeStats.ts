@@ -99,7 +99,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const thisMonthStart = startOfMonth(now);
 
       // Run all queries in parallel for better performance
-      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult, notesLast30Result] = await Promise.all([
+      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult, notesLast30Result, weeklyGoalsResult] = await Promise.all([
         supabase
           .from('practice_sessions')
           .select('id, started_at, ended_at, paused_duration_ms')
@@ -129,7 +129,12 @@ export function usePracticeStats(profileId: string | undefined) {
           .from('notes')
           .select('id', { count: 'exact', head: true })
           .eq('author_id', profileId)
-          .gte('created_at', subDays(now, 30).toISOString())
+          .gte('created_at', subDays(now, 30).toISOString()),
+        supabase
+          .from('weekly_goals')
+          .select('week_start, target_minutes, skipped')
+          .eq('user_id', profileId)
+          .eq('skipped', false),
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
