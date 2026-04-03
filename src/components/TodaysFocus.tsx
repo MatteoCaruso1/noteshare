@@ -879,7 +879,7 @@ export function TodaysFocus() {
                     currentTitle={title}
                     currentText={text}
                     onSelect={handleLoadFromBacklog}
-                    onAutoSave={(t, txt) => { const prev = savedTitleRef.current; saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date, previousTitle: prev !== t ? prev : undefined }, { onSuccess: () => { savedTitleRef.current = t; } }); }}}
+                    onAutoSave={(t, txt) => { const prev = savedTitleRef.current; saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date, previousTitle: prev !== t ? prev : undefined }, { onSuccess: () => { savedTitleRef.current = t; } }); }}
                     onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
                     isPremium={isPremium}
                     onUpgrade={openPremiumDialog}
