@@ -227,7 +227,10 @@ serve(async (req) => {
     const days = parseInt(url.searchParams.get('days') || '30');
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    const startDateStr = toESTDateStr(startDate);
+
+    // Current date in EST for loop bounds
+    const currentDateEST = toESTDateStr(new Date());
 
     console.log(`Fetching analytics for last ${days} days, starting from ${startDateStr}`);
 
