@@ -263,7 +263,7 @@ serve(async (req) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = toESTDateStr(date);
       const users = notesByDate.get(dateStr);
       dailyCounts.push({
         date: dateStr,
