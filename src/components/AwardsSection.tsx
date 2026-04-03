@@ -150,7 +150,7 @@ export function AwardsSection({
                         content={
                           <div className="text-xs space-y-0.5">
                             <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
-                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount, bestMonthDays, bestCompletedYearPct })}</p>
+                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount, bestMonthDays, bestCompletedYearPct }, tier.threshold)}</p>
                             {isAchieved && <p className="text-primary">✓ Achieved{streakCount ? ` (${streakCount}x)` : ''}</p>}
                           </div>
                         }
