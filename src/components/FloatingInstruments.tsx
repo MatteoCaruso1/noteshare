@@ -15,14 +15,14 @@ export function FloatingInstruments() {
   const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
 
   useEffect(() => {
-    const emojiCount = 12;
+    const emojiCount = 9;
     
-    // Constrain to left (2-18%) and right (82-98%) gutters
+    // Far edges only: left 0-3% and right 97-100% to avoid overlap with static decorations
     const gutterPositions: number[] = [];
     const getGutterPosition = (index: number): number => {
       const isRight = index % 2 === 1;
-      const base = isRight ? 82 : 2;
-      const range = 16; // 2-18 or 82-98
+      const base = isRight ? 94 : 0;
+      const range = 5;
       let pos: number;
       let attempts = 0;
       do {
@@ -30,7 +30,7 @@ export function FloatingInstruments() {
         attempts++;
       } while (
         attempts < 20 &&
-        gutterPositions.some(p => Math.abs(p - pos) < 4)
+        gutterPositions.some(p => Math.abs(p - pos) < 2)
       );
       gutterPositions.push(pos);
       return pos;
@@ -40,19 +40,19 @@ export function FloatingInstruments() {
       id: i,
       emoji: INSTRUMENTS[Math.floor(Math.random() * INSTRUMENTS.length)],
       left: getGutterPosition(i),
-      delay: (i * 3) + Math.random() * 8,
-      duration: 25 + Math.random() * 20,
+      delay: (i * 5) + Math.random() * 12,
+      duration: 60 + Math.random() * 40,
       size: 16 + Math.random() * 12,
     }));
     setEmojis(initialEmojis);
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[15]">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[2]">
       {emojis.map((item) => (
         <div
           key={item.id}
-          className="absolute opacity-[0.10] animate-float-down grayscale"
+          className="absolute opacity-[0.10] animate-float-down text-primary"
           style={{
             left: `${item.left}%`,
             top: 0,
@@ -60,6 +60,7 @@ export function FloatingInstruments() {
             animationDelay: `${item.delay}s`,
             animationDuration: `${item.duration}s`,
             animationFillMode: 'both',
+            filter: 'saturate(0.3) brightness(1.2)',
           }}
         >
           {item.emoji}
