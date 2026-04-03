@@ -149,7 +149,7 @@ export function PageLayout({ children }: PageLayoutProps) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-background pb-20 pt-12">
+    <div className="min-h-screen bg-transparent pb-20 pt-12">
       {children}
     </div>
   );
