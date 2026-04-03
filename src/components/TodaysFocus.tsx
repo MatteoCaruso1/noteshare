@@ -43,6 +43,8 @@ export function TodaysFocus() {
     return cached?.focus_title || '';
   });
   const [hasChanges, setHasChanges] = useState(false);
+  // Track the last-saved title so we can clean up old backlog entries on rename
+  const savedTitleRef = useRef(title);
   const [isFocused, setIsFocused] = useState(false);
   const [isOpen, setIsOpen] = useState(() => {
     const stored = localStorage.getItem(FOCUS_COLLAPSED_KEY);
@@ -106,7 +108,9 @@ export function TodaysFocus() {
       setText(freshText);
     }
     if ((focus as any).focus_title !== undefined && (focus as any).focus_title !== title) {
-      setTitle((focus as any).focus_title || '');
+      const newTitle = (focus as any).focus_title || '';
+      setTitle(newTitle);
+      savedTitleRef.current = newTitle;
     }
   }, [focus?.focus_text, profileId]);
 
@@ -793,9 +797,10 @@ export function TodaysFocus() {
     const currentTitle = titleRef.current.trim();
     const currentText = textRef.current.trim();
     if (currentText && currentTitle) {
+      const prevTitle = savedTitleRef.current;
       saveToBacklog(
-        { focusText: textRef.current, focusTitle: currentTitle, originalFocusDate: focus?.focus_date },
-        { onSuccess: () => {}, onError: () => toast.error('Failed to save routine') }
+        { focusText: textRef.current, focusTitle: currentTitle, originalFocusDate: focus?.focus_date, previousTitle: prevTitle !== currentTitle ? prevTitle : undefined },
+        { onSuccess: () => { savedTitleRef.current = currentTitle; }, onError: () => toast.error('Failed to save routine') }
       );
     }
   };
@@ -826,6 +831,7 @@ export function TodaysFocus() {
     autoSaveCurrentRoutine();
     // Clear the board
     setTitle('');
+    savedTitleRef.current = '';
     setText('');
     setHasChanges(true);
     if (profileId) writeDraft(profileId, '');
@@ -841,6 +847,7 @@ export function TodaysFocus() {
 
   const handleLoadFromBacklog = (entryTitle: string, entryText: string) => {
     setTitle(entryTitle);
+    savedTitleRef.current = entryTitle;
     setText(entryText);
     setHasChanges(true);
     if (profileId) writeDraft(profileId, entryText);
@@ -874,7 +881,7 @@ export function TodaysFocus() {
                     currentTitle={title}
                     currentText={text}
                     onSelect={handleLoadFromBacklog}
-                    onAutoSave={(t, txt) => saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date })}
+                    onAutoSave={(t, txt) => { const prev = savedTitleRef.current; saveToBacklog({ focusText: txt, focusTitle: t, originalFocusDate: focus?.focus_date, previousTitle: prev !== t ? prev : undefined }, { onSuccess: () => { savedTitleRef.current = t; } }); }}
                     onDelete={(id) => deleteFromBacklog(id, { onSuccess: () => toast.success('Routine deleted'), onError: () => toast.error('Failed to delete') })}
                     isPremium={isPremium}
                     onUpgrade={openPremiumDialog}
