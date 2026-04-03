@@ -53,10 +53,18 @@ function NoteVideoPlayer({ videoPath, videoName, videoThumbnailPath }: { videoPa
         {videoName && <p className="text-xs text-muted-foreground px-2 pt-1.5">{videoName}</p>}
         <video
           controls
+          autoPlay
           playsInline
-          preload="metadata"
+          preload="auto"
           className="w-full max-h-80 rounded-lg"
           src={videoUrl}
+          onLoadedMetadata={(e) => {
+            // Reset to start to fix progress bar showing incorrect position
+            const video = e.currentTarget;
+            if (video.currentTime > 0) {
+              video.currentTime = 0;
+            }
+          }}
         />
       </div>
     );
