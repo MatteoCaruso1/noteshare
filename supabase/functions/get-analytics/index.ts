@@ -410,8 +410,8 @@ serve(async (req) => {
     // Get today's Day 7 retention
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
-    const todayStr = new Date().toISOString().split('T')[0];
+    const sevenDaysAgoStr = toESTDateStr(sevenDaysAgo);
+    const todayStr = toESTDateStr(new Date());
 
     const cohortFrom7DaysAgo: string[] = [];
     userFirstNoteDate.forEach((firstNoteDate, userId) => {
