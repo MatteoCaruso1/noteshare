@@ -94,6 +94,7 @@ const Profile = () => {
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
   const [celebratingAchievementCount, setCelebratingAchievementCount] = useState(1);
+  const [celebratingMilestoneDays, setCelebratingMilestoneDays] = useState<number | undefined>();
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
   // Guard ref to prevent duplicate milestone processing (race condition fix)
