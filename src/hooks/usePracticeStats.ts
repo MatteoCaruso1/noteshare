@@ -84,6 +84,7 @@ export function usePracticeStats(profileId: string | undefined) {
           weeklyFocusAverage: [],
           bestMonthDays: 0,
           bestCompletedYearPct: 0,
+          weeklyGoalsMetCount: 0,
         };
       }
 
