@@ -15,31 +15,31 @@ export function FloatingInstruments() {
   const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
 
   useEffect(() => {
-    // Create a set of floating emojis with truly random distribution
     const emojiCount = 12;
     
-    // Generate random positions ensuring good spread
-    const usedPositions: number[] = [];
-    const getRandomPosition = (): number => {
+    // Constrain to left (2-18%) and right (82-98%) gutters
+    const gutterPositions: number[] = [];
+    const getGutterPosition = (index: number): number => {
+      const isRight = index % 2 === 1;
+      const base = isRight ? 82 : 2;
+      const range = 16; // 2-18 or 82-98
       let pos: number;
       let attempts = 0;
       do {
-        pos = Math.random() * 90 + 5; // 5% to 95% to avoid edges
+        pos = base + Math.random() * range;
         attempts++;
-        // Check if position is far enough from existing ones (at least 6% apart)
       } while (
-        attempts < 20 && 
-        usedPositions.some(p => Math.abs(p - pos) < 6)
+        attempts < 20 &&
+        gutterPositions.some(p => Math.abs(p - pos) < 4)
       );
-      usedPositions.push(pos);
+      gutterPositions.push(pos);
       return pos;
     };
     
     const initialEmojis: FloatingEmoji[] = Array.from({ length: emojiCount }, (_, i) => ({
       id: i,
       emoji: INSTRUMENTS[Math.floor(Math.random() * INSTRUMENTS.length)],
-      left: getRandomPosition(),
-      // Stagger delays more to avoid clustering
+      left: getGutterPosition(i),
       delay: (i * 3) + Math.random() * 8,
       duration: 25 + Math.random() * 20,
       size: 16 + Math.random() * 12,
@@ -52,10 +52,10 @@ export function FloatingInstruments() {
       {emojis.map((item) => (
         <div
           key={item.id}
-          className="absolute opacity-[0.05] animate-float-down grayscale"
+          className="absolute opacity-[0.10] animate-float-down grayscale"
           style={{
             left: `${item.left}%`,
-            top: '-120vh',
+            top: 0,
             fontSize: `${item.size}px`,
             animationDelay: `${item.delay}s`,
             animationDuration: `${item.duration}s`,
