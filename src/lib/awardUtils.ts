@@ -202,6 +202,7 @@ export function getBaseAchievedCount(stats: {
     if (stats.totalHours >= tier.threshold) count++;
   }
   if ((stats.bestMonthDays ?? 0) >= 25) count++;
+  if ((stats.weeklyGoalsMetCount ?? 0) >= 10) count++;
   if ((stats.bestCompletedYearPct ?? 0) >= 75) count++;
   return count;
 }
