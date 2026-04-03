@@ -43,6 +43,7 @@ export function useAchievementToasts(stats: {
   totalHours: number;
   bestMonthDays: number;
   bestCompletedYearPct: number;
+  weeklyGoalsMetCount?: number;
 } | undefined) {
   const firedRef = useRef(false);
 

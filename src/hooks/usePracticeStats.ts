@@ -48,6 +48,9 @@ interface PracticeStats {
 
   // Consistency: best completed calendar year practice % (0-100)
   bestCompletedYearPct: number;
+
+  // Consistency: number of weekly goals met
+  weeklyGoalsMetCount: number;
 }
 
 export function usePracticeStats(profileId: string | undefined) {
@@ -81,6 +84,7 @@ export function usePracticeStats(profileId: string | undefined) {
           weeklyFocusAverage: [],
           bestMonthDays: 0,
           bestCompletedYearPct: 0,
+          weeklyGoalsMetCount: 0,
         };
       }
 
@@ -95,7 +99,7 @@ export function usePracticeStats(profileId: string | undefined) {
       const thisMonthStart = startOfMonth(now);
 
       // Run all queries in parallel for better performance
-      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult, notesLast30Result] = await Promise.all([
+      const [sessionsResult, notesResult, focusResult, backlogResult, notesCountResult, notesLast30Result, weeklyGoalsResult] = await Promise.all([
         supabase
           .from('practice_sessions')
           .select('id, started_at, ended_at, paused_duration_ms')
@@ -125,7 +129,12 @@ export function usePracticeStats(profileId: string | undefined) {
           .from('notes')
           .select('id', { count: 'exact', head: true })
           .eq('author_id', profileId)
-          .gte('created_at', subDays(now, 30).toISOString())
+          .gte('created_at', subDays(now, 30).toISOString()),
+        supabase
+          .from('weekly_goals')
+          .select('week_start, target_minutes, skipped')
+          .eq('user_id', profileId)
+          .eq('skipped', false),
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
@@ -546,6 +555,25 @@ export function usePracticeStats(profileId: string | undefined) {
         if (pct > bestCompletedYearPct) bestCompletedYearPct = pct;
       }
 
+      // Consistency: weekly goals met count
+      let weeklyGoalsMetCount = 0;
+      const weeklyGoals = weeklyGoalsResult.data || [];
+      // For each non-skipped weekly goal, sum minutes from dailyMinutesMap for that week
+      for (const goal of weeklyGoals) {
+        if (goal.target_minutes <= 0) continue;
+        const weekStart = new Date(goal.week_start + 'T00:00:00');
+        let weekMinutes = 0;
+        for (let d = 0; d < 7; d++) {
+          const day = new Date(weekStart);
+          day.setDate(day.getDate() + d);
+          const dayStr = day.toISOString().split('T')[0];
+          weekMinutes += dailyMinutesMap[dayStr] || 0;
+        }
+        if (weekMinutes >= goal.target_minutes) {
+          weeklyGoalsMetCount++;
+        }
+      }
+
       return {
         sessionsThisWeek,
         sessionsThisMonth,
@@ -568,6 +596,7 @@ export function usePracticeStats(profileId: string | undefined) {
         weeklyFocusAverage,
         bestMonthDays,
         bestCompletedYearPct,
+        weeklyGoalsMetCount,
       };
     },
     enabled: !!profileId,

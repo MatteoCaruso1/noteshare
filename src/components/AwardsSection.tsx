@@ -17,18 +17,20 @@ function getAwardDescription(category: AwardCategory, threshold: number): string
     case 'hours': return `Practice for ${threshold} total hours`;
     case 'consistency':
       if (threshold === 25) return `Practice at least 25 days in a single month`;
+      if (threshold === 10) return `Achieve your weekly practice goal 10 times`;
       return `Practice at least 75% of days in a calendar year`;
     case 'legend': return `Earn ${threshold} total awards`;
   }
 }
 
-function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number; bestMonthDays: number; bestCompletedYearPct: number }, threshold?: number): string {
+function getCurrentProgress(category: AwardCategory, stats: { bestStreak: number; totalNotes: number; totalHours: number; baseAwardCount: number; bestMonthDays: number; bestCompletedYearPct: number; weeklyGoalsMetCount: number }, threshold?: number): string {
   switch (category) {
     case 'streak': return `Currently ${stats.bestStreak} days`;
     case 'notes': return `Currently ${stats.totalNotes} notes`;
     case 'hours': return `Currently ${stats.totalHours}h`;
     case 'consistency':
       if (threshold === 25) return `Best month: ${stats.bestMonthDays}d`;
+      if (threshold === 10) return `${stats.weeklyGoalsMetCount} weekly goals met`;
       return `Best year: ${stats.bestCompletedYearPct}%`;
     case 'legend': return `Currently ${stats.baseAwardCount} awards`;
   }
@@ -40,6 +42,7 @@ interface AwardsSectionProps {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
   selectedAward: string | null;
   achievementCounts?: Record<string, number>;
   onAwardSelected?: (awardId: string | null) => void;
@@ -51,6 +54,7 @@ export function AwardsSection({
   totalHours,
   bestMonthDays = 0,
   bestCompletedYearPct = 0,
+  weeklyGoalsMetCount = 0,
   selectedAward,
   achievementCounts,
   onAwardSelected,
@@ -58,16 +62,16 @@ export function AwardsSection({
   const [open, setOpen] = useState(false);
   const { profile } = useAuth();
 
-  const consistencyStats = { bestMonthDays, bestCompletedYearPct };
+  const consistencyStats = { bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount };
 
   const achieved = useMemo(
     () => getAchievedAwards({ bestStreak, totalNotes, totalHours, ...consistencyStats }),
-    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount]
   );
 
   const baseAwardCount = useMemo(
     () => getBaseAchievedCount({ bestStreak, totalNotes, totalHours, ...consistencyStats }),
-    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount]
   );
 
   const handleSelectAward = useCallback(async (tier: AwardTier) => {
@@ -150,7 +154,7 @@ export function AwardsSection({
                         content={
                           <div className="text-xs space-y-0.5">
                             <p className="font-medium">{getAwardDescription(cat.category, tier.threshold)}</p>
-                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount, bestMonthDays, bestCompletedYearPct }, tier.threshold)}</p>
+                            <p className="text-muted-foreground">{getCurrentProgress(cat.category, { bestStreak, totalNotes, totalHours, baseAwardCount, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount }, tier.threshold)}</p>
                             {isAchieved && <p className="text-primary">✓ Achieved{streakCount ? ` (${streakCount}x)` : ''}</p>}
                           </div>
                         }

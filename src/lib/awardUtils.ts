@@ -114,6 +114,7 @@ const HOURS_TIERS: AwardTier[] = [
 // Consistency awards
 const CONSISTENCY_TIERS: AwardTier[] = [
   { id: 'consistency-25days', category: 'consistency', label: '25d', threshold: 25, ...TIER_COLORS.silver },
+  { id: 'consistency-10goals', category: 'consistency', label: '10🎯', threshold: 10, ...TIER_COLORS.silver },
   { id: 'consistency-75pct', category: 'consistency', label: '75%', threshold: 75, ...TIER_COLORS.gold },
 ];
 
@@ -150,6 +151,7 @@ export function getAchievedAwards(stats: {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
 }): Set<string> {
   const achieved = new Set<string>();
 
@@ -166,6 +168,7 @@ export function getAchievedAwards(stats: {
 
   // Consistency awards
   if ((stats.bestMonthDays ?? 0) >= 25) achieved.add('consistency-25days');
+  if ((stats.weeklyGoalsMetCount ?? 0) >= 10) achieved.add('consistency-10goals');
   if ((stats.bestCompletedYearPct ?? 0) >= 75) achieved.add('consistency-75pct');
 
   // Then compute legend awards based on base award count
@@ -186,6 +189,7 @@ export function getBaseAchievedCount(stats: {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
 }): number {
   let count = 0;
   for (const tier of STREAK_TIERS) {
@@ -198,6 +202,7 @@ export function getBaseAchievedCount(stats: {
     if (stats.totalHours >= tier.threshold) count++;
   }
   if ((stats.bestMonthDays ?? 0) >= 25) count++;
+  if ((stats.weeklyGoalsMetCount ?? 0) >= 10) count++;
   if ((stats.bestCompletedYearPct ?? 0) >= 75) count++;
   return count;
 }
@@ -212,6 +217,7 @@ export function getBestAchievedAward(stats: {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
 }): AwardTier | undefined {
   const achieved = getAchievedAwards(stats);
   // Return the last (highest) achieved tier across all categories
