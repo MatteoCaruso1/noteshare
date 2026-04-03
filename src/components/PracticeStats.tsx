@@ -672,7 +672,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   formatter={(value: number, _name: string, props: any) => {
                     const entry = props?.payload;
                     const mins = entry?.minutes || 0;
-                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, entry?.name || ''];
+                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, ''];
                   }}
                 />
                 <Bar
