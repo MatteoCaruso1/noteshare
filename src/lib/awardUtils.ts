@@ -189,6 +189,7 @@ export function getBaseAchievedCount(stats: {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
 }): number {
   let count = 0;
   for (const tier of STREAK_TIERS) {
