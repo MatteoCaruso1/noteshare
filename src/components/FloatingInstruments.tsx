@@ -18,22 +18,17 @@ export function FloatingInstruments() {
   useEffect(() => {
     const count = 9;
     
-    // Position at very far edges, partially off-screen, to avoid overlapping
-    // with static decorations (which sit at ~left-2 to left-12 / right-3 to right-14)
+    // Center area (15-85%) to avoid overlapping with static edge decorations
     const positions: number[] = [];
-    const getEdgePosition = (index: number): number => {
-      const isRight = index % 2 === 1;
-      // Left: -2% to 0%, Right: 98% to 100%
-      const base = isRight ? 97 : -2;
-      const range = 3;
+    const getPosition = (): number => {
       let pos: number;
       let attempts = 0;
       do {
-        pos = base + Math.random() * range;
+        pos = 15 + Math.random() * 70;
         attempts++;
       } while (
         attempts < 20 &&
-        positions.some(p => Math.abs(p - pos) < 1.5)
+        positions.some(p => Math.abs(p - pos) < 8)
       );
       positions.push(pos);
       return pos;
