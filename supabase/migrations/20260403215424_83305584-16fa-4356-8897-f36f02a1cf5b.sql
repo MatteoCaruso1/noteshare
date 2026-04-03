@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN last_monthly_recap_month text DEFAULT NULL;
