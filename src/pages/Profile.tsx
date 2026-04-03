@@ -98,9 +98,24 @@ const Profile = () => {
   
   // Guard ref to prevent duplicate milestone processing (race condition fix)
   const processingMilestonesRef = useRef<Set<number>>(new Set());
-  // Track milestones we've already celebrated in THIS browser session
-  // This prevents any re-celebration even across re-renders
-  const celebratedThisSessionRef = useRef<Set<number>>(new Set());
+
+  // Persist which milestones we've shown a dialog for during the CURRENT streak run.
+  // Keyed by profile+streak so it auto-resets when the streak changes.
+  const getShownKey = (pid: string, streak: number) =>
+    `noteshare_streak_dialog_shown_${pid}_${streak}`;
+
+  function getShownMilestones(pid: string, streak: number): Set<number> {
+    try {
+      const raw = localStorage.getItem(getShownKey(pid, streak));
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  }
+
+  function markMilestoneShown(pid: string, streak: number, milestone: number) {
+    const shown = getShownMilestones(pid, streak);
+    shown.add(milestone);
+    localStorage.setItem(getShownKey(pid, streak), JSON.stringify([...shown]));
+  }
 
   // Check for new streak milestones using atomic backend RPC
   // Claims ALL eligible award-level streak milestones (5, 10, 30, 90, 360)
@@ -138,12 +153,15 @@ const Profile = () => {
     // Get all streak award thresholds from the award system (5, 10, 30, 90, 360)
     const streakCategory = AWARD_CATEGORIES.find(c => c.category === 'streak');
     const allStreakThresholds = streakCategory?.tiers.map(t => t.threshold) || [];
+
+    // Milestones already shown as a dialog during THIS streak run (persisted in localStorage)
+    const shownThisRun = getShownMilestones(profile.id, currentStreak);
     
-    // Find all eligible milestones not yet celebrated
+    // Find all eligible milestones not yet celebrated AND not already shown this streak run
     const eligibleMilestones = allStreakThresholds.filter(
       threshold => currentStreak >= threshold && 
                    !celebratedMilestones.includes(threshold) &&
-                   !celebratedThisSessionRef.current.has(threshold) &&
+                   !shownThisRun.has(threshold) &&
                    !processingMilestonesRef.current.has(threshold)
     );
     
@@ -157,6 +175,9 @@ const Profile = () => {
       let highestClaimedCount = 0;
       
       for (const milestone of eligibleMilestones) {
+        // Mark shown BEFORE the RPC to prevent any re-fire from effect re-runs
+        markMilestoneShown(profile.id, currentStreak, milestone);
+
         const { data, error } = await supabase.rpc('claim_streak_milestone', {
           p_profile_id: profile.id,
           p_milestone: milestone,
@@ -169,7 +190,6 @@ const Profile = () => {
         }
         
         const result = data as { claimed: boolean; streak_achievement_counts?: Record<string, number> } | null;
-        celebratedThisSessionRef.current.add(milestone);
         
         if (result?.claimed) {
           const count = result.streak_achievement_counts?.[String(milestone)] || 1;
