@@ -99,42 +99,42 @@ const Index = () => {
   const monthlyRecapFiredRef = useRef(false);
   const previousMonth = useMemo(() => subMonths(new Date(), 1), []);
 
-  useEffect(() => {
-    if (monthlyRecapFiredRef.current) return;
-    if (!profile?.id || !isPremium || premiumLoading) return;
-    // Only trigger on days 1-3 of the month to catch first login
-    const dayOfMonth = new Date().getDate();
-    if (dayOfMonth > 3) return;
+  // ── Popup priority queue ──
+  // Only one popup shown at a time. Priority (highest first):
+  // 1. Streak encouragement (3-day / 7-day)
+  // 2. Pro tips ("Get the most out of Noteshare")
+  // 3. Monthly recap calendar share
+  const popupQueueRef = useRef<Array<{ priority: number; show: () => void }>>([]);
+  const popupProcessedRef = useRef(false);
 
-    const currentMonthKey = format(new Date(), 'yyyy-MM');
-    const storageKey = `noteshare_monthly_recap_${profile.id}`;
-    const lastShown = localStorage.getItem(storageKey);
-    if (lastShown === currentMonthKey) return;
+  const enqueuePopup = (priority: number, show: () => void) => {
+    popupQueueRef.current.push({ priority, show });
+    popupQueueRef.current.sort((a, b) => a.priority - b.priority);
+  };
 
-    monthlyRecapFiredRef.current = true;
-    localStorage.setItem(storageKey, currentMonthKey);
-    // Small delay to let other popups (weekly goal) settle
-    const timer = setTimeout(() => setMonthlyRecapOpen(true), 1500);
-    return () => clearTimeout(timer);
-  }, [profile?.id, isPremium, premiumLoading]);
+  const processPopupQueue = () => {
+    if (popupProcessedRef.current) return;
+    popupProcessedRef.current = true;
+    if (popupQueueRef.current.length > 0) {
+      popupQueueRef.current[0].show();
+    }
+  };
 
+  // Streak milestone checks — only fire on EXACT day match
   useEffect(() => {
     if (!profile || !practiceStats) return;
     const streak = practiceStats.currentStreak;
     const milestones = profile.celebrated_streak_milestones || [];
 
-    // localStorage keys to persist "shown" state across remounts/reloads
     const threeKey = `noteshare_streak3_shown_${profile.id}`;
     const sevenKey = `noteshare_streak7_shown_${profile.id}`;
 
-    // Clear localStorage flags when streak drops below the milestone
-    // so the popup can fire again on a future streak
     if (streak < 3) localStorage.removeItem(threeKey);
     if (streak < 7) localStorage.removeItem(sevenKey);
 
-    // --- 3-day milestone ---
+    // --- 3-day milestone (only on exact day 3) ---
     if (
-      streak >= 3 &&
+      streak === 3 &&
       !milestones.includes(3) &&
       !threeDayClaimingRef.current &&
       !localStorage.getItem(threeKey)
@@ -149,18 +149,19 @@ const Index = () => {
         const result = data as { claimed: boolean } | null;
         if (result?.claimed) {
           localStorage.setItem(threeKey, 'true');
-          setThreeDayDialogOpen(true);
+          enqueuePopup(1, () => setThreeDayDialogOpen(true));
           await refreshProfile();
         } else {
-          // Already claimed in DB — mark localStorage so we don't retry
           localStorage.setItem(threeKey, 'true');
         }
+        processPopupQueue();
       })();
+      return;
     }
 
-    // --- 7-day milestone ---
+    // --- 7-day milestone (only on exact day 7) ---
     if (
-      streak >= 7 &&
+      streak === 7 &&
       !milestones.includes(7) &&
       !sevenDayClaimingRef.current &&
       !localStorage.getItem(sevenKey)
@@ -175,14 +176,49 @@ const Index = () => {
         const result = data as { claimed: boolean } | null;
         if (result?.claimed) {
           localStorage.setItem(sevenKey, 'true');
-          setSevenDayDialogOpen(true);
+          enqueuePopup(1, () => setSevenDayDialogOpen(true));
           await refreshProfile();
         } else {
           localStorage.setItem(sevenKey, 'true');
         }
+        processPopupQueue();
       })();
+      return;
     }
+
+    // No streak popup — process queue for lower-priority popups
+    processPopupQueue();
   }, [practiceStats?.currentStreak, profile?.id, profile?.celebrated_streak_milestones, refreshProfile]);
+
+  // Monthly recap — account-scoped via DB column (works across devices)
+  useEffect(() => {
+    if (monthlyRecapFiredRef.current) return;
+    if (!profile?.id || !isPremium || premiumLoading) return;
+    const dayOfMonth = new Date().getDate();
+    if (dayOfMonth > 3) return;
+
+    const currentMonthKey = format(new Date(), 'yyyy-MM');
+    const lastShownMonth = (profile as any).last_monthly_recap_month;
+    if (lastShownMonth === currentMonthKey) return;
+
+    monthlyRecapFiredRef.current = true;
+    // Persist to DB immediately so other devices won't show it
+    supabase.from('profiles').update({ last_monthly_recap_month: currentMonthKey } as any).eq('id', profile.id).then(() => {});
+    localStorage.setItem(`noteshare_monthly_recap_${profile.id}`, currentMonthKey);
+
+    // Enqueue as lowest priority (3 = lowest)
+    enqueuePopup(3, () => setMonthlyRecapOpen(true));
+    const timer = setTimeout(() => processPopupQueue(), 1200);
+    return () => clearTimeout(timer);
+  }, [profile?.id, isPremium, premiumLoading]);
+
+  // Pro tips — enqueue as medium priority (2 = between streak and monthly)
+  useEffect(() => {
+    if (tipIndex === null) return;
+    enqueuePopup(2, () => { /* tipIndex is already set, ProTipsDialog reads it */ });
+    const timer = setTimeout(() => processPopupQueue(), 1000);
+    return () => clearTimeout(timer);
+  }, [tipIndex]);
 
 
   // Comprehensive bootstrapping detection: auth loading OR profile not yet available
