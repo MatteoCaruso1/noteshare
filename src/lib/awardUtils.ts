@@ -168,6 +168,7 @@ export function getAchievedAwards(stats: {
 
   // Consistency awards
   if ((stats.bestMonthDays ?? 0) >= 25) achieved.add('consistency-25days');
+  if ((stats.weeklyGoalsMetCount ?? 0) >= 10) achieved.add('consistency-10goals');
   if ((stats.bestCompletedYearPct ?? 0) >= 75) achieved.add('consistency-75pct');
 
   // Then compute legend awards based on base award count
