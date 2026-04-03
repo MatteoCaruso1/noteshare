@@ -94,8 +94,9 @@ export function FloatingInstruments() {
 
       const viewportHeight = window.innerHeight;
       const dividerTop = Math.max(0, Math.min(viewportHeight, divider.getBoundingClientRect().top));
-      const fadeStart = Math.max(0, dividerTop - 2);
-      const fadeEnd = Math.min(viewportHeight, dividerTop + 6);
+      // Offset upward so emojis vanish right at the visible color break, not after
+      const fadeStart = Math.max(0, dividerTop - 40);
+      const fadeEnd = Math.max(0, dividerTop - 10);
       const mask = `linear-gradient(to bottom, black 0px, black ${fadeStart}px, transparent ${fadeEnd}px, transparent 100%)`;
 
       activeContainer.style.maskImage = mask;
