@@ -688,14 +688,25 @@
   text-decoration: underline;
 }
 
-/* Hide scrollbar in textareas */
-textarea {
-  overflow-y: auto;
+/* Textarea scroll pass-through: allow page scrolling over unfocused textareas,
+   trap scroll only when the textarea is focused (clicked into) */
+textarea,
+[contenteditable="true"] {
+  overflow-y: hidden;
+  touch-action: pan-y pan-x;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-textarea::-webkit-scrollbar {
+textarea:focus,
+[contenteditable="true"]:focus,
+[contenteditable="true"].ProseMirror-focused {
+  overflow-y: auto;
+  touch-action: auto;
+}
+
+textarea::-webkit-scrollbar,
+[contenteditable="true"]::-webkit-scrollbar {
   display: none;
 }
 
