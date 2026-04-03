@@ -375,7 +375,7 @@ serve(async (req) => {
     for (let i = days - 1; i >= 0; i--) {
       const cohortDate = new Date();
       cohortDate.setDate(currentDate.getDate() - i);
-      const cohortDateStr = cohortDate.toISOString().split('T')[0];
+      const cohortDateStr = toESTDateStr(cohortDate);
       
       const cohortUsers: string[] = [];
       userFirstNoteDate.forEach((firstNoteDate, userId) => {
