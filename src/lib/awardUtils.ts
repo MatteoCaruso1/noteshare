@@ -151,6 +151,7 @@ export function getAchievedAwards(stats: {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
 }): Set<string> {
   const achieved = new Set<string>();
 
