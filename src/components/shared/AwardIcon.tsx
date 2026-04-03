@@ -77,11 +77,10 @@ export const AwardIcon = memo(function AwardIcon({
         </g>
       )}
       {tier.category === 'consistency' && tier.id === 'consistency-10goals' && (
-        // Target/bullseye icon (outline only, silver)
+        // Compass icon (matching goal icon, silver outline)
         <g fill="none" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="6" />
-          <circle cx="12" cy="12" r="2" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill={fillColor} />
         </g>
       )}
       {tier.category === 'consistency' && tier.id !== 'consistency-10goals' && (
