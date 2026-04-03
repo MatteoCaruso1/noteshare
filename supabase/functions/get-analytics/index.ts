@@ -313,7 +313,7 @@ serve(async (req) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = toESTDateStr(date);
       
       // Merge note creators into viewers set so viewers >= creators always
       const viewersSet = new Set(viewersByDate.get(dateStr) || []);
