@@ -1,29 +1,50 @@
 
+Problem found: this is very likely not a z-index issue. The floating emoji animation is currently self-canceling off-screen.
 
-## Problem
+What I found:
+- `FloatingInstruments` is mounted globally in `App.tsx`, so it is rendering.
+- The animation class `animate-float-down` exists in `tailwind.config.ts`.
+- But each emoji is also given `top: '-120vh'` in inline styles.
+- The keyframe itself already starts at `transform: translateY(-120vh)` and ends at `translateY(105vh)`.
 
-The `FloatingInstruments` component renders at `z-[5]`, but multiple page layers sit on top of it:
+Why that breaks visibility:
+```text
+Base position:      top = -120vh
+Animation start:    translateY(-120vh)
+Visible result:     starts around -240vh
 
-- **WelcomeHero** (landing page): uses `relative z-10`, completely covering the emojis
-- **PageLayout**: uses `bg-background`, creating an opaque layer over the fixed-position emojis
-- **Index page decorations**: same `z-[5]` but the `PageLayout` background still covers them
+Animation end:      top = -120vh + translateY(105vh)
+Visible result:     ends around -15vh
+```
 
-Since `FloatingInstruments` is `fixed inset-0 z-[5]` but the page content is rendered with opaque backgrounds at equal or higher z-index, the emojis are painted behind the visible content.
+So the emojis never actually enter the viewport. They stay above the screen the entire time inside an `overflow-hidden` fixed container.
 
-## Fix
+Implementation plan:
+1. Fix the animation math in `src/components/FloatingInstruments.tsx`
+   - Remove the inline `top: '-120vh'`.
+   - Anchor each emoji from the top of the container with `top: 0`.
+   - Let the keyframe alone control the full vertical travel.
+   - Keep `animationDelay` and `animationDuration`.
 
-1. **Raise `FloatingInstruments` z-index** from `z-[5]` to `z-[15]` — above page content but below modals/dialogs (which use z-50+). Keep `pointer-events-none` so it doesn't interfere with clicks.
+2. Make the effect more robust and visible
+   - Slightly increase opacity from the current very faint value so it remains visible over the newer ambient background.
+   - Keep `pointer-events-none`.
+   - Keep the fixed full-screen container and current z-index unless testing later proves another conflict.
 
-2. **Make `PageLayout` background transparent** so the fixed emojis show through. The `bg-background` on `PageLayout` is redundant since `<body>` or `<html>` already sets the background. Change `bg-background` to `bg-transparent` on the `PageLayout` wrapper div.
+3. Restore the intended placement pattern
+   - Constrain emojis to left/right gutter regions instead of randomizing across the full width.
+   - This matches the existing ambient design memory and avoids interfering with central content.
+   - Use deterministic-ish spread so they do not cluster badly.
 
-3. **Ensure WelcomeHero doesn't block them** — the hero already uses `bg-transparent`, but its `z-10` still creates a stacking context. Lower WelcomeHero's root to `z-[6]` (above page content, below floating emojis at z-15), or alternatively keep z-10 but since the background is transparent the emojis will show through once the PageLayout background issue is resolved. Actually, since the hero is `bg-transparent` and uses `relative` (not `fixed`), the fixed-position emojis at a higher z-index will paint on top regardless. So raising FloatingInstruments to z-15 is sufficient.
+4. Verify both page contexts conceptually
+   - Landing page: should appear alongside `WelcomeHero` decorations.
+   - Logged-in pages: should appear behind/around core cards without competing with content.
 
-4. **Verify the `animate-float-down` animation** works with inline `animationDuration` override — the Tailwind config defines `float-down` as `floatDown 30s linear infinite`, but the component overrides duration via inline style. This should work fine since inline styles take precedence.
+Files to change:
+- `src/components/FloatingInstruments.tsx` — primary fix
+- Possibly `tailwind.config.ts` only if I decide to slightly tune the keyframe travel range, but most likely not needed
 
-## Files to Change
-
-- **`src/components/FloatingInstruments.tsx`** — Change `z-[5]` → `z-[15]`
-- **`src/components/PageLayout.tsx`** — Change `bg-background` → `bg-transparent` on the wrapper div (line 152)
-
-This is a minimal, targeted fix. The emojis will float visibly above all page content while remaining non-interactive.
-
+Expected result:
+- Emojis will actually traverse through the viewport.
+- They will be visible again on both landing and regular pages.
+- The effect will be subtle but clearly present, especially in the side gutters.
