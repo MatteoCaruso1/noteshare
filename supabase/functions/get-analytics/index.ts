@@ -93,6 +93,17 @@ interface AccountFunnel {
   note5PlusUsers: FunnelUser[];
 }
 
+/** Return the YYYY-MM-DD string for a Date in America/New_York (EST/EDT). */
+function toESTDateStr(d: Date): string {
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // en-CA gives YYYY-MM-DD
+}
+
+/** Return a Date object set to midnight UTC of the EST calendar date for `d`. */
+function estToday(): Date {
+  const estStr = toESTDateStr(new Date());
+  return new Date(estStr + 'T00:00:00Z');
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -216,7 +227,10 @@ serve(async (req) => {
     const days = parseInt(url.searchParams.get('days') || '30');
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    const startDateStr = toESTDateStr(startDate);
+
+    // Current date in EST for loop bounds
+    const currentDateEST = toESTDateStr(new Date());
 
     console.log(`Fetching analytics for last ${days} days, starting from ${startDateStr}`);
 
@@ -236,7 +250,7 @@ serve(async (req) => {
     // Aggregate notes by date
     const notesByDate = new Map<string, Set<string>>();
     for (const note of notesData || []) {
-      const date = note.created_at.split('T')[0];
+      const date = toESTDateStr(new Date(note.created_at));
       if (!notesByDate.has(date)) {
         notesByDate.set(date, new Set());
       }
@@ -249,7 +263,7 @@ serve(async (req) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = toESTDateStr(date);
       const users = notesByDate.get(dateStr);
       dailyCounts.push({
         date: dateStr,
@@ -286,7 +300,7 @@ serve(async (req) => {
     // Aggregate page views by date
     const viewersByDate = new Map<string, Set<string>>();
     for (const view of pageViewsData || []) {
-      const date = view.viewed_at.split('T')[0];
+      const date = toESTDateStr(new Date(view.viewed_at));
       if (!viewersByDate.has(date)) {
         viewersByDate.set(date, new Set());
       }
@@ -299,7 +313,7 @@ serve(async (req) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = toESTDateStr(date);
       
       // Merge note creators into viewers set so viewers >= creators always
       const viewersSet = new Set(viewersByDate.get(dateStr) || []);
@@ -340,7 +354,7 @@ serve(async (req) => {
     const userFirstNoteDate = new Map<string, string>();
     for (const note of allNotesData || []) {
       const authorId = note.author_id;
-      const noteDate = note.created_at.split('T')[0];
+      const noteDate = toESTDateStr(new Date(note.created_at));
       if (!userFirstNoteDate.has(authorId)) {
         userFirstNoteDate.set(authorId, noteDate);
       }
@@ -349,7 +363,7 @@ serve(async (req) => {
     // Build notes by user and date for retention checking
     const notesByUserAndDate = new Map<string, Set<string>>();
     for (const note of allNotesData || []) {
-      const key = `${note.author_id}:${note.created_at.split('T')[0]}`;
+      const key = `${note.author_id}:${toESTDateStr(new Date(note.created_at))}`;
       if (!notesByUserAndDate.has(key)) {
         notesByUserAndDate.set(key, new Set());
       }
@@ -361,7 +375,7 @@ serve(async (req) => {
     for (let i = days - 1; i >= 0; i--) {
       const cohortDate = new Date();
       cohortDate.setDate(currentDate.getDate() - i);
-      const cohortDateStr = cohortDate.toISOString().split('T')[0];
+      const cohortDateStr = toESTDateStr(cohortDate);
       
       const cohortUsers: string[] = [];
       userFirstNoteDate.forEach((firstNoteDate, userId) => {
@@ -372,7 +386,7 @@ serve(async (req) => {
 
       const retentionDate = new Date(cohortDate);
       retentionDate.setDate(retentionDate.getDate() + 7);
-      const retentionDateStr = retentionDate.toISOString().split('T')[0];
+      const retentionDateStr = toESTDateStr(retentionDate);
 
       let retainedCount = 0;
       for (const userId of cohortUsers) {
@@ -396,8 +410,8 @@ serve(async (req) => {
     // Get today's Day 7 retention
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
-    const todayStr = new Date().toISOString().split('T')[0];
+    const sevenDaysAgoStr = toESTDateStr(sevenDaysAgo);
+    const todayStr = toESTDateStr(new Date());
 
     const cohortFrom7DaysAgo: string[] = [];
     userFirstNoteDate.forEach((firstNoteDate, userId) => {
