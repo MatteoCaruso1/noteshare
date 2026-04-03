@@ -152,23 +152,27 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       if (fErr) throw fErr;
       if (!focusEntries?.length) return [];
 
-      // Get all notes linked to focus entries
+      // Get all notes linked to focus entries (include session_id for minutes lookup)
       const { data: notes, error: nErr } = await supabase
         .from('notes')
-        .select('focus_entry_id')
+        .select('focus_entry_id, session_id')
         .eq('author_id', profileId)
         .not('focus_entry_id', 'is', null);
       if (nErr) throw nErr;
       if (!notes?.length) return [];
 
-      // Get practice sessions linked to focus entries for minutes
-      const { data: sessions, error: sErr } = await supabase
-        .from('practice_sessions')
-        .select('focus_entry_id, started_at, ended_at, paused_duration_ms')
-        .eq('user_id', profileId)
-        .not('focus_entry_id', 'is', null)
-        .not('ended_at', 'is', null);
-      if (sErr) throw sErr;
+      // Get practice sessions for minutes calculation (linked via notes' session_id)
+      const sessionIds = [...new Set(notes.map(n => n.session_id).filter(Boolean))] as string[];
+      let sessions: { id: string; started_at: string; ended_at: string | null; paused_duration_ms: number | null }[] = [];
+      if (sessionIds.length > 0) {
+        const { data: sData, error: sErr } = await supabase
+          .from('practice_sessions')
+          .select('id, started_at, ended_at, paused_duration_ms')
+          .in('id', sessionIds)
+          .not('ended_at', 'is', null);
+        if (sErr) throw sErr;
+        sessions = sData || [];
+      }
 
       // Build maps: focus_entry_id -> title, focus_entry_id -> text
       const titleMap = new Map<string, string>();
@@ -189,14 +193,22 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
         }
       });
 
-      // Sum minutes per title
+      // Sum minutes per title (link through notes: note.focus_entry_id → title, note.session_id → session)
+      const sessionMap = new Map<string, { started_at: string; ended_at: string; paused_duration_ms: number | null }>();
+      sessions.forEach(s => sessionMap.set(s.id, s));
+
       const minuteCounts = new Map<string, number>();
-      sessions?.forEach(s => {
-        const title = titleMap.get(s.focus_entry_id!);
-        if (title && s.started_at && s.ended_at) {
-          const durationMs = new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0);
-          const minutes = Math.max(0, Math.round(durationMs / 60000));
-          minuteCounts.set(title, (minuteCounts.get(title) || 0) + minutes);
+      const countedSessions = new Set<string>(); // avoid double-counting same session
+      notes.forEach(n => {
+        const title = titleMap.get(n.focus_entry_id!);
+        if (title && n.session_id && !countedSessions.has(n.session_id)) {
+          const s = sessionMap.get(n.session_id);
+          if (s) {
+            countedSessions.add(n.session_id);
+            const durationMs = new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0);
+            const minutes = Math.max(0, Math.round(durationMs / 60000));
+            minuteCounts.set(title, (minuteCounts.get(title) || 0) + minutes);
+          }
         }
       });
 
@@ -660,7 +672,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   formatter={(value: number, _name: string, props: any) => {
                     const entry = props?.payload;
                     const mins = entry?.minutes || 0;
-                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, entry?.name || ''];
+                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, ''];
                   }}
                 />
                 <Bar
