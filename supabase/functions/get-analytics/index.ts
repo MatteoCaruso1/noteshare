@@ -354,7 +354,7 @@ serve(async (req) => {
     const userFirstNoteDate = new Map<string, string>();
     for (const note of allNotesData || []) {
       const authorId = note.author_id;
-      const noteDate = note.created_at.split('T')[0];
+      const noteDate = toESTDateStr(new Date(note.created_at));
       if (!userFirstNoteDate.has(authorId)) {
         userFirstNoteDate.set(authorId, noteDate);
       }
