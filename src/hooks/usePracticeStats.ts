@@ -48,6 +48,9 @@ interface PracticeStats {
 
   // Consistency: best completed calendar year practice % (0-100)
   bestCompletedYearPct: number;
+
+  // Consistency: number of weekly goals met
+  weeklyGoalsMetCount: number;
 }
 
 export function usePracticeStats(profileId: string | undefined) {
