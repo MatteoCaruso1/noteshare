@@ -42,15 +42,34 @@ function generateSymbols(isLanding: boolean): FloatingSymbol[] {
     return pos;
   };
 
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-    left: getPosition(),
-    delay: (i * 5) + Math.random() * 12,
-    duration: 60 + Math.random() * 40,
-    size: 18 + Math.random() * 14,
-  }));
-}
+  // 65% get mild tilt (±30°), 35% get wilder rotation
+  const getRotation = () => {
+    if (Math.random() < 0.65) {
+      const start = (Math.random() - 0.5) * 60; // -30 to 30
+      const mid = start + (Math.random() - 0.5) * 40;
+      const end = start - (Math.random() - 0.5) * 40;
+      return { start, mid, end };
+    }
+    const start = Math.random() * 360;
+    const mid = start + (Math.random() - 0.5) * 120;
+    const end = start + (Math.random() - 0.5) * 180;
+    return { start, mid, end };
+  };
+
+  return Array.from({ length: count }, (_, i) => {
+    const rot = getRotation();
+    return {
+      id: i,
+      symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      left: getPosition(),
+      delay: (i * 5) + Math.random() * 12,
+      duration: 60 + Math.random() * 40,
+      size: 18 + Math.random() * 14,
+      rotateStart: rot.start,
+      rotateMid: rot.mid,
+      rotateEnd: rot.end,
+    };
+  });
 
 export function FloatingInstruments() {
   const [symbols, setSymbols] = useState<FloatingSymbol[]>([]);
