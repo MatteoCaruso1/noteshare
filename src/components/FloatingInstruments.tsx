@@ -37,7 +37,7 @@ export function FloatingInstruments() {
     const initial: FloatingSymbol[] = Array.from({ length: count }, (_, i) => ({
       id: i,
       symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      left: getEdgePosition(i),
+      left: getPosition(),
       delay: (i * 5) + Math.random() * 12,
       duration: 60 + Math.random() * 40,
       size: 18 + Math.random() * 14,
