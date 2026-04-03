@@ -222,6 +222,7 @@ const Profile = () => {
           });
         }
         setCelebratingAchievementCount(highestClaimedCount);
+        setCelebratingMilestoneDays(highestClaimedMilestone);
         setMilestoneDialogOpen(true);
         await refreshProfile();
       }
