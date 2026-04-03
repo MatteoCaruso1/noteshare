@@ -1,102 +1,29 @@
 
-Goal: make the stats graph filter pills (1M, 2M, 3M, 6M, All) stay visually stable on mobile tap, even after app publishes/refreshes, and align them with the working mobile-safe button patterns already used elsewhere.
 
-What I found
-- The Practice Stats range pills are still hand-rolled plain `<button>` elements in `src/components/PracticeStats.tsx` for both:
-  - Practice Time range selector
-  - Focus Level range selector
-- Those buttons currently only have:
-  - `touch-manipulation`
-  - `onTouchEnd -> blur()`
-  - active/inactive Tailwind classes
-- They do not use the stronger patterns that the working controls use:
-  - `data-no-hover-reset`
-  - `aria-pressed`
-  - shared `Button` styling or Radix-style selected-state semantics
-  - pointer-up cleanup
-  - stronger selected-state specificity
+## Problem
 
-Why the old fix hasn’t worked
-- The previous fixes addressed other button families, but these stats pills were left on a separate custom implementation.
-- On mobile, there is a global CSS rule in `src/index.css` that resets hover background on touch devices for buttons unless they are:
-  - `[aria-pressed="true"]`
-  - `[data-no-hover-reset]`
-- The stats pills have neither of those protections.
-- iOS/Safari can keep a tapped button in a sticky `:hover`/focus-like visual state briefly. Since these pills are custom and state changes happen immediately on tap, the global touch hover reset can end up wiping the visual background of the selected pill, which is why it looks like it “disappears”.
-- In contrast, working controls like the unlock button / metronome / timer / tabs use stronger state semantics and protection against the mobile hover reset behavior.
+The `FloatingInstruments` component renders at `z-[5]`, but multiple page layers sit on top of it:
 
-What makes this UI different from the working buttons
-- Stats pills:
-  - plain custom buttons
-  - no selected semantics (`aria-pressed`)
-  - no `data-no-hover-reset`
-  - selected/inactive styling mixed in ad hoc strings
-  - no pointer-up cleanup
-- Working buttons:
-  - use shared `Button` component or Radix triggers/tabs
-  - often include `data-no-hover-reset`
-  - often include selected-state attributes (`aria-pressed` or `data-state=active`)
-  - blur on interaction end, sometimes on both touch and pointer
-  - selected-state classes are designed to persist through mobile tap states
+- **WelcomeHero** (landing page): uses `relative z-10`, completely covering the emojis
+- **PageLayout**: uses `bg-background`, creating an opaque layer over the fixed-position emojis
+- **Index page decorations**: same `z-[5]` but the `PageLayout` background still covers them
 
-Implementation plan
-1. Replace both stats range button groups with one shared reusable range-pill renderer inside `PracticeStats`
-- Create a small internal helper/component for the range pills so both charts use the exact same implementation.
-- This removes the chance that one graph gets fixed while the other keeps the bug.
+Since `FloatingInstruments` is `fixed inset-0 z-[5]` but the page content is rendered with opaque backgrounds at equal or higher z-index, the emojis are painted behind the visible content.
 
-2. Give each pill explicit selected-state semantics
-- Add `aria-pressed={isActive}` to each pill.
-- Add `data-no-hover-reset` so the global mobile hover reset never strips the background from these controls.
-- This directly addresses the CSS/system-level cause.
+## Fix
 
-3. Migrate the pills onto the project’s proven mobile-safe button pattern
-- Prefer using the shared `Button` component with explicit class overrides for pill appearance, or a local button styled to match `Button` behavior exactly.
-- Include:
-  - `touch-manipulation`
-  - `select-none`
-  - `[-webkit-tap-highlight-color:transparent]`
-  - `onTouchEnd` blur
-  - `onPointerUp` blur
-- Keep the currently compact rounded-pill visual design.
+1. **Raise `FloatingInstruments` z-index** from `z-[5]` to `z-[15]` — above page content but below modals/dialogs (which use z-50+). Keep `pointer-events-none` so it doesn't interfere with clicks.
 
-4. Strengthen the active/inactive visual states so mobile cannot “wash them out”
-- Active state should explicitly keep its background/text on tap:
-  - dark/solid selected background
-  - stable selected text color
-  - explicit active-state classes matching the selected visual
-- Inactive state should have its own explicit background/text and only hover on hover-capable devices.
-- Use `[@media(hover:hover)]` gated hover classes instead of generic `hover:*` on these pills.
+2. **Make `PageLayout` background transparent** so the fixed emojis show through. The `bg-background` on `PageLayout` is redundant since `<body>` or `<html>` already sets the background. Change `bg-background` to `bg-transparent` on the `PageLayout` wrapper div.
 
-5. If needed, use a stable selected-state hook/class rather than relying on pseudo-classes
-- If the shared Button base still isn’t enough, add a tiny dedicated `StatsRangePill` component with deterministic selected styles and no dependence on transient hover state.
-- This would mirror the “robust over clever” approach used in the historical mobile fixes.
+3. **Ensure WelcomeHero doesn't block them** — the hero already uses `bg-transparent`, but its `z-10` still creates a stacking context. Lower WelcomeHero's root to `z-[6]` (above page content, below floating emojis at z-15), or alternatively keep z-10 but since the background is transparent the emojis will show through once the PageLayout background issue is resolved. Actually, since the hero is `bg-transparent` and uses `relative` (not `fixed`), the fixed-position emojis at a higher z-index will paint on top regardless. So raising FloatingInstruments to z-15 is sufficient.
 
-Files to update
-- `src/components/PracticeStats.tsx`
-  - replace both range button groups with the shared robust implementation
-- Possibly no global CSS change needed if the per-button protections are added correctly
-- Only if necessary, a very small targeted CSS helper in `src/index.css` for stats pill selected state on touch devices
+4. **Verify the `animate-float-down` animation** works with inline `animationDuration` override — the Tailwind config defines `float-down` as `floatDown 30s linear infinite`, but the component overrides duration via inline style. This should work fine since inline styles take precedence.
 
-Expected result
-- On mobile, tapping 1M/2M/3M/6M/All will no longer make the pill visually disappear.
-- The selected pill will remain visibly selected immediately after tap.
-- Both charts will behave identically.
-- The implementation will match the stronger interaction model already used by the app’s working mobile-safe controls.
+## Files to Change
 
-Technical details
-```text
-Current root cause:
-custom stats button
-  -> no aria-pressed
-  -> no data-no-hover-reset
-  -> mobile touch hover-reset CSS can override visual state
-  -> tapped selected pill appears to vanish
+- **`src/components/FloatingInstruments.tsx`** — Change `z-[5]` → `z-[15]`
+- **`src/components/PageLayout.tsx`** — Change `bg-background` → `bg-transparent` on the wrapper div (line 152)
 
-Planned robust fix:
-shared stats pill
-  -> aria-pressed={isActive}
-  -> data-no-hover-reset
-  -> touch + pointer blur cleanup
-  -> hover only on hover-capable devices
-  -> explicit active selected styling
-```
+This is a minimal, targeted fix. The emojis will float visibly above all page content while remaining non-interactive.
+
