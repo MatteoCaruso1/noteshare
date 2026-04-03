@@ -114,6 +114,7 @@ const HOURS_TIERS: AwardTier[] = [
 // Consistency awards
 const CONSISTENCY_TIERS: AwardTier[] = [
   { id: 'consistency-25days', category: 'consistency', label: '25d', threshold: 25, ...TIER_COLORS.silver },
+  { id: 'consistency-10goals', category: 'consistency', label: '10🎯', threshold: 10, ...TIER_COLORS.silver },
   { id: 'consistency-75pct', category: 'consistency', label: '75%', threshold: 75, ...TIER_COLORS.gold },
 ];
 
