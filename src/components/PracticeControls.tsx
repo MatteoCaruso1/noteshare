@@ -167,9 +167,12 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   const storedSettings = getSessionSettings();
   const isStoredSessionMatch = activeSession && storedSettings.sessionId === activeSession.id;
   
-  const [attachFocus, setAttachFocusState] = useState(() => 
-    isStoredSessionMatch ? storedSettings.attachFocus : false
-  );
+  const [attachFocus, setAttachFocusState] = useState(() => {
+    if (isStoredSessionMatch) return storedSettings.attachFocus;
+    // Default to linked if there's routine text when starting a new session
+    const cachedFocus = readFocusCache(profile?.id);
+    return !!(cachedFocus?.focus_text?.trim());
+  });
   const [wakeLockEnabled, setWakeLockEnabledState] = useState(() => 
     isStoredSessionMatch ? storedSettings.wakeLockEnabled : false
   );
