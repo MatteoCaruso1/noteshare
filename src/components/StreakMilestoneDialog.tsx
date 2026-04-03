@@ -60,9 +60,9 @@ function getNextMilestoneDays(tier: StreakTierInfo): number | null {
     case 'starter':
       return 30;
     case 'bronze':
-      return 90;
+      return 50;
     case 'silver':
-      return 360;
+      return 100;
     default:
       return null;
   }

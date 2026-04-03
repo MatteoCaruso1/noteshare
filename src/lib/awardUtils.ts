@@ -89,17 +89,17 @@ const STREAK_TIERS: AwardTier[] = [
   { id: 'streak-5', category: 'streak', label: '5d', threshold: 5, ...TIER_COLORS.starter },
   { id: 'streak-10', category: 'streak', label: '10d', threshold: 10, ...TIER_COLORS.bronze },
   { id: 'streak-30', category: 'streak', label: '30d', threshold: 30, ...TIER_COLORS.silver },
-  { id: 'streak-90', category: 'streak', label: '90d', threshold: 90, ...TIER_COLORS.gold },
-  { id: 'streak-360', category: 'streak', label: '360d', threshold: 360, ...TIER_COLORS.diamond },
+  { id: 'streak-50', category: 'streak', label: '50d', threshold: 50, ...TIER_COLORS.gold },
+  { id: 'streak-100', category: 'streak', label: '100d', threshold: 100, ...TIER_COLORS.diamond },
 ];
 
 // Notes completed awards
 const NOTES_TIERS: AwardTier[] = [
   { id: 'notes-30', category: 'notes', label: '30', threshold: 30, ...TIER_COLORS.starter },
   { id: 'notes-100', category: 'notes', label: '100', threshold: 100, ...TIER_COLORS.bronze },
-  { id: 'notes-250', category: 'notes', label: '250', threshold: 250, ...TIER_COLORS.silver },
-  { id: 'notes-500', category: 'notes', label: '500', threshold: 500, ...TIER_COLORS.gold },
-  { id: 'notes-1000', category: 'notes', label: '1K', threshold: 1000, ...TIER_COLORS.diamond },
+  { id: 'notes-200', category: 'notes', label: '200', threshold: 200, ...TIER_COLORS.silver },
+  { id: 'notes-300', category: 'notes', label: '300', threshold: 300, ...TIER_COLORS.gold },
+  { id: 'notes-500', category: 'notes', label: '500', threshold: 500, ...TIER_COLORS.diamond },
 ];
 
 // Hours practiced awards (thresholds in hours)
@@ -107,8 +107,8 @@ const HOURS_TIERS: AwardTier[] = [
   { id: 'hours-10', category: 'hours', label: '10h', threshold: 10, ...TIER_COLORS.starter },
   { id: 'hours-50', category: 'hours', label: '50h', threshold: 50, ...TIER_COLORS.bronze },
   { id: 'hours-100', category: 'hours', label: '100h', threshold: 100, ...TIER_COLORS.silver },
-  { id: 'hours-500', category: 'hours', label: '500h', threshold: 500, ...TIER_COLORS.gold },
-  { id: 'hours-1000', category: 'hours', label: '1000h', threshold: 1000, ...TIER_COLORS.diamond },
+  { id: 'hours-250', category: 'hours', label: '250h', threshold: 250, ...TIER_COLORS.gold },
+  { id: 'hours-500', category: 'hours', label: '500h', threshold: 500, ...TIER_COLORS.diamond },
 ];
 
 // Consistency awards
