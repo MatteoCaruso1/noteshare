@@ -10,6 +10,9 @@ interface FloatingSymbol {
   delay: number;
   duration: number;
   size: number;
+  rotateStart: number;
+  rotateMid: number;
+  rotateEnd: number;
 }
 
 function generateSymbols(isLanding: boolean): FloatingSymbol[] {
@@ -21,17 +24,10 @@ function generateSymbols(isLanding: boolean): FloatingSymbol[] {
     let attempts = 0;
     do {
       if (isLanding) {
-        // Landing page: full center spread (15-85%)
         pos = 15 + Math.random() * 70;
       } else {
-        // App pages: two lanes between static decorations and content
-        // Left lane: 5-28%, Right lane: 72-95%
         const isRight = Math.random() > 0.5;
-        if (isRight) {
-          pos = 72 + Math.random() * 23;
-        } else {
-          pos = 5 + Math.random() * 23;
-        }
+        pos = isRight ? 72 + Math.random() * 23 : 5 + Math.random() * 23;
       }
       attempts++;
     } while (
@@ -42,10 +38,9 @@ function generateSymbols(isLanding: boolean): FloatingSymbol[] {
     return pos;
   };
 
-  // 65% get mild tilt (±30°), 35% get wilder rotation
   const getRotation = () => {
     if (Math.random() < 0.65) {
-      const start = (Math.random() - 0.5) * 60; // -30 to 30
+      const start = (Math.random() - 0.5) * 60;
       const mid = start + (Math.random() - 0.5) * 40;
       const end = start - (Math.random() - 0.5) * 40;
       return { start, mid, end };
@@ -70,6 +65,7 @@ function generateSymbols(isLanding: boolean): FloatingSymbol[] {
       rotateEnd: rot.end,
     };
   });
+}
 
 export function FloatingInstruments() {
   const [symbols, setSymbols] = useState<FloatingSymbol[]>([]);
@@ -93,7 +89,10 @@ export function FloatingInstruments() {
             animationDelay: `${item.delay}s`,
             animationDuration: `${item.duration}s`,
             animationFillMode: 'both',
-          }}
+            '--float-rotate-start': `${item.rotateStart}deg`,
+            '--float-rotate-mid': `${item.rotateMid}deg`,
+            '--float-rotate-end': `${item.rotateEnd}deg`,
+          } as React.CSSProperties}
           aria-hidden="true"
         >
           {item.symbol}
