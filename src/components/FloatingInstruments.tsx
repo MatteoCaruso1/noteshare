@@ -77,7 +77,7 @@ export function FloatingInstruments() {
   }, [isLanding]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[2]">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[15]">
       {symbols.map((item) => (
         <div
           key={item.id}
