@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
@@ -70,14 +70,53 @@ function generateSymbols(isLanding: boolean): FloatingSymbol[] {
 export function FloatingInstruments() {
   const [symbols, setSymbols] = useState<FloatingSymbol[]>([]);
   const location = useLocation();
+  const containerRef = useRef<HTMLDivElement>(null);
   const isLanding = location.pathname === '/welcome';
 
   useEffect(() => {
     setSymbols(generateSymbols(isLanding));
   }, [isLanding]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!isLanding) {
+      container.style.maskImage = '';
+      container.style.webkitMaskImage = '';
+      return;
+    }
+
+    const updateLandingMask = () => {
+      const divider = document.querySelector<HTMLElement>('[data-landing-divider]');
+      const activeContainer = containerRef.current;
+      if (!divider || !activeContainer) return;
+
+      const viewportHeight = window.innerHeight;
+      const dividerTop = Math.max(0, Math.min(viewportHeight, divider.getBoundingClientRect().top));
+      const fadeStart = Math.max(0, dividerTop - 2);
+      const fadeEnd = Math.min(viewportHeight, dividerTop + 6);
+      const mask = `linear-gradient(to bottom, black 0px, black ${fadeStart}px, transparent ${fadeEnd}px, transparent 100%)`;
+
+      activeContainer.style.maskImage = mask;
+      activeContainer.style.webkitMaskImage = mask;
+    };
+
+    updateLandingMask();
+    window.addEventListener('scroll', updateLandingMask, { passive: true });
+    window.addEventListener('resize', updateLandingMask);
+
+    return () => {
+      window.removeEventListener('scroll', updateLandingMask);
+      window.removeEventListener('resize', updateLandingMask);
+    };
+  }, [isLanding]);
+
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5]">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5]"
+    >
       {symbols.map((item) => (
         <div
           key={item.id}
@@ -101,3 +140,4 @@ export function FloatingInstruments() {
     </div>
   );
 }
+
