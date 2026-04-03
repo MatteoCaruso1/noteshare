@@ -71,7 +71,7 @@ export function AwardsSection({
 
   const baseAwardCount = useMemo(
     () => getBaseAchievedCount({ bestStreak, totalNotes, totalHours, ...consistencyStats }),
-    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount]
   );
 
   const handleSelectAward = useCallback(async (tier: AwardTier) => {
