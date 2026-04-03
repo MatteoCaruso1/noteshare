@@ -300,7 +300,7 @@ serve(async (req) => {
     // Aggregate page views by date
     const viewersByDate = new Map<string, Set<string>>();
     for (const view of pageViewsData || []) {
-      const date = view.viewed_at.split('T')[0];
+      const date = toESTDateStr(new Date(view.viewed_at));
       if (!viewersByDate.has(date)) {
         viewersByDate.set(date, new Set());
       }
