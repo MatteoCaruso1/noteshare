@@ -152,23 +152,27 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
       if (fErr) throw fErr;
       if (!focusEntries?.length) return [];
 
-      // Get all notes linked to focus entries
+      // Get all notes linked to focus entries (include session_id for minutes lookup)
       const { data: notes, error: nErr } = await supabase
         .from('notes')
-        .select('focus_entry_id')
+        .select('focus_entry_id, session_id')
         .eq('author_id', profileId)
         .not('focus_entry_id', 'is', null);
       if (nErr) throw nErr;
       if (!notes?.length) return [];
 
-      // Get practice sessions linked to focus entries for minutes
-      const { data: sessions, error: sErr } = await supabase
-        .from('practice_sessions')
-        .select('focus_entry_id, started_at, ended_at, paused_duration_ms')
-        .eq('user_id', profileId)
-        .not('focus_entry_id', 'is', null)
-        .not('ended_at', 'is', null);
-      if (sErr) throw sErr;
+      // Get practice sessions for minutes calculation (linked via notes' session_id)
+      const sessionIds = [...new Set(notes.map(n => n.session_id).filter(Boolean))] as string[];
+      let sessions: { id: string; started_at: string; ended_at: string | null; paused_duration_ms: number | null }[] = [];
+      if (sessionIds.length > 0) {
+        const { data: sData, error: sErr } = await supabase
+          .from('practice_sessions')
+          .select('id, started_at, ended_at, paused_duration_ms')
+          .in('id', sessionIds)
+          .not('ended_at', 'is', null);
+        if (sErr) throw sErr;
+        sessions = sData || [];
+      }
 
       // Build maps: focus_entry_id -> title, focus_entry_id -> text
       const titleMap = new Map<string, string>();
