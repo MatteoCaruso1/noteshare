@@ -1182,6 +1182,7 @@ export type Database = {
           has_used_trial: boolean | null
           id: string
           instruments: string[] | null
+          last_monthly_recap_month: string | null
           location: string | null
           name: string
           open_to_collaborate: boolean | null
@@ -1213,6 +1214,7 @@ export type Database = {
           has_used_trial?: boolean | null
           id?: string
           instruments?: string[] | null
+          last_monthly_recap_month?: string | null
           location?: string | null
           name: string
           open_to_collaborate?: boolean | null
@@ -1244,6 +1246,7 @@ export type Database = {
           has_used_trial?: boolean | null
           id?: string
           instruments?: string[] | null
+          last_monthly_recap_month?: string | null
           location?: string | null
           name?: string
           open_to_collaborate?: boolean | null
