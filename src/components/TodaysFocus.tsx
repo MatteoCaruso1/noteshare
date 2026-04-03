@@ -108,7 +108,9 @@ export function TodaysFocus() {
       setText(freshText);
     }
     if ((focus as any).focus_title !== undefined && (focus as any).focus_title !== title) {
-      setTitle((focus as any).focus_title || '');
+      const newTitle = (focus as any).focus_title || '';
+      setTitle(newTitle);
+      savedTitleRef.current = newTitle;
     }
   }, [focus?.focus_text, profileId]);
 
