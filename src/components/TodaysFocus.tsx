@@ -795,9 +795,10 @@ export function TodaysFocus() {
     const currentTitle = titleRef.current.trim();
     const currentText = textRef.current.trim();
     if (currentText && currentTitle) {
+      const prevTitle = savedTitleRef.current;
       saveToBacklog(
-        { focusText: textRef.current, focusTitle: currentTitle, originalFocusDate: focus?.focus_date },
-        { onSuccess: () => {}, onError: () => toast.error('Failed to save routine') }
+        { focusText: textRef.current, focusTitle: currentTitle, originalFocusDate: focus?.focus_date, previousTitle: prevTitle !== currentTitle ? prevTitle : undefined },
+        { onSuccess: () => { savedTitleRef.current = currentTitle; }, onError: () => toast.error('Failed to save routine') }
       );
     }
   };
