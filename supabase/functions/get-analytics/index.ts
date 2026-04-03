@@ -250,7 +250,7 @@ serve(async (req) => {
     // Aggregate notes by date
     const notesByDate = new Map<string, Set<string>>();
     for (const note of notesData || []) {
-      const date = note.created_at.split('T')[0];
+      const date = toESTDateStr(new Date(note.created_at));
       if (!notesByDate.has(date)) {
         notesByDate.set(date, new Set());
       }
