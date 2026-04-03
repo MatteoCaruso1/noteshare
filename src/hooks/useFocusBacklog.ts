@@ -35,11 +35,22 @@ export function useFocusBacklog() {
   });
 
   // Save to backlog — upsert by title (overwrite if same title exists)
+  // If previousTitle is provided and differs from the new title, the old entry is deleted.
   const saveToBacklog = useMutation({
-    mutationFn: async ({ focusText, focusTitle, originalFocusDate }: { focusText: string; focusTitle?: string; originalFocusDate?: string }) => {
+    mutationFn: async ({ focusText, focusTitle, originalFocusDate, previousTitle }: { focusText: string; focusTitle?: string; originalFocusDate?: string; previousTitle?: string }) => {
       if (!profile?.id) throw new Error('Not authenticated');
 
       const normalizedTitle = (focusTitle || '').trim();
+      const normalizedPrevTitle = (previousTitle || '').trim();
+
+      // If the title changed, delete old entries with the previous title
+      if (normalizedPrevTitle && normalizedPrevTitle !== normalizedTitle) {
+        await supabase
+          .from('focus_backlog')
+          .delete()
+          .eq('user_id', profile.id)
+          .eq('focus_title', normalizedPrevTitle);
+      }
 
       // Check if entries with the same title already exist
       if (normalizedTitle) {
