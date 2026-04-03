@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Trophy, Sparkles } from 'lucide-react';
 import { StreakTierInfo } from '@/lib/streakUtils';
+import { AWARD_CATEGORIES } from '@/lib/awardUtils';
 
 interface StreakMilestoneDialogProps {
   open: boolean;
@@ -15,7 +16,8 @@ interface StreakMilestoneDialogProps {
   tier: StreakTierInfo;
   streakDays: number;
   hasNextMilestone: boolean;
-  achievementCount?: number; // How many times this milestone has been achieved
+  achievementCount?: number;
+  milestoneDays?: number; // The actual milestone threshold (e.g. 5, 10, 30)
 }
 
 function TierIcon({ tier }: { tier: StreakTierInfo }) {
@@ -25,7 +27,6 @@ function TierIcon({ tier }: { tier: StreakTierInfo }) {
 
 function getRewardDescription(tier: StreakTierInfo, isRepeat: boolean): string {
   if (isRepeat) {
-    // Repeat achievement - trophy counter increased
     switch (tier.tier) {
       case 'starter':
         return 'Your starter trophy counter has been increased!';
@@ -39,7 +40,6 @@ function getRewardDescription(tier: StreakTierInfo, isRepeat: boolean): string {
         return '';
     }
   } else {
-    // First time achievement - new trophy earned
     switch (tier.tier) {
       case 'starter':
         return 'A starter trophy now appears beside your name.';
@@ -55,17 +55,15 @@ function getRewardDescription(tier: StreakTierInfo, isRepeat: boolean): string {
   }
 }
 
-function getNextMilestoneDays(tier: StreakTierInfo): number | null {
-  switch (tier.tier) {
-    case 'starter':
-      return 30;
-    case 'bronze':
-      return 50;
-    case 'silver':
-      return 100;
-    default:
-      return null;
+function getNextAwardMilestoneDays(currentMilestone: number): number | null {
+  const streakCategory = AWARD_CATEGORIES.find(c => c.category === 'streak');
+  if (!streakCategory) return null;
+  const thresholds = streakCategory.tiers.map(t => t.threshold).sort((a, b) => a - b);
+  const idx = thresholds.indexOf(currentMilestone);
+  if (idx >= 0 && idx < thresholds.length - 1) {
+    return thresholds[idx + 1];
   }
+  return null;
 }
 
 export function StreakMilestoneDialog({
@@ -75,10 +73,13 @@ export function StreakMilestoneDialog({
   streakDays,
   hasNextMilestone,
   achievementCount = 1,
+  milestoneDays,
 }: StreakMilestoneDialogProps) {
   const isRepeatAchievement = achievementCount > 1;
   const rewardDescription = getRewardDescription(tier, isRepeatAchievement);
-  const nextMilestoneDays = getNextMilestoneDays(tier);
+  const nextMilestoneDays = milestoneDays != null
+    ? getNextAwardMilestoneDays(milestoneDays)
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
