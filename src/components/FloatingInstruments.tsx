@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
-const INSTRUMENTS = ['🎸', '🎹', '🎺', '🎻', '🥁', '🎷', '🎤', '🪕', '🎵', '🎶'];
+// Text musical symbols that respond to CSS color (unlike emojis)
+const SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
 
-interface FloatingEmoji {
+interface FloatingSymbol {
   id: number;
-  emoji: string;
+  symbol: string;
   left: number;
   delay: number;
   duration: number;
@@ -12,17 +13,19 @@ interface FloatingEmoji {
 }
 
 export function FloatingInstruments() {
-  const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
+  const [symbols, setSymbols] = useState<FloatingSymbol[]>([]);
 
   useEffect(() => {
-    const emojiCount = 9;
+    const count = 9;
     
-    // Far edges only: left 0-3% and right 97-100% to avoid overlap with static decorations
-    const gutterPositions: number[] = [];
-    const getGutterPosition = (index: number): number => {
+    // Position at very far edges, partially off-screen, to avoid overlapping
+    // with static decorations (which sit at ~left-2 to left-12 / right-3 to right-14)
+    const positions: number[] = [];
+    const getEdgePosition = (index: number): number => {
       const isRight = index % 2 === 1;
-      const base = isRight ? 94 : 0;
-      const range = 5;
+      // Left: -2% to 0%, Right: 98% to 100%
+      const base = isRight ? 97 : -2;
+      const range = 3;
       let pos: number;
       let attempts = 0;
       do {
@@ -30,29 +33,29 @@ export function FloatingInstruments() {
         attempts++;
       } while (
         attempts < 20 &&
-        gutterPositions.some(p => Math.abs(p - pos) < 2)
+        positions.some(p => Math.abs(p - pos) < 1.5)
       );
-      gutterPositions.push(pos);
+      positions.push(pos);
       return pos;
     };
     
-    const initialEmojis: FloatingEmoji[] = Array.from({ length: emojiCount }, (_, i) => ({
+    const initial: FloatingSymbol[] = Array.from({ length: count }, (_, i) => ({
       id: i,
-      emoji: INSTRUMENTS[Math.floor(Math.random() * INSTRUMENTS.length)],
-      left: getGutterPosition(i),
+      symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      left: getEdgePosition(i),
       delay: (i * 5) + Math.random() * 12,
       duration: 60 + Math.random() * 40,
-      size: 16 + Math.random() * 12,
+      size: 18 + Math.random() * 14,
     }));
-    setEmojis(initialEmojis);
+    setSymbols(initial);
   }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-[2]">
-      {emojis.map((item) => (
+      {symbols.map((item) => (
         <div
           key={item.id}
-          className="absolute opacity-[0.10] animate-float-down text-primary"
+          className="absolute opacity-[0.08] animate-float-down text-primary select-none"
           style={{
             left: `${item.left}%`,
             top: 0,
@@ -60,10 +63,10 @@ export function FloatingInstruments() {
             animationDelay: `${item.delay}s`,
             animationDuration: `${item.duration}s`,
             animationFillMode: 'both',
-            filter: 'saturate(0.3) brightness(1.2)',
           }}
+          aria-hidden="true"
         >
-          {item.emoji}
+          {item.symbol}
         </div>
       ))}
     </div>
