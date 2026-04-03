@@ -217,6 +217,7 @@ export function getBestAchievedAward(stats: {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
 }): AwardTier | undefined {
   const achieved = getAchievedAwards(stats);
   // Return the last (highest) achieved tier across all categories
