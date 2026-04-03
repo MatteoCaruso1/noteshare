@@ -109,7 +109,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           {displayDescription}
         </p>
       </div>
-      <div className="relative">
+      <div className="relative z-[12]">
         <div className="absolute -inset-4 bg-primary/10 blur-xl md:blur-2xl rounded-3xl opacity-50" />
         <div 
           className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ${
