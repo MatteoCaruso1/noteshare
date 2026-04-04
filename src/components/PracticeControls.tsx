@@ -111,15 +111,13 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   const deleteSession = useDeleteSession();
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
-  const { checkAndTrigger } = useShareEducation();
   const { triggerPrompt: triggerHomescreenPrompt } = useHomescreenPromptTrigger();
   const { checkNoteMilestones } = useMilestoneToasts();
   
   const handleNoteCreated = useCallback((noteId: string, totalCount: number) => {
-    checkAndTrigger(noteId, totalCount);
     triggerHomescreenPrompt(totalCount);
     checkNoteMilestones(totalCount);
-  }, [checkAndTrigger, triggerHomescreenPrompt, checkNoteMilestones]);
+  }, [triggerHomescreenPrompt, checkNoteMilestones]);
   
   const createNote = useCreateNote(handleNoteCreated);
   const createNoteShares = useCreateNoteShares();

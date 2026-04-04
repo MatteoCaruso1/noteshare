@@ -57,15 +57,13 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
   const { data: currentFocus } = useCurrentFocusEntry();
   const { data: realActiveSession } = useActiveSession(authProfile?.id);
   const activeSession = ftuePreview.isFTUEPreview ? ftuePreview.previewSession : realActiveSession;
-  const { checkAndTrigger } = useShareEducation();
   const { triggerPrompt: triggerHomescreenPrompt } = useHomescreenPromptTrigger();
   const { checkNoteMilestones } = useMilestoneToasts();
   
   const handleNoteCreated = useCallback((noteId: string, totalCount: number) => {
-    checkAndTrigger(noteId, totalCount);
     triggerHomescreenPrompt(totalCount);
     checkNoteMilestones(totalCount);
-  }, [checkAndTrigger, triggerHomescreenPrompt, checkNoteMilestones]);
+  }, [triggerHomescreenPrompt, checkNoteMilestones]);
   
   const createNote = useCreateNote(handleNoteCreated);
   const { uploadAudio, uploadImage, uploadFile, uploading } = useMediaUpload();
