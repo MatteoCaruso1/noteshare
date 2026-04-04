@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force system/emoji font for standalone Unicode symbols & emoji (iOS WKWebView fix) */
+.emoji-text {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', system-ui, sans-serif;
+}
+
 /* Noteshare - Practice Journal for Musicians
    Clean, focused, workflow-first design
    Inspired by Strava, Notion, and Voice Memos

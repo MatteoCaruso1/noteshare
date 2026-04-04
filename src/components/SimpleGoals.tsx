@@ -249,7 +249,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
                   <span className="font-medium">{formatMinutes(currentMinutes)}</span>
                 )}
                 <span className="text-muted-foreground"> / {formatMinutes(weeklyTargetMinutes)}</span>
-                {isWeeklyComplete && ' 🎉'}
+                {isWeeklyComplete && <span className="emoji-text"> 🎉</span>}
               </span>
             </div>
             {/* Styled progress bar with skewed edges */}

@@ -121,7 +121,7 @@ export function FloatingInstruments() {
       {symbols.map((item) => (
         <div
           key={item.id}
-          className="absolute opacity-[0.08] animate-float-down text-primary select-none"
+          className="absolute opacity-[0.08] animate-float-down text-primary select-none emoji-text"
           style={{
             left: `${item.left}%`,
             top: 0,

@@ -59,16 +59,16 @@ export function WelcomeHero() {
         {/* Floating musical decorative elements - left side */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Left cluster - staggered musical notes/symbols */}
-          <div className="absolute top-[18%] -left-4 md:left-4 opacity-[0.07] text-primary text-5xl md:text-6xl rotate-[-15deg] select-none" aria-hidden="true">♪</div>
-          <div className="absolute top-[35%] -left-2 md:left-8 opacity-[0.05] text-primary text-3xl md:text-4xl rotate-[10deg] select-none" aria-hidden="true">♫</div>
-          <div className="absolute top-[55%] left-0 md:left-12 opacity-[0.06] text-primary text-4xl md:text-5xl rotate-[-8deg] select-none" aria-hidden="true">𝄞</div>
-          <div className="absolute top-[72%] -left-1 md:left-6 opacity-[0.04] text-primary text-3xl rotate-[20deg] select-none" aria-hidden="true">♩</div>
+          <div className="absolute top-[18%] -left-4 md:left-4 opacity-[0.07] text-primary text-5xl md:text-6xl rotate-[-15deg] select-none emoji-text" aria-hidden="true">♪</div>
+          <div className="absolute top-[35%] -left-2 md:left-8 opacity-[0.05] text-primary text-3xl md:text-4xl rotate-[10deg] select-none emoji-text" aria-hidden="true">♫</div>
+          <div className="absolute top-[55%] left-0 md:left-12 opacity-[0.06] text-primary text-4xl md:text-5xl rotate-[-8deg] select-none emoji-text" aria-hidden="true">𝄞</div>
+          <div className="absolute top-[72%] -left-1 md:left-6 opacity-[0.04] text-primary text-3xl rotate-[20deg] select-none emoji-text" aria-hidden="true">♩</div>
 
           {/* Right cluster */}
-          <div className="absolute top-[15%] -right-2 md:right-6 opacity-[0.06] text-primary text-4xl md:text-5xl rotate-[12deg] select-none" aria-hidden="true">𝄢</div>
-          <div className="absolute top-[38%] -right-1 md:right-10 opacity-[0.05] text-primary text-5xl md:text-6xl rotate-[-18deg] select-none" aria-hidden="true">♬</div>
-          <div className="absolute top-[58%] right-0 md:right-4 opacity-[0.07] text-primary text-3xl md:text-4xl rotate-[6deg] select-none" aria-hidden="true">♭</div>
-          <div className="absolute top-[75%] right-2 md:right-14 opacity-[0.04] text-primary text-4xl rotate-[-10deg] select-none" aria-hidden="true">♯</div>
+          <div className="absolute top-[15%] -right-2 md:right-6 opacity-[0.06] text-primary text-4xl md:text-5xl rotate-[12deg] select-none emoji-text" aria-hidden="true">𝄢</div>
+          <div className="absolute top-[38%] -right-1 md:right-10 opacity-[0.05] text-primary text-5xl md:text-6xl rotate-[-18deg] select-none emoji-text" aria-hidden="true">♬</div>
+          <div className="absolute top-[58%] right-0 md:right-4 opacity-[0.07] text-primary text-3xl md:text-4xl rotate-[6deg] select-none emoji-text" aria-hidden="true">♭</div>
+          <div className="absolute top-[75%] right-2 md:right-14 opacity-[0.04] text-primary text-4xl rotate-[-10deg] select-none emoji-text" aria-hidden="true">♯</div>
 
           {/* Decorative curved line - left */}
           <svg className="absolute top-[20%] -left-8 md:left-0 w-24 md:w-32 h-64 opacity-[0.06]" viewBox="0 0 100 200" fill="none" aria-hidden="true">
