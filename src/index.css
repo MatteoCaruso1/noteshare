@@ -365,6 +365,9 @@
     /* Hide scrollbar while maintaining scroll functionality */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    /* iOS full-height fix */
+    height: 100vh;
+    height: -webkit-fill-available;
   }
 
   /* Hide scrollbar for Chrome/Safari/Opera */
