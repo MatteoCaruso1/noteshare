@@ -1,25 +1,57 @@
 
 
-## Fix Floating Symbol Z-Index Layering
+## Problem Analysis
 
-**Problem**: At `z-[4]`, the floating symbols fall behind the entire WelcomeHero component which sits at `z-10`. They need to be visible over the section backgrounds but behind the screenshot images.
+All four broken items share the same root cause: they render Unicode characters (musical symbols or emoji) as **inline text content** styled with the app's custom font (`Inter`). The `Inter` font does not contain glyphs for musical symbols (`♪`, `♫`, `𝄞`, `♭`, `♯`, `𝄢`) or certain emoji (`✨`, `🎉`). 
 
-**Root cause**: `WelcomeHero` has `z-10` on its outermost div, creating a stacking context that covers everything at `z-[4]`.
+The Tailwind `sans` font stack fix added emoji fallback fonts (`Apple Color Emoji`, etc.), but this only works for elements that inherit from `font-sans`. The issue is that **WKWebView on iOS** (used by Capacitor) handles font fallback differently than desktop browsers — when a loaded web font (`Inter`) doesn't have a glyph, WKWebView may show a question mark box instead of falling through to system fallbacks.
 
-**Solution** (2 files):
+The broken items:
+1. **Static decorations** (WelcomeHero.tsx) — `♪`, `♫`, `𝄞`, `♩`, `𝄢`, `♬`, `♭`, `♯`
+2. **Falling emojis** (FloatingInstruments.tsx) — same musical symbols
+3. **Weekly goal celebration** (SimpleGoals.tsx) — `🎉`
+4. **Awards sparkle** (AwardsSection.tsx) — `✨`
 
-1. **`src/components/FloatingInstruments.tsx`** — Change container from `z-[4]` to `z-[8]`
-   - This places symbols above most backgrounds but below the `z-10` WelcomeHero content
+## Fix
 
-2. **`src/components/LandingFeatures.tsx`** — Add `relative z-[12]` to each screenshot's outer container (the `<div className="relative">` wrapping each image)
-   - This ensures screenshots stack above the floating symbols
+Apply `font-family: system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif` directly to all elements that render standalone Unicode symbols/emoji. This forces WKWebView to use system fonts that contain these glyphs, bypassing the `Inter` font entirely for these decorative characters.
 
-3. **`src/components/WelcomeHero.tsx`** — No changes needed; `z-10` on the hero content keeps text/CTA above symbols
+### Changes
 
-**Resulting layer order** (back to front):
-- Page background
-- Section gradient backgrounds
-- Floating symbols (`z-[8]`)
-- Hero text/CTA (`z-10`)
-- Feature screenshots (`z-[12]` within `z-10` parent = effective `z-12`)
+**1. `src/index.css` — Add a global utility class**
+
+Add a CSS class `.emoji-text` that forces system font rendering:
+
+```css
+.emoji-text {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', system-ui, sans-serif;
+}
+```
+
+**2. `src/components/FloatingInstruments.tsx`**
+
+Add `emoji-text` class to each floating symbol `<div>`.
+
+**3. `src/components/WelcomeHero.tsx`**
+
+Add `emoji-text` class to the 8 static musical symbol `<div>` elements (lines 62-71).
+
+**4. `src/components/AwardsSection.tsx`**
+
+Add `emoji-text` class to the `✨` sparkle text element.
+
+**5. `src/components/SimpleGoals.tsx`**
+
+Wrap the `🎉` emoji in a `<span className="emoji-text">` so it renders correctly on iOS.
+
+**6. Global sweep** — Apply the same fix to other emoji-containing elements found in the codebase (toast messages with emoji like `🎉`, `🏆`, event type icons like `🎸`, `🎹`, etc.) to prevent future reports of the same issue. Key files:
+- `src/hooks/useGoals.ts` — toast messages with 🎉
+- `src/hooks/useAchievementToasts.ts` — toast with 🏆  
+- `src/components/CheckoutDialog.tsx` / `LifetimeCheckoutDialog.tsx` — 🎉
+- `src/components/groups/CreateEventDrawer.tsx` — event type emoji
+- `src/pages/FTUE.tsx` — 🎉
+- `src/components/ManagePlansSection.tsx` — ✨
+- `src/components/shared/AddNoteDialog.tsx` — 🎵
+
+For toast messages (which are string-only), the fix won't apply via className. These are less likely to be affected since Sonner renders toasts with its own font stack, but the visible UI elements above are the priority.
 
