@@ -182,17 +182,25 @@ export const FriendsFeed = memo(function FriendsFeed({ searchQuery = '', focusDa
 
   if (mergedTimeline.length === 0 && hasLoadedOnce) {
     return (
-      <Card className="p-8 bg-card border-border text-center">
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Users className="w-8 h-8 text-white" />
+      <div className="space-y-4">
+        <Card className="p-8 bg-card border-border text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+            Add friends to see what they're practicing!
+          </p>
+        </Card>
+        <div>
+          <p className="text-xs text-muted-foreground mb-3 text-center">Sample timeline</p>
+          <div className="space-y-4 opacity-70 pointer-events-none">
+            <img src={sampleQuickNote} alt="Sample quick note" className="w-full rounded-lg" />
+            <img src={samplePracticeSession} alt="Sample practice session" className="w-full rounded-lg" />
           </div>
         </div>
-        <h3 className="font-semibold text-lg mb-2">No friends' activity yet</h3>
-        <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-          Add friends to see what they're practicing!
-        </p>
-      </Card>
+      </div>
     );
   }
 
