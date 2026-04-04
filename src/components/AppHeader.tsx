@@ -91,7 +91,7 @@ export function AppHeader() {
   const isSessionActive = user && profile && activeSession;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border" style={{ paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
       <div className={`flex h-12 items-center justify-between px-4 ${isOnWelcomePage ? 'w-full' : 'container'}`}>
         <div className="flex items-center gap-3">
           <Link to="/welcome" onClick={() => window.scrollTo(0, 0)} className="flex items-center gap-2 hover:underline decoration-foreground underline-offset-2">
