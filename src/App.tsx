@@ -208,7 +208,7 @@ function AppInner() {
                       <CheckoutDialogWrapper />
                       <LifetimeCheckoutDialogWrapper />
                       <OnboardingFlow />
-                      <ShareEducationTour />
+                      
                       <AppPrefetcher />
                       <FTUERetryCommit />
                       <UpdateAvailableToast />
