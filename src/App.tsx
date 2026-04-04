@@ -191,7 +191,7 @@ function AppInner() {
           <PremiumProvider>
             <ColorThemeProvider>
             <OnboardingProvider>
-              <ShareEducationProvider>
+              
                 <BottomNavProvider>
                   <MetronomeProvider>
                     <PracticeTimerProvider>
