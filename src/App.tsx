@@ -257,7 +257,7 @@ function AppInner() {
                 </PracticeTimerProvider>
               </MetronomeProvider>
             </BottomNavProvider>
-              </ShareEducationProvider>
+              
             </OnboardingProvider>
             </ColorThemeProvider>
           </PremiumProvider>
