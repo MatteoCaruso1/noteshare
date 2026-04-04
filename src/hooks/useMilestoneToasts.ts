@@ -16,7 +16,7 @@ import { isOnboardingActive } from '@/contexts/OnboardingContext';
 export function useMilestoneToasts() {
   const { profile, refreshProfile } = useAuth();
   const claimingFirstNote = useRef(false);
-  const claimingTenNotes = useRef(false);
+  
   const claimingFirstFriend = useRef(false);
 
   const showMilestoneToast = useCallback((title: string, body: string) => {
