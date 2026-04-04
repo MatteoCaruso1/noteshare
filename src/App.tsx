@@ -8,7 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { PremiumProvider, usePremium } from "@/contexts/PremiumContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
-import { ShareEducationProvider } from "@/contexts/ShareEducationContext";
+
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
 import { MetronomeProvider } from "@/contexts/MetronomeContext";
 import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
