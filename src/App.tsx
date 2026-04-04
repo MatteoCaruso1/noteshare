@@ -22,7 +22,7 @@ import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
-import { ShareEducationTour } from "@/components/onboarding/ShareEducationTour";
+
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 import { useFriendIds } from "@/hooks/useFriendIds";
 import { getFTUEState, clearFTUEState } from "@/hooks/useFTUEState";
