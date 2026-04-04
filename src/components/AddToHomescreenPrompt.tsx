@@ -100,7 +100,7 @@ export function AddToHomescreenPrompt() {
             Install Noteshare
           </DialogTitle>
           <DialogDescription className="text-center">
-            Add to your home screen for the full app experience—instant access, offline support, and no browser bars!
+            Add to your home screen for the full app experience. Instant access, offline support, and no browser bars!
           </DialogDescription>
         </DialogHeader>
 
