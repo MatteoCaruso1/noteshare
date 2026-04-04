@@ -16,7 +16,7 @@ import { isOnboardingActive } from '@/contexts/OnboardingContext';
 export function useMilestoneToasts() {
   const { profile, refreshProfile } = useAuth();
   const claimingFirstNote = useRef(false);
-  const claimingTenNotes = useRef(false);
+  
   const claimingFirstFriend = useRef(false);
 
   const showMilestoneToast = useCallback((title: string, body: string) => {
@@ -57,24 +57,6 @@ export function useMilestoneToasts() {
         await refreshProfile();
       }
 
-      // --- 10 notes ---
-      if (
-        totalCount >= 10 &&
-        !profile.has_logged_ten_notes &&
-        !claimingTenNotes.current
-      ) {
-        claimingTenNotes.current = true;
-        const { error } = await supabase
-          .from('profiles')
-          .update({ has_logged_ten_notes: true })
-          .eq('id', profile.id);
-        if (error) {
-          claimingTenNotes.current = false;
-          return;
-        }
-        showMilestoneToast('10 sessions logged.', 'Real work compounds.');
-        await refreshProfile();
-      }
     },
     [profile, refreshProfile, showMilestoneToast],
   );
