@@ -1,4 +1,6 @@
 import { memo, useMemo, useEffect } from 'react';
+import sampleQuickNote from '@/assets/sample-quick-note.png';
+import samplePracticeSession from '@/assets/sample-practice-session.png';
 import { useFriendsNotes } from '@/hooks/useFriendships';
 import { useFriendsFeedProjects } from '@/hooks/useProjects';
 import { useFriendsFeedGigs } from '@/hooks/usePromoPosts';
