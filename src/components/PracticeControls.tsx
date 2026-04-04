@@ -11,7 +11,7 @@ import { useMyPromoPosts } from '@/hooks/usePromoPosts';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { useCurrentFocusEntry, readFocusCache } from '@/hooks/useDailyFocus';
 import { useCreateNoteShares } from '@/hooks/useNoteShares';
-import { useShareEducation } from '@/contexts/ShareEducationContext';
+
 import { useHomescreenPromptTrigger } from '@/components/AddToHomescreenPrompt';
 import { useMilestoneToasts } from '@/hooks/useMilestoneToasts';
 import { uploadVideoToStorage, uploadVideoThumbnail } from '@/lib/videoUpload';
