@@ -93,7 +93,7 @@ export function ManagePlansSection() {
         {/* Lifetime confirmation message */}
         {isLifetime && (
           <p className="text-center text-sm text-amber-500/80">
-            You have lifetime access to Noteshare Pro ✨
+            You have lifetime access to Noteshare Pro <span className="emoji-text">✨</span>
           </p>
         )}
 

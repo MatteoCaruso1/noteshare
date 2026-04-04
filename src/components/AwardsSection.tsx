@@ -131,7 +131,7 @@ export function AwardsSection({
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-4">
             <p className="text-sm font-medium text-primary/80">
-              ✨ Tap to display beside your name!
+              <span className="emoji-text">✨</span> Tap to display beside your name!
             </p>
 
             {AWARD_CATEGORIES.map((cat) => (
