@@ -8,7 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { PremiumProvider, usePremium } from "@/contexts/PremiumContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
-import { ShareEducationProvider } from "@/contexts/ShareEducationContext";
+
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
 import { MetronomeProvider } from "@/contexts/MetronomeContext";
 import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
@@ -22,7 +22,7 @@ import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
-import { ShareEducationTour } from "@/components/onboarding/ShareEducationTour";
+
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 import { useFriendIds } from "@/hooks/useFriendIds";
 import { getFTUEState, clearFTUEState } from "@/hooks/useFTUEState";
@@ -191,7 +191,7 @@ function AppInner() {
           <PremiumProvider>
             <ColorThemeProvider>
             <OnboardingProvider>
-              <ShareEducationProvider>
+              
                 <BottomNavProvider>
                   <MetronomeProvider>
                     <PracticeTimerProvider>
@@ -208,7 +208,7 @@ function AppInner() {
                       <CheckoutDialogWrapper />
                       <LifetimeCheckoutDialogWrapper />
                       <OnboardingFlow />
-                      <ShareEducationTour />
+                      
                       <AppPrefetcher />
                       <FTUERetryCommit />
                       <UpdateAvailableToast />
@@ -257,7 +257,7 @@ function AppInner() {
                 </PracticeTimerProvider>
               </MetronomeProvider>
             </BottomNavProvider>
-              </ShareEducationProvider>
+              
             </OnboardingProvider>
             </ColorThemeProvider>
           </PremiumProvider>
