@@ -348,18 +348,71 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
       if (error) throw error;
       return data;
     },
-    onSuccess: async (data, variables) => {
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['notes'] });
+
+      // Snapshot previous notes caches for rollback
+      const previousNotesQueries = queryClient.getQueriesData<NoteWithAuthor[]>({ queryKey: ['notes'] });
+
+      // Build an optimistic note object
+      const optimisticId = `optimistic-${Date.now()}`;
+      const optimisticNote: NoteWithAuthor = {
+        id: optimisticId,
+        author_id: variables.authorId,
+        session_id: variables.sessionId || null,
+        project_id: variables.projectId || null,
+        goal_id: variables.goalId || null,
+        gig_id: variables.gigId || null,
+        focus_entry_id: variables.focusEntryId || null,
+        focus_date: variables.focusDate || null,
+        focus_text_snapshot: variables.focusTextSnapshot || null,
+        focus_title_snapshot: variables.focusTitleSnapshot || null,
+        text_content: variables.textContent || null,
+        audio_files: variables.audioFiles || [],
+        audio_file_names: variables.audioFileNames || [],
+        image_files: variables.imageFiles || [],
+        video_files: variables.videoFiles || [],
+        video_path: variables.videoPath || null,
+        video_name: variables.videoName || null,
+        video_thumbnail_path: variables.videoThumbnailPath || null,
+        tags: variables.tags || [],
+        visibility: variables.visibility || 'friends',
+        private_audio_indices: variables.privateAudioIndices || [],
+        comment_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        author: profile as Profile,
+        session: null,
+        project: null,
+        goal: null,
+        gig: null,
+      };
+
+      // Prepend to all matching notes queries (personal journal + project views)
+      queryClient.setQueriesData<NoteWithAuthor[]>(
+        { queryKey: ['notes'] },
+        (old) => old ? [optimisticNote, ...old] : [optimisticNote]
+      );
+
+      return { previousNotesQueries, optimisticId };
+    },
+    onSuccess: async (data, variables, context) => {
+      // Replace the optimistic note with the real one from the server
+      if (context?.optimisticId) {
+        queryClient.setQueriesData<NoteWithAuthor[]>(
+          { queryKey: ['notes'] },
+          (old) => old?.map(n => n.id === context.optimisticId ? { ...n, id: data.id } : n)
+        );
+      }
+      // Background refetch for full server data (session relations, etc.)
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      // Quick notes count towards streak, so refresh practice stats to update streak immediately
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
-      // Invalidate daily note count so limit is enforced across all components
       queryClient.invalidateQueries({ queryKey: ['daily-note-count'] });
-      // Show appropriate message based on whether this is a session note
       if (!isOnboardingActive) {
         toast.success(variables.sessionId ? 'Practice session saved' : 'Note saved!');
       }
       
-      // If callback provided, fetch total note count and call it
       if (onNoteCreated && profile?.id) {
         const { count } = await supabase
           .from('notes')
@@ -371,7 +424,13 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
         }
       }
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Rollback to previous state on failure
+      if (context?.previousNotesQueries) {
+        context.previousNotesQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
       console.error('Error creating note:', error);
       toast.error('Failed to save note');
     },
