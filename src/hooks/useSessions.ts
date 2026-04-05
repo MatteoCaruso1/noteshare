@@ -493,8 +493,15 @@ export function useResumeSession() {
       persistActiveSession(data, userId);
       toast.success('Session resumed');
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        await enqueue({
+          type: 'resume_session',
+          payload: { sessionId: variables.sessionId, resumedAt: new Date().toISOString() },
+        });
+        toast.success('Session resumed (will sync when online)');
+        return;
+      }
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
         persistActiveSession(context.previousSession as PracticeSession | null, context.userId);
