@@ -308,8 +308,8 @@ export function RichTextContent({ content, className = '', lineClamp, onShowMore
         </a>
       );
     } else if (part) {
-      // Regular text
-      elements.push(<span key={`text-${index}`}>{part}</span>);
+      // Regular text — parse inline formatting (**bold**, *italic*, __underline__)
+      elements.push(...parseInlineFormatting(part, `fmt-${index}`));
     }
   });
 
