@@ -16,7 +16,6 @@ export function OfflineBanner({ syncState }: OfflineBannerProps) {
       style={{
         paddingTop: 'calc(env(safe-area-inset-top, 0px) + 6px)',
         paddingBottom: '6px',
-      style={{
         background: syncState === 'syncing'
           ? 'hsl(var(--primary) / 0.9)'
           : 'hsl(var(--destructive) / 0.85)',
