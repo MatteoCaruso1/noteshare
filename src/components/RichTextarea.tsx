@@ -423,8 +423,8 @@ export function RichTextarea({
 
       const { line, lineStart, lineEnd } = info;
 
-      // Check for list patterns
-      const bulletMatch = line.match(/^(\s*)([-•])\s/);
+      // Check for list patterns (match all bullet types)
+      const bulletMatch = line.match(/^(\s*)([-•◦▪])\s/);
       const numberMatch = line.match(/^(\s*)(\d+)\.\s/);
       const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
 
@@ -432,7 +432,7 @@ export function RichTextarea({
         // Check if line is empty (just the prefix)
         let contentAfterPrefix: string;
         if (bulletMatch) {
-          contentAfterPrefix = line.replace(/^(\s*)[-•]\s/, '');
+          contentAfterPrefix = line.replace(/^(\s*)[-•◦▪]\s/, '');
         } else if (numberMatch) {
           contentAfterPrefix = line.replace(/^(\s*)\d+\.\s/, '');
         } else {
@@ -440,13 +440,25 @@ export function RichTextarea({
         }
 
         if (contentAfterPrefix.trim() === '') {
-          // Empty list item - end the list
+          // Empty list item - end the list (or unindent if nested)
           e.preventDefault();
-          const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
-          onChange(newValue);
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = lineStart + 1;
-          }, 0);
+          if (bulletMatch && bulletMatch[1].length >= INDENT_SIZE) {
+            // Unindent instead of ending the list
+            const newIndent = bulletMatch[1].substring(INDENT_SIZE);
+            const newBullet = bulletForLevel(newIndent.length);
+            const newLine = newIndent + newBullet + ' ';
+            const newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(lineEnd);
+            onChange(newValue);
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = lineStart + newLine.length;
+            }, 0);
+          } else {
+            const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
+            onChange(newValue);
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = lineStart + 1;
+            }, 0);
+          }
           return;
         }
 
@@ -458,7 +470,9 @@ export function RichTextarea({
 
         if (bulletMatch) {
           indent = bulletMatch[1];
-          prefix = indent + bulletMatch[2] + ' ';
+          // Use the correct bullet for this indent level
+          const correctBullet = bulletForLevel(indent.length);
+          prefix = indent + correctBullet + ' ';
         } else if (numberMatch) {
           indent = numberMatch[1];
           const num = parseInt(numberMatch[2], 10) + 1;
