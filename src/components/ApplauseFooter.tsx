@@ -1,10 +1,32 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useNoteApplause, useGiveApplause, useRemoveApplause, ApplauseWithProfile } from '@/hooks/useApplause';
 import { useAuth } from '@/hooks/useAuth';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
 import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
 import { MessageCircle } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useNavigate } from 'react-router-dom';
+
+/** Single row in the applause list popover */
+function ApplauseListItem({ profile }: { profile: { id: string; name: string; avatar: string | null } }) {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      className="flex items-center gap-2 w-full text-left hover:bg-muted/50 rounded-md p-1 -m-1 transition-colors"
+      onClick={() => navigate(`/profile/${profile.id}`)}
+    >
+      <ClickableAvatar
+        profileId={profile.id}
+        avatar={profile.avatar}
+        name={profile.name}
+        size="sm"
+      />
+      <span className="text-sm truncate">{profile.name}</span>
+    </button>
+  );
+}
 
 interface ApplauseFooterProps {
   noteId: string;
@@ -125,12 +147,33 @@ export const ApplauseFooter = memo(function ApplauseFooter({
                       )}
                     </span>
                   )}
-                  <span>
-                    {applauseCount === 1 
-                      ? `${firstApplauder?.name || '1'} gave applause`
-                      : `${applauseCount} gave applause`
-                    }
-                  </span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <span
+                        role="button"
+                        onClick={(e) => e.stopPropagation()}
+                        className="hover:underline cursor-pointer"
+                      >
+                        {applauseCount === 1 
+                          ? `${firstApplauder?.name || '1'} gave applause`
+                          : `${applauseCount} gave applause`
+                        }
+                      </span>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-56 p-3"
+                      align="start"
+                      side="top"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Applause</p>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {applauseList.map((a) => a.profile && (
+                          <ApplauseListItem key={a.id} profile={a.profile} />
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </span>
               ) : (
                 <span className="opacity-70">Give applause</span>
