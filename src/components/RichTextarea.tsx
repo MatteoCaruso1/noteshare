@@ -309,7 +309,8 @@ export function RichTextarea({
       const savedScrollTop = getScrollTop(scrollContainer);
 
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
-      const transformed = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
+      const bullet = bulletForLevel(indent.length);
+      const transformed = newValue.substring(0, lineStart) + indent + bullet + ' ' + newValue.substring(cursorPos);
       const newCursor = lineStart + indent.length + 2;
       
       onChange(transformed);
