@@ -19,6 +19,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import UpdateAvailableToast from "@/components/UpdateAvailableToast";
 import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
+import { SyncManager, SyncState } from "@/components/SyncManager";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
