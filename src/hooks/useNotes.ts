@@ -426,7 +426,40 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
         }
       }
     },
-    onError: (error, variables, context) => {
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        // Queue for offline sync — keep the optimistic update
+        await enqueue({
+          type: 'create_note',
+          payload: {
+            authorId: variables.authorId,
+            textContent: variables.textContent,
+            audioFiles: variables.audioFiles,
+            audioFileNames: variables.audioFileNames,
+            imageFiles: variables.imageFiles,
+            videoFiles: variables.videoFiles,
+            tags: variables.tags,
+            sessionId: variables.sessionId,
+            projectId: variables.projectId,
+            goalId: variables.goalId,
+            gigId: variables.gigId,
+            visibility: variables.visibility,
+            focusEntryId: variables.focusEntryId,
+            focusDate: variables.focusDate,
+            focusTextSnapshot: variables.focusTextSnapshot,
+            focusTitleSnapshot: variables.focusTitleSnapshot,
+            privateAudioIndices: variables.privateAudioIndices,
+            videoPath: variables.videoPath,
+            videoName: variables.videoName,
+            videoThumbnailPath: variables.videoThumbnailPath,
+          },
+        });
+        if (!isOnboardingActive) {
+          toast.success(variables.sessionId ? 'Practice session saved (will sync when online)' : 'Note saved (will sync when online)');
+        }
+        return; // Don't rollback
+      }
+
       // Rollback to previous state on failure
       if (context?.previousNotesQueries) {
         context.previousNotesQueries.forEach(([queryKey, data]) => {
