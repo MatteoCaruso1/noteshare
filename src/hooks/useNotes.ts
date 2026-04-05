@@ -6,6 +6,8 @@ import { NoteWithAuthor, Profile } from '@/types';
 import { isOnboardingActive } from '@/contexts/OnboardingContext';
 import { useAuth } from './useAuth';
 import { ApplauseWithProfile } from './useApplause';
+import { enqueue } from '@/lib/offlineQueue';
+import { isOffline } from '@/hooks/useNetworkStatus';
 
 // Batch-fetch applause for multiple notes and seed the query cache
 export async function batchFetchApplause(noteIds: string[]): Promise<Map<string, ApplauseWithProfile[]>> {
