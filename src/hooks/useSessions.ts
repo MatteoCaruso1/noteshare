@@ -215,8 +215,25 @@ export function useStartSession() {
         toast.success('Practice session started!');
       }
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      // If offline, queue the operation and keep the optimistic update
+      if (isOffline()) {
+        const optimisticSession = context?.key ? queryClient.getQueryData<PracticeSession>(context.key) : null;
+        await enqueue({
+          type: 'start_session',
+          payload: {
+            userId: variables.userId,
+            goals: variables.goals,
+            startedAt: optimisticSession?.started_at || new Date().toISOString(),
+            optimisticId: optimisticSession?.id,
+            isMobile: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0,
+          },
+        });
+        toast.success('Session started (will sync when online)');
+        return; // Don't rollback — keep optimistic data
+      }
+
+      // Rollback on real error
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
         persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
