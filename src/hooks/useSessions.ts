@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PracticeSession } from '@/types';
 import { isOnboardingActive } from '@/contexts/OnboardingContext';
+import { enqueue } from '@/lib/offlineQueue';
+import { isOffline } from '@/hooks/useNetworkStatus';
 
 const ACTIVE_SESSION_STORAGE_KEY = 'noteshare_active_session';
 
