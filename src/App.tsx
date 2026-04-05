@@ -204,6 +204,8 @@ function AppInner() {
                     <BrowserRouter>
                       <ScrollToTop />
                       <ScrollLockDebugger />
+                      <SyncManager onStateChange={handleSyncStateChange} />
+                      <OfflineBanner syncState={syncState} />
                       <FloatingInstruments />
                       <SessionFocusOverlay />
                       <AppHeader />
