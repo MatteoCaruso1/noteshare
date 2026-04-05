@@ -354,6 +354,37 @@ export function RichTextarea({
     onChange(newValue);
   }, [onChange, autoCapitalizeAfterPrefix]);
 
+  /** Wrap or unwrap selected text with a markdown-style marker (e.g. ** for bold) */
+  const wrapSelection = useCallback((textarea: HTMLTextAreaElement, marker: string) => {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end);
+
+    // Check if selection is already wrapped with this marker
+    const markerLen = marker.length;
+    const before = text.substring(Math.max(0, start - markerLen), start);
+    const after = text.substring(end, end + markerLen);
+
+    if (before === marker && after === marker) {
+      // Unwrap: remove markers around selection
+      const newValue = text.substring(0, start - markerLen) + selected + text.substring(end + markerLen);
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = start - markerLen;
+        textarea.selectionEnd = end - markerLen;
+      }, 0);
+    } else {
+      // Wrap: add markers around selection
+      const newValue = text.substring(0, start) + marker + selected + marker + text.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        textarea.selectionStart = start + markerLen;
+        textarea.selectionEnd = end + markerLen;
+      }, 0);
+    }
+  }, [onChange]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const textarea = e.target as HTMLTextAreaElement;
     const currentValue = textarea.value;
@@ -363,6 +394,27 @@ export function RichTextarea({
     // Allow native undo/redo (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z)
     if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'y')) {
       return; // Let the browser handle undo/redo natively
+    }
+
+    // Bold (Ctrl+B / Cmd+B)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b' && !e.shiftKey) {
+      e.preventDefault();
+      wrapSelection(textarea, '**');
+      return;
+    }
+
+    // Italic (Ctrl+I / Cmd+I)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i' && !e.shiftKey) {
+      e.preventDefault();
+      wrapSelection(textarea, '*');
+      return;
+    }
+
+    // Underline (Ctrl+U / Cmd+U)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u' && !e.shiftKey) {
+      e.preventDefault();
+      wrapSelection(textarea, '__');
+      return;
     }
 
     // Ctrl+Shift+L or Cmd+Shift+L for bullet list

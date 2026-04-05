@@ -13,6 +13,46 @@ interface RichTextContentProps {
 // Regex to match URLs
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
+/**
+ * Parse inline markdown formatting (**bold**, *italic*, __underline__)
+ * and return React elements. Handles nested formatting.
+ */
+function parseInlineFormatting(text: string, keyPrefix: string): React.ReactNode[] {
+  // Combined regex: **bold**, __underline__, *italic* (order matters - longest markers first)
+  const INLINE_REGEX = /(\*\*(.+?)\*\*|__(.+?)__|(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*))/g;
+  
+  const result: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = INLINE_REGEX.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      result.push(<span key={`${keyPrefix}-t${lastIndex}`}>{text.substring(lastIndex, match.index)}</span>);
+    }
+
+    if (match[2] !== undefined) {
+      // **bold**
+      result.push(<strong key={`${keyPrefix}-b${match.index}`}>{match[2]}</strong>);
+    } else if (match[3] !== undefined) {
+      // __underline__
+      result.push(<span key={`${keyPrefix}-u${match.index}`} className="underline">{match[3]}</span>);
+    } else if (match[4] !== undefined) {
+      // *italic*
+      result.push(<em key={`${keyPrefix}-i${match.index}`}>{match[4]}</em>);
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    result.push(<span key={`${keyPrefix}-t${lastIndex}`}>{text.substring(lastIndex)}</span>);
+  }
+
+  return result.length > 0 ? result : [<span key={`${keyPrefix}-raw`}>{text}</span>];
+}
+
 // Extract YouTube video ID from various YouTube URL formats
 function getYouTubeVideoId(url: string): string | null {
   const patterns = [
@@ -268,8 +308,8 @@ export function RichTextContent({ content, className = '', lineClamp, onShowMore
         </a>
       );
     } else if (part) {
-      // Regular text
-      elements.push(<span key={`text-${index}`}>{part}</span>);
+      // Regular text — parse inline formatting (**bold**, *italic*, __underline__)
+      elements.push(...parseInlineFormatting(part, `fmt-${index}`));
     }
   });
 
