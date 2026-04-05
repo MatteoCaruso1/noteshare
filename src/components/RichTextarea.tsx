@@ -4,6 +4,32 @@ import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
+// Bullet hierarchy for nested indentation levels (like OneNote)
+const BULLET_LEVELS = ['•', '◦', '▪'] as const;
+const ALL_BULLETS = new Set<string>(BULLET_LEVELS);
+const INDENT_UNIT = '    '; // 4 spaces per indent level
+const INDENT_SIZE = INDENT_UNIT.length;
+
+/** Get the bullet character for a given indentation level */
+function bulletForLevel(indentSpaces: number): string {
+  const level = Math.floor(indentSpaces / INDENT_SIZE);
+  return BULLET_LEVELS[level % BULLET_LEVELS.length];
+}
+
+/** Check if a character is any of our bullet types */
+function isBulletChar(ch: string): boolean {
+  return ALL_BULLETS.has(ch);
+}
+
+/** Replace the bullet character on a line to match its indent level */
+function normalizeBullet(line: string): string {
+  const match = line.match(/^(\s*)([-•◦▪])\s/);
+  if (!match) return line;
+  const indent = match[1];
+  const correctBullet = bulletForLevel(indent.length);
+  return indent + correctBullet + line.substring(indent.length + 1);
+}
+
 // Tips shown occasionally as placeholders
 const PLACEHOLDER_TIPS = [
   'Tip: Type [] for checkboxes',
@@ -136,7 +162,7 @@ export function RichTextarea({
         }
 
         // Reset numbering when we exit the list (non-empty, non-whitespace line that isn't a list)
-        const isBullet = line.match(/^(\s*)[-•]\s/);
+        const isBullet = line.match(/^(\s*)[-•◦▪]\s/);
         if (!line.match(/^\s*$/) && !isBullet) {
           inNumberedList = false;
           currentNumber = 0;
@@ -160,7 +186,7 @@ export function RichTextarea({
     const { lineStart, lineEnd, line } = info;
 
     // Check if line already has a list prefix
-    const bulletMatch = line.match(/^(\s*)([-•]\s)/);
+    const bulletMatch = line.match(/^(\s*)([-•◦▪]\s)/);
     const numberMatch = line.match(/^(\s*)(\d+\.\s)/);
 
     let newLine: string;
@@ -168,7 +194,7 @@ export function RichTextarea({
     if (prefix === '• ') {
       if (bulletMatch) {
         // Remove bullet
-        newLine = line.replace(/^(\s*)[-•]\s/, '$1');
+        newLine = line.replace(/^(\s*)[-•◦▪]\s/, '$1');
       } else if (numberMatch) {
         // Replace number with bullet
         newLine = line.replace(/^(\s*)\d+\.\s/, '$1• ');
@@ -183,7 +209,7 @@ export function RichTextarea({
         newLine = line.replace(/^(\s*)\d+\.\s/, '$1');
       } else if (bulletMatch) {
         // Replace bullet with number
-        newLine = line.replace(/^(\s*)[-•]\s/, '$11. ');
+        newLine = line.replace(/^(\s*)[-•◦▪]\s/, '$11. ');
       } else {
         // Add number
         newLine = '1. ' + line;
@@ -224,7 +250,7 @@ export function RichTextarea({
         const relativeCursor = cursorPos - lineStart;
         
         // Match bullet, number, or checkbox followed by text starting with a lowercase letter
-        const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])(.*)$/);
+        const bulletCapMatch = line.match(/^(\s*[-•◦▪]\s)([a-z])(.*)$/);
         const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])(.*)$/);
         const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])(.*)$/);
         
@@ -283,7 +309,8 @@ export function RichTextarea({
       const savedScrollTop = getScrollTop(scrollContainer);
 
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
-      const transformed = newValue.substring(0, lineStart) + indent + '• ' + newValue.substring(cursorPos);
+      const bullet = bulletForLevel(indent.length);
+      const transformed = newValue.substring(0, lineStart) + indent + bullet + ' ' + newValue.substring(cursorPos);
       const newCursor = lineStart + indent.length + 2;
       
       onChange(transformed);
@@ -360,25 +387,32 @@ export function RichTextarea({
       if (!info) return;
 
       const { lineStart, line } = info;
-      const indent = '  ';
 
       if (e.shiftKey) {
-        // Un-indent: remove leading spaces
-        if (line.startsWith(indent)) {
-          let newValue = currentValue.substring(0, lineStart) + line.substring(indent.length) + currentValue.substring(info.lineEnd);
+        // Un-indent: remove one indent unit of leading spaces
+        const leadingSpaces = line.match(/^(\s*)/)?.[1] || '';
+        const removeCount = Math.min(INDENT_SIZE, leadingSpaces.length);
+        if (removeCount > 0) {
+          let newLine = line.substring(removeCount);
+          // Normalize the bullet to match the new indent level
+          newLine = normalizeBullet(newLine);
+          let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
           newValue = renumberList(newValue);
           onChange(newValue);
           setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - indent.length);
+            textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - removeCount);
           }, 0);
         }
       } else {
         // Indent: add spaces at line start
-        let newValue = currentValue.substring(0, lineStart) + indent + currentValue.substring(lineStart);
+        let newLine = INDENT_UNIT + line;
+        // Normalize the bullet to match the new indent level
+        newLine = normalizeBullet(newLine);
+        let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
         newValue = renumberList(newValue);
         onChange(newValue);
         setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + indent.length;
+          textarea.selectionStart = textarea.selectionEnd = start + INDENT_SIZE;
         }, 0);
       }
       return;
@@ -390,8 +424,8 @@ export function RichTextarea({
 
       const { line, lineStart, lineEnd } = info;
 
-      // Check for list patterns
-      const bulletMatch = line.match(/^(\s*)([-•])\s/);
+      // Check for list patterns (match all bullet types)
+      const bulletMatch = line.match(/^(\s*)([-•◦▪])\s/);
       const numberMatch = line.match(/^(\s*)(\d+)\.\s/);
       const checkboxMatch = line.match(/^(\s*)(☐|☑)\s/);
 
@@ -399,7 +433,7 @@ export function RichTextarea({
         // Check if line is empty (just the prefix)
         let contentAfterPrefix: string;
         if (bulletMatch) {
-          contentAfterPrefix = line.replace(/^(\s*)[-•]\s/, '');
+          contentAfterPrefix = line.replace(/^(\s*)[-•◦▪]\s/, '');
         } else if (numberMatch) {
           contentAfterPrefix = line.replace(/^(\s*)\d+\.\s/, '');
         } else {
@@ -407,13 +441,25 @@ export function RichTextarea({
         }
 
         if (contentAfterPrefix.trim() === '') {
-          // Empty list item - end the list
+          // Empty list item - end the list (or unindent if nested)
           e.preventDefault();
-          const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
-          onChange(newValue);
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = lineStart + 1;
-          }, 0);
+          if (bulletMatch && bulletMatch[1].length >= INDENT_SIZE) {
+            // Unindent instead of ending the list
+            const newIndent = bulletMatch[1].substring(INDENT_SIZE);
+            const newBullet = bulletForLevel(newIndent.length);
+            const newLine = newIndent + newBullet + ' ';
+            const newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(lineEnd);
+            onChange(newValue);
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = lineStart + newLine.length;
+            }, 0);
+          } else {
+            const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
+            onChange(newValue);
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = lineStart + 1;
+            }, 0);
+          }
           return;
         }
 
@@ -425,7 +471,9 @@ export function RichTextarea({
 
         if (bulletMatch) {
           indent = bulletMatch[1];
-          prefix = indent + bulletMatch[2] + ' ';
+          // Use the correct bullet for this indent level
+          const correctBullet = bulletForLevel(indent.length);
+          prefix = indent + correctBullet + ' ';
         } else if (numberMatch) {
           indent = numberMatch[1];
           const num = parseInt(numberMatch[2], 10) + 1;
