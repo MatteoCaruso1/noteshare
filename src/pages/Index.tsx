@@ -514,6 +514,7 @@ const Index = () => {
         open={monthlyRecapOpen}
         onOpenChange={setMonthlyRecapOpen}
         dailyMinutesMap={practiceStats?.dailyMinutesMap || {}}
+        weeklyGoals={recapWeeklyGoals}
         userName={profile?.name || 'My'}
         currentMonth={previousMonth}
         headerText={`${profile?.name || 'Hey'}, check out last month's practice stats`}
