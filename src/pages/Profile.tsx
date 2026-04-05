@@ -247,7 +247,8 @@ const Profile = () => {
       avatar,
       bio,
       instruments,
-      genres
+      genres,
+      timezone,
     }).eq('id', profile.id);
     if (error) {
       toast.error('Failed to update profile');
