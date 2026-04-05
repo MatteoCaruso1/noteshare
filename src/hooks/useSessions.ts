@@ -44,13 +44,15 @@ export function useSessions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('practice_sessions')
-        .select('*')
+        .select('id, user_id, started_at, ended_at, goals, notes_summary, is_active, paused_at, paused_duration_ms, collaborator_ids, created_at')
         .order('created_at', { ascending: false })
         .limit(365);
 
       if (error) throw error;
       return data as PracticeSession[];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes - stats are derived client-side
+    gcTime: 10 * 60 * 1000,
   });
 }
 
