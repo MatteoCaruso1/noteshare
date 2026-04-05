@@ -401,8 +401,15 @@ export function usePauseSession() {
       persistActiveSession(data, userId);
       toast.success('Session paused');
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        await enqueue({
+          type: 'pause_session',
+          payload: { sessionId: variables.sessionId, pausedAt: new Date().toISOString() },
+        });
+        toast.success('Session paused (will sync when online)');
+        return;
+      }
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
         persistActiveSession(context.previousSession as PracticeSession | null, context.userId);
