@@ -431,7 +431,6 @@ export function useCreateNote(onNoteCreated?: (noteId: string, totalNoteCount: n
           queryClient.setQueryData(queryKey, data);
         });
       }
-    onError: (error) => {
       console.error('Error creating note:', error);
       toast.error('Failed to save note');
     },
