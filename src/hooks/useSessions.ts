@@ -66,7 +66,7 @@ export function useActiveSession(profileId?: string) {
 
       const { data, error } = await supabase
         .from('practice_sessions')
-        .select('*')
+        .select('id, user_id, started_at, ended_at, goals, notes_summary, is_active, paused_at, paused_duration_ms, collaborator_ids, created_at')
         .eq('user_id', profileId)
         .eq('is_active', true)
         .maybeSingle();
