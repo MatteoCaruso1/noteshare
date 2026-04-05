@@ -186,7 +186,7 @@ export function RichTextarea({
     const { lineStart, lineEnd, line } = info;
 
     // Check if line already has a list prefix
-    const bulletMatch = line.match(/^(\s*)([-•]\s)/);
+    const bulletMatch = line.match(/^(\s*)([-•◦▪]\s)/);
     const numberMatch = line.match(/^(\s*)(\d+\.\s)/);
 
     let newLine: string;
