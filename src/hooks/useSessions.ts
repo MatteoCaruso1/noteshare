@@ -327,11 +327,24 @@ export function useEndSession() {
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       // Note: Don't show toast here - the note creation will show "Practice session saved"
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        await enqueue({
+          type: 'end_session',
+          payload: {
+            sessionId: variables.sessionId,
+            userId: variables.userId,
+            notesSummary: variables.notesSummary,
+            collaboratorIds: variables.collaboratorIds,
+            endedAt: new Date().toISOString(),
+          },
+        });
+        toast.success('Session ended (will sync when online)');
+        return;
+      }
+
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
-        // Restore to localStorage
         persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
       }
       console.error('Error ending session:', error);
