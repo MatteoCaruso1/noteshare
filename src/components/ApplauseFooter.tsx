@@ -8,6 +8,26 @@ import { MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useNavigate } from 'react-router-dom';
 
+/** Single row in the applause list popover */
+function ApplauseListItem({ profile }: { profile: { id: string; name: string; avatar: string | null } }) {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      className="flex items-center gap-2 w-full text-left hover:bg-muted/50 rounded-md p-1 -m-1 transition-colors"
+      onClick={() => navigate(`/profile/${profile.id}`)}
+    >
+      <ClickableAvatar
+        profileId={profile.id}
+        avatar={profile.avatar}
+        name={profile.name}
+        size="sm"
+      />
+      <span className="text-sm truncate">{profile.name}</span>
+    </button>
+  );
+}
+
 interface ApplauseFooterProps {
   noteId: string;
   noteAuthorId: string;
