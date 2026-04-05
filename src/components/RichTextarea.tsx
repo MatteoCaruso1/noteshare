@@ -209,7 +209,7 @@ export function RichTextarea({
         newLine = line.replace(/^(\s*)\d+\.\s/, '$1');
       } else if (bulletMatch) {
         // Replace bullet with number
-        newLine = line.replace(/^(\s*)[-•]\s/, '$11. ');
+        newLine = line.replace(/^(\s*)[-•◦▪]\s/, '$11. ');
       } else {
         // Add number
         newLine = '1. ' + line;
