@@ -34,6 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const processedSessionRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Detect if running inside a native Capacitor shell (iOS/Android)
+    // In native apps, sessionStorage is unreliable (WKWebView clears it on process kill),
+    // so we ALWAYS persist the session — "Remember me" logic only applies to web browsers.
+    const isNativeApp = !!(window as any).Capacitor?.isNativePlatform?.() 
+      || !!(window as any).Capacitor?.isPluginAvailable
+      || document.URL.startsWith('capacitor://');
+
     // Check if user should be signed out (browser was closed without "Remember me")
     const rememberMe = localStorage.getItem('noteshare_remember_me');
     const sessionActive = sessionStorage.getItem('noteshare_session_active');
@@ -67,8 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // If there's a session but "Remember me" was not checked and browser was closed
-        // BUT skip this check if we're in a password reset flow or OAuth callback
-        if (session && !rememberMe && !sessionActive && !isPasswordResetFlow && !oauthCallbackDetected) {
+        // BUT skip this check entirely for native apps (sessionStorage is unreliable in WKWebView)
+        // Also skip for password reset flows and OAuth callbacks
+        if (session && !isNativeApp && !rememberMe && !sessionActive && !isPasswordResetFlow && !oauthCallbackDetected) {
           // Sign out the user since they didn't want to be remembered
           await supabase.auth.signOut();
           setSession(null);
