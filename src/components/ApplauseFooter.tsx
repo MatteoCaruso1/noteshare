@@ -127,12 +127,33 @@ export const ApplauseFooter = memo(function ApplauseFooter({
                       )}
                     </span>
                   )}
-                  <span>
-                    {applauseCount === 1 
-                      ? `${firstApplauder?.name || '1'} gave applause`
-                      : `${applauseCount} gave applause`
-                    }
-                  </span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <span
+                        role="button"
+                        onClick={(e) => e.stopPropagation()}
+                        className="hover:underline cursor-pointer"
+                      >
+                        {applauseCount === 1 
+                          ? `${firstApplauder?.name || '1'} gave applause`
+                          : `${applauseCount} gave applause`
+                        }
+                      </span>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-56 p-3"
+                      align="start"
+                      side="top"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Applause</p>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {applauseList.map((a) => a.profile && (
+                          <ApplauseListItem key={a.id} profile={a.profile} />
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </span>
               ) : (
                 <span className="opacity-70">Give applause</span>
