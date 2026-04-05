@@ -1,10 +1,12 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useNoteApplause, useGiveApplause, useRemoveApplause, ApplauseWithProfile } from '@/hooks/useApplause';
 import { useAuth } from '@/hooks/useAuth';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { cn } from '@/lib/utils';
 import { ClappingHandsIcon } from '@/components/icons/ClappingHandsIcon';
 import { MessageCircle } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useNavigate } from 'react-router-dom';
 
 interface ApplauseFooterProps {
   noteId: string;
