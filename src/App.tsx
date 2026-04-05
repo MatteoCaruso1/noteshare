@@ -179,6 +179,9 @@ function FTUERetryCommit() {
 }
 
 function AppInner() {
+  const [syncState, setSyncState] = useState<SyncState>('idle');
+  const handleSyncStateChange = useCallback((state: SyncState) => setSyncState(state), []);
+
   useEffect(() => {
     // Prevent mobile browsers from trying to restore scroll positions on SPA navigations.
     if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
