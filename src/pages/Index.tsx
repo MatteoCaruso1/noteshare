@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, startOfWeek } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useNotes } from '@/hooks/useNotes';
