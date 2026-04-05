@@ -701,26 +701,39 @@
   text-decoration: underline;
 }
 
-/* Textarea scroll pass-through: allow page scrolling over unfocused textareas,
-   trap scroll only when the textarea is focused (clicked into) */
-textarea,
-[contenteditable="true"] {
-  overflow-y: hidden;
-  touch-action: pan-y pan-x;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* Textarea scroll pass-through:
+   - On touch devices, hide overflow on unfocused textareas so page scroll works.
+   - On desktop (pointer: fine), always allow overflow so wheel events propagate
+     naturally when the textarea can't scroll further. */
+@media (pointer: coarse) {
+  textarea,
+  [contenteditable="true"] {
+    overflow-y: hidden;
+    touch-action: pan-y pan-x;
+  }
+
+  textarea:focus,
+  [contenteditable="true"]:focus,
+  [contenteditable="true"].ProseMirror-focused {
+    overflow-y: auto;
+    touch-action: auto;
+  }
 }
 
-textarea:focus,
-[contenteditable="true"]:focus,
-[contenteditable="true"].ProseMirror-focused {
-  overflow-y: auto;
-  touch-action: auto;
-}
+/* On desktop, let textareas scroll internally but hide the scrollbar visually.
+   Wheel events bubble to the page when the element is at scroll boundary. */
+@media (pointer: fine) {
+  textarea,
+  [contenteditable="true"] {
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
-textarea::-webkit-scrollbar,
-[contenteditable="true"]::-webkit-scrollbar {
-  display: none;
+  textarea::-webkit-scrollbar,
+  [contenteditable="true"]::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Practice Board textarea base - moved to bottom of file for mobile optimization */
