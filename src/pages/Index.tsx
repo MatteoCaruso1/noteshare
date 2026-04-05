@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, startOfWeek } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useNotes } from '@/hooks/useNotes';
@@ -99,6 +100,25 @@ const Index = () => {
   const [monthlyRecapOpen, setMonthlyRecapOpen] = useState(false);
   const monthlyRecapFiredRef = useRef(false);
   const previousMonth = useMemo(() => subMonths(new Date(), 1), []);
+  
+  // Fetch weekly goals for the monthly recap calendar
+  const { data: recapWeeklyGoals } = useQuery({
+    queryKey: ['weekly-goals-all', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('weekly_goals')
+        .select('week_start, target_minutes, skipped')
+        .eq('user_id', profile!.id);
+      if (error) throw error;
+      return (data || []).map(g => ({
+        weekStart: g.week_start,
+        targetMinutes: g.target_minutes,
+        skipped: g.skipped,
+      }));
+    },
+    enabled: !!profile?.id && monthlyRecapOpen,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // ── Popup priority queue ──
   // Only one popup shown at a time. Priority (highest first):
@@ -494,6 +514,7 @@ const Index = () => {
         open={monthlyRecapOpen}
         onOpenChange={setMonthlyRecapOpen}
         dailyMinutesMap={practiceStats?.dailyMinutesMap || {}}
+        weeklyGoals={recapWeeklyGoals}
         userName={profile?.name || 'My'}
         currentMonth={previousMonth}
         headerText={`${profile?.name || 'Hey'}, check out last month's practice stats`}
