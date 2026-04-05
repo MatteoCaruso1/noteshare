@@ -162,7 +162,7 @@ export function RichTextarea({
         }
 
         // Reset numbering when we exit the list (non-empty, non-whitespace line that isn't a list)
-        const isBullet = line.match(/^(\s*)[-•]\s/);
+        const isBullet = line.match(/^(\s*)[-•◦▪]\s/);
         if (!line.match(/^\s*$/) && !isBullet) {
           inNumberedList = false;
           currentNumber = 0;
