@@ -911,6 +911,7 @@ export type Database = {
           id: string
           note_id: string | null
           read: boolean | null
+          sent_at: string | null
           type: string
           user_id: string
         }
@@ -923,6 +924,7 @@ export type Database = {
           id?: string
           note_id?: string | null
           read?: boolean | null
+          sent_at?: string | null
           type: string
           user_id: string
         }
@@ -935,6 +937,7 @@ export type Database = {
           id?: string
           note_id?: string | null
           read?: boolean | null
+          sent_at?: string | null
           type?: string
           user_id?: string
         }
@@ -1408,6 +1411,33 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_event_id?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          last_used_at: string
+          platform: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_used_at?: string
+          platform?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_used_at?: string
+          platform?: string
+          token?: string
+          user_id?: string
         }
         Relationships: []
       }
