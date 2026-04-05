@@ -37,6 +37,7 @@ export interface Profile {
   has_seen_feedback_prompt?: boolean;
   has_seen_share_education?: boolean;
   has_completed_onboarding?: boolean;
+  timezone?: string;
   created_at: string;
   updated_at: string;
 }
