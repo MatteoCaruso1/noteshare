@@ -365,6 +365,27 @@ export function RichTextarea({
       return; // Let the browser handle undo/redo natively
     }
 
+    // Bold (Ctrl+B / Cmd+B)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b' && !e.shiftKey) {
+      e.preventDefault();
+      wrapSelection(textarea, '**');
+      return;
+    }
+
+    // Italic (Ctrl+I / Cmd+I)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i' && !e.shiftKey) {
+      e.preventDefault();
+      wrapSelection(textarea, '*');
+      return;
+    }
+
+    // Underline (Ctrl+U / Cmd+U)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u' && !e.shiftKey) {
+      e.preventDefault();
+      wrapSelection(textarea, '__');
+      return;
+    }
+
     // Ctrl+Shift+L or Cmd+Shift+L for bullet list
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'l') {
       e.preventDefault();
