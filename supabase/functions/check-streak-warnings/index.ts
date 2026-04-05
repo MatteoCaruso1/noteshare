@@ -17,6 +17,17 @@ Deno.serve(async (req) => {
   );
 
   try {
+    // Only send streak warnings in the evening (9 PM+ ET),
+    // ~3 hours before streak expires at midnight
+    const nowET = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+    const hourET = new Date(nowET).getHours();
+    if (hourET < 21) {
+      console.log(`Skipping streak warnings: ${hourET}h ET, waiting until 21h+`);
+      return new Response(JSON.stringify({ processed: 0, skipped: "too_early", hour_et: hourET }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Find users with streak >= 3 who haven't practiced today
     // and haven't already received a streak_warning today
     const { data: atRiskUsers, error } = await supabase.rpc("get_streak_warning_users");
