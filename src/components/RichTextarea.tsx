@@ -4,6 +4,32 @@ import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
+// Bullet hierarchy for nested indentation levels (like OneNote)
+const BULLET_LEVELS = ['•', '◦', '▪'] as const;
+const ALL_BULLETS = new Set<string>(BULLET_LEVELS);
+const INDENT_UNIT = '    '; // 4 spaces per indent level
+const INDENT_SIZE = INDENT_UNIT.length;
+
+/** Get the bullet character for a given indentation level */
+function bulletForLevel(indentSpaces: number): string {
+  const level = Math.floor(indentSpaces / INDENT_SIZE);
+  return BULLET_LEVELS[level % BULLET_LEVELS.length];
+}
+
+/** Check if a character is any of our bullet types */
+function isBulletChar(ch: string): boolean {
+  return ALL_BULLETS.has(ch);
+}
+
+/** Replace the bullet character on a line to match its indent level */
+function normalizeBullet(line: string): string {
+  const match = line.match(/^(\s*)([-•◦▪])\s/);
+  if (!match) return line;
+  const indent = match[1];
+  const correctBullet = bulletForLevel(indent.length);
+  return indent + correctBullet + line.substring(indent.length + 1);
+}
+
 // Tips shown occasionally as placeholders
 const PLACEHOLDER_TIPS = [
   'Tip: Type [] for checkboxes',
