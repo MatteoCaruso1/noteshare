@@ -533,6 +533,67 @@ const Profile = () => {
                 <h3 className="font-medium">Practice Preferences</h3>
               </div>
               <div className="space-y-4">
+                {/* Timezone Selector */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="timezone-select" className="text-sm font-medium">
+                      Timezone
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Used for streak warnings and reminders
+                    </p>
+                  </div>
+                  <Select value={timezone} onValueChange={setTimezone}>
+                    <SelectTrigger className="w-[200px]" id="timezone-select">
+                      <Globe className="w-4 h-4 mr-1.5 text-muted-foreground" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {(() => {
+                        const commonTimezones = [
+                          'America/New_York',
+                          'America/Chicago',
+                          'America/Denver',
+                          'America/Los_Angeles',
+                          'America/Anchorage',
+                          'Pacific/Honolulu',
+                          'America/Toronto',
+                          'America/Vancouver',
+                          'America/Sao_Paulo',
+                          'America/Argentina/Buenos_Aires',
+                          'America/Mexico_City',
+                          'Europe/London',
+                          'Europe/Paris',
+                          'Europe/Berlin',
+                          'Europe/Rome',
+                          'Europe/Madrid',
+                          'Europe/Amsterdam',
+                          'Europe/Stockholm',
+                          'Europe/Moscow',
+                          'Asia/Tokyo',
+                          'Asia/Seoul',
+                          'Asia/Shanghai',
+                          'Asia/Kolkata',
+                          'Asia/Dubai',
+                          'Asia/Singapore',
+                          'Australia/Sydney',
+                          'Australia/Melbourne',
+                          'Pacific/Auckland',
+                        ];
+                        const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        const allTzs = commonTimezones.includes(detectedTz)
+                          ? commonTimezones
+                          : [detectedTz, ...commonTimezones];
+                        return allTzs.map(tz => (
+                          <SelectItem key={tz} value={tz}>
+                            {tz.replace(/_/g, ' ').replace(/\//g, ' / ')}
+                          </SelectItem>
+                        ));
+                      })()}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Weekly Goal Toggle */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
