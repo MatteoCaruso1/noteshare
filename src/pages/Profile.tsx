@@ -79,6 +79,7 @@ const Profile = () => {
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
   const [saving, setSaving] = useState(false);
   const [localSelectedAward, setLocalSelectedAward] = useState<string | null>((profile as any)?.selected_award || null);
+  const [timezone, setTimezone] = useState<string>((profile as any)?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
   
   // Weekly goal preference
   const [weeklyGoalDisabled, setWeeklyGoalDisabled] = useState(() => {
