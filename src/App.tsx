@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useRef } from "react";
+import { useEffect, lazy, Suspense, useRef, useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +19,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import UpdateAvailableToast from "@/components/UpdateAvailableToast";
 import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
+import { SyncManager, SyncState } from "@/components/SyncManager";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { BottomNav } from "@/components/BottomNav";
 import { PremiumDialog } from "@/components/PremiumDialog";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
@@ -177,6 +179,9 @@ function FTUERetryCommit() {
 }
 
 function AppInner() {
+  const [syncState, setSyncState] = useState<SyncState>('idle');
+  const handleSyncStateChange = useCallback((state: SyncState) => setSyncState(state), []);
+
   useEffect(() => {
     // Prevent mobile browsers from trying to restore scroll positions on SPA navigations.
     if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
@@ -199,6 +204,8 @@ function AppInner() {
                     <BrowserRouter>
                       <ScrollToTop />
                       <ScrollLockDebugger />
+                      <SyncManager onStateChange={handleSyncStateChange} />
+                      <OfflineBanner syncState={syncState} />
                       <FloatingInstruments />
                       <SessionFocusOverlay />
                       <AppHeader />

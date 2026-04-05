@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PracticeSession } from '@/types';
 import { isOnboardingActive } from '@/contexts/OnboardingContext';
+import { enqueue } from '@/lib/offlineQueue';
+import { isOffline } from '@/hooks/useNetworkStatus';
 
 const ACTIVE_SESSION_STORAGE_KEY = 'noteshare_active_session';
 
@@ -213,8 +215,25 @@ export function useStartSession() {
         toast.success('Practice session started!');
       }
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      // If offline, queue the operation and keep the optimistic update
+      if (isOffline()) {
+        const optimisticSession = context?.key ? queryClient.getQueryData<PracticeSession>(context.key) : null;
+        await enqueue({
+          type: 'start_session',
+          payload: {
+            userId: variables.userId,
+            goals: variables.goals,
+            startedAt: optimisticSession?.started_at || new Date().toISOString(),
+            optimisticId: optimisticSession?.id,
+            isMobile: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0,
+          },
+        });
+        toast.success('Session started (will sync when online)');
+        return; // Don't rollback — keep optimistic data
+      }
+
+      // Rollback on real error
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
         persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
@@ -308,11 +327,24 @@ export function useEndSession() {
       queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
       // Note: Don't show toast here - the note creation will show "Practice session saved"
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        await enqueue({
+          type: 'end_session',
+          payload: {
+            sessionId: variables.sessionId,
+            userId: variables.userId,
+            notesSummary: variables.notesSummary,
+            collaboratorIds: variables.collaboratorIds,
+            endedAt: new Date().toISOString(),
+          },
+        });
+        toast.success('Session ended (will sync when online)');
+        return;
+      }
+
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
-        // Restore to localStorage
         persistActiveSession(context.previousSession as PracticeSession | null, variables.userId);
       }
       console.error('Error ending session:', error);
@@ -369,8 +401,15 @@ export function usePauseSession() {
       persistActiveSession(data, userId);
       toast.success('Session paused');
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        await enqueue({
+          type: 'pause_session',
+          payload: { sessionId: variables.sessionId, pausedAt: new Date().toISOString() },
+        });
+        toast.success('Session paused (will sync when online)');
+        return;
+      }
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
         persistActiveSession(context.previousSession as PracticeSession | null, context.userId);
@@ -454,8 +493,15 @@ export function useResumeSession() {
       persistActiveSession(data, userId);
       toast.success('Session resumed');
     },
-    onError: (error, variables, context) => {
-      // Rollback on error
+    onError: async (error, variables, context) => {
+      if (isOffline()) {
+        await enqueue({
+          type: 'resume_session',
+          payload: { sessionId: variables.sessionId, resumedAt: new Date().toISOString() },
+        });
+        toast.success('Session resumed (will sync when online)');
+        return;
+      }
       if (context?.key && context?.previousSession !== undefined) {
         queryClient.setQueryData(context.key, context.previousSession);
         persistActiveSession(context.previousSession as PracticeSession | null, context.userId);
