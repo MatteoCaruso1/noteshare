@@ -1193,6 +1193,7 @@ export type Database = {
           selected_award: string | null
           skill_level: string | null
           streak_achievement_counts: Json | null
+          timezone: string
           updated_at: string
           user_id: string | null
           username: string
@@ -1225,6 +1226,7 @@ export type Database = {
           selected_award?: string | null
           skill_level?: string | null
           streak_achievement_counts?: Json | null
+          timezone?: string
           updated_at?: string
           user_id?: string | null
           username: string
@@ -1257,6 +1259,7 @@ export type Database = {
           selected_award?: string | null
           skill_level?: string | null
           streak_achievement_counts?: Json | null
+          timezone?: string
           updated_at?: string
           user_id?: string | null
           username?: string
