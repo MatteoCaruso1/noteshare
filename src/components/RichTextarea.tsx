@@ -250,7 +250,7 @@ export function RichTextarea({
         const relativeCursor = cursorPos - lineStart;
         
         // Match bullet, number, or checkbox followed by text starting with a lowercase letter
-        const bulletCapMatch = line.match(/^(\s*[-•]\s)([a-z])(.*)$/);
+        const bulletCapMatch = line.match(/^(\s*[-•◦▪]\s)([a-z])(.*)$/);
         const numberCapMatch = line.match(/^(\s*\d+\.\s)([a-z])(.*)$/);
         const checkboxCapMatch = line.match(/^(\s*[☐☑]\s)([a-z])(.*)$/);
         
