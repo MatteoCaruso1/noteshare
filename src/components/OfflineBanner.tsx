@@ -12,8 +12,10 @@ export function OfflineBanner({ syncState }: OfflineBannerProps) {
   if (isOnline && syncState === 'idle') return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 py-1.5 px-4 text-xs font-medium transition-all duration-300"
+    <div className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 px-4 text-xs font-medium transition-all duration-300"
       style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 6px)',
+        paddingBottom: '6px',
         background: syncState === 'syncing'
           ? 'hsl(var(--primary) / 0.9)'
           : 'hsl(var(--destructive) / 0.85)',
