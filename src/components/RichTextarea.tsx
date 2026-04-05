@@ -386,25 +386,32 @@ export function RichTextarea({
       if (!info) return;
 
       const { lineStart, line } = info;
-      const indent = '  ';
 
       if (e.shiftKey) {
-        // Un-indent: remove leading spaces
-        if (line.startsWith(indent)) {
-          let newValue = currentValue.substring(0, lineStart) + line.substring(indent.length) + currentValue.substring(info.lineEnd);
+        // Un-indent: remove one indent unit of leading spaces
+        const leadingSpaces = line.match(/^(\s*)/)?.[1] || '';
+        const removeCount = Math.min(INDENT_SIZE, leadingSpaces.length);
+        if (removeCount > 0) {
+          let newLine = line.substring(removeCount);
+          // Normalize the bullet to match the new indent level
+          newLine = normalizeBullet(newLine);
+          let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
           newValue = renumberList(newValue);
           onChange(newValue);
           setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - indent.length);
+            textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - removeCount);
           }, 0);
         }
       } else {
         // Indent: add spaces at line start
-        let newValue = currentValue.substring(0, lineStart) + indent + currentValue.substring(lineStart);
+        let newLine = INDENT_UNIT + line;
+        // Normalize the bullet to match the new indent level
+        newLine = normalizeBullet(newLine);
+        let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
         newValue = renumberList(newValue);
         onChange(newValue);
         setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + indent.length;
+          textarea.selectionStart = textarea.selectionEnd = start + INDENT_SIZE;
         }, 0);
       }
       return;
