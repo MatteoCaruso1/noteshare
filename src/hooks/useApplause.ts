@@ -112,23 +112,7 @@ export function useGiveApplause() {
 
       if (error) throw error;
 
-      // Fetch the note to get the author_id for notification
-      const { data: note } = await supabase
-        .from('notes')
-        .select('author_id')
-        .eq('id', noteId)
-        .single();
-
-      // Create notification for the note author (but not if it's the same person)
-      if (note && note.author_id !== profile.id) {
-        await supabase.from('notifications').insert({
-          user_id: note.author_id,
-          from_user_id: profile.id,
-          note_id: noteId,
-          type: 'applause',
-          content: 'gave you applause on your note',
-        });
-      }
+      // Notification is created automatically by DB trigger (notify_on_applause)
 
       return data;
     },
