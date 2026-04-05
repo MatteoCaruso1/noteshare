@@ -194,7 +194,7 @@ export function RichTextarea({
     if (prefix === '• ') {
       if (bulletMatch) {
         // Remove bullet
-        newLine = line.replace(/^(\s*)[-•]\s/, '$1');
+        newLine = line.replace(/^(\s*)[-•◦▪]\s/, '$1');
       } else if (numberMatch) {
         // Replace number with bullet
         newLine = line.replace(/^(\s*)\d+\.\s/, '$1• ');
