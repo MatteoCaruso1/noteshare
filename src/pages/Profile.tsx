@@ -15,7 +15,8 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette, Share } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette, Share, Globe } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
@@ -78,6 +79,7 @@ const Profile = () => {
   const [genres, setGenres] = useState<string[]>(profile?.genres || []);
   const [saving, setSaving] = useState(false);
   const [localSelectedAward, setLocalSelectedAward] = useState<string | null>((profile as any)?.selected_award || null);
+  const [timezone, setTimezone] = useState<string>((profile as any)?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
   
   // Weekly goal preference
   const [weeklyGoalDisabled, setWeeklyGoalDisabled] = useState(() => {
@@ -245,7 +247,8 @@ const Profile = () => {
       avatar,
       bio,
       instruments,
-      genres
+      genres,
+      timezone,
     }).eq('id', profile.id);
     if (error) {
       toast.error('Failed to update profile');
@@ -530,6 +533,67 @@ const Profile = () => {
                 <h3 className="font-medium">Practice Preferences</h3>
               </div>
               <div className="space-y-4">
+                {/* Timezone Selector */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="timezone-select" className="text-sm font-medium">
+                      Timezone
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Used for streak warnings and reminders
+                    </p>
+                  </div>
+                  <Select value={timezone} onValueChange={setTimezone}>
+                    <SelectTrigger className="w-[200px]" id="timezone-select">
+                      <Globe className="w-4 h-4 mr-1.5 text-muted-foreground" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {(() => {
+                        const commonTimezones = [
+                          'America/New_York',
+                          'America/Chicago',
+                          'America/Denver',
+                          'America/Los_Angeles',
+                          'America/Anchorage',
+                          'Pacific/Honolulu',
+                          'America/Toronto',
+                          'America/Vancouver',
+                          'America/Sao_Paulo',
+                          'America/Argentina/Buenos_Aires',
+                          'America/Mexico_City',
+                          'Europe/London',
+                          'Europe/Paris',
+                          'Europe/Berlin',
+                          'Europe/Rome',
+                          'Europe/Madrid',
+                          'Europe/Amsterdam',
+                          'Europe/Stockholm',
+                          'Europe/Moscow',
+                          'Asia/Tokyo',
+                          'Asia/Seoul',
+                          'Asia/Shanghai',
+                          'Asia/Kolkata',
+                          'Asia/Dubai',
+                          'Asia/Singapore',
+                          'Australia/Sydney',
+                          'Australia/Melbourne',
+                          'Pacific/Auckland',
+                        ];
+                        const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        const allTzs = commonTimezones.includes(detectedTz)
+                          ? commonTimezones
+                          : [detectedTz, ...commonTimezones];
+                        return allTzs.map(tz => (
+                          <SelectItem key={tz} value={tz}>
+                            {tz.replace(/_/g, ' ').replace(/\//g, ' / ')}
+                          </SelectItem>
+                        ));
+                      })()}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Weekly Goal Toggle */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">

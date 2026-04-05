@@ -17,28 +17,15 @@ Deno.serve(async (req) => {
   );
 
   try {
-    // Only send streak warnings in the evening (9 PM+ ET),
-    // ~3 hours before streak expires at midnight
-    const nowET = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
-    const hourET = new Date(nowET).getHours();
-    if (hourET < 21) {
-      console.log(`Skipping streak warnings: ${hourET}h ET, waiting until 21h+`);
-      return new Response(JSON.stringify({ processed: 0, skipped: "too_early", hour_et: hourET }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     // Find users with streak >= 3 who haven't practiced today
     // and haven't already received a streak_warning today
     const { data: atRiskUsers, error } = await supabase.rpc("get_streak_warning_users");
 
     if (error) {
       // Fallback: use direct query if RPC doesn't exist yet
-      const today = new Date().toISOString().split("T")[0];
-
       const { data: profiles, error: profileErr } = await supabase
         .from("profiles")
-        .select("id, name, current_streak")
+        .select("id, name, current_streak, timezone")
         .gte("current_streak", 3);
 
       if (profileErr) throw profileErr;
@@ -48,14 +35,50 @@ Deno.serve(async (req) => {
         });
       }
 
-      const userIds = profiles.map((p) => p.id);
+      // Filter to users where it's 8 PM+ in their local timezone
+      const now = new Date();
+      const eligibleByTime = profiles.filter((p) => {
+        const tz = p.timezone || "America/New_York";
+        try {
+          const localHour = parseInt(
+            new Intl.DateTimeFormat("en-US", {
+              timeZone: tz,
+              hour: "numeric",
+              hour12: false,
+            }).format(now)
+          );
+          return localHour >= 20; // 8 PM+
+        } catch {
+          // Invalid timezone, fall back to ET
+          const etHour = parseInt(
+            new Intl.DateTimeFormat("en-US", {
+              timeZone: "America/New_York",
+              hour: "numeric",
+              hour12: false,
+            }).format(now)
+          );
+          return etHour >= 20;
+        }
+      });
+
+      if (eligibleByTime.length === 0) {
+        console.log(`Skipping: no users in 8PM+ window (checked ${profiles.length} profiles)`);
+        return new Response(JSON.stringify({ processed: 0, skipped: "no_users_in_window" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const userIds = eligibleByTime.map((p) => p.id);
+
+      // Get today's date in each user's timezone — use UTC date as approximation for batch query
+      const todayUTC = new Date().toISOString().split("T")[0];
 
       // Check who practiced today
       const { data: todaySessions } = await supabase
         .from("practice_sessions")
         .select("user_id")
         .in("user_id", userIds)
-        .gte("started_at", `${today}T00:00:00Z`);
+        .gte("started_at", `${todayUTC}T00:00:00Z`);
 
       const practicedToday = new Set(todaySessions?.map((s) => s.user_id) || []);
 
@@ -65,12 +88,12 @@ Deno.serve(async (req) => {
         .select("user_id")
         .in("user_id", userIds)
         .eq("type", "streak_warning")
-        .gte("created_at", `${today}T00:00:00Z`);
+        .gte("created_at", `${todayUTC}T00:00:00Z`);
 
       const alreadyWarned = new Set(existingWarnings?.map((n) => n.user_id) || []);
 
       // Filter to eligible users
-      const eligible = profiles.filter(
+      const eligible = eligibleByTime.filter(
         (p) => !practicedToday.has(p.id) && !alreadyWarned.has(p.id)
       );
 
