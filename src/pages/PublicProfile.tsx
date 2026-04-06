@@ -508,6 +508,34 @@ const PublicProfile = () => {
             </DialogContent>
           </Dialog>
 
+          {/* Account Prompt Dialog for logged-out users */}
+          <AlertDialog open={showAccountPrompt} onOpenChange={setShowAccountPrompt}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Do you have an account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Sign in to your existing account, or create a new one to connect with {profile.name}.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+                <Button
+                  className="w-full bg-gradient-primary text-white hover:opacity-90"
+                  onClick={handleNoAccount}
+                >
+                  I'm new — Create an Account
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleHasAccount}
+                >
+                  I already have an account
+                </Button>
+                <AlertDialogCancel className="w-full mt-0">Cancel</AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           {/* Notes Section */}
           <div className="space-y-4">
             <h3 className="font-semibold px-1">Recent Notes</h3>
