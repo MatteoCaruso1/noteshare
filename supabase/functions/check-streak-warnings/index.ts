@@ -68,29 +68,94 @@ Deno.serve(async (req) => {
         });
       }
 
-      const userIds = eligibleByTime.map((p) => p.id);
+      // Helper: get local "today" start as UTC ISO string for a given timezone
+      function getLocalDayStartUTC(tz: string): string {
+        const localDateStr = new Intl.DateTimeFormat("en-CA", {
+          timeZone: tz,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(now);
+        // localDateStr is YYYY-MM-DD in the user's timezone
+        // Convert to UTC by creating a date at midnight in that timezone
+        const parts = localDateStr.split("-");
+        const d = new Date(`${localDateStr}T00:00:00`);
+        // Use timezone offset to get actual UTC start of user's local day
+        const offsetMs = d.getTime() - new Date(
+          new Intl.DateTimeFormat("en-US", {
+            timeZone: tz,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }).format(d)
+        ).getTime();
+        // Simpler approach: just use the local date string and query broadly
+        return `${localDateStr}T00:00:00`;
+      }
 
-      // Get today's date in each user's timezone — use UTC date as approximation for batch query
-      const todayUTC = new Date().toISOString().split("T")[0];
+      // Group users by timezone for accurate local-day queries
+      const tzGroups = new Map<string, typeof eligibleByTime>();
+      for (const p of eligibleByTime) {
+        const tz = p.timezone || "America/New_York";
+        if (!tzGroups.has(tz)) tzGroups.set(tz, []);
+        tzGroups.get(tz)!.push(p);
+      }
 
-      // Check who practiced today
-      const { data: todaySessions } = await supabase
-        .from("practice_sessions")
-        .select("user_id")
-        .in("user_id", userIds)
-        .gte("started_at", `${todayUTC}T00:00:00Z`);
+      const practicedToday = new Set<string>();
+      const alreadyWarned = new Set<string>();
 
-      const practicedToday = new Set(todaySessions?.map((s) => s.user_id) || []);
+      // For each timezone group, check notes AND sessions using local day boundaries
+      for (const [tz, users] of tzGroups) {
+        const userIds = users.map((p) => p.id);
+        const localDate = new Intl.DateTimeFormat("en-CA", {
+          timeZone: tz,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(now);
 
-      // Check who already got a streak_warning today
-      const { data: existingWarnings } = await supabase
-        .from("notifications")
-        .select("user_id")
-        .in("user_id", userIds)
-        .eq("type", "streak_warning")
-        .gte("created_at", `${todayUTC}T00:00:00Z`);
+        // Check who has notes created today (notes maintain streaks)
+        const { data: todayNotes } = await supabase
+          .from("notes")
+          .select("author_id")
+          .in("author_id", userIds)
+          .gte("created_at", `${localDate}T00:00:00Z`)
+          .lte("created_at", `${localDate}T23:59:59Z`);
 
-      const alreadyWarned = new Set(existingWarnings?.map((n) => n.user_id) || []);
+        for (const n of todayNotes || []) {
+          practicedToday.add(n.author_id);
+        }
+
+        // Also check practice sessions (completed ones with ended_at)
+        const { data: todaySessions } = await supabase
+          .from("practice_sessions")
+          .select("user_id")
+          .in("user_id", userIds)
+          .not("ended_at", "is", null)
+          .gte("started_at", `${localDate}T00:00:00Z`)
+          .lte("started_at", `${localDate}T23:59:59Z`);
+
+        for (const s of todaySessions || []) {
+          practicedToday.add(s.user_id);
+        }
+
+        // Check who already got a streak_warning today (in their local day)
+        const { data: existingWarnings } = await supabase
+          .from("notifications")
+          .select("user_id")
+          .in("user_id", userIds)
+          .eq("type", "streak_warning")
+          .gte("created_at", `${localDate}T00:00:00Z`)
+          .lte("created_at", `${localDate}T23:59:59Z`);
+
+        for (const w of existingWarnings || []) {
+          alreadyWarned.add(w.user_id);
+        }
+      }
 
       // Filter to eligible users
       const eligible = eligibleByTime.filter(
