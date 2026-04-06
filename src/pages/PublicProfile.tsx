@@ -125,6 +125,7 @@ const PublicProfile = () => {
   const unmuteFriend = useUnmuteFriend();
   const [displayCount, setDisplayCount] = useState(10);
   const [messagesOpen, setMessagesOpen] = useState(false);
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
   
   const isLoggedIn = !!user;
   
