@@ -180,11 +180,26 @@ const PublicProfile = () => {
   };
 
   const handleCreateAccount = () => {
-    // Store the profile handle for redirect after auth + FTUE
+    // Show prompt asking if they have an account
+    setShowAccountPrompt(true);
+  };
+
+  const storeProfileRedirect = () => {
     if (profile?.username) {
       localStorage.setItem(PROFILE_REDIRECT_KEY, profile.username);
     }
-    navigate('/auth');
+  };
+
+  const handleHasAccount = () => {
+    storeProfileRedirect();
+    setShowAccountPrompt(false);
+    navigate('/auth?mode=login');
+  };
+
+  const handleNoAccount = () => {
+    storeProfileRedirect();
+    setShowAccountPrompt(false);
+    navigate('/ftue');
   };
   
   // Always use signed URL for avatar (works for both logged-in and logged-out via public flag)
