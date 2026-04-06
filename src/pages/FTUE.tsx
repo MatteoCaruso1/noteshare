@@ -791,7 +791,13 @@ export default function FTUE() {
             className="w-full bg-gradient-primary text-primary-foreground font-semibold px-8 py-6 text-lg"
             onClick={() => {
               clearFTUEState();
-              navigate('/', { replace: true });
+              const profileRedirect = localStorage.getItem('noteshare_profile_redirect');
+              if (profileRedirect) {
+                localStorage.removeItem('noteshare_profile_redirect');
+                navigate(`/profile/${profileRedirect}`, { replace: true });
+              } else {
+                navigate('/', { replace: true });
+              }
             }}
           >
             Start Practicing

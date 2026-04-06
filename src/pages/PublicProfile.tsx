@@ -125,6 +125,7 @@ const PublicProfile = () => {
   const unmuteFriend = useUnmuteFriend();
   const [displayCount, setDisplayCount] = useState(10);
   const [messagesOpen, setMessagesOpen] = useState(false);
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
   
   const isLoggedIn = !!user;
   
@@ -179,11 +180,26 @@ const PublicProfile = () => {
   };
 
   const handleCreateAccount = () => {
-    // Store the profile handle for redirect after auth + FTUE
+    // Show prompt asking if they have an account
+    setShowAccountPrompt(true);
+  };
+
+  const storeProfileRedirect = () => {
     if (profile?.username) {
       localStorage.setItem(PROFILE_REDIRECT_KEY, profile.username);
     }
-    navigate('/auth');
+  };
+
+  const handleHasAccount = () => {
+    storeProfileRedirect();
+    setShowAccountPrompt(false);
+    navigate('/auth?mode=login');
+  };
+
+  const handleNoAccount = () => {
+    storeProfileRedirect();
+    setShowAccountPrompt(false);
+    navigate('/ftue');
   };
   
   // Always use signed URL for avatar (works for both logged-in and logged-out via public flag)
@@ -491,6 +507,34 @@ const PublicProfile = () => {
               />
             </DialogContent>
           </Dialog>
+
+          {/* Account Prompt Dialog for logged-out users */}
+          <AlertDialog open={showAccountPrompt} onOpenChange={setShowAccountPrompt}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Do you have an account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Sign in to your existing account, or create a new one to connect with {profile.name}.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+                <Button
+                  className="w-full bg-gradient-primary text-white hover:opacity-90"
+                  onClick={handleNoAccount}
+                >
+                  I'm new — Create an Account
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleHasAccount}
+                >
+                  I already have an account
+                </Button>
+                <AlertDialogCancel className="w-full mt-0">Cancel</AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Notes Section */}
           <div className="space-y-4">
