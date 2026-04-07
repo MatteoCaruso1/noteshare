@@ -895,48 +895,27 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
 
-              {/* Name or rename input */}
-              {renamingId === view.id ? (
-                <form
-                  className="flex-1 flex items-center gap-1"
-                  onSubmit={(e) => { e.preventDefault(); handleRename(view.id); }}
-                >
-                  <Input
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    className="h-7 text-xs flex-1"
-                    autoFocus
-                  />
-                  <Button type="submit" variant="ghost" size="sm" className="h-7 w-7 p-0">
-                    <Check className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setRenamingId(null)} className="h-7 w-7 p-0">
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                </form>
-              ) : (
-                <>
-                  <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setActiveViewId(view.id);
-                      const metric = view.metric;
-                      setConfig({
-                        chart_type: (view.chart_type as ChartType) || 'line',
-                        metric,
-                        time_granularity: view.time_granularity as 'weekly' | 'monthly',
-                        time_range: view.time_range,
-                      });
-                      setEditName(view.name);
-                      setIsManaging(false);
-                      setIsEditing(true);
-                    }}
-                    className="h-7 w-7 p-0 text-muted-foreground"
-                  >
-                    <Pencil className="w-3 h-3" />
-                  </Button>
+              <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setActiveViewId(view.id);
+                  const metric = view.metric;
+                  setConfig({
+                    chart_type: (view.chart_type as ChartType) || 'line',
+                    metric,
+                    time_granularity: view.time_granularity as 'weekly' | 'monthly',
+                    time_range: view.time_range,
+                  });
+                  setEditName(view.name);
+                  setIsManaging(false);
+                  setIsEditing(true);
+                }}
+                className="h-7 w-7 p-0 text-muted-foreground"
+              >
+                <Pencil className="w-3 h-3" />
+              </Button>
                   <Button
                     variant="ghost"
                     size="sm"
