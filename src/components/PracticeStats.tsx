@@ -336,12 +336,20 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             }
             runningAvgMap.set(w.week, cumCount > 0 ? Math.round((cumSum / cumCount / 60) * 100) / 100 : 0);
           }
+          // Compute 4-week rolling average
+          const fourWeekAvgMap = new Map<string, number>();
+          for (let i = 0; i < allWeeks.length; i++) {
+            const window = allWeeks.slice(Math.max(0, i - 3), i + 1);
+            const windowSum = window.reduce((s, w) => s + w.minutes, 0);
+            fourWeekAvgMap.set(allWeeks[i].week, Math.round((windowSum / window.length / 60) * 100) / 100);
+          }
           const chartData = rawData.map(d => ({
             ...d,
             avgHours: runningAvgMap.get(d.week) ?? 0,
+            fourWeekAvg: fourWeekAvgMap.get(d.week) ?? 0,
           }));
           const maxHours = Math.max(
-            ...chartData.map(d => Math.max(d.hours, d.avgHours)),
+            ...chartData.map(d => Math.max(d.hours, d.avgHours, d.fourWeekAvg)),
             1
           );
 
@@ -403,6 +411,12 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   </svg>
                   <span className="text-[10px] text-muted-foreground">All Time Avg</span>
                 </div>
+                <div className="flex items-center gap-1.5">
+                  <svg width="12" height="4" className="inline-block">
+                    <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(38 92% 50%)" strokeWidth="1.5" strokeDasharray="4 2" />
+                  </svg>
+                  <span className="text-[10px] text-muted-foreground">4-Week Avg</span>
+                </div>
               </div>
               <div className="h-40 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -436,6 +450,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       formatter={(value: number, name: string) => {
                         if (name === 'hours') return [formatFriendlyHours(value), 'Weekly total'];
                         if (name === 'avgHours') return [formatFriendlyHours(value), 'All time avg'];
+                        if (name === 'fourWeekAvg') return [formatFriendlyHours(value), '4-week avg'];
                         return [formatFriendlyHours(value), name];
                       }}
                     />
@@ -445,6 +460,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       stroke="hsl(270 60% 65%)" 
                       strokeWidth={1.5}
                       strokeDasharray="6 3"
+                      dot={false}
+                      activeDot={{ r: 3 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="fourWeekAvg" 
+                      stroke="hsl(38 92% 50%)" 
+                      strokeWidth={1.5}
+                      strokeDasharray="4 2"
                       dot={false}
                       activeDot={{ r: 3 }}
                     />
