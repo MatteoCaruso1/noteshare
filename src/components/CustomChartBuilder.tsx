@@ -1033,7 +1033,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <ChartRenderer config={config} data={chartData} profileId={profileId} stats={stats} />
+          <ChartRenderer config={config} data={chartData} compareData={config.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} />
         </>
       )}
 
