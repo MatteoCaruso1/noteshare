@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RichTextContent } from '@/components/RichTextContent';
 import { CalendarHeatmap } from './CalendarHeatmap';
+import { CustomChartBuilder } from './CustomChartBuilder';
 import { ShareCalendarSheet } from './ShareCalendarSheet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -803,6 +804,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </Card>
       )}
+
+      {/* Section: Custom Charts */}
+      <CustomChartBuilder profileId={profileId} stats={stats} />
     </div>
   );
 }
