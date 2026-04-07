@@ -706,7 +706,68 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
   );
 }
 
-function ChartRenderer({ config, data, profileId, stats }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string; stats: CustomChartBuilderProps['stats'] }) {
+function ComparisonRenderer({ config, primaryData, secondaryData }: {
+  config: ChartConfig;
+  primaryData: { label: string; value: number }[];
+  secondaryData: { label: string; value: number }[];
+}) {
+  const isMobile = useIsMobile();
+  const primaryDef = METRICS.find(m => m.key === config.metric);
+  const secondaryDef = METRICS.find(m => m.key === config.compare_metric);
+
+  const merged = primaryData.map((d, i) => ({
+    label: d.label,
+    primary: d.value,
+    secondary: secondaryData[i]?.value ?? 0,
+  }));
+
+  const dataLength = merged.length;
+  const xInterval = isMobile
+    ? Math.max(0, Math.ceil(dataLength / 4) - 1)
+    : Math.max(0, Math.ceil(dataLength / 8) - 1);
+
+  const tooltipStyle = {
+    backgroundColor: 'hsl(var(--card))',
+    borderColor: 'hsl(var(--border))',
+    borderRadius: '8px',
+  };
+
+  const ChartComp = config.chart_type === 'bar' ? BarChart : LineChart;
+
+  return (
+    <div className="h-48">
+      <div className="flex gap-3 mb-1.5 text-[10px]">
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" /> {primaryDef?.shortLabel}</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: 'hsl(38, 92%, 50%)' }} /> {secondaryDef?.shortLabel}</span>
+      </div>
+      <ResponsiveContainer width="100%" height="100%">
+        <ChartComp data={merged}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
+          <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(var(--foreground))' }} />
+          {config.chart_type === 'bar' ? (
+            <>
+              <Bar yAxisId="left" dataKey="primary" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={24} name={primaryDef?.shortLabel || 'Primary'} />
+              <Bar yAxisId="right" dataKey="secondary" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={24} name={secondaryDef?.shortLabel || 'Secondary'} />
+            </>
+          ) : (
+            <>
+              <Line yAxisId="left" type="monotone" dataKey="primary" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }} name={primaryDef?.shortLabel || 'Primary'} />
+              <Line yAxisId="right" type="monotone" dataKey="secondary" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ fill: 'hsl(38, 92%, 50%)', strokeWidth: 0, r: 3 }} name={secondaryDef?.shortLabel || 'Secondary'} />
+            </>
+          )}
+        </ChartComp>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function ChartRenderer({ config, data, compareData, profileId, stats }: { config: ChartConfig; data: { label: string; value: number }[]; compareData?: { label: string; value: number }[]; profileId: string; stats: CustomChartBuilderProps['stats'] }) {
+  if (config.compare_metric && compareData && (config.chart_type === 'line' || config.chart_type === 'bar')) {
+    return <ComparisonRenderer config={config} primaryData={data} secondaryData={compareData} />;
+  }
   if (config.chart_type === 'gauge') {
     return <GaugeRenderer profileId={profileId} config={config} stats={stats} />;
   }
