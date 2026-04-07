@@ -77,6 +77,7 @@ const DONUT_COLORS = [
 interface ChartConfig {
   chart_type: ChartType;
   metric: string;
+  compare_metric: string | null;
   time_granularity: 'weekly' | 'monthly';
   time_range: string;
 }
