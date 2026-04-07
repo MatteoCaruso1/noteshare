@@ -796,9 +796,9 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const handleSave = useCallback(() => {
     const name = editName.trim() || metricDef?.label || 'My Chart';
+    const metricValue = config.compare_metric ? `${config.metric}|${config.compare_metric}` : config.metric;
     if (activeViewId) {
-      // Update existing view
-      update({ id: activeViewId, name, chart_type: config.chart_type, metric: config.metric, time_granularity: config.time_granularity, time_range: config.time_range }, {
+      update({ id: activeViewId, name, chart_type: config.chart_type, metric: metricValue, time_granularity: config.time_granularity, time_range: config.time_range }, {
         onSuccess: () => {
           toast.success('Chart view updated');
           setIsEditing(false);
@@ -809,7 +809,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
         user_id: profileId,
         name,
         chart_type: config.chart_type,
-        metric: config.metric,
+        metric: metricValue,
         time_granularity: config.time_granularity,
         time_range: config.time_range,
         display_order: views.length,
