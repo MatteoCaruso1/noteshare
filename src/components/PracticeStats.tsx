@@ -299,6 +299,37 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
 
   return (
     <div className="space-y-4">
+      {/* Section: Calendar Heatmap */}
+      <Card className="p-4 bg-card border-border">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Practice Calendar</h3>
+          </div>
+          <button
+            onClick={() => setShowShareCalendar(true)}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="Share calendar"
+          >
+            <Share className="w-4 h-4" />
+          </button>
+        </div>
+        <CalendarHeatmap
+          dailyMinutesMap={stats.dailyMinutesMap}
+          weeklyGoals={weeklyGoals}
+          currentMonth={calendarMonth}
+          onMonthChange={setCalendarMonth}
+        />
+      </Card>
+
+      <ShareCalendarSheet
+        open={showShareCalendar}
+        onOpenChange={setShowShareCalendar}
+        dailyMinutesMap={stats.dailyMinutesMap}
+        weeklyGoals={weeklyGoals}
+        userName={profile?.name || 'My'}
+        currentMonth={calendarMonth}
+      />
       {/* Section: Progress */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center justify-between mb-4">
@@ -490,37 +521,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
 
       </Card>
 
-      {/* Section: Calendar Heatmap */}
-      <Card className="p-4 bg-card border-border">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Practice Calendar</h3>
-          </div>
-          <button
-            onClick={() => setShowShareCalendar(true)}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label="Share calendar"
-          >
-            <Share className="w-4 h-4" />
-          </button>
-        </div>
-        <CalendarHeatmap
-          dailyMinutesMap={stats.dailyMinutesMap}
-          weeklyGoals={weeklyGoals}
-          currentMonth={calendarMonth}
-          onMonthChange={setCalendarMonth}
-        />
-      </Card>
-
-      <ShareCalendarSheet
-        open={showShareCalendar}
-        onOpenChange={setShowShareCalendar}
-        dailyMinutesMap={stats.dailyMinutesMap}
-        weeklyGoals={weeklyGoals}
-        userName={profile?.name || 'My'}
-        currentMonth={calendarMonth}
-      />
 
       {/* Section: Deep-dives */}
       <Card className="p-4 bg-card border-border">
