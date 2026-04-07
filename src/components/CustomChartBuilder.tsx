@@ -779,21 +779,31 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const handleSave = useCallback(() => {
     const name = editName.trim() || metricDef?.label || 'My Chart';
-    save({
-      user_id: profileId,
-      name,
-      chart_type: config.chart_type,
-      metric: config.metric,
-      time_granularity: config.time_granularity,
-      time_range: config.time_range,
-      display_order: views.length,
-    }, {
-      onSuccess: () => {
-        toast.success('Chart view saved');
-        setIsEditing(false);
-      },
-    });
-  }, [config, editName, metricDef, profileId, save, views.length]);
+    if (activeViewId) {
+      // Update existing view
+      update({ id: activeViewId, name, chart_type: config.chart_type, metric: config.metric, time_granularity: config.time_granularity, time_range: config.time_range }, {
+        onSuccess: () => {
+          toast.success('Chart view updated');
+          setIsEditing(false);
+        },
+      });
+    } else {
+      save({
+        user_id: profileId,
+        name,
+        chart_type: config.chart_type,
+        metric: config.metric,
+        time_granularity: config.time_granularity,
+        time_range: config.time_range,
+        display_order: views.length,
+      }, {
+        onSuccess: () => {
+          toast.success('Chart view saved');
+          setIsEditing(false);
+        },
+      });
+    }
+  }, [config, editName, metricDef, profileId, save, update, activeViewId, views.length]);
 
   const handleDelete = useCallback((id: string) => {
     remove(id, {
