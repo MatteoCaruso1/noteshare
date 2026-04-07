@@ -65,6 +65,53 @@ export type Database = {
           },
         ]
       }
+      custom_chart_views: {
+        Row: {
+          chart_type: string
+          created_at: string
+          display_order: number
+          id: string
+          metric: string
+          name: string
+          time_granularity: string
+          time_range: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chart_type?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          metric?: string
+          name?: string
+          time_granularity?: string
+          time_range?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chart_type?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          metric?: string
+          name?: string
+          time_granularity?: string
+          time_range?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_chart_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_focus: {
         Row: {
           created_at: string
