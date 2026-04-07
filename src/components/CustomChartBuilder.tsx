@@ -769,11 +769,13 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const handleSave = useCallback(() => {
     const name = editName.trim() || metricDef?.label || 'My Chart';
+    // Encode compare_metric into metric field as "primary|secondary"
+    const metricValue = config.compare_metric ? `${config.metric}|${config.compare_metric}` : config.metric;
     save({
       user_id: profileId,
       name,
       chart_type: config.chart_type,
-      metric: config.metric,
+      metric: metricValue,
       time_granularity: config.time_granularity,
       time_range: config.time_range,
       display_order: views.length,
