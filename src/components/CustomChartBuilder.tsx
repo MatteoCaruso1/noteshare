@@ -372,25 +372,30 @@ function computeDonutData(
 
 // ---- Selector components ----
 
-function PillSelector({ options, value, onChange, className = '' }: {
+function PillSelector({ options, value, onChange, className = '', disabledValues = [] }: {
   options: { value: string; label: string; icon?: any }[];
   value: string;
   onChange: (v: string) => void;
   className?: string;
+  disabledValues?: string[];
 }) {
   return (
     <div className={`flex gap-1 flex-wrap ${className}`}>
       {options.map(opt => {
         const Icon = opt.icon;
+        const isDisabled = disabledValues.includes(opt.value);
         return (
           <button
             key={opt.value}
             type="button"
-            onClick={() => onChange(opt.value)}
+            onClick={() => !isDisabled && onChange(opt.value)}
+            disabled={isDisabled}
             className={`px-2.5 py-1 text-xs font-medium rounded-full touch-manipulation select-none transition-colors flex items-center gap-1 ${
-              value === opt.value
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80'
+              isDisabled
+                ? 'bg-muted/40 text-muted-foreground/40 cursor-not-allowed'
+                : value === opt.value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80'
             }`}
           >
             {Icon && <Icon className="w-3 h-3" />}
