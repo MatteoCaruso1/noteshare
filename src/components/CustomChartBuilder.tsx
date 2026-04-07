@@ -288,7 +288,7 @@ function useChartData(
 
       return data;
     }
-  }, [config.metric, config.time_granularity, config.time_range, config.chart_type, stats]);
+  }, [config.metric, config.time_granularity, config.time_range, config.chart_type, stats, routineData]);
 }
 
 function computeHistogramData(
