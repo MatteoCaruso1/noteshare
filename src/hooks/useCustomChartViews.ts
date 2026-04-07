@@ -5,7 +5,7 @@ export interface CustomChartView {
   id: string;
   user_id: string;
   name: string;
-  chart_type: 'line' | 'bar';
+  chart_type: 'line' | 'bar' | 'histogram' | 'gauge' | 'donut';
   metric: string;
   time_granularity: 'weekly' | 'monthly';
   time_range: string;
