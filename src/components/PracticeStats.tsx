@@ -411,6 +411,12 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                   </svg>
                   <span className="text-[10px] text-muted-foreground">All Time Avg</span>
                 </div>
+                <div className="flex items-center gap-1.5">
+                  <svg width="12" height="4" className="inline-block">
+                    <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(38 92% 50%)" strokeWidth="1.5" strokeDasharray="4 2" />
+                  </svg>
+                  <span className="text-[10px] text-muted-foreground">4-Week Avg</span>
+                </div>
               </div>
               <div className="h-40 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
