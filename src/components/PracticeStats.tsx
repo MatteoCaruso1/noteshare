@@ -450,6 +450,7 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       formatter={(value: number, name: string) => {
                         if (name === 'hours') return [formatFriendlyHours(value), 'Weekly total'];
                         if (name === 'avgHours') return [formatFriendlyHours(value), 'All time avg'];
+                        if (name === 'fourWeekAvg') return [formatFriendlyHours(value), '4-week avg'];
                         return [formatFriendlyHours(value), name];
                       }}
                     />
@@ -459,6 +460,15 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
                       stroke="hsl(270 60% 65%)" 
                       strokeWidth={1.5}
                       strokeDasharray="6 3"
+                      dot={false}
+                      activeDot={{ r: 3 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="fourWeekAvg" 
+                      stroke="hsl(38 92% 50%)" 
+                      strokeWidth={1.5}
+                      strokeDasharray="4 2"
                       dot={false}
                       activeDot={{ r: 3 }}
                     />
