@@ -815,16 +815,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
     });
   }, [activeViewId, remove]);
 
-  const handleRename = useCallback((id: string) => {
-    const trimmed = renameValue.trim();
-    if (!trimmed) return;
-    update({ id, name: trimmed }, {
-      onSuccess: () => {
-        toast.success('Renamed');
-        setRenamingId(null);
-      },
-    });
-  }, [renameValue, update]);
 
   const handleMoveView = useCallback((id: string, direction: -1 | 1) => {
     const idx = views.findIndex(v => v.id === id);
