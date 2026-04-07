@@ -758,6 +758,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
     setConfig({
       chart_type: 'line',
       metric: 'practice_hours',
+      compare_metric: null,
       time_granularity: 'weekly',
       time_range: '3m',
     });
