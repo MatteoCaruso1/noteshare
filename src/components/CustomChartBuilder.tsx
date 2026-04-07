@@ -407,7 +407,7 @@ function PillSelector({ options, value, onChange, className = '', disabledValues
   );
 }
 
-function MetricSelector({ value, onChange, chartType }: { value: string; onChange: (v: string) => void; chartType: ChartType }) {
+function MetricSelector({ value, onChange, chartType, allowClear }: { value: string; onChange: (v: string) => void; chartType: ChartType; allowClear?: boolean }) {
   const [open, setOpen] = useState(false);
   const availableMetrics = METRICS.filter(m => m.chartTypes.includes(chartType));
   const selected = availableMetrics.find(m => m.key === value);
@@ -421,7 +421,18 @@ function MetricSelector({ value, onChange, chartType }: { value: string; onChang
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-muted text-sm text-foreground touch-manipulation"
       >
         <span>{selected?.label || 'Select metric'}</span>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+        <div className="flex items-center gap-1">
+          {allowClear && value && (
+            <span
+              role="button"
+              onClick={(e) => { e.stopPropagation(); onChange(''); }}
+              className="text-muted-foreground [@media(hover:hover)]:hover:text-foreground"
+            >
+              <X className="w-3.5 h-3.5" />
+            </span>
+          )}
+          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+        </div>
       </button>
       {open && (
         <>
@@ -987,7 +998,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
               options={CHART_TYPES.map(t => ({ value: t.value, label: t.label, icon: t.icon }))}
               value={config.chart_type}
               onChange={handleChartTypeChange}
-              disabledValues={CHART_TYPES.map(t => t.value).filter(v => !metricDef?.chartTypes.includes(v))}
+              disabledValues={metricDef ? CHART_TYPES.map(t => t.value).filter(v => !metricDef.chartTypes.includes(v)) : []}
             />
           </div>
 
@@ -997,6 +1008,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
               value={config.metric}
               onChange={(v) => setConfig(c => ({ ...c, metric: v }))}
               chartType={config.chart_type}
+              allowClear
             />
           </div>
 
