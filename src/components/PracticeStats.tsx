@@ -804,6 +804,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </div>
         </Card>
       )}
+
+      {/* Section: Custom Charts */}
+      <CustomChartBuilder profileId={profileId} stats={stats} />
     </div>
   );
 }
