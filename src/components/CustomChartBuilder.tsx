@@ -910,7 +910,19 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => { setRenamingId(view.id); setRenameValue(view.name); }}
+                    onClick={() => {
+                      setActiveViewId(view.id);
+                      const metric = view.metric;
+                      setConfig({
+                        chart_type: (view.chart_type as ChartType) || 'line',
+                        metric,
+                        time_granularity: view.time_granularity as 'weekly' | 'monthly',
+                        time_range: view.time_range,
+                      });
+                      setEditName(view.name);
+                      setIsManaging(false);
+                      setIsEditing(true);
+                    }}
                     className="h-7 w-7 p-0 text-muted-foreground"
                   >
                     <Pencil className="w-3 h-3" />
