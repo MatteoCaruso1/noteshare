@@ -542,21 +542,27 @@ function HistogramRenderer({ data }: { data: { label: string; value: number }[] 
   );
 }
 
-function GaugeRenderer({ profileId }: { profileId: string }) {
-  const { currentWeekGoal } = useWeeklyGoal(profileId);
-  const { minutes: currentMinutes, isLoading } = useCurrentWeekPracticeMinutes(profileId);
+function GaugeRenderer({ profileId, config, stats }: { profileId: string; config: ChartConfig; stats: CustomChartBuilderProps['stats'] }) {
+  const rangeInfo = TIME_RANGES.find(r => r.value === config.time_range) || TIME_RANGES[1];
+  const numWeeks = Math.min(rangeInfo.weeks, 12); // cap at 12 for display
 
-  if (!currentWeekGoal || currentWeekGoal.skipped) {
-    return <p className="text-sm text-muted-foreground text-center py-8">No weekly goal set</p>;
-  }
-
-  const target = currentWeekGoal.target_minutes;
-  const pct = isLoading ? 0 : Math.min(100, Math.round((currentMinutes / target) * 100));
-  const isComplete = pct >= 100;
-
-  const gaugeData = [
-    { name: 'Progress', value: pct, fill: isComplete ? 'hsl(150, 60%, 45%)' : 'hsl(var(--primary))' },
-  ];
+  // Fetch all weekly goals for this user
+  const { data: allGoals } = useQuery({
+    queryKey: ['weekly-goals-all', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      const { data, error } = await supabase
+        .from('weekly_goals')
+        .select('week_start, target_minutes, skipped')
+        .eq('user_id', profileId)
+        .order('week_start', { ascending: false })
+        .limit(52);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profileId,
+    staleTime: 2 * 60 * 1000,
+  });
 
   const formatMins = (m: number) => {
     if (m >= 60) {
@@ -567,34 +573,74 @@ function GaugeRenderer({ profileId }: { profileId: string }) {
     return `${m}m`;
   };
 
+  // Build weekly gauge data
+  const now = new Date();
+  const weeks = useMemo(() => {
+    const result: { label: string; pct: number; actual: number; target: number; isComplete: boolean; skipped: boolean; noGoal: boolean }[] = [];
+    for (let i = numWeeks - 1; i >= 0; i--) {
+      const ws = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+      const we = endOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+      const wsStr = format(ws, 'yyyy-MM-dd');
+      const label = format(ws, 'MMM d');
+
+      // Sum actual minutes from dailyMinutesMap
+      let actual = 0;
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(ws);
+        day.setDate(day.getDate() + d);
+        const dayStr = format(day, 'yyyy-MM-dd');
+        actual += stats.dailyMinutesMap[dayStr] || 0;
+      }
+
+      const goal = allGoals?.find(g => g.week_start === wsStr);
+      const target = goal?.target_minutes || 0;
+      const skipped = goal?.skipped || false;
+      const noGoal = !goal;
+      const pct = target > 0 && !skipped ? Math.min(100, Math.round((actual / target) * 100)) : 0;
+
+      result.push({ label, pct, actual, target, isComplete: pct >= 100, skipped, noGoal });
+    }
+    return result;
+  }, [numWeeks, allGoals, stats.dailyMinutesMap]);
+
+  const hasAnyGoals = weeks.some(w => !w.noGoal && !w.skipped);
+  if (!hasAnyGoals) {
+    return <p className="text-sm text-muted-foreground text-center py-8">No weekly goals set</p>;
+  }
+
+  // Filter to only weeks that have goals set
+  const weeksWithGoals = weeks.filter(w => !w.noGoal && !w.skipped);
+
   return (
-    <div className="flex flex-col items-center py-2">
-      <div className="relative w-40 h-40">
-        {/* Background ring */}
-        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-          <circle
-            cx="50" cy="50" r="40" fill="none"
-            stroke={isComplete ? 'hsl(150, 60%, 45%)' : 'hsl(var(--primary))'}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${pct * 2.51327} ${251.327 - pct * 2.51327}`}
-            className="transition-all duration-700"
-          />
-        </svg>
-        {/* Center text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`text-2xl font-bold ${isComplete ? 'text-green-500' : 'text-foreground'}`}>
-            {pct}%
-          </span>
-          <span className="text-[10px] text-muted-foreground">
-            {isLoading ? '...' : formatMins(currentMinutes)} / {formatMins(target)}
-          </span>
-        </div>
+    <div className="flex flex-col items-center py-2 gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
+        {weeksWithGoals.map((w, idx) => (
+          <div key={idx} className="flex flex-col items-center gap-1">
+            <div className="relative w-20 h-20">
+              <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+                <circle
+                  cx="50" cy="50" r="40" fill="none"
+                  stroke={w.isComplete ? 'hsl(150, 60%, 45%)' : 'hsl(var(--primary))'}
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={`${w.pct * 2.51327} ${251.327 - w.pct * 2.51327}`}
+                  className="transition-all duration-700"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`text-sm font-bold ${w.isComplete ? 'text-green-500' : 'text-foreground'}`}>
+                  {w.pct}%
+                </span>
+                <span className="text-[8px] text-muted-foreground leading-tight">
+                  {formatMins(w.actual)}
+                </span>
+              </div>
+            </div>
+            <span className="text-[10px] text-muted-foreground">{w.label}</span>
+          </div>
+        ))}
       </div>
-      {isComplete && (
-        <p className="text-xs text-green-500 font-medium mt-1">🎉 Goal achieved!</p>
-      )}
     </div>
   );
 }
