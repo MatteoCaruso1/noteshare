@@ -1,23 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { getAchievedAwards, ALL_AWARD_TIERS, AWARD_CATEGORIES, AwardTier } from '@/lib/awardUtils';
-
-const STORAGE_KEY = 'noteshare_seen_achievements';
-
-function getSeenAchievements(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function markSeen(ids: string[]) {
-  const seen = getSeenAchievements();
-  ids.forEach(id => seen.add(id));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...seen]));
-}
 
 function getAwardLabel(tier: AwardTier): string {
   const cat = AWARD_CATEGORIES.find(c => c.category === tier.category);
@@ -35,47 +19,69 @@ function getAwardLabel(tier: AwardTier): string {
 
 /**
  * Shows a toast when the user earns a new achievement.
- * Tracks seen achievements in localStorage so each fires only once.
+ * Tracks seen achievements in the database (seen_achievement_ids on profiles)
+ * so each fires only once, surviving refreshes, deploys, and device switches.
  */
-export function useAchievementToasts(stats: {
-  bestStreak: number;
-  totalNotes: number;
-  totalHours: number;
-  bestMonthDays: number;
-  bestCompletedYearPct: number;
-  weeklyGoalsMetCount?: number;
-} | undefined) {
+export function useAchievementToasts(
+  profileId: string | undefined,
+  stats: {
+    bestStreak: number;
+    totalNotes: number;
+    totalHours: number;
+    bestMonthDays: number;
+    bestCompletedYearPct: number;
+    weeklyGoalsMetCount?: number;
+  } | undefined,
+) {
   const firedRef = useRef(false);
 
   useEffect(() => {
-    if (!stats || firedRef.current) return;
+    if (!stats || !profileId || firedRef.current) return;
     firedRef.current = true;
 
     const achieved = getAchievedAwards(stats);
-    const seen = getSeenAchievements();
-    const newAchievements = [...achieved].filter(id => !seen.has(id));
+    if (achieved.size === 0) return;
 
-    if (newAchievements.length === 0) {
-      // First load — seed seen set with current achievements so old ones don't re-fire
-      if (seen.size === 0 && achieved.size > 0) {
-        markSeen([...achieved]);
+    // Fetch already-seen IDs from the database
+    (async () => {
+      const { data: row } = await supabase
+        .from('profiles')
+        .select('seen_achievement_ids')
+        .eq('id', profileId)
+        .single();
+
+      const seen = new Set<string>((row as any)?.seen_achievement_ids ?? []);
+
+      // Seed on first run so existing achievements don't all fire
+      if (seen.size === 0) {
+        await supabase
+          .from('profiles')
+          .update({ seen_achievement_ids: [...achieved] } as any)
+          .eq('id', profileId);
+        return;
       }
-      return;
-    }
 
-    // Show toast for each new achievement (slight stagger)
-    newAchievements.forEach((id, i) => {
-      const tier = ALL_AWARD_TIERS.find(t => t.id === id);
-      if (!tier) return;
+      const newAchievements = [...achieved].filter(id => !seen.has(id));
+      if (newAchievements.length === 0) return;
 
-      setTimeout(() => {
-        toast('🏆 Achievement unlocked!', {
-          description: `${getAwardLabel(tier)} — ${achieved.size}/${ALL_AWARD_TIERS.length} earned. View in Profile.`,
-          duration: 5000,
-        });
-      }, i * 1500);
-    });
+      // Show toasts
+      newAchievements.forEach((id, i) => {
+        const tier = ALL_AWARD_TIERS.find(t => t.id === id);
+        if (!tier) return;
+        setTimeout(() => {
+          toast('🏆 Achievement unlocked!', {
+            description: `${getAwardLabel(tier)} — ${achieved.size}/${ALL_AWARD_TIERS.length} earned. View in Profile.`,
+            duration: 5000,
+          });
+        }, i * 1500);
+      });
 
-    markSeen(newAchievements);
-  }, [stats]);
+      // Persist newly seen IDs
+      const updatedSeen = [...seen, ...newAchievements];
+      await supabase
+        .from('profiles')
+        .update({ seen_achievement_ids: updatedSeen } as any)
+        .eq('id', profileId);
+    })();
+  }, [stats, profileId]);
 }

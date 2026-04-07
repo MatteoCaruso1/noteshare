@@ -45,7 +45,7 @@ const Index = () => {
   const { data: practiceStats } = usePracticeStats(profile?.id);
   
   // Show toast when user earns a new achievement
-  useAchievementToasts(practiceStats ? {
+  useAchievementToasts(profile?.id, practiceStats ? {
     bestStreak: practiceStats.bestDailyStreak,
     totalNotes: practiceStats.totalNotesCount,
     totalHours: Math.floor(practiceStats.totalAllTimeMinutes / 60),
