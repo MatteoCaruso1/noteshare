@@ -10,7 +10,6 @@ import {
 import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2, Pencil, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
 import { useCustomChartViews, type CustomChartView } from '@/hooks/useCustomChartViews';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
 import { toast } from 'sonner';
 import { format, startOfWeek, startOfMonth, subWeeks, subMonths, endOfWeek, endOfMonth, isWithinInterval, parseISO, subDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
