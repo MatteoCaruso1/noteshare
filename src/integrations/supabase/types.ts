@@ -1237,6 +1237,7 @@ export type Database = {
           name: string
           open_to_collaborate: boolean | null
           premium_override: boolean
+          seen_achievement_ids: string[]
           selected_award: string | null
           skill_level: string | null
           streak_achievement_counts: Json | null
@@ -1270,6 +1271,7 @@ export type Database = {
           name: string
           open_to_collaborate?: boolean | null
           premium_override?: boolean
+          seen_achievement_ids?: string[]
           selected_award?: string | null
           skill_level?: string | null
           streak_achievement_counts?: Json | null
@@ -1303,6 +1305,7 @@ export type Database = {
           name?: string
           open_to_collaborate?: boolean | null
           premium_override?: boolean
+          seen_achievement_ids?: string[]
           selected_award?: string | null
           skill_level?: string | null
           streak_achievement_counts?: Json | null
