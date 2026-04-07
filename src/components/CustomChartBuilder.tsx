@@ -770,9 +770,11 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const loadView = useCallback((view: CustomChartView) => {
     setActiveViewId(view.id);
+    const parts = view.metric.split('|');
     setConfig({
       chart_type: (view.chart_type as ChartType) || 'line',
-      metric: view.metric,
+      metric: parts[0],
+      compare_metric: parts[1] || undefined,
       time_granularity: view.time_granularity as 'weekly' | 'monthly',
       time_range: view.time_range,
     });
