@@ -1003,6 +1003,48 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             />
           </div>
 
+          {/* Compare toggle - only for line/bar */}
+          {supportsCompare && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <Layers className="w-3 h-3" />
+                  Compare With
+                </label>
+                {config.compare_metric ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfig(c => ({ ...c, compare_metric: null }))}
+                    className="text-[10px] text-muted-foreground [@media(hover:hover)]:hover:text-foreground"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+              {config.compare_metric ? (
+                <MetricSelector
+                  value={config.compare_metric}
+                  onChange={(v) => setConfig(c => ({ ...c, compare_metric: v === c.metric ? null : v }))}
+                  chartType={config.chart_type}
+                />
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Pick first metric that's different from current
+                    const other = METRICS.find(m => m.chartTypes.includes(config.chart_type) && m.key !== config.metric);
+                    setConfig(c => ({ ...c, compare_metric: other?.key || null }));
+                  }}
+                  className="w-full h-8 text-xs gap-1.5"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  Add second metric
+                </Button>
+              )}
+            </div>
+          )}
+
           {showGranularity && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Group By</label>
