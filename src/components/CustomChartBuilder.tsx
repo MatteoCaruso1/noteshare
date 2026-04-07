@@ -44,7 +44,7 @@ const METRICS: MetricDef[] = [
   // Gauge metrics
   { key: 'weekly_goal_progress', label: 'Weekly Goal Progress', shortLabel: 'Goal', unit: '%', category: 'Goals', granularities: ['weekly'], chartTypes: ['gauge'] },
   // Donut metrics
-  { key: 'tag_distribution', label: 'Practice by Tag', shortLabel: 'Tags', unit: '', category: 'Distribution', granularities: ['weekly', 'monthly'], chartTypes: ['donut'] },
+  { key: 'routine_distribution', label: 'Practice by Routine', shortLabel: 'Routines', unit: '', category: 'Distribution', granularities: ['weekly', 'monthly'], chartTypes: ['donut'] },
   { key: 'focus_distribution', label: 'Focus Level Distribution', shortLabel: 'Focus Dist', unit: '', category: 'Distribution', granularities: ['weekly', 'monthly'], chartTypes: ['donut'] },
 ];
 
