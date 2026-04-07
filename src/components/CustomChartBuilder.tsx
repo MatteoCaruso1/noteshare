@@ -556,7 +556,7 @@ function ComparisonRenderer({ config, data, compareData }: { config: ChartConfig
   );
 }
 
-
+function HistogramRenderer({ data }: { data: { label: string; value: number }[] }) {
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     borderColor: 'hsl(var(--border))',
