@@ -637,7 +637,7 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
   );
 }
 
-function ChartRenderer({ config, data, profileId }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string }) {
+function ChartRenderer({ config, data, profileId, compareData }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string; compareData?: { label: string; value: number }[] }) {
   if (config.chart_type === 'gauge') {
     return <GaugeRenderer profileId={profileId} />;
   }
@@ -646,6 +646,9 @@ function ChartRenderer({ config, data, profileId }: { config: ChartConfig; data:
   }
   if (config.chart_type === 'donut') {
     return <DonutRenderer data={data} />;
+  }
+  if (config.compare_metric && compareData && (config.chart_type === 'line' || config.chart_type === 'bar')) {
+    return <ComparisonRenderer config={config} data={data} compareData={compareData} />;
   }
   return <TimeSeriesRenderer config={config} data={data} />;
 }
