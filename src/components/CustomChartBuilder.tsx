@@ -134,6 +134,7 @@ function computeStreakHistory(dailyMinutesMap: Record<string, number>, numDays: 
 function useChartData(
   config: ChartConfig,
   stats: CustomChartBuilderProps['stats'],
+  routineData?: { focus_title_snapshot: string | null }[],
 ) {
   return useMemo(() => {
     const now = new Date();
