@@ -723,7 +723,11 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   });
 
   const chartData = useChartData(config, stats);
+  const compareConfig = useMemo(() => config.compare_metric ? { ...config, metric: config.compare_metric, compare_metric: null } : null, [config]);
+  const compareData = useChartData(compareConfig || config, stats);
   const metricDef = METRICS.find(m => m.key === config.metric);
+  const compareDef = METRICS.find(m => m.key === config.compare_metric);
+  const supportsCompare = config.chart_type === 'line' || config.chart_type === 'bar';
 
   const handleChartTypeChange = useCallback((newType: string) => {
     const ct = newType as ChartType;
