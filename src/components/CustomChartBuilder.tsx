@@ -987,6 +987,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
               options={CHART_TYPES.map(t => ({ value: t.value, label: t.label, icon: t.icon }))}
               value={config.chart_type}
               onChange={handleChartTypeChange}
+              disabledValues={CHART_TYPES.map(t => t.value).filter(v => !metricDef?.chartTypes.includes(v))}
             />
           </div>
 
