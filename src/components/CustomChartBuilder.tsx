@@ -1062,7 +1062,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
           <div className="flex gap-2 pt-1">
             <Button size="sm" onClick={handleSave} disabled={isSaving} className="flex-1 gap-1.5">
               <Save className="w-4 h-4" />
-              Save View
+              {activeViewId ? 'Update View' : 'Save View'}
             </Button>
             <Button
               variant="ghost"
