@@ -329,14 +329,18 @@ function computeDonutData(
   stats: CustomChartBuilderProps['stats'],
   rangeInfo: { weeks: number; months: number },
 ) {
-  if (config.metric === 'tag_distribution') {
-    // Use tags from stats
-    const tags = stats.topTagsThisMonth || [];
-    if (tags.length === 0) return [];
-    // Filter out focus tags (F=N)
-    const filtered = tags.filter(t => !/^F=[1-5]$/.test(t.tag));
-    const top = filtered.slice(0, 8);
-    return top.map(t => ({ label: t.tag, value: t.count }));
+  if (config.metric === 'routine_distribution') {
+    if (!routineData || routineData.length === 0) return [];
+    // Aggregate by routine name
+    const counts: Record<string, number> = {};
+    routineData.forEach(n => {
+      const name = n.focus_title_snapshot || 'Untitled';
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([label, value]) => ({ label, value }));
   }
 
   if (config.metric === 'focus_distribution') {
