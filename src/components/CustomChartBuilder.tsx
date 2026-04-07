@@ -1081,6 +1081,42 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             />
           </div>
 
+          {showCompareOption && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-muted-foreground">Compare With</label>
+                {config.compare_metric ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfig(c => ({ ...c, compare_metric: undefined }))}
+                    className="text-[10px] text-muted-foreground hover:text-foreground"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+              {config.compare_metric ? (
+                <MetricSelector
+                  value={config.compare_metric}
+                  onChange={(v) => setConfig(c => ({ ...c, compare_metric: v || undefined }))}
+                  chartType={config.chart_type}
+                  allowClear
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const firstOther = METRICS.find(m => m.chartTypes.includes(config.chart_type) && m.key !== config.metric);
+                    if (firstOther) setConfig(c => ({ ...c, compare_metric: firstOther.key }));
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors touch-manipulation"
+                >
+                  + Add second metric to compare
+                </button>
+              )}
+            </div>
+          )
+
           {showGranularity && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Group By</label>
