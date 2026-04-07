@@ -912,8 +912,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>
-                </>
-              )}
             </div>
           ))}
         </div>
