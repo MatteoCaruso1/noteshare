@@ -825,10 +825,12 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
       const currentMetric = METRICS.find(m => m.key === c.metric);
       const isCompatible = currentMetric?.chartTypes.includes(ct);
       const firstCompatible = METRICS.find(m => m.chartTypes.includes(ct));
+      const clearCompare = ct !== 'line' && ct !== 'bar';
       return {
         ...c,
         chart_type: ct,
         metric: isCompatible ? c.metric : (firstCompatible?.key || c.metric),
+        compare_metric: clearCompare ? undefined : c.compare_metric,
       };
     });
   }, []);
