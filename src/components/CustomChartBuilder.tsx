@@ -6,7 +6,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, RadialBarChart, RadialBar, Legend,
 } from 'recharts';
-import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2, Pencil, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
+import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2, Pencil, ChevronLeft, ChevronRight, Settings2, Layers } from 'lucide-react';
 import { useCustomChartViews, type CustomChartView } from '@/hooks/useCustomChartViews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
@@ -77,6 +77,7 @@ const DONUT_COLORS = [
 interface ChartConfig {
   chart_type: ChartType;
   metric: string;
+  compare_metric: string | null;
   time_granularity: 'weekly' | 'monthly';
   time_range: string;
 }
@@ -504,6 +505,57 @@ function TimeSeriesRenderer({ config, data }: { config: ChartConfig; data: { lab
   );
 }
 
+function ComparisonRenderer({ config, data, compareData }: { config: ChartConfig; data: { label: string; value: number }[]; compareData: { label: string; value: number }[] }) {
+  const isMobile = useIsMobile();
+  const metricDef = METRICS.find(m => m.key === config.metric);
+  const compareDef = METRICS.find(m => m.key === config.compare_metric);
+
+  const dataLength = data.length;
+  const xInterval = isMobile
+    ? Math.max(0, Math.ceil(dataLength / 4) - 1)
+    : Math.max(0, Math.ceil(dataLength / 8) - 1);
+
+  const tooltipStyle = {
+    backgroundColor: 'hsl(var(--card))',
+    borderColor: 'hsl(var(--border))',
+    borderRadius: '8px',
+  };
+
+  // Merge data arrays by label
+  const merged = data.map((d, i) => ({
+    label: d.label,
+    primary: d.value,
+    secondary: compareData[i]?.value ?? 0,
+  }));
+
+  return (
+    <div className="h-48">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={merged}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
+          <YAxis yAxisId="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            labelStyle={{ color: 'hsl(var(--foreground))' }}
+            formatter={(value: number, name: string) => {
+              const label = name === 'primary' ? (metricDef?.shortLabel || 'Primary') : (compareDef?.shortLabel || 'Secondary');
+              return [`${value}`, label];
+            }}
+          />
+          <Legend
+            formatter={(value: string) => value === 'primary' ? (metricDef?.shortLabel || 'Primary') : (compareDef?.shortLabel || 'Secondary')}
+            wrapperStyle={{ fontSize: 11 }}
+          />
+          <Line yAxisId="left" type="monotone" dataKey="primary" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 2.5 }} activeDot={{ r: 4 }} />
+          <Line yAxisId="right" type="monotone" dataKey="secondary" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ fill: 'hsl(38, 92%, 50%)', strokeWidth: 0, r: 2.5 }} activeDot={{ r: 4 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 function HistogramRenderer({ data }: { data: { label: string; value: number }[] }) {
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
@@ -636,7 +688,7 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
   );
 }
 
-function ChartRenderer({ config, data, profileId }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string }) {
+function ChartRenderer({ config, data, profileId, compareData }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string; compareData?: { label: string; value: number }[] }) {
   if (config.chart_type === 'gauge') {
     return <GaugeRenderer profileId={profileId} />;
   }
@@ -645,6 +697,9 @@ function ChartRenderer({ config, data, profileId }: { config: ChartConfig; data:
   }
   if (config.chart_type === 'donut') {
     return <DonutRenderer data={data} />;
+  }
+  if (config.compare_metric && compareData && (config.chart_type === 'line' || config.chart_type === 'bar')) {
+    return <ComparisonRenderer config={config} data={data} compareData={compareData} />;
   }
   return <TimeSeriesRenderer config={config} data={data} />;
 }
@@ -662,12 +717,17 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   const [config, setConfig] = useState<ChartConfig>({
     chart_type: 'line',
     metric: 'practice_hours',
+    compare_metric: null,
     time_granularity: 'weekly',
     time_range: '3m',
   });
 
   const chartData = useChartData(config, stats);
+  const compareConfig = useMemo(() => config.compare_metric ? { ...config, metric: config.compare_metric, compare_metric: null } : null, [config]);
+  const compareData = useChartData(compareConfig || config, stats);
   const metricDef = METRICS.find(m => m.key === config.metric);
+  const compareDef = METRICS.find(m => m.key === config.compare_metric);
+  const supportsCompare = config.chart_type === 'line' || config.chart_type === 'bar';
 
   const handleChartTypeChange = useCallback((newType: string) => {
     const ct = newType as ChartType;
@@ -685,9 +745,12 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const loadView = useCallback((view: CustomChartView) => {
     setActiveViewId(view.id);
+    // Parse compare metric from stored metric field (format: "primary|secondary")
+    const parts = view.metric.split('|');
     setConfig({
       chart_type: (view.chart_type as ChartType) || 'line',
-      metric: view.metric,
+      metric: parts[0],
+      compare_metric: parts[1] || null,
       time_granularity: view.time_granularity as 'weekly' | 'monthly',
       time_range: view.time_range,
     });
@@ -699,6 +762,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
     setConfig({
       chart_type: 'line',
       metric: 'practice_hours',
+      compare_metric: null,
       time_granularity: 'weekly',
       time_range: '3m',
     });
@@ -709,11 +773,13 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const handleSave = useCallback(() => {
     const name = editName.trim() || metricDef?.label || 'My Chart';
+    // Encode compare_metric into metric field as "primary|secondary"
+    const metricValue = config.compare_metric ? `${config.metric}|${config.compare_metric}` : config.metric;
     save({
       user_id: profileId,
       name,
       chart_type: config.chart_type,
-      metric: config.metric,
+      metric: metricValue,
       time_granularity: config.time_granularity,
       time_range: config.time_range,
       display_order: views.length,
@@ -885,13 +951,13 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
         <>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-muted-foreground">
-              {metricDef?.label} · {config.time_granularity === 'weekly' ? 'Weekly' : 'Monthly'} · {TIME_RANGES.find(r => r.value === config.time_range)?.label}
+              {metricDef?.label}{config.compare_metric ? ` vs ${compareDef?.label}` : ''} · {config.time_granularity === 'weekly' ? 'Weekly' : 'Monthly'} · {TIME_RANGES.find(r => r.value === config.time_range)?.label}
             </p>
             <Button variant="ghost" size="sm" onClick={() => handleDelete(activeViewId)} className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive">
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <ChartRenderer config={config} data={chartData} profileId={profileId} />
+          <ChartRenderer config={config} data={chartData} profileId={profileId} compareData={config.compare_metric ? compareData : undefined} />
         </>
       )}
 
@@ -937,6 +1003,48 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             />
           </div>
 
+          {/* Compare toggle - only for line/bar */}
+          {supportsCompare && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <Layers className="w-3 h-3" />
+                  Compare With
+                </label>
+                {config.compare_metric ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfig(c => ({ ...c, compare_metric: null }))}
+                    className="text-[10px] text-muted-foreground [@media(hover:hover)]:hover:text-foreground"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+              {config.compare_metric ? (
+                <MetricSelector
+                  value={config.compare_metric}
+                  onChange={(v) => setConfig(c => ({ ...c, compare_metric: v === c.metric ? null : v }))}
+                  chartType={config.chart_type}
+                />
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Pick first metric that's different from current
+                    const other = METRICS.find(m => m.chartTypes.includes(config.chart_type) && m.key !== config.metric);
+                    setConfig(c => ({ ...c, compare_metric: other?.key || null }));
+                  }}
+                  className="w-full h-8 text-xs gap-1.5"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  Add second metric
+                </Button>
+              )}
+            </div>
+          )}
+
           {showGranularity && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Group By</label>
@@ -964,7 +1072,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
           <div className="pt-1">
             <p className="text-xs text-muted-foreground mb-2">Preview</p>
-            <ChartRenderer config={config} data={chartData} profileId={profileId} />
+            <ChartRenderer config={config} data={chartData} profileId={profileId} compareData={config.compare_metric ? compareData : undefined} />
           </div>
 
           <div className="flex gap-2 pt-1">
