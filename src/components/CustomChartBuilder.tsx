@@ -690,9 +690,9 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
   );
 }
 
-function ChartRenderer({ config, data, profileId }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string }) {
+function ChartRenderer({ config, data, profileId, stats }: { config: ChartConfig; data: { label: string; value: number }[]; profileId: string; stats: CustomChartBuilderProps['stats'] }) {
   if (config.chart_type === 'gauge') {
-    return <GaugeRenderer profileId={profileId} />;
+    return <GaugeRenderer profileId={profileId} config={config} stats={stats} />;
   }
   if (config.chart_type === 'histogram') {
     return <HistogramRenderer data={data} />;
