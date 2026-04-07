@@ -951,13 +951,13 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
         <>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-muted-foreground">
-              {metricDef?.label} · {config.time_granularity === 'weekly' ? 'Weekly' : 'Monthly'} · {TIME_RANGES.find(r => r.value === config.time_range)?.label}
+              {metricDef?.label}{config.compare_metric ? ` vs ${compareDef?.label}` : ''} · {config.time_granularity === 'weekly' ? 'Weekly' : 'Monthly'} · {TIME_RANGES.find(r => r.value === config.time_range)?.label}
             </p>
             <Button variant="ghost" size="sm" onClick={() => handleDelete(activeViewId)} className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive">
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <ChartRenderer config={config} data={chartData} profileId={profileId} />
+          <ChartRenderer config={config} data={chartData} profileId={profileId} compareData={config.compare_metric ? compareData : undefined} />
         </>
       )}
 
