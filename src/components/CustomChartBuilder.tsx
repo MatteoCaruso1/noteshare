@@ -505,7 +505,58 @@ function TimeSeriesRenderer({ config, data }: { config: ChartConfig; data: { lab
   );
 }
 
-function HistogramRenderer({ data }: { data: { label: string; value: number }[] }) {
+function ComparisonRenderer({ config, data, compareData }: { config: ChartConfig; data: { label: string; value: number }[]; compareData: { label: string; value: number }[] }) {
+  const isMobile = useIsMobile();
+  const metricDef = METRICS.find(m => m.key === config.metric);
+  const compareDef = METRICS.find(m => m.key === config.compare_metric);
+
+  const dataLength = data.length;
+  const xInterval = isMobile
+    ? Math.max(0, Math.ceil(dataLength / 4) - 1)
+    : Math.max(0, Math.ceil(dataLength / 8) - 1);
+
+  const tooltipStyle = {
+    backgroundColor: 'hsl(var(--card))',
+    borderColor: 'hsl(var(--border))',
+    borderRadius: '8px',
+  };
+
+  // Merge data arrays by label
+  const merged = data.map((d, i) => ({
+    label: d.label,
+    primary: d.value,
+    secondary: compareData[i]?.value ?? 0,
+  }));
+
+  return (
+    <div className="h-48">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={merged}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
+          <YAxis yAxisId="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            labelStyle={{ color: 'hsl(var(--foreground))' }}
+            formatter={(value: number, name: string) => {
+              const label = name === 'primary' ? (metricDef?.shortLabel || 'Primary') : (compareDef?.shortLabel || 'Secondary');
+              return [`${value}`, label];
+            }}
+          />
+          <Legend
+            formatter={(value: string) => value === 'primary' ? (metricDef?.shortLabel || 'Primary') : (compareDef?.shortLabel || 'Secondary')}
+            wrapperStyle={{ fontSize: 11 }}
+          />
+          <Line yAxisId="left" type="monotone" dataKey="primary" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 2.5 }} activeDot={{ r: 4 }} />
+          <Line yAxisId="right" type="monotone" dataKey="secondary" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ fill: 'hsl(38, 92%, 50%)', strokeWidth: 0, r: 2.5 }} activeDot={{ r: 4 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+
   const tooltipStyle = {
     backgroundColor: 'hsl(var(--card))',
     borderColor: 'hsl(var(--border))',
