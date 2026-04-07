@@ -329,6 +329,7 @@ function computeDonutData(
   config: ChartConfig,
   stats: CustomChartBuilderProps['stats'],
   rangeInfo: { weeks: number; months: number },
+  routineData?: { focus_title_snapshot: string | null }[],
 ) {
   if (config.metric === 'routine_distribution') {
     if (!routineData || routineData.length === 0) return [];
