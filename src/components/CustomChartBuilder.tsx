@@ -145,7 +145,7 @@ function useChartData(
       return computeHistogramData(config, stats, rangeInfo);
     }
     if (config.chart_type === 'donut') {
-      return computeDonutData(config, stats, rangeInfo);
+      return computeDonutData(config, stats, rangeInfo, routineData);
     }
     if (config.chart_type === 'gauge') {
       return []; // gauge handled separately
