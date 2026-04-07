@@ -6,7 +6,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, RadialBarChart, RadialBar, Legend,
 } from 'recharts';
-import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2 } from 'lucide-react';
+import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2, Pencil, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
 import { useCustomChartViews, type CustomChartView } from '@/hooks/useCustomChartViews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
@@ -655,6 +655,9 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   const [activeViewId, setActiveViewId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
+  const [isManaging, setIsManaging] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const [config, setConfig] = useState<ChartConfig>({
     chart_type: 'line',
@@ -666,7 +669,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   const chartData = useChartData(config, stats);
   const metricDef = METRICS.find(m => m.key === config.metric);
 
-  // When chart type changes, auto-select first compatible metric
   const handleChartTypeChange = useCallback((newType: string) => {
     const ct = newType as ChartType;
     setConfig(c => {
@@ -701,6 +703,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
       time_range: '3m',
     });
     setIsEditing(true);
+    setIsManaging(false);
     setEditName('');
   }, []);
 
@@ -734,9 +737,30 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
     });
   }, [activeViewId, remove]);
 
-  // Filter available chart types for display
-  const availableChartTypes = CHART_TYPES;
-  // Check if granularity/time range should be shown
+  const handleRename = useCallback((id: string) => {
+    const trimmed = renameValue.trim();
+    if (!trimmed) return;
+    update({ id, name: trimmed }, {
+      onSuccess: () => {
+        toast.success('Renamed');
+        setRenamingId(null);
+      },
+    });
+  }, [renameValue, update]);
+
+  const handleMoveView = useCallback((id: string, direction: -1 | 1) => {
+    const idx = views.findIndex(v => v.id === id);
+    if (idx < 0) return;
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= views.length) return;
+
+    // Swap display_order values
+    const thisView = views[idx];
+    const otherView = views[newIdx];
+    update({ id: thisView.id, display_order: otherView.display_order });
+    update({ id: otherView.id, display_order: thisView.display_order });
+  }, [views, update]);
+
   const showGranularity = config.chart_type !== 'gauge';
   const showTimeRange = config.chart_type !== 'gauge';
 
@@ -747,16 +771,97 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
           <BarChart3 className="w-5 h-5 text-primary" />
           <h3 className="font-semibold">Custom Charts</h3>
         </div>
-        {!isEditing && (
-          <Button variant="ghost" size="sm" onClick={startNew} className="h-7 px-2 text-xs gap-1">
-            <Plus className="w-3.5 h-3.5" />
-            New
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {views.length > 0 && !isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsManaging(m => !m)}
+              className={`h-7 px-2 text-xs gap-1 ${isManaging ? 'text-primary' : ''}`}
+            >
+              <Settings2 className="w-3.5 h-3.5" />
+              {isManaging ? 'Done' : 'Manage'}
+            </Button>
+          )}
+          {!isEditing && (
+            <Button variant="ghost" size="sm" onClick={startNew} className="h-7 px-2 text-xs gap-1">
+              <Plus className="w-3.5 h-3.5" />
+              New
+            </Button>
+          )}
+        </div>
       </div>
 
+      {/* Manage mode: reorder + rename */}
+      {isManaging && views.length > 0 && !isEditing && (
+        <div className="space-y-1.5 mb-3">
+          {views.map((view, idx) => (
+            <div key={view.id} className="flex items-center gap-1.5 bg-muted/50 rounded-lg px-2 py-1.5">
+              {/* Reorder arrows */}
+              <button
+                type="button"
+                disabled={idx === 0}
+                onClick={() => handleMoveView(view.id, -1)}
+                className="p-1 rounded text-muted-foreground disabled:opacity-30 [@media(hover:hover)]:hover:text-foreground touch-manipulation"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                disabled={idx === views.length - 1}
+                onClick={() => handleMoveView(view.id, 1)}
+                className="p-1 rounded text-muted-foreground disabled:opacity-30 [@media(hover:hover)]:hover:text-foreground touch-manipulation"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Name or rename input */}
+              {renamingId === view.id ? (
+                <form
+                  className="flex-1 flex items-center gap-1"
+                  onSubmit={(e) => { e.preventDefault(); handleRename(view.id); }}
+                >
+                  <Input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    className="h-7 text-xs flex-1"
+                    autoFocus
+                  />
+                  <Button type="submit" variant="ghost" size="sm" className="h-7 w-7 p-0">
+                    <Check className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setRenamingId(null)} className="h-7 w-7 p-0">
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                </form>
+              ) : (
+                <>
+                  <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setRenamingId(view.id); setRenameValue(view.name); }}
+                    className="h-7 w-7 p-0 text-muted-foreground"
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(view.id)}
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Saved views tabs */}
-      {views.length > 0 && !isEditing && (
+      {views.length > 0 && !isEditing && !isManaging && (
         <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
           {views.map(view => (
             <button
@@ -776,7 +881,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
       )}
 
       {/* Active saved view */}
-      {activeViewId && !isEditing && (
+      {activeViewId && !isEditing && !isManaging && (
         <>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-muted-foreground">
@@ -791,7 +896,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
       )}
 
       {/* Empty state */}
-      {!activeViewId && !isEditing && views.length === 0 && (
+      {!activeViewId && !isEditing && !isManaging && views.length === 0 && (
         <div className="text-center py-6">
           <BarChart3 className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">
@@ -814,17 +919,15 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             className="h-9 text-sm"
           />
 
-          {/* Chart type */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Chart Type</label>
             <PillSelector
-              options={availableChartTypes.map(t => ({ value: t.value, label: t.label, icon: t.icon }))}
+              options={CHART_TYPES.map(t => ({ value: t.value, label: t.label, icon: t.icon }))}
               value={config.chart_type}
               onChange={handleChartTypeChange}
             />
           </div>
 
-          {/* Metric selector */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Metric</label>
             <MetricSelector
@@ -834,7 +937,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             />
           </div>
 
-          {/* Time granularity */}
           {showGranularity && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Group By</label>
@@ -849,7 +951,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             </div>
           )}
 
-          {/* Time range */}
           {showTimeRange && (
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Time Range</label>
@@ -861,13 +962,11 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             </div>
           )}
 
-          {/* Live preview */}
           <div className="pt-1">
             <p className="text-xs text-muted-foreground mb-2">Preview</p>
             <ChartRenderer config={config} data={chartData} profileId={profileId} />
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2 pt-1">
             <Button size="sm" onClick={handleSave} disabled={isSaving} className="flex-1 gap-1.5">
               <Save className="w-4 h-4" />
