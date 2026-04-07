@@ -13,6 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useWeeklyGoal, useCurrentWeekPracticeMinutes } from '@/hooks/useWeeklyGoal';
 import { toast } from 'sonner';
 import { format, startOfWeek, startOfMonth, subWeeks, subMonths, endOfWeek, endOfMonth, isWithinInterval, parseISO, subDays } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 // --- Metric definitions ---
 interface MetricDef {
