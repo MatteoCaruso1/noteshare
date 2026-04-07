@@ -1072,7 +1072,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
           <div className="pt-1">
             <p className="text-xs text-muted-foreground mb-2">Preview</p>
-            <ChartRenderer config={config} data={chartData} profileId={profileId} />
+            <ChartRenderer config={config} data={chartData} profileId={profileId} compareData={config.compare_metric ? compareData : undefined} />
           </div>
 
           <div className="flex gap-2 pt-1">
