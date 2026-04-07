@@ -336,12 +336,20 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
             }
             runningAvgMap.set(w.week, cumCount > 0 ? Math.round((cumSum / cumCount / 60) * 100) / 100 : 0);
           }
+          // Compute 4-week rolling average
+          const fourWeekAvgMap = new Map<string, number>();
+          for (let i = 0; i < allWeeks.length; i++) {
+            const window = allWeeks.slice(Math.max(0, i - 3), i + 1);
+            const windowSum = window.reduce((s, w) => s + w.minutes, 0);
+            fourWeekAvgMap.set(allWeeks[i].week, Math.round((windowSum / window.length / 60) * 100) / 100);
+          }
           const chartData = rawData.map(d => ({
             ...d,
             avgHours: runningAvgMap.get(d.week) ?? 0,
+            fourWeekAvg: fourWeekAvgMap.get(d.week) ?? 0,
           }));
           const maxHours = Math.max(
-            ...chartData.map(d => Math.max(d.hours, d.avgHours)),
+            ...chartData.map(d => Math.max(d.hours, d.avgHours, d.fourWeekAvg)),
             1
           );
 
