@@ -1115,7 +1115,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                 </button>
               )}
             </div>
-          )
+          )}
 
           {showGranularity && (
             <div>
