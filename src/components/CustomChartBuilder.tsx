@@ -908,10 +908,11 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                 size="sm"
                 onClick={() => {
                   setActiveViewId(view.id);
-                  const metric = view.metric;
+                  const parts = view.metric.split('|');
                   setConfig({
                     chart_type: (view.chart_type as ChartType) || 'line',
-                    metric,
+                    metric: parts[0],
+                    compare_metric: parts[1] || undefined,
                     time_granularity: view.time_granularity as 'weekly' | 'monthly',
                     time_range: view.time_range,
                   });
