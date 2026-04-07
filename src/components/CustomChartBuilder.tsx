@@ -674,7 +674,24 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
     time_range: '3m',
   });
 
-  const chartData = useChartData(config, stats);
+  // Fetch routine distribution data (only when needed)
+  const { data: routineData } = useQuery({
+    queryKey: ['routine-distribution', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      const { data, error } = await supabase
+        .from('notes')
+        .select('focus_title_snapshot')
+        .eq('author_id', profileId)
+        .not('focus_title_snapshot', 'is', null);
+      if (error) throw error;
+      return data as { focus_title_snapshot: string | null }[];
+    },
+    enabled: !!profileId && config.metric === 'routine_distribution',
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const chartData = useChartData(config, stats, routineData || undefined);
   const metricDef = METRICS.find(m => m.key === config.metric);
 
   const handleChartTypeChange = useCallback((newType: string) => {
