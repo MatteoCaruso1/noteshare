@@ -752,7 +752,11 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   });
 
   const chartData = useChartData(config, stats, routineData || undefined);
+  const compareConfig = useMemo(() => config.compare_metric ? { ...config, metric: config.compare_metric } : null, [config]);
+  const compareData = useChartData(compareConfig || config, stats);
   const metricDef = METRICS.find(m => m.key === config.metric);
+  const compareMetricDef = METRICS.find(m => m.key === config.compare_metric);
+  const showCompareOption = config.chart_type === 'line' || config.chart_type === 'bar';
 
   const handleChartTypeChange = useCallback((newType: string) => {
     const ct = newType as ChartType;
