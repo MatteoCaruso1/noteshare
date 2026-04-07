@@ -709,8 +709,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [isManaging, setIsManaging] = useState(false);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState('');
 
   const [config, setConfig] = useState<ChartConfig>({
     chart_type: 'line',
@@ -779,21 +777,31 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
 
   const handleSave = useCallback(() => {
     const name = editName.trim() || metricDef?.label || 'My Chart';
-    save({
-      user_id: profileId,
-      name,
-      chart_type: config.chart_type,
-      metric: config.metric,
-      time_granularity: config.time_granularity,
-      time_range: config.time_range,
-      display_order: views.length,
-    }, {
-      onSuccess: () => {
-        toast.success('Chart view saved');
-        setIsEditing(false);
-      },
-    });
-  }, [config, editName, metricDef, profileId, save, views.length]);
+    if (activeViewId) {
+      // Update existing view
+      update({ id: activeViewId, name, chart_type: config.chart_type, metric: config.metric, time_granularity: config.time_granularity, time_range: config.time_range }, {
+        onSuccess: () => {
+          toast.success('Chart view updated');
+          setIsEditing(false);
+        },
+      });
+    } else {
+      save({
+        user_id: profileId,
+        name,
+        chart_type: config.chart_type,
+        metric: config.metric,
+        time_granularity: config.time_granularity,
+        time_range: config.time_range,
+        display_order: views.length,
+      }, {
+        onSuccess: () => {
+          toast.success('Chart view saved');
+          setIsEditing(false);
+        },
+      });
+    }
+  }, [config, editName, metricDef, profileId, save, update, activeViewId, views.length]);
 
   const handleDelete = useCallback((id: string) => {
     remove(id, {
@@ -807,16 +815,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
     });
   }, [activeViewId, remove]);
 
-  const handleRename = useCallback((id: string) => {
-    const trimmed = renameValue.trim();
-    if (!trimmed) return;
-    update({ id, name: trimmed }, {
-      onSuccess: () => {
-        toast.success('Renamed');
-        setRenamingId(null);
-      },
-    });
-  }, [renameValue, update]);
 
   const handleMoveView = useCallback((id: string, direction: -1 | 1) => {
     const idx = views.findIndex(v => v.id === id);
@@ -885,36 +883,27 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
 
-              {/* Name or rename input */}
-              {renamingId === view.id ? (
-                <form
-                  className="flex-1 flex items-center gap-1"
-                  onSubmit={(e) => { e.preventDefault(); handleRename(view.id); }}
-                >
-                  <Input
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    className="h-7 text-xs flex-1"
-                    autoFocus
-                  />
-                  <Button type="submit" variant="ghost" size="sm" className="h-7 w-7 p-0">
-                    <Check className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setRenamingId(null)} className="h-7 w-7 p-0">
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                </form>
-              ) : (
-                <>
-                  <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setRenamingId(view.id); setRenameValue(view.name); }}
-                    className="h-7 w-7 p-0 text-muted-foreground"
-                  >
-                    <Pencil className="w-3 h-3" />
-                  </Button>
+              <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setActiveViewId(view.id);
+                  const metric = view.metric;
+                  setConfig({
+                    chart_type: (view.chart_type as ChartType) || 'line',
+                    metric,
+                    time_granularity: view.time_granularity as 'weekly' | 'monthly',
+                    time_range: view.time_range,
+                  });
+                  setEditName(view.name);
+                  setIsManaging(false);
+                  setIsEditing(true);
+                }}
+                className="h-7 w-7 p-0 text-muted-foreground"
+              >
+                <Pencil className="w-3 h-3" />
+              </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -923,8 +912,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>
-                </>
-              )}
             </div>
           ))}
         </div>
@@ -1040,7 +1027,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
           <div className="flex gap-2 pt-1">
             <Button size="sm" onClick={handleSave} disabled={isSaving} className="flex-1 gap-1.5">
               <Save className="w-4 h-4" />
-              Save View
+              {activeViewId ? 'Update View' : 'Save View'}
             </Button>
             <Button
               variant="ghost"
