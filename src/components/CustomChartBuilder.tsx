@@ -709,8 +709,6 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [isManaging, setIsManaging] = useState(false);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState('');
 
   const [config, setConfig] = useState<ChartConfig>({
     chart_type: 'line',
