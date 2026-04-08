@@ -545,7 +545,7 @@ function HistogramRenderer({ data }: { data: { label: string; value: number }[] 
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} />
-          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={30} allowDecimals={false} />
+          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={40} allowDecimals={false} label={{ value: 'sessions', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' }, offset: 0 }} />
           <Tooltip
             contentStyle={tooltipStyle}
             labelStyle={{ color: 'hsl(var(--foreground))' }}
