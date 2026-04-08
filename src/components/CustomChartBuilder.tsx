@@ -504,7 +504,7 @@ function TimeSeriesRenderer({ config, data }: { config: ChartConfig; data: { lab
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
-            <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+            <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={42} label={unit ? { value: unit, angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' }, offset: 0 } : undefined} />
             <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(var(--foreground))' }} formatter={tooltipFormatter} />
             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={32} />
           </BarChart>
