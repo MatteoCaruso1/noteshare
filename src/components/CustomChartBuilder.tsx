@@ -744,8 +744,8 @@ function ComparisonRenderer({ config, primaryData, secondaryData }: {
         <ChartComp data={merged}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
-          <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={46} label={primaryDef?.unit ? { value: primaryDef.unit, angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--primary))' }, offset: 0 } : undefined} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={46} label={secondaryDef?.unit ? { value: secondaryDef.unit, angle: 90, position: 'insideRight', style: { fontSize: 10, fill: 'hsl(38, 92%, 50%)' }, offset: 0 } : undefined} />
           <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(var(--foreground))' }} />
           {config.chart_type === 'bar' ? (
             <>
