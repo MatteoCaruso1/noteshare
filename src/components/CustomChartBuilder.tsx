@@ -947,101 +947,95 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
         </div>
       </div>
 
-      {/* Manage mode: reorder + rename */}
+      {/* Manage mode: reorder + rename + toggle visibility */}
       {isManaging && views.length > 0 && !isEditing && (
         <div className="space-y-1.5 mb-3">
-          {views.map((view, idx) => (
-            <div key={view.id} className="flex items-center gap-1.5 bg-muted/50 rounded-lg px-2 py-1.5">
-              {/* Reorder arrows */}
-              <button
-                type="button"
-                disabled={idx === 0}
-                onClick={() => handleMoveView(view.id, -1)}
-                className="p-1 rounded text-muted-foreground disabled:opacity-30 [@media(hover:hover)]:hover:text-foreground touch-manipulation"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                disabled={idx === views.length - 1}
-                onClick={() => handleMoveView(view.id, 1)}
-                className="p-1 rounded text-muted-foreground disabled:opacity-30 [@media(hover:hover)]:hover:text-foreground touch-manipulation"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+          {views.map((view, idx) => {
+            const visibleCount = views.filter(v => v.visible).length;
+            const canToggleOn = visibleCount < 4;
+            return (
+              <div key={view.id} className="flex items-center gap-1.5 bg-muted/50 rounded-lg px-2 py-1.5">
+                {/* Reorder arrows */}
+                <button
+                  type="button"
+                  disabled={idx === 0}
+                  onClick={() => handleMoveView(view.id, -1)}
+                  className="p-1 rounded text-muted-foreground disabled:opacity-30 [@media(hover:hover)]:hover:text-foreground touch-manipulation"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  disabled={idx === views.length - 1}
+                  onClick={() => handleMoveView(view.id, 1)}
+                  className="p-1 rounded text-muted-foreground disabled:opacity-30 [@media(hover:hover)]:hover:text-foreground touch-manipulation"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
 
-              <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setActiveViewId(view.id);
-                  const parts = view.metric.split('|');
-                  setConfig({
-                    chart_type: (view.chart_type as ChartType) || 'line',
-                    metric: parts[0],
-                    compare_metric: parts[1] || undefined,
-                    time_granularity: view.time_granularity as 'weekly' | 'monthly',
-                    time_range: view.time_range,
-                  });
-                  setEditName(view.name);
-                  setIsManaging(false);
-                  setIsEditing(true);
-                }}
-                className="h-7 w-7 p-0 text-muted-foreground"
-              >
-                <Pencil className="w-3 h-3" />
-              </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(view.id)}
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-            </div>
-          ))}
+                {/* Visibility toggle */}
+                <button
+                  type="button"
+                  disabled={!view.visible && !canToggleOn}
+                  onClick={() => update({ id: view.id, visible: !view.visible })}
+                  className={`p-1 rounded touch-manipulation transition-colors ${
+                    view.visible ? 'text-primary' : 'text-muted-foreground'
+                  } ${!view.visible && !canToggleOn ? 'opacity-30 cursor-not-allowed' : '[@media(hover:hover)]:hover:text-foreground'}`}
+                  title={!view.visible && !canToggleOn ? 'Max 4 charts can be visible at once' : view.visible ? 'Hide from profile' : 'Show on profile'}
+                >
+                  {view.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </button>
+
+                <span className="flex-1 text-xs font-medium truncate">{view.name}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setActiveViewId(view.id);
+                    const parts = view.metric.split('|');
+                    setConfig({
+                      chart_type: (view.chart_type as ChartType) || 'line',
+                      metric: parts[0],
+                      compare_metric: parts[1] || undefined,
+                      time_granularity: view.time_granularity as 'weekly' | 'monthly',
+                      time_range: view.time_range,
+                    });
+                    setEditName(view.name);
+                    setIsManaging(false);
+                    setIsEditing(true);
+                  }}
+                  className="h-7 w-7 p-0 text-muted-foreground"
+                >
+                  <Pencil className="w-3 h-3" />
+                </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(view.id)}
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+              </div>
+            );
+          })}
+          {views.filter(v => v.visible).length >= 4 && (
+            <p className="text-[10px] text-muted-foreground text-center">Maximum of 4 charts can be displayed at once</p>
+          )}
         </div>
       )}
 
-      {/* Saved views tabs */}
-      {views.length > 0 && !isEditing && !isManaging && (
-        <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-          {views.map(view => (
-            <button
-              key={view.id}
-              type="button"
-              onClick={() => loadView(view)}
-              className={`flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg touch-manipulation select-none transition-colors ${
-                activeViewId === view.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {view.name}
-            </button>
+      {/* Visible charts displayed vertically */}
+      {!isEditing && !isManaging && views.filter(v => v.visible).length > 0 && (
+        <div className="space-y-4">
+          {views.filter(v => v.visible).map(view => (
+            <VisibleChartCard key={view.id} view={view} stats={stats} profileId={profileId} />
           ))}
         </div>
-      )}
-
-      {/* Active saved view */}
-      {activeViewId && !isEditing && !isManaging && (
-        <>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-muted-foreground">
-              {metricDef?.label} · {config.time_granularity === 'weekly' ? 'Weekly' : 'Monthly'} · {TIME_RANGES.find(r => r.value === config.time_range)?.label}
-            </p>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(activeViewId)} className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive">
-              <Trash2 className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-          <ChartRenderer config={config} data={chartData} compareData={config.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} />
-        </>
       )}
 
       {/* Empty state */}
-      {!activeViewId && !isEditing && !isManaging && views.length === 0 && (
+      {!isEditing && !isManaging && views.length === 0 && (
         <div className="text-center py-6">
           <BarChart3 className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-3">
@@ -1052,6 +1046,13 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
             Create Chart
           </Button>
         </div>
+      )}
+
+      {/* No visible charts hint */}
+      {!isEditing && !isManaging && views.length > 0 && views.filter(v => v.visible).length === 0 && (
+        <p className="text-xs text-muted-foreground text-center py-4">
+          No charts visible. Use <span className="font-medium">Manage</span> to toggle charts on.
+        </p>
       )}
 
       {/* Chart builder / editor */}
