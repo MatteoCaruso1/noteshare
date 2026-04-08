@@ -77,6 +77,7 @@ export type Database = {
           time_range: string
           updated_at: string
           user_id: string
+          visible: boolean
         }
         Insert: {
           chart_type?: string
@@ -89,6 +90,7 @@ export type Database = {
           time_range?: string
           updated_at?: string
           user_id: string
+          visible?: boolean
         }
         Update: {
           chart_type?: string
@@ -101,6 +103,7 @@ export type Database = {
           time_range?: string
           updated_at?: string
           user_id?: string
+          visible?: boolean
         }
         Relationships: [
           {

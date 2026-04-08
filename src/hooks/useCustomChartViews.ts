@@ -10,6 +10,7 @@ export interface CustomChartView {
   time_granularity: 'weekly' | 'monthly';
   time_range: string;
   display_order: number;
+  visible: boolean;
   created_at: string;
   updated_at: string;
 }
