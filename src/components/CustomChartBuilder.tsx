@@ -504,7 +504,7 @@ function TimeSeriesRenderer({ config, data }: { config: ChartConfig; data: { lab
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
             <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
-            <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+            <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={42} label={unit ? { value: unit, angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' }, offset: 0 } : undefined} />
             <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(var(--foreground))' }} formatter={tooltipFormatter} />
             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={32} />
           </BarChart>
@@ -519,7 +519,7 @@ function TimeSeriesRenderer({ config, data }: { config: ChartConfig; data: { lab
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
-          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={42} label={unit ? { value: unit, angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' }, offset: 0 } : undefined} />
           <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(var(--foreground))' }} formatter={tooltipFormatter} />
           <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }} activeDot={{ r: 5 }} />
         </LineChart>
@@ -545,7 +545,7 @@ function HistogramRenderer({ data }: { data: { label: string; value: number }[] 
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} />
-          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={30} allowDecimals={false} />
+          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={40} allowDecimals={false} label={{ value: 'sessions', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' }, offset: 0 }} />
           <Tooltip
             contentStyle={tooltipStyle}
             labelStyle={{ color: 'hsl(var(--foreground))' }}
@@ -744,8 +744,8 @@ function ComparisonRenderer({ config, primaryData, secondaryData }: {
         <ChartComp data={merged}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} interval={xInterval} />
-          <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={36} />
+          <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={46} label={primaryDef?.unit ? { value: primaryDef.unit, angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(var(--primary))' }, offset: 0 } : undefined} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} width={46} label={secondaryDef?.unit ? { value: secondaryDef.unit, angle: 90, position: 'insideRight', style: { fontSize: 10, fill: 'hsl(38, 92%, 50%)' }, offset: 0 } : undefined} />
           <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(var(--foreground))' }} />
           {config.chart_type === 'bar' ? (
             <>
