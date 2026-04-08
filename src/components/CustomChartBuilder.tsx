@@ -380,6 +380,9 @@ function PillSelector({ options, value, onChange, className = '', disabledValues
   className?: string;
   disabledValues?: string[];
 }) {
+  const handleInteractionEnd = (e: React.TouchEvent | React.PointerEvent) => {
+    (e.currentTarget as HTMLButtonElement).blur();
+  };
   return (
     <div className={`flex gap-1 flex-wrap ${className}`}>
       {options.map(opt => {
@@ -389,14 +392,18 @@ function PillSelector({ options, value, onChange, className = '', disabledValues
           <button
             key={opt.value}
             type="button"
+            aria-pressed={value === opt.value}
+            data-no-hover-reset
             onClick={() => !isDisabled && onChange(opt.value)}
+            onTouchEnd={handleInteractionEnd}
+            onPointerUp={handleInteractionEnd}
             disabled={isDisabled}
-            className={`px-2.5 py-1 text-xs font-medium rounded-full touch-manipulation select-none transition-colors flex items-center gap-1 ${
+            className={`px-2.5 py-1 text-xs font-medium rounded-full touch-manipulation select-none [-webkit-tap-highlight-color:transparent] transition-colors flex items-center gap-1 ${
               isDisabled
                 ? 'bg-muted/40 text-muted-foreground/40 cursor-not-allowed'
                 : value === opt.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80'
+                  ? 'bg-primary text-primary-foreground active:bg-primary active:text-primary-foreground'
+                  : 'bg-muted text-muted-foreground active:bg-muted active:text-muted-foreground [@media(hover:hover)]:hover:bg-muted/80'
             }`}
           >
             {Icon && <Icon className="w-3 h-3" />}
