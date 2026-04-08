@@ -780,6 +780,34 @@ function ChartRenderer({ config, data, compareData, profileId, stats }: { config
   return <TimeSeriesRenderer config={config} data={data} />;
 }
 
+// ---- Visible Chart Card (renders a single saved view) ----
+function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; stats: any; profileId: string }) {
+  const parts = view.metric.split('|');
+  const viewConfig: ChartConfig = {
+    chart_type: (view.chart_type as ChartType) || 'line',
+    metric: parts[0],
+    compare_metric: parts[1] || undefined,
+    time_granularity: view.time_granularity as 'weekly' | 'monthly',
+    time_range: view.time_range,
+  };
+  const metricDef = METRICS.find(m => m.key === viewConfig.metric);
+  const chartData = useChartData(viewConfig, stats);
+  const compareConfig = viewConfig.compare_metric ? { ...viewConfig, metric: viewConfig.compare_metric } : null;
+  const compareData = useChartData(compareConfig || viewConfig, stats);
+
+  return (
+    <div className="border border-border/50 rounded-lg p-3">
+      <div className="flex items-center justify-between mb-1.5">
+        <h4 className="text-sm font-medium truncate">{view.name}</h4>
+        <p className="text-[10px] text-muted-foreground shrink-0 ml-2">
+          {metricDef?.shortLabel} · {viewConfig.time_granularity === 'weekly' ? 'Wk' : 'Mo'} · {TIME_RANGES.find(r => r.value === viewConfig.time_range)?.label}
+        </p>
+      </div>
+      <ChartRenderer config={viewConfig} data={chartData} compareData={viewConfig.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} />
+    </div>
+  );
+}
+
 // ---- Main Component ----
 export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps) {
   const { views, save, update, remove, isSaving } = useCustomChartViews(profileId);
