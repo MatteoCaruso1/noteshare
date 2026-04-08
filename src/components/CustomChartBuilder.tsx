@@ -799,9 +799,6 @@ function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; s
     <div className="border border-border/50 rounded-lg p-3">
       <div className="flex items-center justify-between mb-1.5">
         <h4 className="text-sm font-medium truncate">{view.name}</h4>
-        <p className="text-[10px] text-muted-foreground shrink-0 ml-2">
-          {metricDef?.shortLabel} · {viewConfig.time_granularity === 'weekly' ? 'Wk' : 'Mo'} · {TIME_RANGES.find(r => r.value === viewConfig.time_range)?.label}
-        </p>
       </div>
       <ChartRenderer config={viewConfig} data={chartData} compareData={viewConfig.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} />
     </div>
