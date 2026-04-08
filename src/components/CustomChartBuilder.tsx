@@ -7,7 +7,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2, Pencil, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
+import { Plus, Save, Trash2, BarChart3, LineChartIcon, X, ChevronDown, Check, PieChartIcon, Gauge, BarChart2, Pencil, ChevronLeft, ChevronRight, Settings2, Eye, EyeOff } from 'lucide-react';
 import { useCustomChartViews, type CustomChartView } from '@/hooks/useCustomChartViews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
