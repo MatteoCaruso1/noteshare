@@ -880,6 +880,7 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
         time_granularity: config.time_granularity,
         time_range: config.time_range,
         display_order: views.length,
+        visible: true,
       }, {
         onSuccess: () => {
           toast.success('Chart view saved');
