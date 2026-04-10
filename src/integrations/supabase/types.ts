@@ -702,6 +702,30 @@ export type Database = {
           },
         ]
       }
+      monthly_practice_benchmarks: {
+        Row: {
+          created_at: string
+          id: string
+          is_synthetic: boolean
+          minutes_practiced: number
+          month: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_synthetic?: boolean
+          minutes_practiced?: number
+          month: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_synthetic?: boolean
+          minutes_practiced?: number
+          month?: string
+        }
+        Relationships: []
+      }
       muted_friends: {
         Row: {
           created_at: string
@@ -1636,6 +1660,7 @@ export type Database = {
         Args: { p_milestone: number; p_profile_id: string }
         Returns: Json
       }
+      get_monthly_ranking: { Args: { p_profile_id: string }; Returns: Json }
       get_profile_achievement_stats: {
         Args: { p_profile_id: string }
         Returns: Json

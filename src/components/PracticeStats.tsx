@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, Zap, ListTodo } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, ListTodo } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,23 +62,14 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     const saved = localStorage.getItem('practiceStats_chartRange');
     return (saved && ['1m', '2m', '3m', '6m', 'all'].includes(saved)) ? saved as TimeRange : '1m';
   });
-  const [focusRange, setFocusRange] = useState<TimeRange>(() => {
-    const saved = localStorage.getItem('practiceStats_focusRange');
-    return (saved && ['1m', '2m', '3m', '6m', 'all'].includes(saved)) ? saved as TimeRange : '1m';
-  });
 
   const handleSetChartRange = (range: TimeRange) => {
     setChartRange(range);
     localStorage.setItem('practiceStats_chartRange', range);
   };
-  const handleSetFocusRange = (range: TimeRange) => {
-    setFocusRange(range);
-    localStorage.setItem('practiceStats_focusRange', range);
-  };
 
   // Slice chart data based on selected time range
   const weeksToShow = WEEKS_FOR_RANGE[chartRange];
-  const focusWeeksToShow = WEEKS_FOR_RANGE[focusRange];
   const filteredWeeklyData = useMemo(() => {
     const all = stats?.weeklyMinutesOverTime || [];
     // Find first week with any activity
@@ -86,12 +77,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     const trimmed = firstActiveIdx >= 0 ? all.slice(firstActiveIdx) : all;
     return trimmed.slice(-weeksToShow);
   }, [stats?.weeklyMinutesOverTime, weeksToShow]);
-  const filteredFocusData = useMemo(() => {
-    const all = stats?.weeklyFocusAverage || [];
-    const firstActiveIdx = all.findIndex(w => w.average > 0);
-    const trimmed = firstActiveIdx >= 0 ? all.slice(firstActiveIdx) : all;
-    return trimmed.slice(-focusWeeksToShow);
-  }, [stats?.weeklyFocusAverage, focusWeeksToShow]);
 
   // Smart x-axis tick interval: prevent label overlap
   const xAxisInterval = useMemo(() => {
@@ -107,20 +92,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
     if (weeksToShow <= 26) return 2;
     return 5;
   }, [weeksToShow, isMobile]);
-
-  const focusXAxisInterval = useMemo(() => {
-    if (isMobile) {
-      if (focusWeeksToShow <= 5) return 0;
-      if (focusWeeksToShow <= 9) return 1;
-      if (focusWeeksToShow <= 13) return 2;
-      if (focusWeeksToShow <= 26) return 3;
-      return 7;
-    }
-    if (focusWeeksToShow <= 9) return 0;
-    if (focusWeeksToShow <= 13) return 1;
-    if (focusWeeksToShow <= 26) return 2;
-    return 5;
-  }, [focusWeeksToShow, isMobile]);
 
   // Fetch all weekly goals for the calendar heatmap
   const { data: weeklyGoals } = useQuery({
@@ -740,70 +711,6 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-
-      {/* Section: Focus Level Chart — hidden when no data */}
-      {filteredFocusData.some(w => w.average > 0) && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Focus Level</h3>
-            </div>
-            <div className="flex gap-1">
-              {TIME_RANGE_OPTIONS.map(opt => (
-                <RangePill
-                  key={opt.value}
-                  label={opt.label}
-                  isActive={focusRange === opt.value}
-                  onClick={() => handleSetFocusRange(opt.value)}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">Average weekly session focus level</p>
-          <div className="h-40">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={filteredFocusData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis
-                  dataKey="week"
-                  tick={{ fontSize: 10 }}
-                  className="text-muted-foreground"
-                  tickLine={false}
-                  interval={focusXAxisInterval}
-                />
-                <YAxis
-                  domain={[0, 5]}
-                  ticks={[1, 2, 3, 4, 5]}
-                  tick={{ fontSize: 10 }}
-                  className="text-muted-foreground"
-                  tickLine={false}
-                  width={24}
-                  interval={0}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    borderColor: 'hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number) => [value > 0 ? value.toFixed(1) : '—', 'Avg Focus']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="average"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
-                  activeDot={{ r: 5 }}
-                  connectNulls={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
 
       {/* Section: Custom Charts */}
       <CustomChartBuilder profileId={profileId} stats={stats} />
