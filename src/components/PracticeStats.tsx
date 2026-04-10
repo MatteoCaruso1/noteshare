@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, Zap, ListTodo } from 'lucide-react';
+import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, ListTodo } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
