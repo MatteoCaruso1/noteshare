@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -797,10 +798,28 @@ function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; s
     time_granularity: view.time_granularity as 'weekly' | 'monthly',
     time_range: view.time_range,
   };
-  const metricDef = METRICS.find(m => m.key === viewConfig.metric);
-  const chartData = useChartData(viewConfig, stats);
+
+  // Fetch routine data when this card needs it (donut + routine_distribution)
+  const needsRoutineData = viewConfig.metric === 'routine_distribution' || viewConfig.compare_metric === 'routine_distribution';
+  const { data: routineData } = useQuery({
+    queryKey: ['routine-distribution', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      const { data, error } = await supabase
+        .from('notes')
+        .select('focus_title_snapshot')
+        .eq('author_id', profileId)
+        .not('focus_title_snapshot', 'is', null);
+      if (error) throw error;
+      return data as { focus_title_snapshot: string | null }[];
+    },
+    enabled: !!profileId && needsRoutineData,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const chartData = useChartData(viewConfig, stats, routineData || undefined);
   const compareConfig = viewConfig.compare_metric ? { ...viewConfig, metric: viewConfig.compare_metric } : null;
-  const compareData = useChartData(compareConfig || viewConfig, stats);
+  const compareData = useChartData(compareConfig || viewConfig, stats, routineData || undefined);
 
   return (
     <div className="border border-border/50 rounded-lg p-3">
@@ -1040,14 +1059,31 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                 >
                   <Pencil className="w-3 h-3" />
                 </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(view.id)}
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete chart?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently remove "{view.name}". This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(view.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
               </div>
             );
           })}
