@@ -80,9 +80,18 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
 
   // Smart x-axis tick interval: prevent label overlap
   const xAxisInterval = useMemo(() => {
-    if (focusWeeksToShow <= 26) return 2;
+    if (isMobile) {
+      if (weeksToShow <= 5) return 0;
+      if (weeksToShow <= 9) return 1;
+      if (weeksToShow <= 13) return 2;
+      if (weeksToShow <= 26) return 3;
+      return 7;
+    }
+    if (weeksToShow <= 9) return 0;
+    if (weeksToShow <= 13) return 1;
+    if (weeksToShow <= 26) return 2;
     return 5;
-  }, [focusWeeksToShow, isMobile]);
+  }, [weeksToShow, isMobile]);
 
   // Fetch all weekly goals for the calendar heatmap
   const { data: weeklyGoals } = useQuery({
