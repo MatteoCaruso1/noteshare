@@ -21,6 +21,7 @@ import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { PracticeStats } from '@/components/PracticeStats';
+import { PracticeRanking } from '@/components/PracticeRanking';
 import { PremiumGate } from '@/components/PremiumGate';
 import { FeedbackCard } from '@/components/FeedbackCard';
 import { AddToHomescreenInfo } from '@/components/AddToHomescreenInfo';
@@ -490,6 +491,11 @@ const Profile = () => {
               </div>
             )}
           </Card>
+
+          {/* Practice Ranking - visible to ALL users (free + paid) */}
+          {!editing && (
+            <PracticeRanking profileId={profile?.id} />
+          )}
 
           {/* Practice Stats - hide during editing, premium feature */}
           {!editing && (
