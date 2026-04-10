@@ -1059,14 +1059,31 @@ export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps
                 >
                   <Pencil className="w-3 h-3" />
                 </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(view.id)}
-                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete chart?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently remove "{view.name}". This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(view.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
               </div>
             );
           })}
