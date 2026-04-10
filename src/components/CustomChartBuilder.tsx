@@ -798,10 +798,28 @@ function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; s
     time_granularity: view.time_granularity as 'weekly' | 'monthly',
     time_range: view.time_range,
   };
-  const metricDef = METRICS.find(m => m.key === viewConfig.metric);
-  const chartData = useChartData(viewConfig, stats);
+
+  // Fetch routine data when this card needs it (donut + routine_distribution)
+  const needsRoutineData = viewConfig.metric === 'routine_distribution' || viewConfig.compare_metric === 'routine_distribution';
+  const { data: routineData } = useQuery({
+    queryKey: ['routine-distribution', profileId],
+    queryFn: async () => {
+      if (!profileId) return [];
+      const { data, error } = await supabase
+        .from('notes')
+        .select('focus_title_snapshot')
+        .eq('author_id', profileId)
+        .not('focus_title_snapshot', 'is', null);
+      if (error) throw error;
+      return data as { focus_title_snapshot: string | null }[];
+    },
+    enabled: !!profileId && needsRoutineData,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const chartData = useChartData(viewConfig, stats, routineData || undefined);
   const compareConfig = viewConfig.compare_metric ? { ...viewConfig, metric: viewConfig.compare_metric } : null;
-  const compareData = useChartData(compareConfig || viewConfig, stats);
+  const compareData = useChartData(compareConfig || viewConfig, stats, routineData || undefined);
 
   return (
     <div className="border border-border/50 rounded-lg p-3">
