@@ -788,7 +788,7 @@ function ComparisonRenderer({ config, primaryData, secondaryData }: {
   );
 }
 
-function ChartRenderer({ config, data, compareData, profileId, stats }: { config: ChartConfig; data: { label: string; value: number }[]; compareData?: { label: string; value: number }[]; profileId: string; stats: CustomChartBuilderProps['stats'] }) {
+function ChartRenderer({ config, data, compareData, profileId, stats, onRoutineClick }: { config: ChartConfig; data: { label: string; value: number; routineText?: string; minutes?: number }[]; compareData?: { label: string; value: number }[]; profileId: string; stats: CustomChartBuilderProps['stats']; onRoutineClick?: (routine: { name: string; routineText: string; count: number; minutes: number }) => void }) {
   if (config.compare_metric && compareData && (config.chart_type === 'line' || config.chart_type === 'bar')) {
     return <ComparisonRenderer config={config} primaryData={data} secondaryData={compareData} />;
   }
@@ -799,7 +799,7 @@ function ChartRenderer({ config, data, compareData, profileId, stats }: { config
     return <HistogramRenderer data={data} />;
   }
   if (config.chart_type === 'donut') {
-    return <DonutRenderer data={data} />;
+    return <DonutRenderer data={data} onSliceClick={config.metric === 'routine_distribution' ? onRoutineClick : undefined} />;
   }
   return <TimeSeriesRenderer config={config} data={data} />;
 }
