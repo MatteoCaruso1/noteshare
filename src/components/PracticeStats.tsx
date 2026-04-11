@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { PracticeRanking } from './PracticeRanking';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Flame, Trophy, CalendarDays, Calendar, BarChart3, Share, ListTodo } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -114,93 +114,7 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch routine frequency: notes linked to focus entries, grouped by title
-  const { data: routineFrequency } = useQuery({
-    queryKey: ['routine-frequency', profileId],
-    queryFn: async () => {
-      // Get all daily_focus entries with titles and text
-      const { data: focusEntries, error: fErr } = await supabase
-        .from('daily_focus')
-        .select('id, focus_title, focus_text')
-        .eq('user_id', profileId);
-      if (fErr) throw fErr;
-      if (!focusEntries?.length) return [];
-
-      // Get all notes linked to focus entries (include session_id for minutes lookup)
-      const { data: notes, error: nErr } = await supabase
-        .from('notes')
-        .select('focus_entry_id, session_id')
-        .eq('author_id', profileId)
-        .not('focus_entry_id', 'is', null);
-      if (nErr) throw nErr;
-      if (!notes?.length) return [];
-
-      // Get practice sessions for minutes calculation (linked via notes' session_id)
-      const sessionIds = [...new Set(notes.map(n => n.session_id).filter(Boolean))] as string[];
-      let sessions: { id: string; started_at: string; ended_at: string | null; paused_duration_ms: number | null }[] = [];
-      if (sessionIds.length > 0) {
-        const { data: sData, error: sErr } = await supabase
-          .from('practice_sessions')
-          .select('id, started_at, ended_at, paused_duration_ms')
-          .in('id', sessionIds)
-          .not('ended_at', 'is', null);
-        if (sErr) throw sErr;
-        sessions = sData || [];
-      }
-
-      // Build maps: focus_entry_id -> title, focus_entry_id -> text
-      const titleMap = new Map<string, string>();
-      const textMap = new Map<string, string>();
-      focusEntries.forEach(e => {
-        if (e.focus_title) {
-          titleMap.set(e.id, e.focus_title);
-          if (e.focus_text) textMap.set(e.focus_title, e.focus_text);
-        }
-      });
-
-      // Count notes per title
-      const noteCounts = new Map<string, number>();
-      notes.forEach(n => {
-        const title = titleMap.get(n.focus_entry_id!);
-        if (title) {
-          noteCounts.set(title, (noteCounts.get(title) || 0) + 1);
-        }
-      });
-
-      // Sum minutes per title (link through notes: note.focus_entry_id → title, note.session_id → session)
-      const sessionMap = new Map<string, { started_at: string; ended_at: string; paused_duration_ms: number | null }>();
-      sessions.forEach(s => sessionMap.set(s.id, s));
-
-      const minuteCounts = new Map<string, number>();
-      const countedSessions = new Set<string>(); // avoid double-counting same session
-      notes.forEach(n => {
-        const title = titleMap.get(n.focus_entry_id!);
-        if (title && n.session_id && !countedSessions.has(n.session_id)) {
-          const s = sessionMap.get(n.session_id);
-          if (s) {
-            countedSessions.add(n.session_id);
-            const durationMs = new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0);
-            const minutes = Math.max(0, Math.round(durationMs / 60000));
-            minuteCounts.set(title, (minuteCounts.get(title) || 0) + minutes);
-          }
-        }
-      });
-
-      return Array.from(noteCounts.entries())
-        .map(([name, count]) => ({
-          name,
-          count,
-          minutes: minuteCounts.get(name) || 0,
-          routineText: textMap.get(name) || '',
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-    },
-    enabled: !!profileId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // State for routine preview
+  // State for routine preview (used by custom charts with routine_distribution metric)
   const [previewRoutine, setPreviewRoutine] = useState<{ name: string; routineText: string; count: number; minutes: number } | null>(null);
 
   // Compute trend callouts from stats data
@@ -633,70 +547,6 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
         </div>
       </Card>
 
-      {/* Section: Routine Frequency — hidden when no data */}
-      {routineFrequency && routineFrequency.length > 0 && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center gap-2 mb-1">
-            <ListTodo className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Routine Frequency</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">Notes logged per routine</p>
-          <div style={{ height: Math.max(120, routineFrequency.length * 36 + 24) }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={routineFrequency} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                <XAxis
-                  type="number"
-                  tick={{ fontSize: 10 }}
-                  className="text-muted-foreground"
-                  tickLine={false}
-                  allowDecimals={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="text-muted-foreground"
-                  tickLine={false}
-                  width={isMobile ? 80 : 120}
-                  interval={0}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    borderColor: 'hsl(var(--border))',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number, _name: string, props: any) => {
-                    const entry = props?.payload;
-                    const mins = entry?.minutes || 0;
-                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, ''];
-                  }}
-                />
-                <Bar
-                  dataKey="count"
-                  radius={[0, 4, 4, 0]}
-                  maxBarSize={24}
-                  cursor="pointer"
-                  onClick={(data: any) => {
-                    if (data?.routineText) {
-                      setPreviewRoutine(data);
-                    }
-                  }}
-                >
-                  {routineFrequency.map((_, index) => (
-                    <Cell key={index} fill={`hsl(var(--primary) / ${0.5 + (0.5 * (1 - index / Math.max(routineFrequency.length - 1, 1)))})`} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
-
       {/* Routine Preview Dialog */}
       <Dialog open={!!previewRoutine} onOpenChange={(open) => !open && setPreviewRoutine(null)}>
         <DialogContent className="max-w-md">
@@ -718,7 +568,7 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
       </Dialog>
 
       {/* Section: Custom Charts */}
-      <CustomChartBuilder profileId={profileId} stats={stats} />
+      <CustomChartBuilder profileId={profileId} stats={stats} onRoutineClick={(routine) => setPreviewRoutine(routine)} />
     </div>
   );
 }
