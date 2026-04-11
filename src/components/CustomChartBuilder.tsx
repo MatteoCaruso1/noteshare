@@ -805,7 +805,7 @@ function ChartRenderer({ config, data, compareData, profileId, stats, onRoutineC
 }
 
 // ---- Visible Chart Card (renders a single saved view) ----
-function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; stats: any; profileId: string }) {
+function VisibleChartCard({ view, stats, profileId, onRoutineClick }: { view: CustomChartView; stats: any; profileId: string; onRoutineClick?: (routine: { name: string; routineText: string; count: number; minutes: number }) => void }) {
   const parts = view.metric.split('|');
   const viewConfig: ChartConfig = {
     chart_type: (view.chart_type as ChartType) || 'line',
@@ -818,16 +818,62 @@ function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; s
   // Fetch routine data when this card needs it (donut + routine_distribution)
   const needsRoutineData = viewConfig.metric === 'routine_distribution' || viewConfig.compare_metric === 'routine_distribution';
   const { data: routineData } = useQuery({
-    queryKey: ['routine-distribution', profileId],
+    queryKey: ['routine-enriched', profileId],
     queryFn: async () => {
       if (!profileId) return [];
-      const { data, error } = await supabase
+      // Fetch notes with focus_title_snapshot
+      const { data: notes, error: nErr } = await supabase
         .from('notes')
-        .select('focus_title_snapshot')
+        .select('focus_title_snapshot, focus_entry_id, session_id')
         .eq('author_id', profileId)
         .not('focus_title_snapshot', 'is', null);
-      if (error) throw error;
-      return data as { focus_title_snapshot: string | null }[];
+      if (nErr) throw nErr;
+      if (!notes?.length) return [];
+
+      // Fetch focus entries for routine text
+      const entryIds = [...new Set(notes.map(n => n.focus_entry_id).filter(Boolean))] as string[];
+      let textMap: Record<string, string> = {};
+      if (entryIds.length > 0) {
+        const { data: entries } = await supabase
+          .from('daily_focus')
+          .select('focus_title, focus_text')
+          .eq('user_id', profileId)
+          .not('focus_title', 'is', null);
+        if (entries) {
+          entries.forEach(e => { if (e.focus_title && e.focus_text) textMap[e.focus_title] = e.focus_text; });
+        }
+      }
+
+      // Fetch sessions for minutes
+      const sessionIds = [...new Set(notes.map(n => n.session_id).filter(Boolean))] as string[];
+      let sessionMap: Record<string, number> = {};
+      if (sessionIds.length > 0) {
+        const { data: sessions } = await supabase
+          .from('practice_sessions')
+          .select('id, started_at, ended_at, paused_duration_ms')
+          .in('id', sessionIds)
+          .not('ended_at', 'is', null);
+        if (sessions) {
+          const counted = new Set<string>();
+          notes.forEach(n => {
+            if (n.session_id && !counted.has(n.session_id)) {
+              const s = sessions.find(s => s.id === n.session_id);
+              if (s && s.ended_at) {
+                counted.add(n.session_id);
+                const mins = Math.max(0, Math.round((new Date(s.ended_at).getTime() - new Date(s.started_at).getTime() - (s.paused_duration_ms || 0)) / 60000));
+                const title = n.focus_title_snapshot || 'Untitled';
+                sessionMap[title] = (sessionMap[title] || 0) + mins;
+              }
+            }
+          });
+        }
+      }
+
+      return notes.map(n => ({
+        focus_title_snapshot: n.focus_title_snapshot,
+        routineText: textMap[n.focus_title_snapshot || ''] || '',
+        minutes: 0, // aggregated at donut level
+      }));
     },
     enabled: !!profileId && needsRoutineData,
     staleTime: 5 * 60 * 1000,
@@ -842,7 +888,7 @@ function VisibleChartCard({ view, stats, profileId }: { view: CustomChartView; s
       <div className="flex items-center justify-between mb-1.5">
         <h4 className="text-sm font-medium truncate">{view.name}</h4>
       </div>
-      <ChartRenderer config={viewConfig} data={chartData} compareData={viewConfig.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} />
+      <ChartRenderer config={viewConfig} data={chartData} compareData={viewConfig.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} onRoutineClick={onRoutineClick} />
     </div>
   );
 }
