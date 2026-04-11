@@ -492,8 +492,8 @@ const Profile = () => {
             )}
           </Card>
 
-          {/* Practice Ranking - visible to ALL users (free + paid) */}
-          {!editing && (
+          {/* Practice Ranking - visible to free users above the gate */}
+          {!editing && !isPremium && (
             <PracticeRanking profileId={profile?.id} />
           )}
 
@@ -505,7 +505,7 @@ const Profile = () => {
               icon={TrendingUp}
               description="Upgrade to Pro to view detailed practice stats"
             >
-              <PracticeStats profileId={profile?.id} />
+              <PracticeStats profileId={profile?.id} showRanking={true} />
             </PremiumGate>
           )}
 

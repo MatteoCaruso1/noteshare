@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
+import { PracticeRanking } from './PracticeRanking';
 import { Card } from '@/components/ui/card';
 import { usePracticeStats } from '@/hooks/usePracticeStats';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -50,9 +51,10 @@ function RangePill({ label, isActive, onClick }: { label: string; isActive: bool
 
 interface PracticeStatsProps {
   profileId: string;
+  showRanking?: boolean;
 }
 
-export function PracticeStats({ profileId }: PracticeStatsProps) {
+export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
   const { profile } = useAuth();
   const isMobile = useIsMobile();
   const { data: stats, isLoading, error, isFetching } = usePracticeStats(profileId);
@@ -493,6 +495,9 @@ export function PracticeStats({ profileId }: PracticeStatsProps) {
 
       </Card>
 
+
+      {/* Practice Ranking for paid users — inside deep-dives */}
+      {showRanking && <PracticeRanking profileId={profileId} />}
 
       {/* Section: Deep-dives */}
       <Card className="p-4 bg-card border-border">

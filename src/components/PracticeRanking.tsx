@@ -21,39 +21,41 @@ function formatMinutesHM(totalMinutes: number): { hours: number; minutes: number
   return { hours, minutes, display: `${hours}h ${minutes}m` };
 }
 
-// Semi-circle gauge path
+// Inflate rank to ~2000 active user scale
+function inflateRank(rank: number, totalUsers: number): number {
+  if (totalUsers <= 0) return rank;
+  const fraction = rank / totalUsers;
+  return Math.max(1, Math.round(fraction * 2000));
+}
+
+// Semi-circle gauge — just the arc, no vertical end caps
 function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
   const cx = size / 2;
   const cy = size / 2 + 10;
   const r = size / 2 - 16;
   const strokeW = 14;
-  
-  // Arc from 180° (left) to 0° (right) = π to 0
+
   const totalAngle = Math.PI;
-  // Clamp percent 1-100
   const clamped = Math.max(1, Math.min(100, percent));
-  // Invert: top 1% fills almost full, top 100% fills almost nothing
-  const fillFraction = 1 - (clamped - 1) / 99;
+  // top 32% → gauge should be 68% full
+  const fillFraction = 1 - clamped / 100;
   const endAngle = Math.PI - fillFraction * totalAngle;
-  
-  // Background arc (full semicircle)
+
   const bgStartX = cx - r;
   const bgStartY = cy;
   const bgEndX = cx + r;
   const bgEndY = cy;
-  
-  // Foreground arc
+
   const fgStartX = cx - r;
   const fgStartY = cy;
   const fgEndX = cx + r * Math.cos(endAngle);
   const fgEndY = cy - r * Math.sin(endAngle);
   const largeArc = fillFraction > 0.5 ? 1 : 0;
-  
-  // Gradient colors matching Wealthsimple: pink → purple → blue → gray
+
   const gradientId = 'ranking-gradient';
-  
+
   return (
-    <svg viewBox={`0 0 ${size} ${size / 2 + 30}`} className="w-full max-w-[240px] mx-auto">
+    <svg viewBox={`0 0 ${size} ${size / 2 + 20}`} className="w-full max-w-[240px] mx-auto">
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="hsl(340, 80%, 65%)" />
@@ -116,15 +118,11 @@ export function PracticeRanking({ profileId }: { profileId: string | undefined }
   const nextTierMinutes = ranking.minutes_to_next_tier;
   const nextTierPct = ranking.next_tier_pct;
   const { hours: nextH, minutes: nextM } = formatMinutesHM(nextTierMinutes || 0);
+  const inflatedRank = inflateRank(ranking.rank, ranking.total_users);
 
   return (
     <Card className="p-5 bg-card border-border overflow-hidden">
       <div className="text-center">
-        {/* Header */}
-        <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-3">
-          Noteshare
-        </p>
-
         {/* Main headline */}
         <p className="text-base sm:text-lg text-muted-foreground leading-snug mb-1">
           You're in the{' '}
@@ -156,10 +154,10 @@ export function PracticeRanking({ profileId }: { profileId: string | undefined }
           <div className="flex-1 bg-muted/40 rounded-xl p-3">
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <Trophy className="w-3.5 h-3.5 text-primary" />
-              <span className="text-lg font-bold text-foreground">#{ranking.rank}</span>
+              <span className="text-lg font-bold text-foreground">#{inflatedRank}</span>
             </div>
             <p className="text-[10px] text-muted-foreground">
-              of {ranking.total_users} practicers
+              ranked practicer
             </p>
           </div>
           <div className="flex-1 bg-muted/40 rounded-xl p-3">
