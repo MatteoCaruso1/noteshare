@@ -910,16 +910,30 @@ export function CustomChartBuilder({ profileId, stats, onRoutineClick }: CustomC
 
   // Fetch routine distribution data (only when needed)
   const { data: routineData } = useQuery({
-    queryKey: ['routine-distribution', profileId],
+    queryKey: ['routine-enriched', profileId],
     queryFn: async () => {
       if (!profileId) return [];
-      const { data, error } = await supabase
+      const { data: notes, error } = await supabase
         .from('notes')
         .select('focus_title_snapshot')
         .eq('author_id', profileId)
         .not('focus_title_snapshot', 'is', null);
       if (error) throw error;
-      return data as { focus_title_snapshot: string | null }[];
+      if (!notes?.length) return [];
+
+      // Get routine text from daily_focus
+      const { data: entries } = await supabase
+        .from('daily_focus')
+        .select('focus_title, focus_text')
+        .eq('user_id', profileId)
+        .not('focus_title', 'is', null);
+      const textMap: Record<string, string> = {};
+      if (entries) entries.forEach(e => { if (e.focus_title && e.focus_text) textMap[e.focus_title] = e.focus_text; });
+
+      return notes.map(n => ({
+        focus_title_snapshot: n.focus_title_snapshot,
+        routineText: textMap[n.focus_title_snapshot || ''] || '',
+      }));
     },
     enabled: !!profileId && config.metric === 'routine_distribution',
     staleTime: 5 * 60 * 1000,
