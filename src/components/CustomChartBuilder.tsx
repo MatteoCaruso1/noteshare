@@ -94,6 +94,7 @@ interface CustomChartBuilderProps {
     totalNotesCount: number;
     topTagsThisMonth: { tag: string; count: number }[];
   };
+  onRoutineClick?: (routine: { name: string; routineText: string; count: number; minutes: number }) => void;
 }
 
 // Parse "MMM d" week label back to approximate date
