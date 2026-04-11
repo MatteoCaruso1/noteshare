@@ -1278,7 +1278,7 @@ export function CustomChartBuilder({ profileId, stats, onRoutineClick }: CustomC
 
           <div className="pt-1">
             <p className="text-xs text-muted-foreground mb-2">Preview</p>
-            <ChartRenderer config={config} data={chartData} compareData={config.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} />
+            <ChartRenderer config={config} data={chartData} compareData={config.compare_metric ? compareData : undefined} profileId={profileId} stats={stats} onRoutineClick={onRoutineClick} />
           </div>
 
           <div className="flex gap-2 pt-1">
