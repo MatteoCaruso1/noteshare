@@ -496,6 +496,9 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
       </Card>
 
 
+      {/* Practice Ranking for paid users — inside deep-dives */}
+      {showRanking && <PracticeRanking profileId={profileId} />}
+
       {/* Section: Deep-dives */}
       <Card className="p-4 bg-card border-border">
         <div className="flex items-center gap-2 mb-4">
