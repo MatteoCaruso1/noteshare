@@ -1159,7 +1159,7 @@ export function CustomChartBuilder({ profileId, stats, onRoutineClick }: CustomC
       {!isEditing && !isManaging && views.filter(v => v.visible).length > 0 && (
         <div className="space-y-4">
           {views.filter(v => v.visible).map(view => (
-            <VisibleChartCard key={view.id} view={view} stats={stats} profileId={profileId} />
+            <VisibleChartCard key={view.id} view={view} stats={stats} profileId={profileId} onRoutineClick={onRoutineClick} />
           ))}
         </div>
       )}
