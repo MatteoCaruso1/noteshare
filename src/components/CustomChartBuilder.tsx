@@ -894,7 +894,7 @@ function VisibleChartCard({ view, stats, profileId, onRoutineClick }: { view: Cu
 }
 
 // ---- Main Component ----
-export function CustomChartBuilder({ profileId, stats }: CustomChartBuilderProps) {
+export function CustomChartBuilder({ profileId, stats, onRoutineClick }: CustomChartBuilderProps) {
   const { views, save, update, remove, isSaving } = useCustomChartViews(profileId);
   const [activeViewId, setActiveViewId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
