@@ -547,70 +547,6 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
         </div>
       </Card>
 
-      {/* Section: Routine Frequency — hidden when no data */}
-      {routineFrequency && routineFrequency.length > 0 && (
-        <Card className="p-4 bg-card border-border">
-          <div className="flex items-center gap-2 mb-1">
-            <ListTodo className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Routine Frequency</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">Notes logged per routine</p>
-          <div style={{ height: Math.max(120, routineFrequency.length * 36 + 24) }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={routineFrequency} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                <XAxis
-                  type="number"
-                  tick={{ fontSize: 10 }}
-                  className="text-muted-foreground"
-                  tickLine={false}
-                  allowDecimals={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 11 }}
-                  className="text-muted-foreground"
-                  tickLine={false}
-                  width={isMobile ? 80 : 120}
-                  interval={0}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    borderColor: 'hsl(var(--border))',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  formatter={(value: number, _name: string, props: any) => {
-                    const entry = props?.payload;
-                    const mins = entry?.minutes || 0;
-                    return [`${value} note${value !== 1 ? 's' : ''}, ${mins} min${mins !== 1 ? 's' : ''}`, ''];
-                  }}
-                />
-                <Bar
-                  dataKey="count"
-                  radius={[0, 4, 4, 0]}
-                  maxBarSize={24}
-                  cursor="pointer"
-                  onClick={(data: any) => {
-                    if (data?.routineText) {
-                      setPreviewRoutine(data);
-                    }
-                  }}
-                >
-                  {routineFrequency.map((_, index) => (
-                    <Cell key={index} fill={`hsl(var(--primary) / ${0.5 + (0.5 * (1 - index / Math.max(routineFrequency.length - 1, 1)))})`} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
-
       {/* Routine Preview Dialog */}
       <Dialog open={!!previewRoutine} onOpenChange={(open) => !open && setPreviewRoutine(null)}>
         <DialogContent className="max-w-md">
@@ -632,7 +568,7 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
       </Dialog>
 
       {/* Section: Custom Charts */}
-      <CustomChartBuilder profileId={profileId} stats={stats} />
+      <CustomChartBuilder profileId={profileId} stats={stats} onRoutineClick={(routine) => setPreviewRoutine(routine)} />
     </div>
   );
 }
