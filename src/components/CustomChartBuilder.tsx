@@ -331,20 +331,24 @@ function computeDonutData(
   config: ChartConfig,
   stats: CustomChartBuilderProps['stats'],
   rangeInfo: { weeks: number; months: number },
-  routineData?: { focus_title_snapshot: string | null }[],
+  routineData?: { focus_title_snapshot: string | null; routineText?: string; minutes?: number }[],
 ) {
   if (config.metric === 'routine_distribution') {
     if (!routineData || routineData.length === 0) return [];
-    // Aggregate by routine name
+    // Aggregate by routine name, keeping text + minutes
     const counts: Record<string, number> = {};
+    const textMap: Record<string, string> = {};
+    const minuteMap: Record<string, number> = {};
     routineData.forEach(n => {
       const name = n.focus_title_snapshot || 'Untitled';
       counts[name] = (counts[name] || 0) + 1;
+      if (n.routineText && !textMap[name]) textMap[name] = n.routineText;
+      if (n.minutes) minuteMap[name] = (minuteMap[name] || 0) + n.minutes;
     });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
-      .map(([label, value]) => ({ label, value }));
+      .map(([label, value]) => ({ label, value, routineText: textMap[label] || '', minutes: minuteMap[label] || 0 }));
   }
 
   if (config.metric === 'focus_distribution') {
@@ -670,7 +674,7 @@ function GaugeRenderer({ profileId, config, stats }: { profileId: string; config
   );
 }
 
-function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
+function DonutRenderer({ data, onSliceClick }: { data: { label: string; value: number; routineText?: string; minutes?: number }[]; onSliceClick?: (entry: { name: string; routineText: string; count: number; minutes: number }) => void }) {
   const isMobile = useIsMobile();
 
   if (data.length === 0) {
@@ -683,6 +687,8 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
     borderColor: 'hsl(var(--border))',
     borderRadius: '8px',
   };
+
+  const hasClickable = data.some(d => d.routineText);
 
   return (
     <div className="h-52">
@@ -700,6 +706,12 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
             label={({ label, value }) => `${label} (${Math.round((value / total) * 100)}%)`}
             labelLine={false}
             className="text-[9px]"
+            cursor={hasClickable ? 'pointer' : undefined}
+            onClick={(entry: any) => {
+              if (onSliceClick && entry?.routineText) {
+                onSliceClick({ name: entry.label, routineText: entry.routineText, count: entry.value, minutes: entry.minutes || 0 });
+              }
+            }}
           >
             {data.map((_, idx) => (
               <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />
@@ -711,6 +723,9 @@ function DonutRenderer({ data }: { data: { label: string; value: number }[] }) {
           />
         </PieChart>
       </ResponsiveContainer>
+      {hasClickable && (
+        <p className="text-[10px] text-muted-foreground text-center mt-1">Tap a slice to view routine</p>
+      )}
     </div>
   );
 }
