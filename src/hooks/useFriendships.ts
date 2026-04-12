@@ -155,10 +155,16 @@ export function useRespondToFriendRequest() {
       return data;
     },
     onSuccess: async (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: ['friendships'] });
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
-      queryClient.invalidateQueries({ queryKey: ['pending-friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      // Force immediate refetch by resetting stale time on all friendship-related queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['friend-ids'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['friendships'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['friends'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['pending-friend-requests'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['friends-notes'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['friendship-status'], refetchType: 'all' }),
+        queryClient.invalidateQueries({ queryKey: ['suggested-musicians'], refetchType: 'all' }),
+      ]);
       toast.success(status === 'accepted' ? 'Friend request accepted!' : 'Friend request declined');
 
       // Check first-friend milestone on acceptance
