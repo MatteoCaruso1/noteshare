@@ -466,6 +466,8 @@ export default function FTUE() {
         queryClient.invalidateQueries({ queryKey: ['sessions'] });
         queryClient.invalidateQueries({ queryKey: ['notes'] });
         queryClient.invalidateQueries({ queryKey: ['practice-stats'] });
+        // Signal PracticeControls to start expanded after FTUE
+        localStorage.setItem('noteshare_ftue_just_completed', '1');
         clearFTUEState();
         // Refresh profile so has_completed_onboarding is true in memory
         // and clear isNewUser to prevent OnboardingContext from triggering
