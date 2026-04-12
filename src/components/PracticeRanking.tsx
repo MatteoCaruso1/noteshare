@@ -60,9 +60,8 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="hsl(340, 80%, 65%)" />
-          <stop offset="40%" stopColor="hsl(280, 70%, 60%)" />
-          <stop offset="70%" stopColor="hsl(250, 60%, 55%)" />
-          <stop offset="100%" stopColor="hsl(var(--muted))" />
+          <stop offset="50%" stopColor="hsl(280, 70%, 60%)" />
+          <stop offset="100%" stopColor="hsl(250, 60%, 55%)" />
         </linearGradient>
       </defs>
       {/* Background arc */}
