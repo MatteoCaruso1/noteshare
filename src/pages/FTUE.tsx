@@ -698,7 +698,7 @@ export default function FTUE() {
           </div>
           <h1 className="text-2xl font-semibold text-foreground mb-2">Create your account</h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-            Sign up to save your practice and keep going
+            Sign up to get started
           </p>
 
           <div className="w-full space-y-3">
