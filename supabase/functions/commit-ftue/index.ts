@@ -51,20 +51,16 @@ Deno.serve(async (req) => {
       name,
       instrument,
       instruments,
-      practiceNotes,
-      tags,
-      focusLevel,
-      durationMinutes,
       idempotencyKey,
       completedPhases,
     } = body as {
       name: string;
       instrument: string;
       instruments?: string[];
-      practiceNotes: string;
-      tags: string[];
-      focusLevel: number | null;
-      durationMinutes: number;
+      practiceNotes?: string;
+      tags?: string[];
+      focusLevel?: number | null;
+      durationMinutes?: number;
       idempotencyKey: string;
       completedPhases?: number[];
     };
@@ -81,12 +77,11 @@ Deno.serve(async (req) => {
     }
 
     // Idempotency: check if we already committed for this user+key
-    // We'll use the notes_summary field to store the idempotency key
     const { data: existing } = await serviceClient
-      .from("practice_sessions")
+      .from("onboarding_step_events")
       .select("id")
       .eq("user_id", userId)
-      .eq("notes_summary", `ftue:${idempotencyKey}`)
+      .eq("step_number", 111)
       .maybeSingle();
 
     if (existing) {
@@ -122,57 +117,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 2. Create practice session
-    const dur = Math.max(1, Math.min(durationMinutes || 1, 1440));
-    const endedAt = new Date();
-    const startedAt = new Date(endedAt.getTime() - dur * 60 * 1000);
-
-    const { data: session, error: sessionError } = await serviceClient
-      .from("practice_sessions")
-      .insert({
-        user_id: userId,
-        started_at: startedAt.toISOString(),
-        ended_at: endedAt.toISOString(),
-        is_active: false,
-        is_mobile: false,
-        notes_summary: `ftue:${idempotencyKey}`,
-      })
-      .select("id")
-      .single();
-
-    if (sessionError || !session) {
-      console.error("Session insert error:", sessionError);
-      return new Response(
-        JSON.stringify({ error: "Failed to create session" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // 3. Create note linked to session
-    const { error: noteError } = await serviceClient.from("notes").insert({
-      author_id: userId,
-      session_id: session.id,
-      text_content: practiceNotes || null,
-      tags: tags && tags.length > 0 ? tags : [],
-      visibility: "private",
-    });
-
-    if (noteError) {
-      console.error("Note insert error:", noteError);
-      // Session was created but note failed — not ideal but not data-losing
-      // The session still exists as a record of practice
-    }
-
-    // 4. Record FTUE funnel steps for analytics (fire-and-forget)
-    // Maps FTUE phases to the same step_number space used by onboarding_step_events
-    // FTUE steps use 100+ offset to distinguish from post-signup onboarding steps (0-11)
+    // 2. Record FTUE funnel steps for analytics (fire-and-forget)
     if (completedPhases && completedPhases.length > 0) {
       const stepRows = completedPhases.map((phase: number) => ({
         user_id: userId,
-        step_number: 100 + phase, // offset to avoid collision with post-signup onboarding
+        step_number: 100 + phase,
       }));
       const { error: stepsError } = await serviceClient
         .from("onboarding_step_events")
@@ -182,7 +131,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Also record that this user completed the full FTUE flow (step 110 = account created, 111 = complete)
+    // Record that this user completed the full FTUE flow
     await serviceClient
       .from("onboarding_step_events")
       .upsert([
@@ -192,7 +141,7 @@ Deno.serve(async (req) => {
       .then(({ error: e }) => { if (e) console.error("FTUE completion tracking error:", e); });
 
     return new Response(
-      JSON.stringify({ success: true, sessionId: session.id }),
+      JSON.stringify({ success: true }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
