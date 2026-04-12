@@ -71,7 +71,7 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
         fill="none"
         stroke="hsl(var(--muted))"
         strokeWidth={strokeW}
-        strokeLinecap="round"
+        strokeLinecap="butt"
       />
       {/* Foreground arc */}
       {fillFraction > 0.01 && (
@@ -80,7 +80,7 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
           fill="none"
           stroke={`url(#${gradientId})`}
           strokeWidth={strokeW}
-          strokeLinecap="round"
+          strokeLinecap="butt"
           className="transition-all duration-1000"
         />
       )}
