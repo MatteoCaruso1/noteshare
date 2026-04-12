@@ -193,9 +193,15 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
                 )}
               </Popover>
             ))}
-            <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
-              {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
-            </div>
+            {(() => {
+              const paceColor = getPaceTotalColor(week.weekStartStr, total);
+              const colorClass = paceColor || 'text-muted-foreground';
+              return (
+                <div className={`w-12 text-center text-[10px] font-medium ${colorClass}`}>
+                  {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
+                </div>
+              );
+            })()}
             <div className={`w-8 text-center text-[10px] font-semibold ${
               goalStatus === 'met' ? 'text-green-500' : goalStatus === 'pending' ? 'text-yellow-500' : goalStatus === 'missed' ? 'text-red-400' : 'text-muted-foreground'
             }`}>
