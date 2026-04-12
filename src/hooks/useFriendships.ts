@@ -222,9 +222,11 @@ export function useRemoveFriend() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendships'] });
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
-      queryClient.invalidateQueries({ queryKey: ['friends-notes'] });
+      queryClient.invalidateQueries({ queryKey: ['friend-ids'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['friendships'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['friends'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['friends-notes'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['friendship-status'], refetchType: 'all' });
       toast.success('Friend removed');
     },
     onError: (error) => {
