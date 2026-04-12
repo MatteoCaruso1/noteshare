@@ -174,7 +174,14 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   const [wakeLockEnabled, setWakeLockEnabledState] = useState(() => 
     isStoredSessionMatch ? storedSettings.wakeLockEnabled : false
   );
-  const [showSessionChoice, setShowSessionChoice] = useState(false);
+  const [showSessionChoice, setShowSessionChoice] = useState(() => {
+    const ftueJust = localStorage.getItem('noteshare_ftue_just_completed');
+    if (ftueJust) {
+      localStorage.removeItem('noteshare_ftue_just_completed');
+      return true;
+    }
+    return false;
+  });
   const [manuallyCollapsed, setManuallyCollapsed] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
