@@ -65,8 +65,8 @@ const FriendsJournals = () => {
     }
   };
   
-  // Calculate unread messages count
-  const unreadMessagesCount = conversations?.reduce((sum, c) => sum + c.unreadCount, 0) || 0;
+  // Calculate unread messages count — count unique senders, not total messages
+  const unreadMessagesCount = conversations?.filter(c => c.unreadCount > 0).length || 0;
   
   useEffect(() => {
     if (location.state?.openFriendsList) {
@@ -140,20 +140,20 @@ const FriendsJournals = () => {
                   <div className="relative cursor-pointer transition-colors flex items-center justify-center w-9 h-9 rounded-lg bg-secondary/30 border border-border hover:bg-secondary/50 shrink-0">
                     <MessageCircle className={`w-4 h-4 ${unreadMessagesCount > 0 ? 'text-primary' : 'text-muted-foreground'}`} />
                     {unreadMessagesCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-blue-500 text-white">
+                      <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] bg-primary text-primary-foreground">
                         {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
                       </Badge>
                     )}
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-md" hideCloseButton>
+                <DialogContent className="max-w-md overflow-hidden" hideCloseButton>
                   {!inChatView && (
                     <DialogHeader className="flex flex-row items-center justify-between space-y-0">
                       <DialogTitle className="flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-primary" />
                         Messages
                         {unreadMessagesCount > 0 && (
-                          <Badge className="ml-2 bg-blue-500 text-white">
+                          <Badge className="ml-2 bg-primary text-primary-foreground">
                             {unreadMessagesCount}
                           </Badge>
                         )}
