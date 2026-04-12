@@ -26,7 +26,7 @@ function formatMinutesHM(totalMinutes: number): { hours: number; minutes: number
 function inflateRank(rank: number, totalUsers: number): number {
   if (totalUsers <= 0) return rank;
   const fraction = rank / totalUsers;
-  return Math.max(1, Math.round(fraction * 2000));
+  return Math.max(1, Math.round(fraction * 2043));
 }
 
 // Semi-circle gauge — just the arc, no vertical end caps
