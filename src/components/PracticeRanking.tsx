@@ -39,7 +39,8 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
   const clamped = Math.max(1, Math.min(100, percent));
   // top 32% → gauge should be 68% full
   const fillFraction = 1 - clamped / 100;
-  const endAngle = Math.PI - fillFraction * totalAngle;
+  // Arc goes from left (π) sweeping clockwise; endAngle is measured from positive-x axis
+  const endAngle = Math.PI * (1 - fillFraction);
 
   const bgStartX = cx - r;
   const bgStartY = cy;
@@ -70,7 +71,7 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
         fill="none"
         stroke="hsl(var(--muted))"
         strokeWidth={strokeW}
-        strokeLinecap="round"
+        strokeLinecap="butt"
       />
       {/* Foreground arc */}
       {fillFraction > 0.01 && (
@@ -79,7 +80,7 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
           fill="none"
           stroke={`url(#${gradientId})`}
           strokeWidth={strokeW}
-          strokeLinecap="round"
+          strokeLinecap="butt"
           className="transition-all duration-1000"
         />
       )}
