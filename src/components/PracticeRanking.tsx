@@ -47,8 +47,8 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
     <svg viewBox={`0 0 ${size} ${viewHeight}`} className="mx-auto w-full max-w-[240px]" aria-hidden="true">
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="hsl(var(--primary))" />
-          <stop offset="100%" stopColor="hsl(var(--accent))" />
+          <stop offset="0%" stopColor="hsl(340, 80%, 65%)" />
+          <stop offset="100%" stopColor="hsl(250, 60%, 55%)" />
         </linearGradient>
       </defs>
 
