@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,59 +31,45 @@ function inflateRank(rank: number, totalUsers: number): number {
 
 // Semi-circle gauge — just the arc, no vertical end caps
 function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
+  const gradientId = useId().replace(/:/g, '');
   const cx = size / 2;
   const cy = size / 2 + 10;
   const r = size / 2 - 16;
   const strokeW = 14;
-
-  const totalAngle = Math.PI;
-  const clamped = Math.max(1, Math.min(100, percent));
-  // top 32% → gauge should be 68% full
+  const viewHeight = cy + strokeW / 2 + 4;
+  const clamped = Math.max(0, Math.min(100, percent));
   const fillFraction = 1 - clamped / 100;
-  // Arc goes from left (π) sweeping clockwise; endAngle is measured from positive-x axis
-  const endAngle = Math.PI * (1 - fillFraction);
+  const filledPercent = fillFraction * 100;
 
-  const bgStartX = cx - r;
-  const bgStartY = cy;
-  const bgEndX = cx + r;
-  const bgEndY = cy;
-
-  const fgStartX = cx - r;
-  const fgStartY = cy;
-  const fgEndX = cx + r * Math.cos(endAngle);
-  const fgEndY = cy - r * Math.sin(endAngle);
-  const largeArc = fillFraction > 0.5 ? 1 : 0;
-
-  const gradientId = 'ranking-gradient';
+  const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
 
   return (
-    <svg viewBox={`0 0 ${size} ${size / 2 + 20}`} className="w-full max-w-[240px] mx-auto">
+    <svg viewBox={`0 0 ${size} ${viewHeight}`} className="mx-auto w-full max-w-[240px]" aria-hidden="true">
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="hsl(340, 80%, 65%)" />
-          <stop offset="50%" stopColor="hsl(280, 70%, 60%)" />
-          <stop offset="100%" stopColor="hsl(250, 60%, 55%)" />
+          <stop offset="0%" stopColor="hsl(var(--primary))" />
+          <stop offset="100%" stopColor="hsl(var(--accent))" />
         </linearGradient>
       </defs>
-      {/* Background arc */}
+
       <path
-        d={`M ${bgStartX} ${bgStartY} A ${r} ${r} 0 0 1 ${bgEndX} ${bgEndY}`}
+        d={arcPath}
         fill="none"
         stroke="hsl(var(--muted))"
         strokeWidth={strokeW}
         strokeLinecap="butt"
       />
-      {/* Foreground arc */}
-      {fillFraction > 0.01 && (
-        <path
-          d={`M ${fgStartX} ${fgStartY} A ${r} ${r} 0 ${largeArc} 1 ${fgEndX} ${fgEndY}`}
-          fill="none"
-          stroke={`url(#${gradientId})`}
-          strokeWidth={strokeW}
-          strokeLinecap="butt"
-          className="transition-all duration-1000"
-        />
-      )}
+
+      <path
+        d={arcPath}
+        fill="none"
+        stroke={`url(#${gradientId})`}
+        strokeWidth={strokeW}
+        strokeLinecap="butt"
+        pathLength={100}
+        strokeDasharray={`${filledPercent} 100`}
+        className="transition-all duration-1000"
+      />
     </svg>
   );
 }
