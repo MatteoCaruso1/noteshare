@@ -1,5 +1,5 @@
-import { useMemo, useState, useCallback } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subMonths, addMonths, isSameMonth } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, subMonths, addMonths, isSameMonth, differenceInCalendarDays } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -96,12 +96,38 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
     return m;
   }, [weeklyGoals]);
 
+  // Compute current-week pace color by comparing projected total to last week
+  const currentWeekStartStr = useMemo(() => format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'), []);
+
+  const lastWeekTotal = useMemo(() => {
+    const cws = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const lwStart = addDays(cws, -7);
+    let sum = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = format(addDays(lwStart, i), 'yyyy-MM-dd');
+      sum += (dailyMinutesMap[d] || 0);
+    }
+    return sum;
+  }, [dailyMinutesMap]);
+
+  function getPaceTotalColor(weekStartStr: string, total: number): string | null {
+    if (weekStartStr !== currentWeekStartStr) return null;
+    if (lastWeekTotal === 0) return total > 0 ? 'text-green-500' : 'text-muted-foreground';
+    const today = new Date();
+    const wsDate = new Date(weekStartStr + 'T12:00:00');
+    const daysPassed = Math.max(1, differenceInCalendarDays(today, wsDate) + 1); // 1-7
+    const projected = (total / daysPassed) * 7;
+    const ratio = projected / lastWeekTotal;
+    if (ratio >= 1) return 'text-green-500';
+    if (ratio >= 0.8) return 'text-yellow-500';
+    return 'text-red-400';
+  }
+
   function getGoalStatus(weekStartStr: string, total: number): 'met' | 'pending' | 'missed' | 'na' {
     const goal = goalMap.get(weekStartStr);
     if (!goal || goal.skipped || goal.targetMinutes <= 0) return 'na';
-    const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
     if (total >= goal.targetMinutes) return 'met';
-    if (weekStartStr === currentWeekStart) return 'pending';
+    if (weekStartStr === currentWeekStartStr) return 'pending';
     return 'missed';
   }
 
@@ -167,9 +193,15 @@ export function CalendarHeatmap({ dailyMinutesMap, weeklyGoals = [], currentMont
                 )}
               </Popover>
             ))}
-            <div className="w-12 text-center text-[10px] text-muted-foreground font-medium">
-              {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
-            </div>
+            {(() => {
+              const paceColor = getPaceTotalColor(week.weekStartStr, total);
+              const colorClass = paceColor || 'text-muted-foreground';
+              return (
+                <div className={`w-12 text-center text-[10px] font-medium ${colorClass}`}>
+                  {total > 0 ? (total < 60 ? `${total}m` : `${Math.floor(total / 60)}h${total % 60 > 0 ? ` ${total % 60}m` : ''}`) : '—'}
+                </div>
+              );
+            })()}
             <div className={`w-8 text-center text-[10px] font-semibold ${
               goalStatus === 'met' ? 'text-green-500' : goalStatus === 'pending' ? 'text-yellow-500' : goalStatus === 'missed' ? 'text-red-400' : 'text-muted-foreground'
             }`}>
