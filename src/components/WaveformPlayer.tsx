@@ -325,24 +325,39 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   
   if (error && signedUrl) {
     return (
-      <div className={`flex items-center gap-2 pl-2 pr-3 py-3 rounded-lg ${isSepia ? 'bg-purple-900/20 border border-purple-700/30' : 'bg-secondary/50'}`}>
-        <audio
-          src={signedUrl}
-          controls
-          preload="metadata"
-          className="flex-1 h-8 min-w-0"
-          style={isSepia ? { filter: 'sepia(0.5) saturate(1.2)' } : undefined}
-          onClick={(e) => e.stopPropagation()}
-          onPlay={(e) => {
-            audioManager.play(e.currentTarget);
-          }}
-          onPause={(e) => {
-            audioManager.stop(e.currentTarget);
-          }}
-          onEnded={(e) => {
-            audioManager.stop(e.currentTarget);
-          }}
-        />
+      <div className={`flex flex-col gap-1.5 rounded-lg ${isSepia ? 'bg-purple-900/20 border border-purple-700/30' : 'bg-secondary/50'}`}>
+        <div className="flex items-center gap-2 pl-2 pr-3 py-3">
+          <audio
+            src={signedUrl}
+            controls
+            preload="metadata"
+            className="flex-1 h-8 min-w-0"
+            style={isSepia ? { filter: 'sepia(0.5) saturate(1.2)' } : undefined}
+            onClick={(e) => e.stopPropagation()}
+            onPlay={(e) => {
+              audioManager.play(e.currentTarget);
+            }}
+            onPause={(e) => {
+              audioManager.stop(e.currentTarget);
+            }}
+            onEnded={(e) => {
+              audioManager.stop(e.currentTarget);
+            }}
+            onError={() => {
+              // Native audio also failed — nothing more we can do
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-center pb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground h-6 px-2"
+            onClick={handleRetry}
+          >
+            Retry waveform
+          </Button>
+        </div>
       </div>
     );
   }
