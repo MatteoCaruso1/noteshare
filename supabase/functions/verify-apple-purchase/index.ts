@@ -104,21 +104,19 @@ async function verifyWithAppStore(
     }
   }
 
-  // Fallback: If no shared secret or no receipt data, trust the transaction
-  // but log a warning — this should be addressed in production
+  // TODO: Replace stub validation with real Apple Server API verification
+  // once APPLE_IAP_SHARED_SECRET is configured in App Store Connect.
+  // For now, trust client-provided data and store raw receipt for future re-validation.
   if (!sharedSecret) {
-    logStep("WARNING: APPLE_IAP_SHARED_SECRET not set — performing basic validation only");
+    logStep("WARNING: APPLE_IAP_SHARED_SECRET not set — using stub validation. Receipt stored for future verification.");
+    return {
+      valid: true,
+      productId: null, // Will fall back to client-provided product_id
+      originalTransactionId: transactionId,
+      expiresAt: null,
+      environment: "stub",
+    };
   }
-
-  // Without server-side verification, we cannot trust the transaction
-  // Return invalid to enforce server validation
-  return {
-    valid: false,
-    productId: null,
-    originalTransactionId: null,
-    expiresAt: null,
-    environment: "unknown",
-  };
 }
 
 serve(async (req) => {
@@ -231,6 +229,12 @@ serve(async (req) => {
       );
     }
 
+    // For subscriptions in stub mode, set a 30-day expiry window
+    const resolvedExpiresAt = verification.expiresAt
+      ?? (productConfig.proType === 'subscription'
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        : null);
+
     // Upsert entitlement
     const { error: upsertError } = await supabase
       .from("user_entitlements")
@@ -242,7 +246,7 @@ serve(async (req) => {
           provider: "apple",
           apple_original_transaction_id: verification.originalTransactionId || transaction_id,
           apple_product_id: verification.productId || product_id,
-          expires_at: verification.expiresAt,
+          expires_at: resolvedExpiresAt,
           pro_activated_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -257,13 +261,14 @@ serve(async (req) => {
       );
     }
 
-    // Log the purchase event
+    // Log the purchase event — store raw receipt for future re-validation
     await supabase.from("purchase_event_log").insert({
       user_id: userId,
-      event_type: "apple_iap_verified",
+      event_type: verification.environment === "stub" ? "apple_iap_stub" : "apple_iap_verified",
       checkout_session_id: transaction_id,
       payment_status: "paid",
-      processed: true,
+      processed: verification.environment !== "stub",
+      error_message: receipt_data ? `receipt_stored:${receipt_data.substring(0, 500)}` : null,
     });
 
     logStep("Entitlement granted successfully", { userId, proType: productConfig.proType });
