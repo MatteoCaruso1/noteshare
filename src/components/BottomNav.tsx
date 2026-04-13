@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Music, ClipboardList, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
+import { useConversations } from '@/hooks/useMessages';
 import { clearScrollState } from '@/hooks/useScrollRestoration';
 import { useAuth } from '@/hooks/useAuth';
 import { markScrollToTop } from '@/components/ScrollToTop';
@@ -66,7 +67,15 @@ export function BottomNav() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: unreadCount } = useUnreadNotificationCount();
+  const { data: conversations } = useConversations();
   const { overrideActiveRoute } = useBottomNavOverride();
+
+  // Combine notification count + unread message conversations
+  const totalSocialBadge = useMemo(() => {
+    const notifs = typeof unreadCount === 'number' ? unreadCount : 0;
+    const msgs = conversations?.filter(c => c.unreadCount > 0).length || 0;
+    return notifs + msgs;
+  }, [unreadCount, conversations]);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const navRef = useRef<HTMLElement>(null);
@@ -247,9 +256,9 @@ export function BottomNav() {
               >
                 <div className="relative">
                   <Icon className="w-5 h-5" />
-                  {showBadge && typeof unreadCount === 'number' && unreadCount > 0 && (
+                  {showBadge && totalSocialBadge > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                      {unreadCount > 9 ? '9+' : unreadCount}
+                      {totalSocialBadge > 9 ? '9+' : totalSocialBadge}
                     </span>
                   )}
                 </div>
