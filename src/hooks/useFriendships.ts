@@ -81,7 +81,7 @@ export function useFriends() {
   const { data: friendIds } = useFriendIds();
 
   return useQuery({
-    queryKey: ['friends', profile?.id],
+    queryKey: ['friends', profile?.id, friendIds],
     queryFn: async () => {
       if (!friendIds || friendIds.length === 0) return [];
 
@@ -95,7 +95,7 @@ export function useFriends() {
 
       return profiles as Profile[];
     },
-    enabled: !!profile?.id && !!friendIds,
+    enabled: !!profile?.id && Array.isArray(friendIds),
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
