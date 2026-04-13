@@ -9,7 +9,7 @@ const freeIncludedFeatures = [
 'Practice timeline & history',
 'Practice streaks',
 'Friends feed & sharing',
-'Practice to-do lists',
+'Practice routines',
 'Musical groups'];
 
 
@@ -20,7 +20,7 @@ const proOnlyFeatures = [
 'Organize sessions using folders & gigs',
 'Metronome & practice timer',
 'Custom themes',
-'Backlog practice to-do lists'];
+'Backlog practice routines'];
 
 
 const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
