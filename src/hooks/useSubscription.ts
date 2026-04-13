@@ -251,21 +251,27 @@ export function useSubscription() {
     }
   };
 
-  // Check against premium product IDs (supports all subscription and lifetime variants)
+  // The backend (check-subscription) is the single source of truth for premium status.
+  // It checks: premium_overrides → user_entitlements (Apple IAP/lifetime) → Stripe.
+  // The client trusts the backend's `subscribed` flag directly.
+  // We keep VALID_PREMIUM_PRODUCT_IDS only for tier-specific UI (e.g. showing "Lifetime" badge).
   const VALID_PREMIUM_PRODUCT_IDS = [
-    SUBSCRIPTION_TIERS.premium.product_id,  // prod_UGH5hVuR8mAV9u - $2.99/mo subscription
-    SUBSCRIPTION_TIERS.lifetime.product_id, // prod_UGH76Futsy9n9k - $14.99 lifetime
-    'prod_ToONzcZjkyqsAJ',                  // old main premium product
-    'prod_TtwaOYfMnVypk4',                  // Old CAD $9.99 lifetime product
-    'prod_Tu2MnCtrEfyciQ',                  // Old USD $9.99 lifetime product
-    'prod_TsrnqaaViDJAas',                  // Old $19.99 lifetime product
-    'prod_Tu2GAnzdYIrnKZ',                  // Old CAD $1.99/mo subscription
-    'prod_Tu2LNk7QzsQY2k',                  // Old USD $1.99/mo subscription
-    'prod_TofQhqCDH1KicB',                  // legacy USD product
-    'prod_TofQx0QRLi6tEe',                  // legacy CAD product
+    SUBSCRIPTION_TIERS.premium.product_id,
+    SUBSCRIPTION_TIERS.lifetime.product_id,
+    'prod_ToONzcZjkyqsAJ',
+    'prod_TtwaOYfMnVypk4',
+    'prod_Tu2MnCtrEfyciQ',
+    'prod_TsrnqaaViDJAas',
+    'prod_Tu2GAnzdYIrnKZ',
+    'prod_Tu2LNk7QzsQY2k',
+    'prod_TofQhqCDH1KicB',
+    'prod_TofQx0QRLi6tEe',
+    'apple_subscription',
   ];
   
-  const isPremium = state.subscribed && VALID_PREMIUM_PRODUCT_IDS.includes(state.productId ?? '');
+  // Trust the backend: if subscribed is true, user is Pro.
+  // No client-side product_id gate — the backend already validated entitlements.
+  const isPremium = state.subscribed;
 
   // Derive "truly loading" state: stay loading if user exists but we haven't validated yet
   const isTrulyLoading = state.isLoading || (!!user && !state.hasValidatedWithUser);
