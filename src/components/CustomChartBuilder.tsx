@@ -981,7 +981,7 @@ export function CustomChartBuilder({ profileId, stats, onRoutineClick }: CustomC
     setActiveViewId(null);
     setConfig({
       chart_type: 'line',
-      metric: 'practice_hours',
+      metric: '',
       time_granularity: 'weekly',
       time_range: '3m',
     });
