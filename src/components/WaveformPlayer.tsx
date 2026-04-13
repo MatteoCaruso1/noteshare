@@ -289,7 +289,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
         }
       }
     };
-  }, [signedUrl, urlLoading, onError, instanceId]);
+  }, [signedUrl, urlLoading, onError, instanceId, retryCount]);
 
   // rAF polling loop for reliable currentTime updates (replaces audioprocess)
   useEffect(() => {
