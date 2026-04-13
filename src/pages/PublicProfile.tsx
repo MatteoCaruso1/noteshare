@@ -62,7 +62,7 @@ function useProfileAchievementStats(profileId: string | undefined) {
         p_profile_id: profileId,
       });
       if (error) throw error;
-      return data as { total_notes: number; total_minutes: number; best_streak: number };
+      return data as { total_notes: number; total_minutes: number; best_streak: number; best_month_days: number; weekly_goals_met_count: number; best_completed_year_pct: number };
     },
     enabled: !!profileId,
     staleTime: 5 * 60 * 1000,
