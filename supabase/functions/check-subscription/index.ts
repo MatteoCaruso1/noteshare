@@ -26,6 +26,14 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+const unauthorizedResponse = (reason: string) => {
+  logStep("Unauthorized", { reason });
+  return new Response(JSON.stringify({ error: reason }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 401,
+  });
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -42,16 +50,7 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      logStep("No valid authorization header");
-      return new Response(JSON.stringify({ 
-        subscribed: false,
-        product_id: null,
-        subscription_end: null,
-        is_lifetime: false
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return unauthorizedResponse("Missing authorization header");
     }
     logStep("Authorization header found");
 
@@ -61,32 +60,14 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
     if (userError || !user) {
-      logStep("Token validation failed, treating as unauthenticated", { error: userError?.message });
-      return new Response(JSON.stringify({ 
-        subscribed: false,
-        product_id: null,
-        subscription_end: null,
-        is_lifetime: false
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return unauthorizedResponse(userError?.message || "Invalid authentication token");
     }
     
     const userId = user.id;
     const email = user.email;
     
     if (!userId || !email) {
-      logStep("Missing user ID or email");
-      return new Response(JSON.stringify({ 
-        subscribed: false,
-        product_id: null,
-        subscription_end: null,
-        is_lifetime: false
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return unauthorizedResponse("Missing user identity");
     }
     
     logStep("User authenticated", { userId, email });
