@@ -111,6 +111,17 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
     }
   }, [isReady, instanceId, signedUrl, src]);
 
+  const handleRetry = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setError(false);
+    setIsLoading(true);
+    setIsReady(false);
+    audioLoadedRef.current = false;
+    // Clear cached peaks so we get a fresh load
+    peaksCache.delete(src);
+    setRetryCount(c => c + 1);
+  }, [src]);
+
   useEffect(() => {
     if (!containerRef.current || !signedUrl || urlLoading) return;
 
