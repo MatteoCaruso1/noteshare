@@ -123,17 +123,7 @@ export function AppHeader() {
               >
                 Home
               </Link>
-              <Link
-                to="/science-of-practice"
-                className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline whitespace-nowrap ${
-                  location.pathname === '/science-of-practice'
-                    ? 'text-foreground font-medium'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <span className="sm:hidden">Practice</span>
-                <span className="hidden sm:inline">Science of Effective Practice</span>
-              </Link>
+              
               <Link
                 to="/pricing"
                 className={`px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs rounded-md transition-colors hover:underline ${
