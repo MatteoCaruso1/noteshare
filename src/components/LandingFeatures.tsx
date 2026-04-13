@@ -138,15 +138,11 @@ export function LandingFeatures() {
   usePreloadImages();
 
   return (
-    <section data-landing-divider className="relative rounded-t-3xl py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-40 w-full mt-0 md:mt-2 overflow-hidden"
+    <section data-landing-divider className="relative py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-40 w-full mt-0 md:mt-2"
       style={{
         background: 'hsl(210 35% 18%)',
       }}
     >
-      {/* Top transition fade */}
-      <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
-        style={{ background: 'linear-gradient(180deg, hsl(var(--background)) 0%, transparent 100%)' }}
-      />
       {/* Subtle accent glow behind features */}
       <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
       <div className="relative w-full space-y-8">
@@ -154,10 +150,6 @@ export function LandingFeatures() {
           <FeatureCard key={index} feature={feature} index={index} />
         ))}
       </div>
-      {/* Bottom transition fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
-        style={{ background: 'linear-gradient(0deg, hsl(var(--background)) 0%, transparent 100%)' }}
-      />
     </section>
   );
 }
