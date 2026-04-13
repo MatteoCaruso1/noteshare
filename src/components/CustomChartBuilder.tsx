@@ -691,7 +691,7 @@ function DonutRenderer({ data, onSliceClick }: { data: { label: string; value: n
   const hasClickable = data.some(d => d.routineText);
 
   return (
-    <div className="h-52">
+    <div className="h-52 pb-4">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -719,6 +719,8 @@ function DonutRenderer({ data, onSliceClick }: { data: { label: string; value: n
           </Pie>
           <Tooltip
             contentStyle={tooltipStyle}
+            itemStyle={{ color: 'hsl(var(--foreground))' }}
+            labelStyle={{ color: 'hsl(var(--foreground))' }}
             formatter={(value: number, name: string) => [`${value} (${Math.round((value / total) * 100)}%)`, name]}
           />
         </PieChart>
