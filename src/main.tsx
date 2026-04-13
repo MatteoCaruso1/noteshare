@@ -6,7 +6,10 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 // Service worker registration with deferred updates.
 // New versions are detected but NOT force-reloaded; a toast lets the user choose when to update.
-if ("serviceWorker" in navigator) {
+// SKIP on native iOS/Android — WKWebView has inconsistent SW support that can cause
+// stale data, blank screens, and update failures.
+const isNativePlatform = !!(window as any).Capacitor?.isNativePlatform?.();
+if ("serviceWorker" in navigator && !isNativePlatform) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
