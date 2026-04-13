@@ -575,9 +575,9 @@ function GaugeRenderer({ profileId, config, stats }: { profileId: string; config
   const rangeInfo = TIME_RANGES.find(r => r.value === config.time_range) || TIME_RANGES[1];
   const numWeeks = Math.min(rangeInfo.weeks, 12); // cap at 12 for display
 
-  // Fetch all weekly goals for this user
+  // Fetch all weekly goals for this user (use distinct key to avoid shape conflict with PracticeStats)
   const { data: allGoals } = useQuery({
-    queryKey: ['weekly-goals-all', profileId],
+    queryKey: ['weekly-goals-gauge', profileId],
     queryFn: async () => {
       if (!profileId) return [];
       const { data, error } = await supabase
@@ -590,7 +590,7 @@ function GaugeRenderer({ profileId, config, stats }: { profileId: string; config
       return data;
     },
     enabled: !!profileId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   const formatMins = (m: number) => {
