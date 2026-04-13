@@ -48,6 +48,11 @@ export default function Pricing() {
             <h2 className="text-lg font-semibold text-foreground mb-1">Free</h2>
             <div className="flex items-baseline gap-1 mb-6">
               <span className="text-3xl font-bold text-foreground">$0</span>
+              {/* Spacer to align with Pro pricing block height */}
+              <span className="text-sm text-muted-foreground invisible hidden md:inline">&nbsp;</span>
+            </div>
+            <div className="hidden md:block mb-0">
+              <div className="text-[10px] invisible">&nbsp;</div>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {freeIncludedFeatures.map((f) =>
