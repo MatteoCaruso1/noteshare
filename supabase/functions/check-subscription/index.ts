@@ -91,7 +91,30 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId, email });
 
-    // --- Phase 1: Check local DB entitlement (fastest path) ---
+    // --- Phase 1: Check premium override FIRST (always wins) ---
+    logStep("Checking premium override", { userId });
+    const { data: override, error: overrideError } = await supabaseClient
+      .from('premium_overrides')
+      .select('enabled')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    logStep("Premium override result", { override, error: overrideError?.message });
+
+    if (!overrideError && override?.enabled === true) {
+      logStep("Developer premium override active", { userId });
+      return new Response(JSON.stringify({ 
+        subscribed: true,
+        product_id: 'prod_ToONzcZjkyqsAJ',
+        subscription_end: null,
+        is_lifetime: false
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // --- Phase 2: Check local DB entitlement (fast path for Apple IAP & lifetime) ---
     const { data: entitlement, error: entitlementError } = await supabaseClient
       .from('user_entitlements')
       .select('is_pro, pro_type, provider, stripe_customer_id, stripe_subscription_id, expires_at')
@@ -128,35 +151,11 @@ serve(async (req) => {
             status: 200,
           });
         }
-        // Apple subscription expired — fall through to "not subscribed" unless Stripe also active
+        // Apple subscription expired — fall through to Stripe check
         logStep("Apple subscription expired, checking Stripe fallback");
       }
 
       // For Stripe subscriptions, we still verify with Stripe but use entitlement as fast-path indicator
-      // This avoids the expensive orphan session scan
-    }
-
-    // --- Phase 2: Check premium override ---
-    logStep("Checking premium override", { userId });
-    const { data: override, error: overrideError } = await supabaseClient
-      .from('premium_overrides')
-      .select('enabled')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    logStep("Premium override result", { override, error: overrideError?.message });
-
-    if (!overrideError && override?.enabled === true) {
-      logStep("Developer premium override active", { userId });
-      return new Response(JSON.stringify({ 
-        subscribed: true,
-        product_id: 'prod_ToONzcZjkyqsAJ',
-        subscription_end: null,
-        is_lifetime: false
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
     }
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
