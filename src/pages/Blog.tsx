@@ -125,11 +125,17 @@ const Blog = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-16 py-10 px-6 md:px-12 text-center text-xs text-muted-foreground space-y-1">
-        <p className="font-medium text-foreground">Noteshare · Practice Smarter</p>
-        <p>Contact: notesharemusic@gmail.com</p>
-        <p>© {new Date().getFullYear()} Noteshare</p>
+      {/* Footer — same as landing/pricing pages */}
+      <footer className="relative z-10 border-t border-border/20 bg-background px-6 py-4">
+        <p className="text-center text-xs text-muted-foreground/60 leading-relaxed flex flex-wrap justify-center gap-x-1">
+          <span>Noteshare</span>
+          <span>—</span>
+          <span>Practice Smarter</span>
+          <span>—</span>
+          <span>Contact: notesharemusic@gmail.com</span>
+          <span>—</span>
+          <span>© {new Date().getFullYear()} Noteshare</span>
+        </p>
       </footer>
     </div>
   );
