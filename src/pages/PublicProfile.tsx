@@ -62,7 +62,7 @@ function useProfileAchievementStats(profileId: string | undefined) {
         p_profile_id: profileId,
       });
       if (error) throw error;
-      return data as { total_notes: number; total_minutes: number; best_streak: number };
+      return data as { total_notes: number; total_minutes: number; best_streak: number; best_month_days: number; weekly_goals_met_count: number; best_completed_year_pct: number };
     },
     enabled: !!profileId,
     staleTime: 5 * 60 * 1000,
@@ -494,6 +494,9 @@ const PublicProfile = () => {
             bestStreak={achievementStats?.best_streak || getBestAchievedMilestone(profile)}
             totalNotes={achievementStats?.total_notes || notes?.length || 0}
             totalHours={achievementStats ? Math.floor(achievementStats.total_minutes / 60) : 0}
+            bestMonthDays={achievementStats?.best_month_days || 0}
+            bestCompletedYearPct={achievementStats?.best_completed_year_pct || 0}
+            weeklyGoalsMetCount={achievementStats?.weekly_goals_met_count || 0}
             selectedAward={(profile as any).selected_award}
           />
 
