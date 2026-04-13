@@ -114,16 +114,14 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
                   name={conv.friend.name}
                   size="sm"
                 />
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <div className="flex items-center gap-1.5">
                     <p className="font-medium text-xs truncate">{conv.friend.name}</p>
                     {conv.unreadCount > 0 && (
-                      <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px] bg-primary text-primary-foreground">
-                        {conv.unreadCount}
-                      </Badge>
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
                     )}
                   </div>
-                  <p className="text-[10px] text-muted-foreground truncate">
+                  <p className="text-[10px] text-muted-foreground truncate max-w-full">
                     {conv.lastMessage.sender_id === profile?.id ? 'You: ' : ''}
                     {conv.lastMessage.content}
                   </p>
@@ -176,21 +174,19 @@ export function DirectMessages({ embedded, showNewMessageView, onNewMessageViewC
                 name={conv.friend.name}
                 size="lg"
               />
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 overflow-hidden">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm truncate">{conv.friend.name}</p>
                   {conv.unreadCount > 0 && (
-                    <Badge className="h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground">
-                      {conv.unreadCount}
-                    </Badge>
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate max-w-full">
                   {conv.lastMessage.sender_id === profile?.id ? 'You: ' : ''}
                   {conv.lastMessage.content}
                 </p>
               </div>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground shrink-0">
                 {format(new Date(conv.lastMessage.created_at), 'MMM d')}
               </span>
             </TouchableListItem>

@@ -146,7 +146,7 @@ const FriendsJournals = () => {
                     )}
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-md overflow-hidden" hideCloseButton>
+                <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md overflow-hidden" hideCloseButton>
                   {!inChatView && (
                     <DialogHeader className="flex flex-row items-center justify-between space-y-0">
                       <DialogTitle className="flex items-center gap-2">
