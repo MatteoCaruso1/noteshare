@@ -30,21 +30,21 @@ const Blog = () => {
 
         {/* Featured post — large hero layout */}
         <Link
-          to="/blog/daily-practice-routine"
+          to="/science-of-practice"
           className="group block mb-16"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                <span>Mar 5</span>
+                <span>Feb 18</span>
                 <span className="text-muted-foreground/40">|</span>
                 <span>Matteo</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground leading-tight group-hover:text-primary transition-colors">
-                Build the perfect daily music practice routine
+                The science of effective music practice
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                A research-backed 60-minute routine covering warmup, technique, repertoire, and reflection, designed for musicians who want to improve faster.
+                What does the research actually say about how musicians improve? A deep dive into deliberate practice, spaced repetition, and the neuroscience of skill acquisition.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-medium text-primary group-hover:gap-3 transition-all">
                 Read more
@@ -53,8 +53,8 @@ const Blog = () => {
             </div>
             <div className="rounded-xl overflow-hidden border border-border bg-muted aspect-[3/2]">
               <img
-                src={blogRoutineImage}
-                alt="Build the perfect daily music practice routine"
+                src={blogScienceImage}
+                alt="The science of effective music practice"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
@@ -66,22 +66,22 @@ const Blog = () => {
 
         {/* Bottom grid — 3 cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
-          {/* Science of Practice — published */}
-          <Link to="/science-of-practice" className="group">
+          {/* Daily Routine — published */}
+          <Link to="/blog/daily-practice-routine" className="group">
             <div className="rounded-xl aspect-[4/3] overflow-hidden border border-border bg-muted mb-4">
               <img
-                src={blogScienceImage}
-                alt="The science of effective music practice"
+                src={blogRoutineImage}
+                alt="Build the perfect daily music practice routine"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
-              <span>Feb 18</span>
+              <span>Mar 5</span>
               <span className="text-muted-foreground/40">|</span>
               <span>Matteo</span>
             </div>
             <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
-              The science of effective music practice
+              Build the perfect daily music practice routine
             </h3>
           </Link>
 
