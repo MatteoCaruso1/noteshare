@@ -140,7 +140,7 @@ export function LandingFeatures() {
   return (
     <section data-landing-divider className="relative rounded-t-3xl py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-40 w-full mt-0 md:mt-2 overflow-hidden"
       style={{
-        background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(210 45% 22%) 40%, hsl(210 45% 22%) 80%, hsl(var(--background)) 100%)',
+        background: 'hsl(210 35% 18%)',
       }}
     >
       {/* Top transition fade */}
