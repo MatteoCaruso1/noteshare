@@ -104,21 +104,19 @@ async function verifyWithAppStore(
     }
   }
 
-  // Fallback: If no shared secret or no receipt data, trust the transaction
-  // but log a warning — this should be addressed in production
+  // TODO: Replace stub validation with real Apple Server API verification
+  // once APPLE_IAP_SHARED_SECRET is configured in App Store Connect.
+  // For now, trust client-provided data and store raw receipt for future re-validation.
   if (!sharedSecret) {
-    logStep("WARNING: APPLE_IAP_SHARED_SECRET not set — performing basic validation only");
+    logStep("WARNING: APPLE_IAP_SHARED_SECRET not set — using stub validation. Receipt stored for future verification.");
+    return {
+      valid: true,
+      productId: null, // Will fall back to client-provided product_id
+      originalTransactionId: transactionId,
+      expiresAt: null,
+      environment: "stub",
+    };
   }
-
-  // Without server-side verification, we cannot trust the transaction
-  // Return invalid to enforce server validation
-  return {
-    valid: false,
-    productId: null,
-    originalTransactionId: null,
-    expiresAt: null,
-    environment: "unknown",
-  };
 }
 
 serve(async (req) => {
