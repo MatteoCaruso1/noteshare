@@ -40,10 +40,9 @@ export function useApplePurchases() {
     error: null,
   });
 
-  const pluginRef = useRef<any>(null);
   const isNativeIOS = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
 
-  // Initialize the IAP plugin
+  // Initialize the IAP plugin and fetch products
   useEffect(() => {
     if (!isNativeIOS) return;
 
@@ -51,28 +50,35 @@ export function useApplePurchases() {
 
     const init = async () => {
       try {
-        const { NativePurchases } = await import('@capgo/native-purchases');
-        pluginRef.current = NativePurchases;
+        setState(prev => ({ ...prev, isLoading: true }));
+
+        const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
 
         if (!mounted) return;
 
-        setState(prev => ({ ...prev, isLoading: true }));
+        // Fetch subscription products
+        const subsResult = await NativePurchases.getProducts({
+          productIdentifiers: [APPLE_PRODUCT_IDS.monthly],
+          productType: PURCHASE_TYPE.SUBS,
+        });
 
-        // Fetch products
-        const productIds = Object.values(APPLE_PRODUCT_IDS);
-        const result = await NativePurchases.getProducts({
-          productIds,
+        // Fetch one-time purchase products
+        const iapResult = await NativePurchases.getProducts({
+          productIdentifiers: [APPLE_PRODUCT_IDS.lifetime],
+          productType: PURCHASE_TYPE.INAPP,
         });
 
         if (!mounted) return;
 
-        const products: AppleProduct[] = (result.products || []).map((p: any) => ({
-          id: p.id || p.productId,
-          title: p.title || p.localizedTitle || p.displayName || '',
-          description: p.description || p.localizedDescription || '',
-          price: p.priceString || p.displayPrice || `${p.price}`,
-          priceAmount: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
-          currency: p.currencyCode || p.currency || 'USD',
+        const allProducts = [...(subsResult.products || []), ...(iapResult.products || [])];
+
+        const products: AppleProduct[] = allProducts.map((p) => ({
+          id: p.id || (p as any).productId,
+          title: p.title || (p as any).localizedTitle || (p as any).displayName || '',
+          description: p.description || (p as any).localizedDescription || '',
+          price: p.priceString || (p as any).displayPrice || `${p.price}`,
+          priceAmount: typeof p.price === 'number' ? p.price : parseFloat(String(p.price)) || 0,
+          currency: p.currencyCode || (p as any).currency || 'USD',
         }));
 
         setState({
@@ -104,7 +110,7 @@ export function useApplePurchases() {
    * Purchase a product and verify receipt server-side.
    */
   const purchaseProduct = useCallback(async (productId: string): Promise<boolean> => {
-    if (!pluginRef.current || !isNativeIOS) {
+    if (!isNativeIOS) {
       setState(prev => ({ ...prev, error: 'Store not available' }));
       return false;
     }
@@ -112,26 +118,26 @@ export function useApplePurchases() {
     setState(prev => ({ ...prev, isPurchasing: true, error: null }));
 
     try {
-      const { NativePurchases } = await import('@capgo/native-purchases');
+      const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
+
+      const isSubscription = productId === APPLE_PRODUCT_IDS.monthly;
 
       // Initiate the purchase — StoreKit handles the UI
-      const result = await NativePurchases.purchaseProduct({
-        productId,
+      const transaction = await NativePurchases.purchaseProduct({
+        productIdentifier: productId,
+        productType: isSubscription ? PURCHASE_TYPE.SUBS : PURCHASE_TYPE.INAPP,
       });
 
-      if (!result || !result.transaction) {
+      if (!transaction || !transaction.transactionId) {
         throw new Error('Purchase cancelled or failed');
       }
-
-      const transaction = result.transaction;
-      const transactionId = transaction.transactionId || transaction.originalTransactionId || transaction.id;
 
       // Verify with our backend
       const { data, error } = await supabase.functions.invoke('verify-apple-purchase', {
         body: {
-          transaction_id: transactionId,
+          transaction_id: transaction.transactionId,
           product_id: productId,
-          receipt_data: transaction.receiptData || transaction.appAccountToken,
+          receipt_data: transaction.receipt,
           jws_representation: transaction.jwsRepresentation,
         },
       });
@@ -159,7 +165,7 @@ export function useApplePurchases() {
    * Restore purchases — re-syncs past Apple transactions with our entitlements.
    */
   const restorePurchases = useCallback(async (): Promise<boolean> => {
-    if (!pluginRef.current || !isNativeIOS) {
+    if (!isNativeIOS) {
       setState(prev => ({ ...prev, error: 'Store not available' }));
       return false;
     }
@@ -169,50 +175,18 @@ export function useApplePurchases() {
     try {
       const { NativePurchases } = await import('@capgo/native-purchases');
 
-      const result = await NativePurchases.restorePurchases();
-      const transactions = result?.transactions || [];
-
-      if (transactions.length === 0) {
-        setState(prev => ({ ...prev, isRestoring: false, error: 'No purchases to restore' }));
-        return false;
-      }
-
-      let anyVerified = false;
-
-      for (const transaction of transactions) {
-        const transactionId = transaction.transactionId || transaction.originalTransactionId || transaction.id;
-        const productId = transaction.productId || transaction.product_id;
-
-        if (!transactionId || !productId) continue;
-
-        // Only verify products we recognize
-        if (!Object.values(APPLE_PRODUCT_IDS).includes(productId)) continue;
-
-        try {
-          const { data } = await supabase.functions.invoke('verify-apple-purchase', {
-            body: {
-              transaction_id: transactionId,
-              product_id: productId,
-              receipt_data: transaction.receiptData,
-              jws_representation: transaction.jwsRepresentation,
-            },
-          });
-
-          if (data?.verified) {
-            anyVerified = true;
-          }
-        } catch {
-          // Continue with other transactions
-        }
-      }
+      // restorePurchases returns void — it triggers the listener flow
+      // For now, we call it and then do a subscription check
+      await NativePurchases.restorePurchases();
 
       setState(prev => ({
         ...prev,
         isRestoring: false,
-        error: anyVerified ? null : 'No valid purchases found',
+        error: null,
       }));
 
-      return anyVerified;
+      // The caller should trigger a subscription recheck after this
+      return true;
     } catch (err: any) {
       setState(prev => ({
         ...prev,
