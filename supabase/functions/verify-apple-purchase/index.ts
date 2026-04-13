@@ -229,6 +229,12 @@ serve(async (req) => {
       );
     }
 
+    // For subscriptions in stub mode, set a 30-day expiry window
+    const resolvedExpiresAt = verification.expiresAt
+      ?? (productConfig.proType === 'subscription'
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        : null);
+
     // Upsert entitlement
     const { error: upsertError } = await supabase
       .from("user_entitlements")
@@ -240,7 +246,7 @@ serve(async (req) => {
           provider: "apple",
           apple_original_transaction_id: verification.originalTransactionId || transaction_id,
           apple_product_id: verification.productId || product_id,
-          expires_at: verification.expiresAt,
+          expires_at: resolvedExpiresAt,
           pro_activated_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -255,13 +261,14 @@ serve(async (req) => {
       );
     }
 
-    // Log the purchase event
+    // Log the purchase event — store raw receipt for future re-validation
     await supabase.from("purchase_event_log").insert({
       user_id: userId,
-      event_type: "apple_iap_verified",
+      event_type: verification.environment === "stub" ? "apple_iap_stub" : "apple_iap_verified",
       checkout_session_id: transaction_id,
       payment_status: "paid",
-      processed: true,
+      processed: verification.environment !== "stub",
+      error_message: receipt_data ? `receipt_stored:${receipt_data.substring(0, 500)}` : null,
     });
 
     logStep("Entitlement granted successfully", { userId, proType: productConfig.proType });
