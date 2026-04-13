@@ -34,12 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const processedSessionRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Detect if running inside a native Capacitor shell (iOS/Android)
-    // In native apps, sessionStorage is unreliable (WKWebView clears it on process kill),
-    // so we ALWAYS persist the session — "Remember me" logic only applies to web browsers.
-    const isNativeApp = !!(window as any).Capacitor?.isNativePlatform?.() 
-      || !!(window as any).Capacitor?.isPluginAvailable
-      || document.URL.startsWith('capacitor://');
+    // Detect if running inside a native Capacitor shell (iOS/Android).
+    // In native apps, sessionStorage is unreliable — WKWebView can wipe it on
+    // background kill, process termination, or memory pressure. We ALWAYS persist
+    // the session on native; "Remember me" logic only applies to web browsers.
+    const cap = (window as any).Capacitor;
+    const isNativeApp = typeof cap !== 'undefined'
+      && (cap.getPlatform?.() !== 'web'           // Capacitor 4+: 'ios' | 'android'
+        || cap.isNativePlatform?.() === true       // Capacitor 5+
+        || document.URL.startsWith('capacitor://') // legacy fallback
+      );
 
     // Check if user should be signed out (browser was closed without "Remember me")
     const rememberMe = localStorage.getItem('noteshare_remember_me');
