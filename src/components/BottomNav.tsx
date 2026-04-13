@@ -200,8 +200,10 @@ export function BottomNav() {
       data-bottom-nav="true"
       data-tour="bottom-nav"
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-[env(safe-area-inset-bottom,0px)] md:pb-0",
-        // In browser mode on mobile, add extra bottom padding to account for Safari chrome
+        "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border",
+        // Always apply safe-area padding on all screen sizes (iPads need it too)
+        "pb-[env(safe-area-inset-bottom,0px)]",
+        // In browser mode (not PWA/native), add extra bottom padding to clear Safari's toolbar chrome
         !isStandalone && "max-md:pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
         // Hide via transform when keyboard is open (instead of returning null)
         isKeyboardOpen && "translate-y-full pointer-events-none"
