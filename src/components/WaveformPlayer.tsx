@@ -51,6 +51,8 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   
+  const [retryCount, setRetryCount] = useState(0);
+  
   // Get signed URL for private bucket access
   const { signedUrl, loading: urlLoading } = useSignedUrl(src);
 
