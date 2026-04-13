@@ -6,7 +6,6 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   plugins: {
     SplashScreen: {
-      // Match dark theme --background: 222 47% 11% → #141b2d
       backgroundColor: '#141b2d',
       launchShowDuration: 2000,
       launchAutoHide: true,
@@ -14,6 +13,12 @@ const config: CapacitorConfig = {
       showSpinner: false,
       androidScaleType: 'CENTER_CROP',
       splashImmersive: true,
+    },
+    StatusBar: {
+      // Light content (white text/icons) on dark background
+      style: 'DARK',        // DARK = light text on dark bg
+      backgroundColor: '#141b2d',
+      overlaysWebView: true, // Content extends under status bar (viewport-fit=cover)
     },
   },
 };
