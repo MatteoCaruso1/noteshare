@@ -12,6 +12,12 @@ type Body =
   | { url: string; expiresInSeconds?: number; public?: boolean }
   | { urls: string[]; expiresInSeconds?: number; public?: boolean };
 
+function getBearerToken(authHeader: string | null): string | null {
+  if (!authHeader) return null;
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
+}
+
 function parseStorageRef(input: string): StorageRef | null {
   if (!input) return null;
 
@@ -70,7 +76,12 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const admin = createClient(supabaseUrl, serviceRoleKey);
+    const admin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
 
     // If no auth and not a public request, return original URLs so the app doesn't break
     if (!authHeader && !isPublicRequest) {
@@ -86,11 +97,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     // If auth header present, verify JWT locally (no server round-trip)
     if (authHeader && !isPublicRequest) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data, error: claimsError } = await admin.auth.getClaims(token);
+      const token = getBearerToken(authHeader);
 
-      if (claimsError || !data?.claims?.sub) {
-        console.log("[get-signed-url] Auth failed:", claimsError?.message || "No claims");
+      if (!token) {
+        console.log("[get-signed-url] Auth failed: Missing bearer token");
+        const results: Record<string, string> = {};
+        for (const url of toSign) {
+          if (url) results[url] = url;
+        }
+        return new Response(JSON.stringify({ results }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data, error: userError } = await admin.auth.getUser(token);
+
+      if (userError || !data?.user?.id) {
+        console.log("[get-signed-url] Auth failed:", userError?.message || "No user");
         const results: Record<string, string> = {};
         for (const url of toSign) {
           if (url) results[url] = url;

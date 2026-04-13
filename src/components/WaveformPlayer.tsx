@@ -51,8 +51,6 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   
-  const [retryCount, setRetryCount] = useState(0);
-  
   // Get signed URL for private bucket access
   const { signedUrl, loading: urlLoading } = useSignedUrl(src);
 
@@ -110,17 +108,6 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
       setError(true);
     }
   }, [isReady, instanceId, signedUrl, src]);
-
-  const handleRetry = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setError(false);
-    setIsLoading(true);
-    setIsReady(false);
-    audioLoadedRef.current = false;
-    // Clear cached peaks so we get a fresh load
-    peaksCache.delete(src);
-    setRetryCount(c => c + 1);
-  }, [src]);
 
   useEffect(() => {
     if (!containerRef.current || !signedUrl || urlLoading) return;
@@ -288,7 +275,7 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
         // Ignore destroy errors
       }
     };
-  }, [signedUrl, urlLoading, onError, instanceId, retryCount]);
+  }, [signedUrl, urlLoading, onError, instanceId, src]);
 
   // rAF polling loop for reliable currentTime updates (replaces audioprocess)
   useEffect(() => {
@@ -346,16 +333,6 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
               // Native audio also failed — nothing more we can do
             }}
           />
-        </div>
-        <div className="flex items-center justify-center pb-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs text-muted-foreground h-6 px-2"
-            onClick={handleRetry}
-          >
-            Retry waveform
-          </Button>
         </div>
       </div>
     );
