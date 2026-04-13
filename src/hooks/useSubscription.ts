@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { PREMIUM_PRICES, SupportedCurrency, detectUserCurrency } from '@/lib/currencyUtils';
-import { CheckSubscriptionResponse } from '@/types/api';
 import { CheckSubscriptionSchema } from '@/lib/validation';
 
 // Product/Price mapping for Noteshare Premium
@@ -32,11 +31,10 @@ interface SubscriptionState {
 }
 
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const lastCheckRef = useRef<number>(0);
-  // Track which user ID we've already fetched for — prevents duplicate calls
-  // when `user` object reference changes but the ID stays the same
-  const fetchedForUserRef = useRef<string | null>(null);
+  // Track which exact auth session we have validated to avoid stale false negatives.
+  const fetchedForAuthRef = useRef<string | null>(null);
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
     productId: null,
@@ -51,6 +49,12 @@ export function useSubscription() {
   // Use a ref so the callback identity is stable (doesn't change when `user` changes)
   const userRef = useRef(user);
   userRef.current = user;
+
+  const runSubscriptionCheck = useCallback(async () => {
+    const { data: raw, error } = await supabase.functions.invoke('check-subscription');
+    if (error) throw error;
+    return CheckSubscriptionSchema.parse(raw);
+  }, []);
 
   const checkSubscription = useCallback(async () => {
     if (!userRef.current) {
@@ -78,9 +82,7 @@ export function useSubscription() {
     });
 
     try {
-      const { data: raw, error } = await supabase.functions.invoke('check-subscription');
-      if (error) throw error;
-      const data = CheckSubscriptionSchema.parse(raw);
+      const data = await runSubscriptionCheck();
 
       setState({
         subscribed: data.subscribed || false,
@@ -93,62 +95,49 @@ export function useSubscription() {
         error: null,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
       console.error('Error checking subscription:', err);
 
-      // If auth token is stale/expired, try a silent refresh once, then fall back to "not subscribed"
-      if (message.includes('Auth session missing')) {
-        try {
-          await supabase.auth.refreshSession();
-          const { data: raw, error } = await supabase.functions.invoke('check-subscription');
-          if (!error) {
-            const data = CheckSubscriptionSchema.parse(raw);
-            setState({
-              subscribed: data?.subscribed || false,
-              productId: data?.product_id || null,
-              subscriptionEnd: data?.subscription_end || null,
-              isLifetime: data?.is_lifetime || false,
-              isLoading: false,
-              hasCheckedOnce: true,
-              hasValidatedWithUser: true,
-              error: null,
-            });
-            return;
-          }
-        } catch (refreshErr) {
-          console.warn('Subscription check: session refresh failed', refreshErr);
+      try {
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshData.session) {
+          throw refreshError || new Error('Session refresh failed');
         }
 
+        const data = await runSubscriptionCheck();
         setState({
-          subscribed: false,
-          productId: null,
-          subscriptionEnd: null,
-          isLifetime: false,
+          subscribed: data.subscribed || false,
+          productId: data.product_id || null,
+          subscriptionEnd: data.subscription_end || null,
+          isLifetime: data.is_lifetime || false,
           isLoading: false,
           hasCheckedOnce: true,
-          hasValidatedWithUser: false, // Session failed, no valid user
+          hasValidatedWithUser: true,
           error: null,
         });
         return;
+      } catch (refreshErr) {
+        const message = refreshErr instanceof Error ? refreshErr.message : String(refreshErr);
+        console.warn('Subscription check: session refresh failed', refreshErr);
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          hasCheckedOnce: true,
+          hasValidatedWithUser: false,
+          error: message || 'Failed to validate subscription',
+        }));
       }
-
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        hasCheckedOnce: true,
-        hasValidatedWithUser: true, // Mark as validated even on error to prevent infinite loading
-        error: message || 'Failed to check subscription',
-      }));
     }
-  }, []); // Stable callback — uses userRef internally
+  }, [runSubscriptionCheck]); // Stable callback — uses userRef internally
 
-  // Check subscription once per user ID — not on every `user` object change
+  // Check subscription once per authenticated session — token changes must revalidate premium.
   useEffect(() => {
     const userId = user?.id ?? null;
+    const accessToken = session?.access_token ?? null;
+    const authKey = userId && accessToken ? `${userId}:${accessToken}` : null;
 
     // If user is null, reset and mark as checked
     if (!userId) {
-      fetchedForUserRef.current = null;
+      fetchedForAuthRef.current = null;
       setState({
         subscribed: false,
         productId: null,
@@ -162,12 +151,17 @@ export function useSubscription() {
       return;
     }
 
-    // Skip if we already fetched for this exact user
-    if (fetchedForUserRef.current === userId) return;
-    fetchedForUserRef.current = userId;
+    if (!authKey) {
+      fetchedForAuthRef.current = null;
+      setState(prev => ({ ...prev, isLoading: true, hasValidatedWithUser: false, error: null }));
+      return;
+    }
+
+    if (fetchedForAuthRef.current === authKey) return;
+    fetchedForAuthRef.current = authKey;
     lastCheckRef.current = Date.now();
     checkSubscription();
-  }, [user?.id, checkSubscription]);
+  }, [user?.id, session?.access_token, checkSubscription]);
 
   // Listen for checkout completion to refresh subscription status
   // Throttle to once per 30 seconds to prevent duplicate fires

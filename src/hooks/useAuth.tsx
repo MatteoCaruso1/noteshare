@@ -56,6 +56,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check if this is an OAuth callback using the centralized helper
     const oauthCallbackDetected = isOAuthCallback();
     
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        // Handle token refresh failures gracefully
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.warn('Token refresh failed, treating as signed out');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Clear stale query cache only on real auth transitions (not token refresh)
+        // TOKEN_REFRESHED happens frequently on mobile resume and should NOT wipe cached data
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          queryClient.clear();
+        }
+        if (event === 'SIGNED_OUT') {
+          clearAllSignedUrlCaches(); // Clear both memory and persistent cache
+        } else if (event === 'SIGNED_IN') {
+          clearSignedUrlCache(); // Only clear memory cache on sign-in (user might be different)
+        }
+        // Note: TOKEN_REFRESHED no longer clears any URL caches
+        
+        if (session?.user) {
+          // Check for new user on SIGNED_IN events (includes OAuth)
+          fetchProfile(session.user.id, event === 'SIGNED_IN');
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
     // Wrap auth initialization in async function with error handling
     const initializeAuth = async () => {
       try {
@@ -119,41 +154,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initializeAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Handle token refresh failures gracefully
-        if (event === 'TOKEN_REFRESHED' && !session) {
-          console.warn('Token refresh failed, treating as signed out');
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          return;
-        }
-
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Clear stale query cache only on real auth transitions (not token refresh)
-        // TOKEN_REFRESHED happens frequently on mobile resume and should NOT wipe cached data
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          queryClient.clear();
-        }
-        if (event === 'SIGNED_OUT') {
-          clearAllSignedUrlCaches(); // Clear both memory and persistent cache
-        } else if (event === 'SIGNED_IN') {
-          clearSignedUrlCache(); // Only clear memory cache on sign-in (user might be different)
-        }
-        // Note: TOKEN_REFRESHED no longer clears any URL caches
-        
-        if (session?.user) {
-          // Check for new user on SIGNED_IN events (includes OAuth)
-          fetchProfile(session.user.id, event === 'SIGNED_IN');
-        } else {
-          setProfile(null);
-        }
-      }
-    );
 
     return () => subscription.unsubscribe();
   }, []);
