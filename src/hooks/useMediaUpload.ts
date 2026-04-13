@@ -6,6 +6,28 @@ import { toast } from 'sonner';
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
+/** Map blob MIME type to a proper file extension — handles iOS Safari formats (mp4/aac/mpeg) */
+function getAudioFileInfo(blob: Blob): { ext: string; mimeType: string } {
+  const mimeType = blob.type || 'audio/mp4';
+  let ext = 'mp4'; // Safe default — plays everywhere including iOS
+
+  if (mimeType.includes('webm')) {
+    ext = 'webm';
+  } else if (mimeType.includes('mp4') || mimeType.includes('m4a')) {
+    ext = 'mp4';
+  } else if (mimeType.includes('aac')) {
+    ext = 'aac';
+  } else if (mimeType.includes('ogg')) {
+    ext = 'ogg';
+  } else if (mimeType.includes('wav')) {
+    ext = 'wav';
+  } else if (mimeType.includes('mpeg') || mimeType.includes('mp3')) {
+    ext = 'mp3';
+  }
+
+  return { ext, mimeType };
+}
+
 // Helper to get a signed URL for private bucket access
 // Routes through the batched pipeline (no direct storage signing)
 export async function getSignedUrl(path: string): Promise<string | null> {
