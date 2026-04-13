@@ -73,15 +73,12 @@ export default function Pricing() {
             {/* Subtle glow */}
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
             <h2 className="text-lg font-semibold text-foreground mb-1 relative z-10">Pro</h2>
-            <div className="relative z-10 mb-6">
+            <div className="relative z-10 md:min-h-[4.5rem] mb-6">
               <div className="flex items-baseline gap-1 flex-wrap">
                 <span className="text-3xl font-bold text-foreground">$14.99</span>
                 <span className="text-sm text-muted-foreground">CAD lifetime</span>
-                <span className="text-[10px] text-primary ml-1">(or $2.99 / mo. with trial)</span>
               </div>
-              
-
-              
+              <span className="text-[10px] text-primary">(or $2.99 / mo. with trial)</span>
             </div>
             <ul className="space-y-3 mb-8 flex-1 relative z-10">
               {allFeatures.map((f) =>
