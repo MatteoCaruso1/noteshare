@@ -94,14 +94,14 @@ serve(async (req) => {
     // --- Phase 1: Check local DB entitlement (fastest path) ---
     const { data: entitlement, error: entitlementError } = await supabaseClient
       .from('user_entitlements')
-      .select('is_pro, pro_type, stripe_customer_id, stripe_subscription_id')
+      .select('is_pro, pro_type, provider, stripe_customer_id, stripe_subscription_id, expires_at')
       .eq('user_id', userId)
       .maybeSingle();
 
     if (!entitlementError && entitlement?.is_pro) {
-      logStep("Local entitlement found", { proType: entitlement.pro_type });
+      logStep("Local entitlement found", { proType: entitlement.pro_type, provider: entitlement.provider });
       
-      // For lifetime, return immediately - no need to check Stripe
+      // For lifetime, return immediately - no need to check provider
       if (entitlement.pro_type === 'lifetime') {
         return new Response(JSON.stringify({
           subscribed: true,
@@ -114,7 +114,25 @@ serve(async (req) => {
         });
       }
 
-      // For subscriptions, we still verify with Stripe but use entitlement as fast-path indicator
+      // For Apple subscriptions, check expiry from the entitlement table
+      if (entitlement.provider === 'apple') {
+        const isExpired = entitlement.expires_at && new Date(entitlement.expires_at) < new Date();
+        if (!isExpired) {
+          return new Response(JSON.stringify({
+            subscribed: true,
+            product_id: 'apple_subscription',
+            subscription_end: entitlement.expires_at,
+            is_lifetime: false,
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+        // Apple subscription expired — fall through to "not subscribed" unless Stripe also active
+        logStep("Apple subscription expired, checking Stripe fallback");
+      }
+
+      // For Stripe subscriptions, we still verify with Stripe but use entitlement as fast-path indicator
       // This avoids the expensive orphan session scan
     }
 

@@ -1568,11 +1568,15 @@ export type Database = {
       }
       user_entitlements: {
         Row: {
+          apple_original_transaction_id: string | null
+          apple_product_id: string | null
           created_at: string
+          expires_at: string | null
           id: string
           is_pro: boolean
           pro_activated_at: string | null
           pro_type: string
+          provider: string
           stripe_checkout_session_id: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -1580,11 +1584,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          apple_original_transaction_id?: string | null
+          apple_product_id?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_pro?: boolean
           pro_activated_at?: string | null
           pro_type?: string
+          provider?: string
           stripe_checkout_session_id?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1592,11 +1600,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          apple_original_transaction_id?: string | null
+          apple_product_id?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_pro?: boolean
           pro_activated_at?: string | null
           pro_type?: string
+          provider?: string
           stripe_checkout_session_id?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null

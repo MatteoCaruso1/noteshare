@@ -1,4 +1,4 @@
-import { CreditCard, Mail, Crown, Infinity } from 'lucide-react';
+import { CreditCard, Mail, Crown, Infinity, RotateCcw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,15 +6,25 @@ import { usePremium } from '@/contexts/PremiumContext';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { isNativeIOS } from '@/lib/platformUtils';
+import { useApplePurchases } from '@/hooks/useApplePurchases';
 
 export function ManagePlansSection() {
   const { isPremium, openPremiumDialog, subscriptionEnd, isLifetime, openCustomerPortal, isLoading } = usePremium();
   const [isPortalLoading, setIsPortalLoading] = useState(false);
+  const onIOS = isNativeIOS();
+  const applePurchases = useApplePurchases();
 
   const handleSwitchPlan = async () => {
     if (isPremium) {
       if (isLifetime) return;
       
+      // On iOS, Apple manages subscriptions — can't open Stripe portal
+      if (onIOS) {
+        toast.info('Manage your subscription in Settings → Apple ID → Subscriptions');
+        return;
+      }
+
       setIsPortalLoading(true);
       try {
         await openCustomerPortal();
@@ -25,6 +35,15 @@ export function ManagePlansSection() {
       }
     } else {
       openPremiumDialog();
+    }
+  };
+
+  const handleRestore = async () => {
+    const restored = await applePurchases.restorePurchases();
+    if (restored) {
+      toast.success('Purchases restored!');
+    } else {
+      toast.error('No purchases found to restore.');
     }
   };
 
@@ -86,7 +105,26 @@ export function ManagePlansSection() {
             className={`w-full ${isPremium ? 'opacity-50 hover:opacity-70' : ''}`}
             disabled={isLoading || isPortalLoading}
           >
-            {isPortalLoading ? 'Opening…' : isPremium ? 'Manage Subscription' : 'Upgrade to Pro'}
+            {isPortalLoading 
+              ? 'Opening…' 
+              : isPremium 
+                ? (onIOS ? 'Manage in Settings' : 'Manage Subscription')
+                : 'Upgrade to Pro'
+            }
+          </Button>
+        )}
+
+        {/* Restore Purchases — iOS only */}
+        {onIOS && !isPremium && (
+          <Button
+            onClick={handleRestore}
+            variant="ghost"
+            size="sm"
+            className="w-full gap-1.5 text-muted-foreground"
+            disabled={applePurchases.isRestoring}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            {applePurchases.isRestoring ? 'Restoring…' : 'Restore Purchases'}
           </Button>
         )}
 

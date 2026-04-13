@@ -55,3 +55,6 @@ verify_jwt = false
 
 [functions.reconcile-stripe-entitlements]
 verify_jwt = false
+
+[functions.verify-apple-purchase]
+verify_jwt = false

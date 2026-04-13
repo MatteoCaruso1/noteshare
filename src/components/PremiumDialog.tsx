@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Timer, BarChart3, ClipboardList, Heart, Sparkles, ChevronDown, ChevronUp, Palette } from 'lucide-react';
+import { Timer, BarChart3, ClipboardList, Heart, Sparkles, ChevronDown, ChevronUp, Palette, RotateCcw, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useApplePurchases, APPLE_PRODUCT_IDS } from '@/hooks/useApplePurchases';
+import { isNativeIOS } from '@/lib/platformUtils';
+import { toast } from 'sonner';
 
 const BENEFITS = [
   {
@@ -43,19 +46,54 @@ export function PremiumDialog() {
     closePremiumDialog, 
     openCheckoutDialog,
     openLifetimeCheckoutDialog,
+    checkSubscription,
   } = usePremium();
   
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const applePurchases = useApplePurchases();
+  const onIOS = isNativeIOS();
 
-  const handleStartTrial = () => {
-    closePremiumDialog();
-    openCheckoutDialog();
+  const handleStartTrial = async () => {
+    if (onIOS) {
+      // Use Apple IAP on iOS
+      const success = await applePurchases.purchaseProduct(APPLE_PRODUCT_IDS.monthly);
+      if (success) {
+        await checkSubscription();
+        closePremiumDialog();
+        toast.success('Welcome to Noteshare Pro!');
+      }
+    } else {
+      closePremiumDialog();
+      openCheckoutDialog();
+    }
   };
 
-  const handleLifetimePurchase = () => {
-    closePremiumDialog();
-    openLifetimeCheckoutDialog();
+  const handleLifetimePurchase = async () => {
+    if (onIOS) {
+      const success = await applePurchases.purchaseProduct(APPLE_PRODUCT_IDS.lifetime);
+      if (success) {
+        await checkSubscription();
+        closePremiumDialog();
+        toast.success('Lifetime access activated!');
+      }
+    } else {
+      closePremiumDialog();
+      openLifetimeCheckoutDialog();
+    }
   };
+
+  const handleRestore = async () => {
+    const restored = await applePurchases.restorePurchases();
+    if (restored) {
+      await checkSubscription();
+      closePremiumDialog();
+      toast.success('Purchases restored!');
+    } else {
+      toast.error('No purchases found to restore.');
+    }
+  };
+
+  const isPurchasing = applePurchases.isPurchasing || applePurchases.isRestoring;
 
   return (
     <Dialog open={isPremiumDialogOpen} onOpenChange={closePremiumDialog}>
@@ -121,26 +159,62 @@ export function PremiumDialog() {
 
         {/* CTA Buttons - non-overlapping */}
         <div className="shrink-0">
-          <div className="flex gap-3 px-6 pb-6 pt-3">
+          <div className="flex gap-3 px-6 pb-4 pt-3">
             <button
               type="button"
               onClick={handleStartTrial}
-              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] bg-jazz-amber text-jazz-midnight [@media(hover:hover)]:hover:bg-jazz-amber/90 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
+              disabled={isPurchasing}
+              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] bg-jazz-amber text-jazz-midnight [@media(hover:hover)]:hover:bg-jazz-amber/90 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2 disabled:opacity-50"
             >
-              <span>
-                <span className="font-bold">7 days free,</span> then $2.99/mo
-              </span>
+              {isPurchasing ? (
+                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+              ) : (
+                <span>
+                  {onIOS
+                    ? applePurchases.products.find(p => p.id === APPLE_PRODUCT_IDS.monthly)
+                      ? `${applePurchases.products.find(p => p.id === APPLE_PRODUCT_IDS.monthly)!.price}/mo`
+                      : '$2.99/mo'
+                    : <><span className="font-bold">7 days free,</span> then $2.99/mo</>
+                  }
+                </span>
+              )}
             </button>
             <button
               type="button"
               onClick={handleLifetimePurchase}
-              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] border-2 border-jazz-amber text-jazz-amber bg-transparent [@media(hover:hover)]:hover:bg-jazz-amber/10 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2"
+              disabled={isPurchasing}
+              className="flex-1 rounded-md text-sm px-2 py-3 h-auto whitespace-normal text-center font-bold touch-manipulation transition-colors duration-200 active:scale-[0.98] [-webkit-tap-highlight-color:transparent] border-2 border-jazz-amber text-jazz-amber bg-transparent [@media(hover:hover)]:hover:bg-jazz-amber/10 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-jazz-amber focus-visible:outline-offset-2 disabled:opacity-50"
             >
-              <span>
-                <span className="font-bold">Lifetime access</span> for $14.99
-              </span>
+              {isPurchasing ? (
+                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+              ) : (
+                <span>
+                  <span className="font-bold">Lifetime</span>{' '}
+                  {onIOS
+                    ? applePurchases.products.find(p => p.id === APPLE_PRODUCT_IDS.lifetime)?.price || '$14.99'
+                    : '$14.99'
+                  }
+                </span>
+              )}
             </button>
           </div>
+          {/* Restore Purchases button — iOS only */}
+          {onIOS && (
+            <div className="px-6 pb-6">
+              <button
+                type="button"
+                onClick={handleRestore}
+                disabled={isPurchasing}
+                className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-2 disabled:opacity-50"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Restore Purchases
+              </button>
+            </div>
+          )}
+          {applePurchases.error && (
+            <p className="text-xs text-destructive text-center px-6 pb-4">{applePurchases.error}</p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
