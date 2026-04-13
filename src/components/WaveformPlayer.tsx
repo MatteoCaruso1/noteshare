@@ -281,12 +281,11 @@ export function WaveformPlayer({ src, title, onRename, onError, variant = 'defau
         window.clearTimeout(playStartTimeoutRef.current);
         playStartTimeoutRef.current = null;
       }
-      if (!wavesurfer.isPlaying()) {
-        try {
-          wavesurfer.destroy();
-        } catch (e) {
-          // Ignore destroy errors
-        }
+      try {
+        wavesurfer.pause();
+        wavesurfer.destroy();
+      } catch (e) {
+        // Ignore destroy errors
       }
     };
   }, [signedUrl, urlLoading, onError, instanceId, retryCount]);
