@@ -73,12 +73,12 @@ export function useApplePurchases() {
         const allProducts = [...(subsResult.products || []), ...(iapResult.products || [])];
 
         const products: AppleProduct[] = allProducts.map((p) => ({
-          id: p.id || (p as any).productId,
-          title: p.title || (p as any).localizedTitle || (p as any).displayName || '',
-          description: p.description || (p as any).localizedDescription || '',
-          price: p.priceString || (p as any).displayPrice || `${p.price}`,
+          id: p.identifier,
+          title: p.title || '',
+          description: p.description || '',
+          price: p.priceString || `${p.price}`,
           priceAmount: typeof p.price === 'number' ? p.price : parseFloat(String(p.price)) || 0,
-          currency: p.currencyCode || (p as any).currency || 'USD',
+          currency: p.currencyCode || 'USD',
         }));
 
         setState({
