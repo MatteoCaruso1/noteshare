@@ -13,6 +13,7 @@ interface PublicAwardsSectionProps {
   totalHours: number;
   bestMonthDays?: number;
   bestCompletedYearPct?: number;
+  weeklyGoalsMetCount?: number;
   selectedAward: string | null;
 }
 
@@ -35,13 +36,14 @@ export function PublicAwardsSection({
   totalHours,
   bestMonthDays = 0,
   bestCompletedYearPct = 0,
+  weeklyGoalsMetCount = 0,
   selectedAward,
 }: PublicAwardsSectionProps) {
   const [open, setOpen] = useState(false);
 
   const achieved = useMemo(
-    () => getAchievedAwards({ bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct }),
-    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct]
+    () => getAchievedAwards({ bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount }),
+    [bestStreak, totalNotes, totalHours, bestMonthDays, bestCompletedYearPct, weeklyGoalsMetCount]
   );
 
   const achievedCount = achieved.size;
