@@ -75,8 +75,8 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
   const [attachFocus, setAttachFocus] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [privateAudioIndices, setPrivateAudioIndices] = useState<number[]>([]);
-  const videoBlobRef = useRef<Blob | null>(null);
-  const videoNameRef = useRef('');
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const [videoName, setVideoName] = useState('');
 
   const handleToggleAudioPrivacy = useCallback((index: number) => {
     setPrivateAudioIndices(prev => {
@@ -180,11 +180,11 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
     // Upload video + thumbnail BEFORE creating note
     let videoPath: string | undefined;
     let videoThumbnailPath: string | undefined;
-    if (videoBlobRef.current && user?.id) {
+    if (videoBlob && user?.id) {
       toast.loading('Uploading video…', { id: 'video-upload' });
       const [path, thumbBlob] = await Promise.all([
-        uploadVideoToStorage(videoBlobRef.current, user.id),
-        import('@/components/AudioRecorder').then(m => m.generateVideoThumbnailBlob(videoBlobRef.current!)),
+        uploadVideoToStorage(videoBlob, user.id),
+        import('@/components/AudioRecorder').then(m => m.generateVideoThumbnailBlob(videoBlob!)),
       ]);
       if (path) {
         videoPath = path;
@@ -194,8 +194,8 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
       }
       toast.dismiss('video-upload');
       if (path) {
-        videoBlobRef.current = null;
-        videoNameRef.current = '';
+        setVideoBlob(null);
+        setVideoName('');
       } else {
         toast.error('Video upload failed. Note will be saved without video.');
       }
@@ -215,7 +215,7 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
         visibility,
         privateAudioIndices,
         videoPath,
-        videoName: videoNameRef.current || undefined,
+        videoName: videoName || undefined,
         videoThumbnailPath,
         // Attach focus if toggle is on and focus data is available
         focusEntryId: focusData ? focusData.id : undefined,
@@ -235,7 +235,7 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
     );
   };
 
-  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0 || !!videoBlobRef.current;
+  const hasContent = noteText || audioFiles.length > 0 || imageFiles.length > 0 || !!videoBlob;
 
   return (
     <Card className="bg-card border-border">
@@ -366,8 +366,8 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                   <AudioRecorder 
                     onRecorded={handleAudioRecorded} 
                     onRecordingChange={setIsRecordingAudio}
-                    onVideoReady={(blob) => { videoBlobRef.current = blob; }}
-                    onVideoDiscarded={() => { videoBlobRef.current = null; }}
+                    onVideoReady={(blob) => { setVideoBlob(blob); }}
+                    onVideoDiscarded={() => { setVideoBlob(null); }}
                     userId={profile.id}
                     className="w-full" 
                   />
