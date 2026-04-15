@@ -215,7 +215,7 @@ export function GetInspiredSection() {
               <Textarea
                 value={level}
                 onChange={e => setLevel(e.target.value)}
-                placeholder="e.g., Beginner, Intermediate, Advanced, 3 years experience"
+                placeholder="e.g., Beginner, Intermediate, Advanced"
                 className="min-h-[40px] resize-none"
                 rows={1}
               />
@@ -235,7 +235,7 @@ export function GetInspiredSection() {
               <Textarea
                 value={practiceType}
                 onChange={e => setPracticeType(e.target.value)}
-                placeholder="e.g., Technical drills, Creative exploration, Repertoire focused"
+                placeholder="e.g., Technical drills, Repertoire, Creative"
                 className="min-h-[40px] resize-none"
                 rows={1}
               />
@@ -332,7 +332,7 @@ export function GetInspiredSection() {
               <Textarea
                 value={tPracticeType}
                 onChange={e => setTPracticeType(e.target.value)}
-                placeholder="e.g., Chord voicings, Scales, Fingerpicking, Music theory"
+                placeholder="e.g., Chord voicings, Scales, Fingerpicking"
                 className="min-h-[40px] resize-none"
                 rows={1}
               />
