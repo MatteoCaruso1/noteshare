@@ -125,16 +125,20 @@ serve(async (req) => {
         : Array.isArray(searchData) 
           ? searchData 
           : [];
+    console.log("Firecrawl results count:", results.length, "URLs:", results.slice(0, 3).map((r: any) => r.url));
 
-    // Filter to YouTube video URLs only
+    // Prefer YouTube video URLs, but fall back to all results
     const youtubeResults = results.filter((r: any) => {
-      const url = r.url || "";
+      const url = (r.url || "").toLowerCase();
       return url.includes("youtube.com/watch") || url.includes("youtu.be/");
     });
 
-    if (youtubeResults.length === 0) {
+    // Use YouTube results if available, otherwise use all results
+    const candidateResults = youtubeResults.length > 0 ? youtubeResults : results;
+
+    if (candidateResults.length === 0) {
       return new Response(JSON.stringify({
-        error: "No relevant YouTube videos found. Try different search terms.",
+        error: "No relevant training content found. Try different search terms.",
         remaining: DAILY_LIMIT - usedToday,
       }), {
         status: 200,
