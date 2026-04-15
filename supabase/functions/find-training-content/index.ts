@@ -115,7 +115,16 @@ serve(async (req) => {
     }
 
     const searchData = await firecrawlResponse.json();
-    const results = searchData.data || [];
+    console.log("Firecrawl response keys:", Object.keys(searchData));
+    
+    // Firecrawl v2 search may return results under different keys
+    const results = Array.isArray(searchData.data) 
+      ? searchData.data 
+      : Array.isArray(searchData.results) 
+        ? searchData.results 
+        : Array.isArray(searchData) 
+          ? searchData 
+          : [];
 
     // Filter to YouTube video URLs only
     const youtubeResults = results.filter((r: any) => {
