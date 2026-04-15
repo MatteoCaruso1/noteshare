@@ -182,23 +182,30 @@ export function GetInspiredSection() {
               />
             </div>
 
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Routine
-                </>
+            <div className="space-y-1.5">
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || remaining === 0}
+                className="w-full"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate Routine
+                  </>
+                )}
+              </Button>
+              {remaining !== null && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {remaining} of {DAILY_LIMIT} generations remaining today
+                </p>
               )}
-            </Button>
+            </div>
 
             {result && (
               <div className="space-y-2">
