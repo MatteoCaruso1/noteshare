@@ -84,7 +84,7 @@ serve(async (req) => {
 
     // Build search query for YouTube music tutorials
     const parts = [instrument, level, genre, practiceType].filter(Boolean);
-    const searchQuery = `site:youtube.com ${parts.join(" ")} music tutorial lesson practice`;
+    const searchQuery = `youtube ${parts.join(" ")} music tutorial lesson`;
 
     // Use Firecrawl search to find relevant YouTube videos
     const firecrawlResponse = await fetch("https://api.firecrawl.dev/v2/search", {
