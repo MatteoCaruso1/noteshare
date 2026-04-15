@@ -89,14 +89,7 @@ const FriendsJournals = () => {
           <div className="flex items-center justify-between gap-3 h-9">
             <h1 className="text-lg sm:text-xl font-semibold shrink-0">Social</h1>
             <div className="flex items-center gap-2 flex-1 justify-end">
-              {/* Groups Navigation Button - icon only on mobile */}
-              <button
-                onClick={() => navigate('/groups')}
-                className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-2 sm:px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 shrink-0"
-              >
-                <Waypoints className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary hidden sm:inline">Groups</span>
-              </button>
+              {/* Groups Navigation Button - hidden for now */}
 
               {/* Notifications Button */}
               <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
