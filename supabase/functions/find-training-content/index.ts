@@ -115,7 +115,7 @@ serve(async (req) => {
     }
 
     const searchData = await firecrawlResponse.json();
-    console.log("Firecrawl response keys:", Object.keys(searchData));
+    console.log("Firecrawl raw response:", JSON.stringify(searchData).slice(0, 500));
     
     // Firecrawl v2 search may return results under different keys
     const results = Array.isArray(searchData.data) 
