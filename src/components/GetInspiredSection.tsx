@@ -86,15 +86,13 @@ export function GetInspiredSection() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+      <button
+        className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-2 sm:px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 shrink-0"
         onClick={() => setShowMenu(true)}
       >
-        <Sparkles className="h-3.5 w-3.5" />
-        <span className="text-xs">Get Inspired</span>
-      </Button>
+        <Sparkles className="h-4 w-4 text-primary" />
+        <span className="text-sm font-medium text-primary hidden sm:inline">Get Inspired</span>
+      </button>
 
       {/* Menu dialog */}
       <Dialog open={showMenu} onOpenChange={setShowMenu}>
