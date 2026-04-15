@@ -59,10 +59,12 @@ export function GetInspiredSection() {
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
+        if (data.remaining !== undefined) setRemaining(data.remaining);
         return;
       }
 
       setResult(data.routine || 'No routine generated.');
+      if (data.remaining !== undefined) setRemaining(data.remaining);
     } catch (err: any) {
       console.error('Generate routine error:', err);
       toast.error('Failed to generate routine. Please try again.');
