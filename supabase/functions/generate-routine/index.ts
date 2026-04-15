@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const DAILY_LIMIT = 4;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,6 +17,59 @@ serve(async (req) => {
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Get user from JWT
+    const authHeader = req.headers.get("authorization") || "";
+    const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Get profile id
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!profile) {
+      return new Response(JSON.stringify({ error: "Profile not found" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check daily limit
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const { count } = await adminClient
+      .from("routine_generations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .gte("generated_at", todayStart.toISOString());
+
+    const usedToday = count || 0;
+    if (usedToday >= DAILY_LIMIT) {
+      return new Response(JSON.stringify({
+        error: `Daily limit reached (${DAILY_LIMIT} per day). Try again tomorrow!`,
+        remaining: 0,
+        limit: DAILY_LIMIT,
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const { instrument, level, genre, practiceType, existingRoutine, recentNotes } = await req.json();
 
@@ -107,7 +163,14 @@ Personalize based on the musician's inputs and context. Be concise — each bull
     const data = await response.json();
     const routine = data.choices?.[0]?.message?.content || "";
 
-    return new Response(JSON.stringify({ routine }), {
+    // Log the generation
+    await adminClient.from("routine_generations").insert({
+      user_id: profile.id,
+    });
+
+    const remaining = DAILY_LIMIT - usedToday - 1;
+
+    return new Response(JSON.stringify({ routine, remaining, limit: DAILY_LIMIT }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

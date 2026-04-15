@@ -9,6 +9,8 @@ import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+const DAILY_LIMIT = 4;
+
 export function GetInspiredSection() {
   const [showMenu, setShowMenu] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
@@ -19,7 +21,7 @@ export function GetInspiredSection() {
   const [result, setResult] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
-
+  const [remaining, setRemaining] = useState<number | null>(null);
   const { focus } = useTodaysFocus();
   const { profile } = useAuth();
 
@@ -57,10 +59,12 @@ export function GetInspiredSection() {
       if (error) throw error;
       if (data?.error) {
         toast.error(data.error);
+        if (data.remaining !== undefined) setRemaining(data.remaining);
         return;
       }
 
       setResult(data.routine || 'No routine generated.');
+      if (data.remaining !== undefined) setRemaining(data.remaining);
     } catch (err: any) {
       console.error('Generate routine error:', err);
       toast.error('Failed to generate routine. Please try again.');
@@ -178,23 +182,30 @@ export function GetInspiredSection() {
               />
             </div>
 
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Routine
-                </>
+            <div className="space-y-1.5">
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || remaining === 0}
+                className="w-full"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate Routine
+                  </>
+                )}
+              </Button>
+              {remaining !== null && (
+                <p className="text-xs text-muted-foreground text-center">
+                  {remaining} of {DAILY_LIMIT} generations remaining today
+                </p>
               )}
-            </Button>
+            </div>
 
             {result && (
               <div className="space-y-2">
