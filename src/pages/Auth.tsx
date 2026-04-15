@@ -34,15 +34,13 @@ const GoogleIcon = () => (
 );
 
 const Auth = () => {
-  const { signIn, signUp, resetPassword, user, refreshProfile, clearNewUserFlag } = useAuth();
+  const { signIn, resetPassword, user, refreshProfile, clearNewUserFlag } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isLoginOnly = searchParams.get('mode') === 'login';
   const [mode, setMode] = useState<'signin' | 'forgot' | 'update-password'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
