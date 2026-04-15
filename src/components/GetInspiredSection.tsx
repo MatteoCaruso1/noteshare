@@ -130,7 +130,7 @@ export function GetInspiredSection() {
 
       {/* Generator dialog */}
       <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto" onOpenAutoFocus={e => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wand2 className="h-5 w-5 text-primary" />
