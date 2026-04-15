@@ -84,7 +84,7 @@ serve(async (req) => {
 
     // Build search query for YouTube music tutorials
     const parts = [instrument, level, genre, practiceType].filter(Boolean);
-    const searchQuery = `site:youtube.com ${parts.join(" ")} music tutorial lesson practice`;
+    const searchQuery = `youtube ${parts.join(" ")} music tutorial lesson`;
 
     // Use Firecrawl search to find relevant YouTube videos
     const firecrawlResponse = await fetch("https://api.firecrawl.dev/v2/search", {
@@ -115,17 +115,31 @@ serve(async (req) => {
     }
 
     const searchData = await firecrawlResponse.json();
-    const results = searchData.data || [];
+    console.log("Firecrawl raw response:", JSON.stringify(searchData).slice(0, 500));
+    
+    // Firecrawl v2 search returns results under data.web
+    const rawData = searchData.data;
+    const results = Array.isArray(rawData) 
+      ? rawData 
+      : Array.isArray(rawData?.web) 
+        ? rawData.web 
+        : Array.isArray(searchData.results) 
+          ? searchData.results 
+          : [];
+    console.log("Firecrawl results count:", results.length, "URLs:", results.slice(0, 3).map((r: any) => r.url));
 
-    // Filter to YouTube video URLs only
+    // Prefer YouTube video URLs, but fall back to all results
     const youtubeResults = results.filter((r: any) => {
-      const url = r.url || "";
+      const url = (r.url || "").toLowerCase();
       return url.includes("youtube.com/watch") || url.includes("youtu.be/");
     });
 
-    if (youtubeResults.length === 0) {
+    // Use YouTube results if available, otherwise use all results
+    const candidateResults = youtubeResults.length > 0 ? youtubeResults : results;
+
+    if (candidateResults.length === 0) {
       return new Response(JSON.stringify({
-        error: "No relevant YouTube videos found. Try different search terms.",
+        error: "No relevant training content found. Try different search terms.",
         remaining: DAILY_LIMIT - usedToday,
       }), {
         status: 200,
@@ -134,7 +148,7 @@ serve(async (req) => {
     }
 
     // Use Gemini to pick the best 2 results
-    const candidateList = youtubeResults.slice(0, 8).map((r: any, i: number) => (
+    const candidateList = candidateResults.slice(0, 8).map((r: any, i: number) => (
       `${i + 1}. Title: ${r.title || "Unknown"}\n   URL: ${r.url}\n   Description: ${(r.description || "").slice(0, 200)}`
     )).join("\n\n");
 
@@ -149,7 +163,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a music education expert. Given a list of YouTube video search results and a musician's profile, pick the 2 most relevant and helpful videos for their practice needs. Return ONLY a JSON array of exactly 2 objects with "title", "url", and "reason" (a brief 1-sentence explanation of why this video is helpful). No markdown, no code blocks, just the JSON array.`,
+            content: `You are a music education expert. Given a list of search results and a musician's profile, pick the 2 most relevant and helpful resources for their practice needs. Prefer YouTube videos when available. Return ONLY a JSON array of exactly 2 objects with "title", "url", and "reason" (a brief 1-sentence explanation of why this is helpful). No markdown, no code blocks, just the JSON array.`,
           },
           {
             role: "user",
@@ -183,8 +197,8 @@ Pick the 2 best videos and return as JSON array.`,
       }
       console.error("AI gateway error:", aiResponse.status);
       // Fallback: return top 2 from Firecrawl directly
-      const fallback = youtubeResults.slice(0, 2).map((r: any) => ({
-        title: r.title || "YouTube Video",
+      const fallback = candidateResults.slice(0, 2).map((r: any) => ({
+        title: r.title || "Training Resource",
         url: r.url,
         reason: r.description?.slice(0, 100) || "Relevant to your practice",
       }));
@@ -211,8 +225,8 @@ Pick the 2 best videos and return as JSON array.`,
       videos = videos.slice(0, 2);
     } catch {
       // Fallback to top 2 from search
-      videos = youtubeResults.slice(0, 2).map((r: any) => ({
-        title: r.title || "YouTube Video",
+      videos = candidateResults.slice(0, 2).map((r: any) => ({
+        title: r.title || "Training Resource",
         url: r.url,
         reason: r.description?.slice(0, 100) || "Relevant to your practice",
       }));
