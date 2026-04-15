@@ -382,7 +382,7 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   onBlur={() => setPasswordTouched(true)}
                   required
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  autoComplete="current-password"
                   name="password"
                   className={showPasswordHint ? 'border-destructive focus-visible:ring-destructive' : ''}
                 />
