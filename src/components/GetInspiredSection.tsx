@@ -9,6 +9,8 @@ import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+const DAILY_LIMIT = 4;
+
 export function GetInspiredSection() {
   const [showMenu, setShowMenu] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
@@ -19,7 +21,7 @@ export function GetInspiredSection() {
   const [result, setResult] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
-
+  const [remaining, setRemaining] = useState<number | null>(null);
   const { focus } = useTodaysFocus();
   const { profile } = useAuth();
 
