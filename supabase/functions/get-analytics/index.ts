@@ -849,18 +849,20 @@ serve(async (req) => {
       .gte('step_number', 100)
       .lte('step_number', 111);
 
-    const ftueStepCounts: Record<number, number> = {};
+    // For a proper funnel, count distinct users who reached AT LEAST step N
+    // (i.e. their max step_number >= 100+N)
+    const userMaxStep: Record<string, number> = {};
     if (ftueRows) {
       for (const r of ftueRows) {
-        // Map 100+ back to 0-based for display
         const displayStep = r.step_number - 100;
-        ftueStepCounts[displayStep] = (ftueStepCounts[displayStep] || 0) + 1;
+        const prev = userMaxStep[r.user_id] ?? -1;
+        if (displayStep > prev) userMaxStep[r.user_id] = displayStep;
       }
     }
-    // Build array 0-11
+    // For each step, count users whose max step >= that step
     const ftueFunnel = Array.from({ length: 12 }, (_, i) => ({
       step: i,
-      users: ftueStepCounts[i] || 0,
+      users: Object.values(userMaxStep).filter(max => max >= i).length,
     }));
 
     const response = {
