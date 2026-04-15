@@ -1551,6 +1551,24 @@ export type Database = {
         }
         Relationships: []
       }
+      routine_generations: {
+        Row: {
+          generated_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       stripe_processed_events: {
         Row: {
           event_id: string
