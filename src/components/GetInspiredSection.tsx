@@ -96,7 +96,7 @@ export function GetInspiredSection() {
 
       {/* Menu dialog */}
       <Dialog open={showMenu} onOpenChange={setShowMenu}>
-        <DialogContent className="max-w-md w-[calc(100vw-2rem)]">
+        <DialogContent className="max-w-[28rem] w-[calc(100vw-2rem)] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
