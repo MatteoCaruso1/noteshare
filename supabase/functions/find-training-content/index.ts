@@ -196,8 +196,8 @@ Pick the 2 best videos and return as JSON array.`,
       }
       console.error("AI gateway error:", aiResponse.status);
       // Fallback: return top 2 from Firecrawl directly
-      const fallback = youtubeResults.slice(0, 2).map((r: any) => ({
-        title: r.title || "YouTube Video",
+      const fallback = candidateResults.slice(0, 2).map((r: any) => ({
+        title: r.title || "Training Resource",
         url: r.url,
         reason: r.description?.slice(0, 100) || "Relevant to your practice",
       }));
@@ -224,8 +224,8 @@ Pick the 2 best videos and return as JSON array.`,
       videos = videos.slice(0, 2);
     } catch {
       // Fallback to top 2 from search
-      videos = youtubeResults.slice(0, 2).map((r: any) => ({
-        title: r.title || "YouTube Video",
+      videos = candidateResults.slice(0, 2).map((r: any) => ({
+        title: r.title || "Training Resource",
         url: r.url,
         reason: r.description?.slice(0, 100) || "Relevant to your practice",
       }));
