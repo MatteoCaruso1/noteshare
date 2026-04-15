@@ -147,7 +147,7 @@ serve(async (req) => {
     }
 
     // Use Gemini to pick the best 2 results
-    const candidateList = youtubeResults.slice(0, 8).map((r: any, i: number) => (
+    const candidateList = candidateResults.slice(0, 8).map((r: any, i: number) => (
       `${i + 1}. Title: ${r.title || "Unknown"}\n   URL: ${r.url}\n   Description: ${(r.description || "").slice(0, 200)}`
     )).join("\n\n");
 
@@ -162,7 +162,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a music education expert. Given a list of YouTube video search results and a musician's profile, pick the 2 most relevant and helpful videos for their practice needs. Return ONLY a JSON array of exactly 2 objects with "title", "url", and "reason" (a brief 1-sentence explanation of why this video is helpful). No markdown, no code blocks, just the JSON array.`,
+            content: `You are a music education expert. Given a list of search results and a musician's profile, pick the 2 most relevant and helpful resources for their practice needs. Prefer YouTube videos when available. Return ONLY a JSON array of exactly 2 objects with "title", "url", and "reason" (a brief 1-sentence explanation of why this is helpful). No markdown, no code blocks, just the JSON array.`,
           },
           {
             role: "user",
