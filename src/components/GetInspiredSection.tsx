@@ -1,22 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sparkles, ChevronDown, ChevronRight, Wand2, BookOpen, Copy, Check, Loader2 } from 'lucide-react';
+import { Sparkles, Wand2, BookOpen, Copy, Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-interface GetInspiredSectionProps {
-  defaultOpen?: boolean;
-}
-
-export function GetInspiredSection({ defaultOpen = false }: GetInspiredSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+export function GetInspiredSection() {
+  const [showMenu, setShowMenu] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const [instrument, setInstrument] = useState('');
   const [level, setLevel] = useState('');
@@ -34,7 +28,6 @@ export function GetInspiredSection({ defaultOpen = false }: GetInspiredSectionPr
     setResult('');
 
     try {
-      // Fetch recent notes for context
       let recentNotes: string[] = [];
       if (profile?.id) {
         const { data: notes } = await supabase
@@ -88,29 +81,38 @@ export function GetInspiredSection({ defaultOpen = false }: GetInspiredSectionPr
   };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="overflow-hidden">
-        <CollapsibleTrigger asChild>
-          <button className="flex items-center justify-between w-full p-4 text-left hover:bg-accent/50 transition-colors">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-base">Get Inspired</span>
-            </div>
-            {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-          </button>
-        </CollapsibleTrigger>
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+        onClick={() => setShowMenu(true)}
+      >
+        <Sparkles className="h-3.5 w-3.5" />
+        <span className="text-xs">Get Inspired</span>
+      </Button>
 
-        <CollapsibleContent>
-          <div className="px-4 pb-4 space-y-3">
+      {/* Menu dialog */}
+      <Dialog open={showMenu} onOpenChange={setShowMenu}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Get Inspired
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
             <Button
               variant="outline"
               className="w-full justify-start gap-2"
-              onClick={() => setShowGenerator(true)}
+              onClick={() => {
+                setShowMenu(false);
+                setShowGenerator(true);
+              }}
             >
               <Wand2 className="h-4 w-4" />
               Generate a Practice Routine
             </Button>
-
             <Button
               variant="outline"
               className="w-full justify-start gap-2 opacity-60 cursor-not-allowed"
@@ -121,9 +123,10 @@ export function GetInspiredSection({ defaultOpen = false }: GetInspiredSectionPr
               <Badge variant="secondary" className="ml-auto text-xs">Coming Soon</Badge>
             </Button>
           </div>
-        </CollapsibleContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
 
+      {/* Generator dialog */}
       <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
@@ -212,6 +215,6 @@ export function GetInspiredSection({ defaultOpen = false }: GetInspiredSectionPr
           </div>
         </DialogContent>
       </Dialog>
-    </Collapsible>
+    </>
   );
 }
