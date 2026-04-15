@@ -34,15 +34,13 @@ const GoogleIcon = () => (
 );
 
 const Auth = () => {
-  const { signIn, signUp, resetPassword, user, refreshProfile, clearNewUserFlag } = useAuth();
+  const { signIn, resetPassword, user, refreshProfile, clearNewUserFlag } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isLoginOnly = searchParams.get('mode') === 'login';
-  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'update-password'>('signin');
+  const [mode, setMode] = useState<'signin' | 'forgot' | 'update-password'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
@@ -247,11 +245,6 @@ const Auth = () => {
       if (mode === 'forgot') {
         await resetPassword(email);
         setMode('signin');
-      } else if (mode === 'signup') {
-        await signUp(email, password, name);
-        // With email confirmations disabled, signup creates an immediate session.
-        // The onAuthStateChange listener will fire SIGNED_IN and navigate to /.
-        // The FTUE triggers automatically via isNewUser detection in OnboardingContext.
       } else {
         await signIn(email, password, rememberMe);
         // Check for profile redirect (from shared profile link)
@@ -279,7 +272,6 @@ const Auth = () => {
   const getTitle = () => {
     switch (mode) {
       case 'forgot': return 'Reset your password';
-      case 'signup': return 'Create your account';
       case 'update-password': return 'Set new password';
       default: return null;
     }
@@ -369,15 +361,7 @@ const Auth = () => {
           </form>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="space-y-4" autoComplete="on">
-            {mode === 'signup' && (
-              <Input
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                autoComplete="name"
-              />
-            )}
+            
             <Input
               type="email"
               placeholder="Email"
@@ -396,7 +380,7 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   onBlur={() => setPasswordTouched(true)}
                   required
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  autoComplete="current-password"
                   name="password"
                   className={showPasswordHint ? 'border-destructive focus-visible:ring-destructive' : ''}
                 />
@@ -435,9 +419,7 @@ const Auth = () => {
                 ? 'Loading...' 
                 : mode === 'forgot'
                   ? 'Send Reset Link'
-                  : mode === 'signup' 
-                    ? 'Sign Up' 
-                    : 'Log in'}
+                  : 'Log in'}
             </Button>
           </form>
         )}
@@ -459,47 +441,17 @@ const Auth = () => {
                   Log in with Google
                 </Button>
                 
-                {!isLoginOnly && (
-                  <>
-                    {/* Sign Up with Email */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
-                      onClick={() => setMode('signup')}
-                      disabled={loading}
-                    >
-                      Sign up with Email
-                    </Button>
-                    
-                    {/* Sign Up with Google */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full gap-2"
-                      style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }}
-                      onClick={handleGoogleAuth}
-                      disabled={loading}
-                    >
-                      <GoogleIcon />
-                      Sign up with Google
-                    </Button>
-                  </>
-                )}
+                {/* Get Started link */}
+                <button
+                  type="button"
+                  className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full text-center mt-1"
+                  onClick={() => navigate('/ftue')}
+                >
+                  Don't have an account? Get Started
+                </button>
               </>
             )}
-            {mode === 'signup' && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                style={{ backgroundColor: '#a1a1aa', color: '#18181b', borderColor: '#a1a1aa' }}
-                onClick={() => setMode('signin')}
-              >
-                Go back
-              </Button>
-            )}
+            
             {mode === 'forgot' && (
               <Button
                 type="button"
@@ -511,7 +463,7 @@ const Auth = () => {
                 Back to Sign In
               </Button>
             )}
-            {mode !== 'signup' && (
+            {mode !== 'forgot' && (
               <button
                 type="button"
                 className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors block w-full text-center"
