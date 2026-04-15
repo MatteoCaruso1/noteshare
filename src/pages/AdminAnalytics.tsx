@@ -360,17 +360,7 @@ const AdminAnalytics = () => {
     return null;
   }
 
-  // Get latest values for metric cards
-  const latestDailyCount = data.noteActivatedUsers.dailyCounts[data.noteActivatedUsers.dailyCounts.length - 1];
-  const latestRollingAvg = data.noteActivatedUsers.rollingAverage7d[data.noteActivatedUsers.rollingAverage7d.length - 1];
-  const latestActivationRate = data.noteActivationRate.dailyRates[data.noteActivationRate.dailyRates.length - 1];
-
   // Format data for charts
-  const noteUsersChartData = data.noteActivatedUsers.dailyCounts.map((item, index) => ({
-    date: item.date,
-    count: item.count,
-    average: data.noteActivatedUsers.rollingAverage7d[index]?.average || 0,
-  }));
 
   const activationRateChartData = data.noteActivationRate.dailyRates.map((item) => ({
     date: item.date,
@@ -421,32 +411,6 @@ const AdminAnalytics = () => {
           </Select>
         </div>
 
-        {/* Engagement Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <MetricCard
-            icon={<Users className="w-4 h-4" />}
-            title="Note-activated Users (Today)"
-            definition={METRIC_DEFINITIONS.noteActivatedUsers}
-            value={latestDailyCount?.count || 0}
-            subtitle={`7-day avg: ${latestRollingAvg?.average || 0}`}
-          />
-
-          <MetricCard
-            icon={<TrendingUp className="w-4 h-4" />}
-            title="Activation Rate (Today)"
-            definition={METRIC_DEFINITIONS.activationRate}
-            value={`${latestActivationRate?.rate || 0}%`}
-            subtitle={`${latestActivationRate?.creators || 0} of ${latestActivationRate?.viewers || 0} viewers`}
-          />
-
-          <MetricCard
-            icon={<CreditCard className="w-4 h-4" />}
-            title="Active Premium"
-            definition={METRIC_DEFINITIONS.activePremium}
-            value={data.paidConversion.totalActive}
-            subtitle={`${data.paidConversion.inTrial} trial, ${data.paidConversion.actuallyPaying} paying`}
-          />
-        </div>
 
         {/* Account Funnel */}
         {data.accountFunnel && <AccountFunnelCard funnel={data.accountFunnel} days={days} />}
@@ -575,59 +539,6 @@ const AdminAnalytics = () => {
           </CardContent>
         </Card>
 
-      {/* Metric 1: Note-activated Users Chart */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Note-activated Users
-          </CardTitle>
-          <CardDescription>
-            Unique users who created at least one Note per day
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={noteUsersChartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={formatXAxis}
-                  className="text-xs"
-                />
-                <YAxis allowDecimals={false} className="text-xs" />
-                <Tooltip 
-                  labelFormatter={formatTooltipLabel}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={false}
-                  name="Daily Count"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="average" 
-                  stroke="hsl(var(--muted-foreground))" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  name="7-day Rolling Avg"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Metric 2: Note-activation Rate Chart */}
       <Card className="mb-8">
