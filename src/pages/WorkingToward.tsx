@@ -38,7 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { SignedImage } from '@/components/SignedImage';
 import { Plus, FolderOpen, Upload, Trash2, CalendarIcon, ChevronDown, ChevronRight, Calendar, Music2, ExternalLink, Clock } from 'lucide-react';
-import { GetInspiredSection } from '@/components/GetInspiredSection';
+
 import { cn, formatLocalDateTime } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -747,7 +747,7 @@ const WorkingToward = () => {
             </Card>
           </Collapsible>
 
-          <GetInspiredSection />
+          
           </main>
         </PremiumGate>
       </PageBody>

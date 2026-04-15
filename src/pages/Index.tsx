@@ -35,6 +35,7 @@ import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/comp
 import { ProTipsDialog } from '@/components/ProTipsDialog';
 import { useProTips } from '@/hooks/useProTips';
 import { ShareCalendarSheet } from '@/components/ShareCalendarSheet';
+import { GetInspiredSection } from '@/components/GetInspiredSection';
 
 const LOAD_MORE_COUNT = 10;
 
@@ -436,6 +437,9 @@ const Index = () => {
               )}
             </section>
           </GlintProvider>
+
+          {/* Get Inspired */}
+          {profile && <GetInspiredSection />}
 
           {/* Memory Reminder */}
           <MemoryReminder />
