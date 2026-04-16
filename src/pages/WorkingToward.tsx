@@ -326,226 +326,191 @@ const WorkingToward = () => {
             {/* Musical Goals */}
             {profile && <SimpleGoals profileId={profile.id} />}
 
-          {/* Projects Section - Collapsible */}
-          <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
-            <Card className="bg-card border-border overflow-hidden">
-              <CollapsibleTrigger asChild>
-                <div className="flex items-center justify-between p-4 cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                    <FolderOpen className={cn("w-5 h-5 transition-colors", projectsOpen ? "text-primary" : "text-foreground")} />
-                    <span className="font-semibold">Folders</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          className={cn("h-8 transition-opacity", projectsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent onClick={(e) => e.stopPropagation()} onOpenAutoFocus={(e) => e.preventDefault()}>
-                        <DialogHeader>
-                          <DialogTitle>Create New Folder</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                          {/* Album Art / Icon Picker */}
-                          {profile && (
-                            <ProjectCoverPicker
-                              value={projectCoverValue}
-                              onChange={setProjectCoverValue}
-                              profileId={profile.id}
-                              previewUrl={projectCoverPreview}
-                              onPreviewUrlChange={setProjectCoverPreview}
-                            />
-                          )}
-
-                          <Input
-                            placeholder="Folder title (e.g., Jazz Standards Album)"
-                            value={newProjectTitle}
-                            onChange={(e) => setNewProjectTitle(e.target.value)}
-                            autoFocus={false}
-                          />
-                          <RichTextarea
-                            placeholder="Describe your folder..."
-                            value={newProjectDescription}
-                            onChange={setNewProjectDescription}
-                            rows={3}
-                          />
-
-                          <div className="space-y-2">
-                            <Label className="text-sm">Expected Release Date (optional)</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !projectReleaseDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {projectReleaseDate ? format(projectReleaseDate, "MMM d, yyyy") : "Pick a date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <CalendarComponent
-                                  mode="single"
-                                  selected={projectReleaseDate}
-                                  onSelect={setProjectReleaseDate}
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                          {/* Collaborators */}
-                          <CollaboratorPicker
-                            selectedIds={projectCollaboratorIds}
-                            onSelect={setProjectCollaboratorIds}
-                            label="Collaborators"
-                          />
-
-                          {/* Show on Home Feed Toggle */}
-                          <div className="flex items-center justify-between py-2">
-                            <Label htmlFor="project-show-feed" className="text-sm">Show on home feed</Label>
-                            <Switch
-                              id="project-show-feed"
-                              checked={projectShowOnFeed}
-                              onCheckedChange={setProjectShowOnFeed}
-                            />
-                          </div>
-
-                          <Button
-                            className="w-full bg-gradient-primary text-primary-foreground"
-                            onClick={handleCreateProject}
-                            disabled={createProject.isPending || !newProjectTitle.trim()}
-                          >
-                            Create Folder
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    {projectsOpen ? (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          {/* Projects Section - Always Open */}
+          <Card className="bg-card border-border overflow-hidden">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <FolderOpen className="w-5 h-5 text-primary" />
+                <span className="font-semibold">Folders</span>
+              </div>
+              <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="ghost" className="h-8">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+                  <DialogHeader>
+                    <DialogTitle>Create New Folder</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    {profile && (
+                      <ProjectCoverPicker
+                        value={projectCoverValue}
+                        onChange={setProjectCoverValue}
+                        profileId={profile.id}
+                        previewUrl={projectCoverPreview}
+                        onPreviewUrlChange={setProjectCoverPreview}
+                      />
                     )}
+                    <Input
+                      placeholder="Folder title (e.g., Jazz Standards Album)"
+                      value={newProjectTitle}
+                      onChange={(e) => setNewProjectTitle(e.target.value)}
+                      autoFocus={false}
+                    />
+                    <RichTextarea
+                      placeholder="Describe your folder..."
+                      value={newProjectDescription}
+                      onChange={setNewProjectDescription}
+                      rows={3}
+                    />
+                    <div className="space-y-2">
+                      <Label className="text-sm">Expected Release Date (optional)</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !projectReleaseDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {projectReleaseDate ? format(projectReleaseDate, "MMM d, yyyy") : "Pick a date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={projectReleaseDate}
+                            onSelect={setProjectReleaseDate}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <CollaboratorPicker
+                      selectedIds={projectCollaboratorIds}
+                      onSelect={setProjectCollaboratorIds}
+                      label="Collaborators"
+                    />
+                    <div className="flex items-center justify-between py-2">
+                      <Label htmlFor="project-show-feed" className="text-sm">Show on home feed</Label>
+                      <Switch
+                        id="project-show-feed"
+                        checked={projectShowOnFeed}
+                        onCheckedChange={setProjectShowOnFeed}
+                      />
+                    </div>
+                    <Button
+                      className="w-full bg-gradient-primary text-primary-foreground"
+                      onClick={handleCreateProject}
+                      disabled={createProject.isPending || !newProjectTitle.trim()}
+                    >
+                      Create Folder
+                    </Button>
                   </div>
-                </div>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <div className="px-4 pb-4">
-                  <Tabs value={projectsTab} onValueChange={setProjectsTab} className="w-full">
-                    <TabsList className="w-full mb-4">
-                      <TabsTrigger value="mine" className="flex-1">My Folders</TabsTrigger>
-                      <TabsTrigger value="friends" className="flex-1">Friends' Folders</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="mine" className="space-y-4">
-                      {myProjectsLoading ? (
-                        <div className="text-center text-muted-foreground py-8">Loading...</div>
-                      ) : myProjects && myProjects.length > 0 ? (
-                        <div className="space-y-4">
-                          {myProjects.map((project) => (
-                            <CollectionCard
-                              key={project.id}
-                              id={project.id}
-                              path="/projects"
-                              title={project.title}
-                              description={project.description}
-                              coverImage={project.cover_image}
-                              coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
-                              date={project.created_at}
-                              releaseDate={project.release_date}
-                              useProjectCover
-                              actions={
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Delete folder?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        "{project.title}" will be permanently deleted.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => deleteProject.mutate(project.id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              }
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <CollectionEmptyState
-                          subtitle={"Create a folder to organize your\nnotes around a goal"}
-                          actionLabel="Create First Folder"
-                          onAction={() => setIsProjectDialogOpen(true)}
-                          showIcon={false}
-                          showPlusInButton={false}
-                          compact
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="px-4 pb-4">
+              <Tabs value={projectsTab} onValueChange={setProjectsTab} className="w-full">
+                <TabsList className="w-full mb-4">
+                  <TabsTrigger value="mine" className="flex-1">My Folders</TabsTrigger>
+                  <TabsTrigger value="friends" className="flex-1">Friends' Folders</TabsTrigger>
+                </TabsList>
+                <TabsContent value="mine" className="space-y-4">
+                  {myProjectsLoading ? (
+                    <div className="text-center text-muted-foreground py-8">Loading...</div>
+                  ) : myProjects && myProjects.length > 0 ? (
+                    <div className="space-y-4">
+                      {myProjects.map((project) => (
+                        <CollectionCard
+                          key={project.id}
+                          id={project.id}
+                          path="/projects"
+                          title={project.title}
+                          description={project.description}
+                          coverImage={project.cover_image}
+                          coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+                          date={project.created_at}
+                          releaseDate={project.release_date}
+                          useProjectCover
+                          actions={
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete folder?</AlertDialogTitle>
+                                  <AlertDialogDescription>"{project.title}" will be permanently deleted.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteProject.mutate(project.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          }
                         />
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="friends" className="space-y-4">
-                      {friendsProjectsLoading ? (
-                        <div className="text-center text-muted-foreground py-8">Loading...</div>
-                      ) : filteredFriendsProjects.length > 0 ? (
-                        <div className="space-y-4">
-                          {filteredFriendsProjects.map((project: any) => (
-                            <CollectionCard
-                              key={project.id}
-                              id={project.id}
-                              path="/projects"
-                              title={project.title}
-                              description={project.description}
-                              coverImage={project.cover_image}
-                              coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
-                              date={project.created_at}
-                              releaseDate={project.release_date}
-                              useProjectCover
-                              showOwner
-                              ownerId={project.owner_id}
-                              ownerName={project.owner?.name}
-                              ownerAvatar={project.owner?.avatar}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <CollectionEmptyState
-                          icon={FolderOpen}
-                          title="No friend's folders"
-                          subtitle="Connect with friends to see their folders"
+                      ))}
+                    </div>
+                  ) : (
+                    <CollectionEmptyState
+                      subtitle={"Create a folder to organize your\nnotes around a goal"}
+                      actionLabel="Create First Folder"
+                      onAction={() => setIsProjectDialogOpen(true)}
+                      showIcon={false}
+                      showPlusInButton={false}
+                      compact
+                    />
+                  )}
+                </TabsContent>
+                <TabsContent value="friends" className="space-y-4">
+                  {friendsProjectsLoading ? (
+                    <div className="text-center text-muted-foreground py-8">Loading...</div>
+                  ) : filteredFriendsProjects.length > 0 ? (
+                    <div className="space-y-4">
+                      {filteredFriendsProjects.map((project: any) => (
+                        <CollectionCard
+                          key={project.id}
+                          id={project.id}
+                          path="/projects"
+                          title={project.title}
+                          description={project.description}
+                          coverImage={project.cover_image}
+                          coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+                          date={project.created_at}
+                          releaseDate={project.release_date}
+                          useProjectCover
+                          showOwner
+                          ownerId={project.owner_id}
+                          ownerName={project.owner?.name}
+                          ownerAvatar={project.owner?.avatar}
                         />
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
+                      ))}
+                    </div>
+                  ) : (
+                    <CollectionEmptyState
+                      icon={FolderOpen}
+                      title="No friend's folders"
+                      subtitle="Connect with friends to see their folders"
+                    />
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          </Card>
 
           {/* Gigs Section - Hidden */}
           {false && (
