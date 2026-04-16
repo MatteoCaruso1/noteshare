@@ -547,7 +547,8 @@ const WorkingToward = () => {
             </Card>
           </Collapsible>
 
-          {/* Gigs Section - Collapsible */}
+          {/* Gigs Section - Hidden */}
+          {false && (
           <Collapsible open={gigsOpen} onOpenChange={setGigsOpen}>
             <Card className="bg-card border-border overflow-hidden">
               <CollapsibleTrigger asChild>
@@ -557,195 +558,17 @@ const WorkingToward = () => {
                     <span className="font-semibold">Gigs</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Dialog open={isGigDialogOpen} onOpenChange={setIsGigDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          className={cn("h-8 transition-opacity", gigsOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent onClick={(e) => e.stopPropagation()}>
-                        <DialogHeader>
-                          <DialogTitle>Create New Gig</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                          <ProjectCoverPicker
-                            value={gigCoverValue}
-                            onChange={setGigCoverValue}
-                            profileId={profile?.id || ''}
-                            previewUrl={gigCoverPreview}
-                            onPreviewUrlChange={setGigCoverPreview}
-                          />
-
-                          <Input
-                            placeholder="Gig title (e.g., Jazz Night at Blue Note)"
-                            value={gigTitle}
-                            onChange={(e) => setGigTitle(e.target.value)}
-                          />
-                          <Textarea
-                            placeholder="Describe your gig..."
-                            value={gigDescription}
-                            onChange={(e) => setGigDescription(e.target.value)}
-                            rows={3}
-                          />
-                          <div className="space-y-3">
-                            <Label className="text-sm text-muted-foreground block">
-                              Event Date & Time
-                            </Label>
-                            <div className="flex gap-2">
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "flex-1 justify-start text-left font-normal",
-                                      !gigEventDate && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {gigEventDate ? format(gigEventDate, "MMM d, yyyy") : "Pick date"}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <CalendarComponent
-                                    mode="single"
-                                    selected={gigEventDate}
-                                    onSelect={setGigEventDate}
-                                    initialFocus
-                                    className="p-3 pointer-events-auto"
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                <Input
-                                  type="time"
-                                  value={gigEventTime}
-                                  onChange={(e) => setGigEventTime(e.target.value)}
-                                  className="pl-9 w-[120px]"
-                                  placeholder="Time"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <Input
-                            placeholder="Link (optional)"
-                            value={gigLink}
-                            onChange={(e) => setGigLink(e.target.value)}
-                          />
-                          
-                          <div className="flex items-center justify-between py-2">
-                            <Label htmlFor="gig-show-feed" className="text-sm">Show on home feed</Label>
-                            <Switch
-                              id="gig-show-feed"
-                              checked={gigShowOnFeed}
-                              onCheckedChange={setGigShowOnFeed}
-                            />
-                          </div>
-
-                          {/* Repost Reminder */}
-                          <div>
-                            <Label htmlFor="wt-repost-reminder" className="text-sm">Repost reminder (optional)</Label>
-                            <p className="text-xs text-muted-foreground mb-1.5">
-                              Repost this gig on your timeline to remind followers before the event
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <Input
-                                id="wt-repost-reminder"
-                                type="number"
-                                min="1"
-                                max="30"
-                                value={gigRepostReminderDays}
-                                onChange={(e) => setGigRepostReminderDays(e.target.value)}
-                                placeholder="e.g. 3"
-                                className="w-24"
-                              />
-                              <span className="text-sm text-muted-foreground">days before event</span>
-                            </div>
-                          </div>
-
-                          <div className="pt-2">
-                            <CollaboratorPicker
-                              selectedIds={gigCollaboratorIds}
-                              onSelect={setGigCollaboratorIds}
-                              label="Tag Collaborators"
-                            />
-                          </div>
-
-                          <Button
-                            className="w-full bg-gradient-primary text-primary-foreground"
-                            onClick={handleCreateGig}
-                            disabled={createPromoPost.isPending || !gigTitle.trim()}
-                          >
-                            Create Gig
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
                     {gigsOpen ? (
                       <ChevronDown className="w-5 h-5 text-muted-foreground" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     )}
                   </div>
                 </div>
               </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <div className="px-4 pb-4">
-                  <Tabs value={gigsTab} onValueChange={setGigsTab} className="w-full">
-                    <TabsList className="w-full mb-4">
-                      <TabsTrigger value="mine" className="flex-1">My Gigs</TabsTrigger>
-                      <TabsTrigger value="friends" className="flex-1">Friends' Gigs</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="mine" className="space-y-4">
-                      {myGigsLoading ? (
-                        <div className="text-center text-muted-foreground py-8">Loading...</div>
-                      ) : myPosts && myPosts.length > 0 ? (
-                        <div className="space-y-4">
-                          {myPosts.map((post: any) => (
-                            <GigCard key={post.id} post={post} showAuthor={false} showDelete={true} />
-                          ))}
-                        </div>
-                      ) : (
-                        <CollectionEmptyState
-                          subtitle="Share your first gig with your friends"
-                          actionLabel="Create First Gig"
-                          onAction={() => setIsGigDialogOpen(true)}
-                          showIcon={false}
-                          showPlusInButton={false}
-                          compact
-                        />
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="friends" className="space-y-4">
-                      {friendsGigsLoading ? (
-                        <div className="text-center text-muted-foreground py-8">Loading...</div>
-                      ) : filteredFriendsPosts.length > 0 ? (
-                        <div className="space-y-4">
-                          {filteredFriendsPosts.map((post: any) => (
-                            <GigCard key={post.id} post={post} />
-                          ))}
-                        </div>
-                      ) : (
-                        <CollectionEmptyState
-                          icon={Music2}
-                          title="No friend's gigs"
-                          subtitle="Connect with friends to see their gigs"
-                        />
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </CollapsibleContent>
             </Card>
           </Collapsible>
+          )}
 
           
           </main>
