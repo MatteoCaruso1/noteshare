@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FolderOpen, Calendar, Compass, ClipboardList } from 'lucide-react';
+import { FileText, Calendar, Compass, ClipboardList } from 'lucide-react';
 import { Project, PromoPostWithAuthor, Goal } from '@/types';
 import { usePremium } from '@/contexts/PremiumContext';
 import { useToast } from '@/hooks/use-toast';
@@ -151,7 +151,7 @@ export function LinkToPicker({
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>Link to goal, folder, or gig</TooltipContent>
+        <TooltipContent>Link to goal, document, or gig</TooltipContent>
       </Tooltip>
       <PopoverContent className="w-56 p-3 bg-popover" align="start">
         <div className="space-y-3">
@@ -178,8 +178,8 @@ export function LinkToPicker({
                     className="w-full justify-start h-9"
                     onClick={() => handleTypeSelect('project')}
                   >
-                     <FolderOpen className="w-4 h-4 mr-2" />
-                    Folder
+                     <FileText className="w-4 h-4 mr-2" />
+                    Document
                   </Button>
                 )}
                 {hasGigs && (
@@ -203,9 +203,9 @@ export function LinkToPicker({
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground capitalize flex items-center gap-1.5">
                   {linkType === 'goal' && <Compass className="w-3 h-3" />}
-                   {linkType === 'project' && <FolderOpen className="w-3 h-3" />}
+                   {linkType === 'project' && <FileText className="w-3 h-3" />}
                    {linkType === 'gig' && <Calendar className="w-3 h-3" />}
-                   Select {linkType === 'project' ? 'folder' : linkType}
+                   Select {linkType === 'project' ? 'document' : linkType}
                 </p>
                 <Button
                   variant="ghost"
@@ -242,7 +242,7 @@ export function LinkToPicker({
             <div className="pt-2 border-t border-border">
               <div className="flex items-center gap-2 text-xs">
                 {selectedLink.type === 'goal' && <Compass className="w-3 h-3 text-primary" />}
-                {selectedLink.type === 'project' && <FolderOpen className="w-3 h-3 text-primary" />}
+                {selectedLink.type === 'project' && <FileText className="w-3 h-3 text-primary" />}
                 {selectedLink.type === 'gig' && <Calendar className="w-3 h-3 text-primary" />}
                 <span className="text-muted-foreground">Linked to:</span>
                 <span className="font-medium truncate">{selectedLink.title}</span>

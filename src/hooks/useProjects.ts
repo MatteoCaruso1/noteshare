@@ -227,11 +227,11 @@ export function useCreateProject() {
         queryClient.invalidateQueries({ queryKey: ['friends-projects'] }),
         queryClient.invalidateQueries({ queryKey: ['feed-projects'] }),
       ]);
-      toast.success('Folder created!');
+      toast.success('Document created!');
     },
     onError: (error) => {
       console.error('Error creating project:', error);
-      toast.error('Failed to create folder');
+      toast.error('Failed to create document');
     },
   });
 }
@@ -283,11 +283,11 @@ export function useUpdateProject() {
       queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
       queryClient.invalidateQueries({ queryKey: ['feed-projects'] });
       queryClient.invalidateQueries({ queryKey: ['project', data.id] });
-      toast.success('Folder updated!');
+      toast.success('Document updated!');
     },
     onError: (error) => {
       console.error('Error updating project:', error);
-      toast.error('Failed to update folder');
+      toast.error('Failed to update document');
     },
   });
 }
@@ -308,11 +308,11 @@ export function useDeleteProject() {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['friends-projects'] });
       queryClient.invalidateQueries({ queryKey: ['feed-projects'] });
-      toast.success('Folder deleted');
+      toast.success('Document deleted');
     },
     onError: (error) => {
       console.error('Error deleting project:', error);
-      toast.error('Failed to delete folder');
+      toast.error('Failed to delete document');
     },
   });
 }

@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SignedImage } from '@/components/SignedImage';
-import { FolderOpen, Music2, Calendar, DollarSign, ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
+import { FileText, Music2, Calendar, DollarSign, ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatLocalDateTime } from '@/lib/utils';
 import { Project } from '@/types';
@@ -71,7 +71,7 @@ export function FeedProjectsGigs() {
               <Briefcase
                 className={`w-5 h-5 transition-colors ${isExpanded ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`}
               />
-              <h2 className="font-semibold">Folders & Gigs</h2>
+              <h2 className="font-semibold">Documents & Gigs</h2>
               <Badge variant="secondary" className="text-xs">
                 {totalCount}
               </Badge>
@@ -89,7 +89,7 @@ export function FeedProjectsGigs() {
             {/* Projects */}
             {hasProjects && (
               <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">Active Folders</h3>
+                <h3 className="text-sm font-medium text-muted-foreground">Active Documents</h3>
                 {projects.map((project) => (
                   <Card
                     key={project.id}
@@ -100,17 +100,17 @@ export function FeedProjectsGigs() {
                       {project.cover_image ? (
                         <SignedImage
                           src={project.cover_image}
-                          alt={`${project.title} folder cover`}
+                          alt={`${project.title} document cover`}
                           className="w-10 h-10 rounded-lg object-cover"
                           fallback={
                             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                              <FolderOpen className="w-5 h-5 text-muted-foreground" />
+                              <FileText className="w-5 h-5 text-muted-foreground" />
                             </div>
                           }
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                          <FolderOpen className="w-5 h-5 text-muted-foreground" />
+                          <FileText className="w-5 h-5 text-muted-foreground" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">

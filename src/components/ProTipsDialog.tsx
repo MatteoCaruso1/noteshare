@@ -32,7 +32,7 @@ const TIPS: TipData[] = [
     image: tipPracticeRoutine,
   },
   {
-    text: 'The Folder feature in Organize is often underlooked! For example, create a Folder that lists all the songs you are working on so you have a running list of all your repertoire directly in Noteshare.',
+    text: 'The Documents feature in Organize is often underlooked! For example, create a Document that lists all the songs you are working on so you have a running list of all your repertoire directly in Noteshare.',
     image: tipFolder,
   },
   {
