@@ -225,9 +225,9 @@ const ProjectDetail = () => {
   if (!project) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <p className="text-muted-foreground mb-4">Folder not found</p>
+        <p className="text-muted-foreground mb-4">Document not found</p>
         <Button variant="outline" onClick={() => navigate('/projects')}>
-          Back to Folders
+          Back to Documents
         </Button>
       </div>
     );
