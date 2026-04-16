@@ -51,7 +51,7 @@ const helpSections: HelpSection[] = [
     definition: 'A timed workflow that tracks your practice, provides helpful tools, and saves your practice history',
     items: [
       { icon: <Mic className="w-4 h-4" />, label: 'Record Audio', description: 'Record clips directly within your practice session' },
-      { icon: <Target className="w-4 h-4" />, label: 'Link to Organize', description: 'Tie your session to a goal, folder, or gig for organized practicing' },
+      { icon: <Target className="w-4 h-4" />, label: 'Link to Organize', description: 'Tie your session to a goal, document, or gig for organized practicing' },
       { icon: <MetronomeIcon className="w-4 h-4" />, label: 'Metronome', description: 'Built-in precision metronome with adjustable BPM' },
       { icon: <Timer className="w-4 h-4" />, label: 'Practice Timer', description: 'Set a countdown timer with audio chime when complete' },
       { icon: <Lock className="w-4 h-4" />, label: 'Unlock Screen', description: 'Keep your mobile screen unlocked while practicing' },
@@ -92,7 +92,7 @@ const helpSections: HelpSection[] = [
     definition: 'Long-term musical efforts you\'re working toward',
     items: [
       { icon: <Target className="w-4 h-4" />, label: 'Musical Goals', description: 'Set your musical goals for consistent reference' },
-      { icon: <FolderOpen className="w-4 h-4" />, label: 'Folders', description: 'Group notes together for albums, recitals, you name it' },
+      { icon: <FileText className="w-4 h-4" />, label: 'Documents', description: 'Plan setlists, track repertoire, organize gig prep, or jot any musical notes' },
       { icon: <CalendarDays className="w-4 h-4" />, label: 'Gigs', description: 'Track, share, and tie notes to upcoming musical events' },
     ],
   },

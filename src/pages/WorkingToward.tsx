@@ -37,7 +37,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClickableAvatar } from '@/components/ClickableAvatar';
 import { SignedImage } from '@/components/SignedImage';
-import { Plus, FolderOpen, Upload, Trash2, CalendarIcon, ChevronDown, ChevronRight, Calendar, Music2, ExternalLink, Clock } from 'lucide-react';
+import { Plus, FileText, Upload, Trash2, CalendarIcon, ChevronDown, ChevronRight, Calendar, Music2, ExternalLink, Clock } from 'lucide-react';
 
 import { cn, formatLocalDateTime } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -330,8 +330,8 @@ const WorkingToward = () => {
           <Card className="bg-card border-border overflow-hidden">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <FolderOpen className="w-5 h-5 text-primary" />
-                <span className="font-semibold">Folders</span>
+                <FileText className="w-5 h-5 text-primary" />
+                <span className="font-semibold">Documents</span>
               </div>
               <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
                 <DialogTrigger asChild>
@@ -341,7 +341,7 @@ const WorkingToward = () => {
                 </DialogTrigger>
                 <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                   <DialogHeader>
-                    <DialogTitle>Create New Folder</DialogTitle>
+                    <DialogTitle>Create New Document</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
                     {profile && (
@@ -354,13 +354,13 @@ const WorkingToward = () => {
                       />
                     )}
                     <Input
-                      placeholder="Folder title (e.g., Jazz Standards Album)"
+                      placeholder="Document title (e.g., Setlist Ideas, Repertoire List)"
                       value={newProjectTitle}
                       onChange={(e) => setNewProjectTitle(e.target.value)}
                       autoFocus={false}
                     />
                     <RichTextarea
-                      placeholder="Describe your folder..."
+                      placeholder="What's this document for? (e.g., gig planning, song list, lesson notes)"
                       value={newProjectDescription}
                       onChange={setNewProjectDescription}
                       rows={3}
@@ -409,7 +409,7 @@ const WorkingToward = () => {
                       onClick={handleCreateProject}
                       disabled={createProject.isPending || !newProjectTitle.trim()}
                     >
-                      Create Folder
+                      Create Document
                     </Button>
                   </div>
                 </DialogContent>
@@ -418,8 +418,8 @@ const WorkingToward = () => {
             <div className="px-4 pb-4">
               <Tabs value={projectsTab} onValueChange={setProjectsTab} className="w-full">
                 <TabsList className="w-full mb-4">
-                  <TabsTrigger value="mine" className="flex-1">My Folders</TabsTrigger>
-                  <TabsTrigger value="friends" className="flex-1">Friends' Folders</TabsTrigger>
+                  <TabsTrigger value="mine" className="flex-1">My Documents</TabsTrigger>
+                  <TabsTrigger value="friends" className="flex-1">Friends' Documents</TabsTrigger>
                 </TabsList>
                 <TabsContent value="mine" className="space-y-4">
                   {myProjectsLoading ? (
@@ -434,7 +434,7 @@ const WorkingToward = () => {
                           title={project.title}
                           description={project.description}
                           coverImage={project.cover_image}
-                          coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+                          coverIcon={<FileText className="w-6 h-6 text-muted-foreground" />}
                           date={project.created_at}
                           releaseDate={project.release_date}
                           useProjectCover
@@ -447,7 +447,7 @@ const WorkingToward = () => {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete folder?</AlertDialogTitle>
+                                  <AlertDialogTitle>Delete document?</AlertDialogTitle>
                                   <AlertDialogDescription>"{project.title}" will be permanently deleted.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -467,8 +467,8 @@ const WorkingToward = () => {
                     </div>
                   ) : (
                     <CollectionEmptyState
-                      subtitle={"Create a folder to organize your\nnotes around a goal"}
-                      actionLabel="Create First Folder"
+                      subtitle={"Create a document to plan setlists,\ntrack repertoire, or organize ideas"}
+                      actionLabel="Create First Document"
                       onAction={() => setIsProjectDialogOpen(true)}
                       showIcon={false}
                       showPlusInButton={false}
@@ -489,7 +489,7 @@ const WorkingToward = () => {
                           title={project.title}
                           description={project.description}
                           coverImage={project.cover_image}
-                          coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+                          coverIcon={<FileText className="w-6 h-6 text-muted-foreground" />}
                           date={project.created_at}
                           releaseDate={project.release_date}
                           useProjectCover
@@ -502,9 +502,9 @@ const WorkingToward = () => {
                     </div>
                   ) : (
                     <CollectionEmptyState
-                      icon={FolderOpen}
-                      title="No friend's folders"
-                      subtitle="Connect with friends to see their folders"
+                      icon={FileText}
+                      title="No friend's documents"
+                      subtitle="Connect with friends to see their documents"
                     />
                   )}
                 </TabsContent>

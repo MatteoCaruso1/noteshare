@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { 
   Disc3, Music, Guitar, Piano, Mic, Headphones, Radio, 
   Music2, Music3, Music4, Drum, AudioLines, Volume2, Upload,
-  Speaker, Waves, ListMusic, KeyboardMusic, FolderOpen,
+  Speaker, Waves, ListMusic, KeyboardMusic, FileText,
   MicVocal, AudioWaveform, Landmark, Building2,
   Check
 } from 'lucide-react';
@@ -339,7 +339,7 @@ export function ProjectCover({
   if (!value) {
     return (
       <div className={cn("rounded-lg bg-secondary flex items-center justify-center", className)}>
-        <FolderOpen className={cn(iconClassName, "text-muted-foreground")} />
+        <FileText className={cn(iconClassName, "text-muted-foreground")} />
       </div>
     );
   }

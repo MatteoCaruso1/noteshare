@@ -72,7 +72,7 @@ export function ProUpsellDialog({ open, onOpenChange }: ProUpsellDialogProps) {
               />
               <img
                 src={proOrganizeImg}
-                alt="Organize page with musical goals and folders"
+                alt="Organize page with musical goals and documents"
                 className="w-full rounded-lg border border-border"
                 loading="lazy"
                 decoding="async"

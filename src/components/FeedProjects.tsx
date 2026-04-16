@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
-import { FolderOpen, Calendar } from 'lucide-react';
+import { FileText, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Project } from '@/types';
@@ -56,7 +56,7 @@ export function FeedProjects() {
                 />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-                  <FolderOpen className="w-5 h-5 text-muted-foreground" />
+                  <FileText className="w-5 h-5 text-muted-foreground" />
                 </div>
               )}
               <div className="flex-1 min-w-0">

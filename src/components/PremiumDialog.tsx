@@ -21,7 +21,7 @@ const BENEFITS = [
   {
     icon: ClipboardList,
     title: "Unlock 'Organize'",
-    description: 'Organize your notes around goals, folders, and gigs; manage all your musical pursuits, on Noteshare',
+    description: 'Organize your notes around goals, documents, and gigs; manage all your musical pursuits, on Noteshare',
   },
   {
     icon: Palette,
