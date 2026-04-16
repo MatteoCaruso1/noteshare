@@ -25,7 +25,7 @@ import { CollectionEmptyState } from '@/components/shared/CollectionEmptyState';
 import { CollectionCard } from '@/components/shared/CollectionCard';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
-import { Plus, FolderOpen, Trash2, CalendarIcon } from 'lucide-react';
+import { Plus, FileText, Trash2, CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -75,7 +75,7 @@ const Projects = () => {
                 user_id: collabId,
                 from_user_id: profile.id,
                 type: 'folder_collaborator',
-                content: `${profile.name} added you to the folder "${newTitle}"`,
+                content: `${profile.name} added you to the document "${newTitle}"`,
               });
             }
           }
@@ -103,7 +103,7 @@ const Projects = () => {
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
-            <h1 className="text-lg sm:text-xl font-semibold">Folders</h1>
+            <h1 className="text-lg sm:text-xl font-semibold">Documents</h1>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-gradient-primary text-primary-foreground">
@@ -113,7 +113,7 @@ const Projects = () => {
               </DialogTrigger>
               <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
-                  <DialogTitle>Create New Folder</DialogTitle>
+                  <DialogTitle>Create New Document</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   {/* Album Art / Icon Picker */}
@@ -128,7 +128,7 @@ const Projects = () => {
                   )}
 
                   <Input
-                    placeholder="Folder title (e.g., Jazz Standards Album)"
+                    placeholder="Document title (e.g., Setlist Ideas, Repertoire List)"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     autoFocus={false}
@@ -190,7 +190,7 @@ const Projects = () => {
                     onClick={handleCreateProject}
                     disabled={createProject.isPending || !newTitle.trim()}
                   >
-                    Create Folder
+                    Create Document
                   </Button>
                 </div>
               </DialogContent>
@@ -203,8 +203,8 @@ const Projects = () => {
         <main className="container max-w-2xl mx-auto px-4 py-2">
           <Tabs defaultValue="my" className="w-full">
             <TabsList className="w-full mb-4">
-              <TabsTrigger value="my" className="flex-1">My Folders</TabsTrigger>
-              <TabsTrigger value="friends" className="flex-1">Friend's Folders</TabsTrigger>
+              <TabsTrigger value="my" className="flex-1">My Documents</TabsTrigger>
+              <TabsTrigger value="friends" className="flex-1">Friend's Documents</TabsTrigger>
             </TabsList>
 
             <TabsContent value="my" className="space-y-4">
@@ -220,7 +220,7 @@ const Projects = () => {
                       title={project.title}
                       description={project.description}
                       coverImage={project.cover_image}
-                      coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+                      coverIcon={<FileText className="w-6 h-6 text-muted-foreground" />}
                       date={project.created_at}
                       releaseDate={project.release_date}
                       useProjectCover
@@ -237,7 +237,7 @@ const Projects = () => {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete folder?</AlertDialogTitle>
+                              <AlertDialogTitle>Delete document?</AlertDialogTitle>
                               <AlertDialogDescription>
                                 "{project.title}" will be permanently deleted.
                               </AlertDialogDescription>
@@ -259,10 +259,10 @@ const Projects = () => {
                 </div>
               ) : (
                 <CollectionEmptyState
-                  icon={FolderOpen}
-                  title="No folders yet"
-                  subtitle={"Create a folder to organize your\nnotes around a goal"}
-                  actionLabel="Create First Folder"
+                  icon={FileText}
+                  title="No documents yet"
+                  subtitle={"Create a document to plan setlists,\ntrack repertoire, or organize ideas"}
+                  actionLabel="Create First Document"
                   onAction={() => setIsDialogOpen(true)}
                 />
               )}
@@ -281,7 +281,7 @@ const Projects = () => {
                       title={project.title}
                       description={project.description}
                       coverImage={project.cover_image}
-                      coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+                      coverIcon={<FileText className="w-6 h-6 text-muted-foreground" />}
                       date={project.created_at}
                       useProjectCover
                       releaseDate={project.release_date}
@@ -294,9 +294,9 @@ const Projects = () => {
                 </div>
               ) : (
                 <CollectionEmptyState
-                  icon={FolderOpen}
-                  title="No friend's folders"
-                  subtitle="Connect with friends to see their folders"
+                  icon={FileText}
+                  title="No friend's documents"
+                  subtitle="Connect with friends to see their documents"
                 />
               )}
             </TabsContent>

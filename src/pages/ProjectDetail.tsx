@@ -18,7 +18,7 @@ import { AddNoteDialog } from '@/components/shared/AddNoteDialog';
 import { InlineEditableDescription } from '@/components/shared/InlineEditableDescription';
 import { ProjectCoverPicker } from '@/components/ProjectCoverPicker';
 import { CollaboratorPicker } from '@/components/CollaboratorPicker';
-import { FolderOpen, Trash2, Plus } from 'lucide-react';
+import { FileText, Trash2, Plus } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -64,7 +64,7 @@ function useAddNoteToProject() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['notes', variables.projectId] });
-      toast.success('Note added to folder!');
+      toast.success('Note added to document!');
     },
     onError: (error) => {
       console.error('Error adding note:', error);
@@ -162,7 +162,7 @@ const ProjectDetail = () => {
         user_id: collabId,
         from_user_id: profile.id,
         type: 'folder_collaborator',
-        content: `${profile.name} added you to the folder "${projectTitle}"`,
+        content: `${profile.name} added you to the document "${projectTitle}"`,
       });
     }
     prevCollaboratorIdsRef.current = newCollabIds;
@@ -247,7 +247,7 @@ const ProjectDetail = () => {
           authorUsername={project.owner?.username}
           authorAvatar={project.owner?.avatar}
           coverImage={project.cover_image}
-          coverIcon={<FolderOpen className="w-6 h-6 text-muted-foreground" />}
+          coverIcon={<FileText className="w-6 h-6 text-muted-foreground" />}
           showSettings={canEditSettings}
           onSettingsClick={openSettings}
           useProjectCover
@@ -273,7 +273,7 @@ const ProjectDetail = () => {
           {/* Notes Section */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Folder Notes</h2>
+              <h2 className="text-lg font-semibold">Document Notes</h2>
               {canAddNotes && profile && (
                 <>
                   <Button
@@ -290,8 +290,8 @@ const ProjectDetail = () => {
                     onOpenChange={setIsAddNoteOpen}
                     onSubmit={handleAddNote}
                     isSubmitting={addNote.isPending}
-                    title="Add Note to Folder"
-                    contextLabel="this folder"
+                    title="Add Note to Document"
+                    contextLabel="this document"
                     profileId={profile.id}
                   />
                 </>
@@ -321,8 +321,8 @@ const ProjectDetail = () => {
       }}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-[calc(100vw-2rem)] sm:max-w-lg w-full overflow-x-hidden box-border">
           <DialogHeader>
-             <DialogTitle>Folder Settings</DialogTitle>
-             <DialogDescription>Update your folder details or delete the folder.</DialogDescription>
+             <DialogTitle>Document Settings</DialogTitle>
+             <DialogDescription>Update your document details or delete the document.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {/* Album Art / Icon Picker */}
@@ -392,12 +392,12 @@ const ProjectDetail = () => {
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full">
                     <Trash2 className="w-4 h-4 mr-2" />
-                     Delete Folder
+                     Delete Document
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete folder?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete document?</AlertDialogTitle>
                     <AlertDialogDescription>
                       "{project.title}" will be deleted. Attached notes will remain.
                     </AlertDialogDescription>
