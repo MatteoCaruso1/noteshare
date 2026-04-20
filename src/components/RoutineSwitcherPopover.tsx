@@ -120,6 +120,22 @@ export function RoutineSwitcherPopover({
           align="end"
           side="bottom"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => {
+            // Keep popover open when interacting with the delete confirm dialog
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[role="alertdialog"]')) e.preventDefault();
+          }}
+          onFocusOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[role="alertdialog"]')) e.preventDefault();
+            if (deleteTarget) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[role="alertdialog"]')) e.preventDefault();
+            if (deleteTarget) e.preventDefault();
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-3 py-2 border-b border-border">
