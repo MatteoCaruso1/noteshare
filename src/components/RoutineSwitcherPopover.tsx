@@ -120,6 +120,22 @@ export function RoutineSwitcherPopover({
           align="end"
           side="bottom"
           onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => {
+            // Keep popover open when interacting with the delete confirm dialog
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[role="alertdialog"]')) e.preventDefault();
+          }}
+          onFocusOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[role="alertdialog"]')) e.preventDefault();
+            if (deleteTarget) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[role="alertdialog"]')) e.preventDefault();
+            if (deleteTarget) e.preventDefault();
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-3 py-2 border-b border-border">
@@ -156,7 +172,11 @@ export function RoutineSwitcherPopover({
           ) : (
             <div className="max-h-[240px] overflow-y-auto py-1">
               {filteredEntries.map((entry) => {
-                const isActive = currentTitle.trim().toLowerCase() === entry.focus_title.trim().toLowerCase();
+                const trimmedCurrent = currentTitle.trim().toLowerCase();
+                const trimmedEntry = entry.focus_title.trim().toLowerCase();
+                // Only mark as active if both titles are non-empty and match.
+                // Untitled routines should always be deletable.
+                const isActive = trimmedCurrent.length > 0 && trimmedCurrent === trimmedEntry;
                 return (
                   <div
                     key={entry.id}
@@ -200,7 +220,11 @@ export function RoutineSwitcherPopover({
       </Popover>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
-        <AlertDialogContent className="max-w-[280px]">
+        <AlertDialogContent
+          className="max-w-[280px]"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base">Delete routine?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
