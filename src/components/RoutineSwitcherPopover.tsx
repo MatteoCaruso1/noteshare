@@ -156,7 +156,11 @@ export function RoutineSwitcherPopover({
           ) : (
             <div className="max-h-[240px] overflow-y-auto py-1">
               {filteredEntries.map((entry) => {
-                const isActive = currentTitle.trim().toLowerCase() === entry.focus_title.trim().toLowerCase();
+                const trimmedCurrent = currentTitle.trim().toLowerCase();
+                const trimmedEntry = entry.focus_title.trim().toLowerCase();
+                // Only mark as active if both titles are non-empty and match.
+                // Untitled routines should always be deletable.
+                const isActive = trimmedCurrent.length > 0 && trimmedCurrent === trimmedEntry;
                 return (
                   <div
                     key={entry.id}
@@ -200,7 +204,11 @@ export function RoutineSwitcherPopover({
       </Popover>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
-        <AlertDialogContent className="max-w-[280px]">
+        <AlertDialogContent
+          className="max-w-[280px]"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base">Delete routine?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
