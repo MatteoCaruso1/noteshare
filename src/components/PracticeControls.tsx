@@ -224,12 +224,14 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
     }
   }, [activeSession?.id]);
 
-  // Determine if we should show the collapsible content
-  // Active session can now be collapsed manually
-  // Keep expanded during session start transition to avoid jarring close/open
-  const isExpanded = activeSession 
-    ? !manuallyCollapsed 
-    : (showSessionChoice || isStartingSession);
+  // Card is always expanded — no manual collapsing.
+  // Ensure session choice buttons are visible whenever there's no active session.
+  const isExpanded = true;
+  useEffect(() => {
+    if (!activeSession && !showSessionChoice) {
+      setShowSessionChoice(true);
+    }
+  }, [activeSession, showSessionChoice]);
 
   // Sync expanded state with glint context (glint paused when expanded)
   useEffect(() => {
@@ -707,42 +709,18 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
 
   return (
     <Card className="bg-card border-border min-h-[60px]">
-      <Collapsible open={isExpanded} onOpenChange={handlePracticeOpen}>
-        <CollapsibleTrigger asChild>
-          {/* Glint effect disabled but kept for potential future use: add `glint ${isPaused ? 'glint-paused' : ''}` to className and style={glintStyle} */}
-          <button 
-            data-tour="practice-start-btn"
-            className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
-              <h2 className="font-semibold">
-                {activeSession ? 'Practice Session' : 'Start Practice Session'}
-              </h2>
-              {/* Show "Active" when collapsed with active session */}
-              {activeSession && (
-                <span 
-                  className={`text-sm font-medium transition-opacity duration-300 ${
-                    manuallyCollapsed 
-                      ? 'opacity-100' 
-                      : 'opacity-0'
-                  } ${
-                    isSessionPaused 
-                      ? 'text-muted-foreground' 
-                      : 'text-primary'
-                  }`}
-                >
-                  {isSessionPaused ? 'Paused' : 'Active'}
-                </span>
-              )}
-            </div>
-            {isExpanded ? (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            )}
-          </button>
-        </CollapsibleTrigger>
+      <Collapsible open={true}>
+        <div
+          data-tour="practice-start-btn"
+          className="w-full px-3 py-4 sm:px-4 flex items-center rounded-lg"
+        >
+          <div className="flex items-center gap-2">
+            <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground'}`} />
+            <h2 className="font-semibold">
+              {activeSession ? 'Practice Session' : 'Start Practice Session'}
+            </h2>
+          </div>
+        </div>
         <CollapsibleContent>
           {/* Session Choice Step - shown when no active session OR while starting */}
           {!activeSession && (showSessionChoice || isStartingSession) && (
