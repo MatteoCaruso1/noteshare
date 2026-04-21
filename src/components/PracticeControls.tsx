@@ -29,7 +29,7 @@ import { LinkToPicker } from '@/components/LinkToPicker';
 import { EndSessionDialog } from '@/components/EndSessionDialog';
 import { Metronome } from '@/components/Metronome';
 import { PracticeTimer } from '@/components/PracticeTimer';
-import { PracticePlanRunner } from '@/components/PracticePlanRunner';
+import { PracticePlanRunner, PracticePlanRunnerInline, type RunningPlan } from '@/components/PracticePlanRunner';
 
 import { SignedImage } from '@/components/SignedImage';
 import { ImagePreviewDialog } from '@/components/ImagePreviewDialog';
@@ -188,6 +188,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const [showPlanRunner, setShowPlanRunner] = useState(false);
+  const [runningPlan, setRunningPlan] = useState<RunningPlan | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   
   // Wrapper to persist attachFocus changes
@@ -945,6 +946,14 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
             </div>
           )}
 
+          {/* Inline Practice on Rails runner — visible during an active session */}
+          {activeSession && runningPlan && (
+            <PracticePlanRunnerInline
+              plan={runningPlan}
+              onExit={() => setRunningPlan(null)}
+            />
+          )}
+
           {/* Text Content - with list formatting support */}
           {/* Larger textarea during active sessions for focus */}
           <div className="mb-4" data-tour="session-textarea">
@@ -1086,7 +1095,11 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
           )}
         </CollapsibleContent>
       </Collapsible>
-      <PracticePlanRunner open={showPlanRunner} onOpenChange={setShowPlanRunner} />
+      <PracticePlanRunner
+        open={showPlanRunner}
+        onOpenChange={setShowPlanRunner}
+        onStartRun={(plan) => setRunningPlan(plan)}
+      />
     </Card>
   );
 }
