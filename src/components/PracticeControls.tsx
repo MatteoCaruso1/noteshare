@@ -29,6 +29,7 @@ import { LinkToPicker } from '@/components/LinkToPicker';
 import { EndSessionDialog } from '@/components/EndSessionDialog';
 import { Metronome } from '@/components/Metronome';
 import { PracticeTimer } from '@/components/PracticeTimer';
+import { PracticePlanRunner } from '@/components/PracticePlanRunner';
 
 import { SignedImage } from '@/components/SignedImage';
 import { ImagePreviewDialog } from '@/components/ImagePreviewDialog';
@@ -42,7 +43,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Lock, Users, Settings, ListTodo, Pause, ChevronDown, ChevronRight, Trash2, LockOpen } from 'lucide-react';
+import { Play, Square, Clock, X, Lock, Users, Settings, ListTodo, Pause, ChevronDown, ChevronRight, Trash2, LockOpen, Route } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
