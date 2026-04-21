@@ -1279,6 +1279,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar: string | null
+          background_density: string | null
+          background_pack: string | null
           bio: string | null
           celebrated_streak_milestones: number[]
           color_theme: string | null
@@ -1313,6 +1315,8 @@ export type Database = {
         }
         Insert: {
           avatar?: string | null
+          background_density?: string | null
+          background_pack?: string | null
           bio?: string | null
           celebrated_streak_milestones?: number[]
           color_theme?: string | null
@@ -1347,6 +1351,8 @@ export type Database = {
         }
         Update: {
           avatar?: string | null
+          background_density?: string | null
+          background_pack?: string | null
           bio?: string | null
           celebrated_streak_milestones?: number[]
           color_theme?: string | null
