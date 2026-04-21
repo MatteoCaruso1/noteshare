@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import {
+  useBackgroundCustomization,
+  getPackSymbols,
+  getDensityCount,
+} from '@/contexts/BackgroundCustomizationContext';
 
-const SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
+const DEFAULT_SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
 
 interface FloatingSymbol {
   id: number;
@@ -15,8 +20,8 @@ interface FloatingSymbol {
   rotateEnd: number;
 }
 
-function generateSymbols(isLanding: boolean): FloatingSymbol[] {
-  const count = 9;
+function generateSymbols(isLanding: boolean, symbolSet: string[], count: number): FloatingSymbol[] {
+  if (count <= 0 || symbolSet.length === 0) return [];
   const positions: number[] = [];
 
   const getPosition = (): number => {
@@ -55,7 +60,7 @@ function generateSymbols(isLanding: boolean): FloatingSymbol[] {
     const rot = getRotation();
     return {
       id: i,
-      symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      symbol: symbolSet[Math.floor(Math.random() * symbolSet.length)],
       left: getPosition(),
       delay: (i * 5) + Math.random() * 12,
       duration: 120 + Math.random() * 60,
@@ -72,10 +77,14 @@ export function FloatingInstruments() {
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isLanding = location.pathname === '/welcome';
+  const { pack, density } = useBackgroundCustomization();
 
   useEffect(() => {
-    setSymbols(generateSymbols(isLanding));
-  }, [isLanding]);
+    // Landing page always shows the default music symbols at full density
+    const symbolSet = isLanding ? DEFAULT_SYMBOLS : getPackSymbols(pack);
+    const count = isLanding ? 9 : getDensityCount(density);
+    setSymbols(generateSymbols(isLanding, symbolSet, count));
+  }, [isLanding, pack, density]);
 
   useEffect(() => {
     const container = containerRef.current;

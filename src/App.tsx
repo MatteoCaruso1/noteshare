@@ -10,6 +10,7 @@ import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
 
 import { ColorThemeProvider } from "@/contexts/ColorThemeContext";
+import { BackgroundCustomizationProvider } from "@/contexts/BackgroundCustomizationContext";
 import { MetronomeProvider } from "@/contexts/MetronomeContext";
 import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
@@ -195,6 +196,7 @@ function AppInner() {
         <AuthProvider>
           <PremiumProvider>
             <ColorThemeProvider>
+            <BackgroundCustomizationProvider>
             <OnboardingProvider>
               
                 <BottomNavProvider>
@@ -266,6 +268,7 @@ function AppInner() {
             </BottomNavProvider>
               
             </OnboardingProvider>
+            </BackgroundCustomizationProvider>
             </ColorThemeProvider>
           </PremiumProvider>
         </AuthProvider>
