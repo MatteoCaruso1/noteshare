@@ -32,16 +32,8 @@ const TIPS: TipData[] = [
     image: tipPracticeRoutine,
   },
   {
-    text: 'The Documents feature in Organize is often underlooked! For example, create a Document that lists all the songs you are working on so you have a running list of all your repertoire directly in Noteshare.',
-    image: tipFolder,
-  },
-  {
     text: 'On mobile, press the unlock screen button to prevent your phone from closing during a session.',
     image: tipLockScreen,
-  },
-  {
-    text: 'Set a weekly practice goal every Monday to drive practice motivation. You can view your weekly progress against this goal in the Organize tab.',
-    image: tipWeeklyGoal,
   },
 ];
 
