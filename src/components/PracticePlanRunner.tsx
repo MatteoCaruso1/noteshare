@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import {
   PlanItem,
+  PlanItemKind,
   PracticePlan,
   usePracticePlans,
   useSavePracticePlan,
