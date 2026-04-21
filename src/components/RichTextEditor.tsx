@@ -16,17 +16,17 @@ const ListShortcuts = Extension.create({
     return {
       // Ctrl+Shift+L for bullet list
       'Mod-Shift-l': () => {
-        this.editor.chain().focus().toggleBulletList().run();
+        (this.editor.chain().focus() as any).toggleBulletList().run();
         return true;
       },
       // Ctrl+Shift+O for ordered list
       'Mod-Shift-o': () => {
-        this.editor.chain().focus().toggleOrderedList().run();
+        (this.editor.chain().focus() as any).toggleOrderedList().run();
         return true;
       },
     };
   },
-});
+}) as any;
 
 interface RichTextEditorProps {
   value: string;
