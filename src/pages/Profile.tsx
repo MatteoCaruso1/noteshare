@@ -39,6 +39,7 @@ import { ManagePlansSection } from '@/components/ManagePlansSection';
 import { SimpleGoals } from '@/components/SimpleGoals';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
+import { BackgroundPackPicker } from '@/components/BackgroundPackPicker';
 import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
@@ -521,16 +522,21 @@ const Profile = () => {
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
-                <h3 className="font-semibold">Themes</h3>
+                <h3 className="font-semibold">Themes & Vibes</h3>
               </div>
               <PremiumGate
                 featureName="Themes"
                 blur={false}
                 showPreview={false}
                 icon={Palette}
-                description="Upgrade to Pro to gain access to custom themes"
+                description="Upgrade to Pro to customize your color theme and floating background"
               >
-                <ThemePicker />
+                <div className="space-y-5">
+                  <ThemePicker />
+                  <div className="border-t border-border/60 pt-4">
+                    <BackgroundPackPicker />
+                  </div>
+                </div>
               </PremiumGate>
             </Card>
           )}
