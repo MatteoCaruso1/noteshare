@@ -36,6 +36,7 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { AWARD_CATEGORIES } from '@/lib/awardUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
+import { SimpleGoals } from '@/components/SimpleGoals';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
 import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
@@ -486,6 +487,12 @@ const Profile = () => {
                         {genre}
                       </Badge>
                     ))}
+                  </div>
+                )}
+
+                {profile?.id && (
+                  <div className="pt-2 border-t border-border/60">
+                    <SimpleGoals profileId={profile.id} />
                   </div>
                 )}
               </div>

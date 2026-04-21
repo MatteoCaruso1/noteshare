@@ -149,7 +149,7 @@ export function BottomNav() {
 
   const links = [
     { to: '/', icon: Music, label: 'Practice', mobileLabel: 'Practice' },
-    { to: '/pursuits', icon: ClipboardList, label: 'Organize', mobileLabel: 'Organize' },
+    // { to: '/pursuits', icon: ClipboardList, label: 'Organize', mobileLabel: 'Organize' }, // hidden for now
     { to: '/friends', icon: Users, label: 'Social', mobileLabel: 'Social', showBadge: true },
     { to: '/profile', icon: User, label: 'Profile', mobileLabel: 'Profile' },
   ];
