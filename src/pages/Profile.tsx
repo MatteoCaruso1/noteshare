@@ -490,14 +490,14 @@ const Profile = () => {
                   </div>
                 )}
 
-                {profile?.id && (
-                  <div className="pt-2 border-t border-border/60">
-                    <SimpleGoals profileId={profile.id} />
-                  </div>
-                )}
               </div>
             )}
           </Card>
+
+          {/* Musical Goals - own card */}
+          {!editing && profile?.id && (
+            <SimpleGoals profileId={profile.id} />
+          )}
 
           {/* Practice Ranking - visible to free users above the gate */}
           {!editing && !isPremium && (
