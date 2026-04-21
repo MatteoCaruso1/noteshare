@@ -47,8 +47,8 @@ function GaugeArc({ percent, size = 200 }: { percent: number; size?: number }) {
     <svg viewBox={`0 0 ${size} ${viewHeight}`} className="mx-auto w-full max-w-[240px]" aria-hidden="true">
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="hsl(340, 80%, 65%)" />
-          <stop offset="100%" stopColor="hsl(250, 60%, 55%)" />
+          <stop offset="0%" stopColor="hsl(var(--primary) / 0.95)" />
+          <stop offset="100%" stopColor="hsl(var(--primary) / 0.55)" />
         </linearGradient>
       </defs>
 
@@ -113,7 +113,7 @@ export function PracticeRanking({ profileId }: { profileId: string | undefined }
         {/* Main headline */}
         <p className="text-base sm:text-lg text-muted-foreground leading-snug mb-1">
           You're in the{' '}
-          <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[hsl(340,80%,65%)] to-[hsl(250,60%,55%)]">
+          <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60 brightness-125">
             top {pct}%
           </span>
           {' '}of
@@ -161,7 +161,7 @@ export function PracticeRanking({ profileId }: { profileId: string | undefined }
         {nextTierPct !== null && nextTierMinutes !== null && nextTierMinutes > 0 && (
           <p className="text-sm text-muted-foreground leading-relaxed">
             You're{' '}
-            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[hsl(340,80%,65%)] to-[hsl(250,60%,55%)]">
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60 brightness-125">
               {nextH > 0 ? `${nextH} hour${nextH !== 1 ? 's' : ''}` : ''}
               {nextH > 0 && nextM > 0 ? ' and ' : ''}
               {nextM > 0 ? `${nextM} minute${nextM !== 1 ? 's' : ''}` : ''}
