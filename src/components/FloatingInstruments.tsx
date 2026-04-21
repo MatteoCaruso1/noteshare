@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import {
+  useBackgroundCustomization,
+  getPackSymbols,
+  getDensityCount,
+} from '@/contexts/BackgroundCustomizationContext';
 
-const SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
+const DEFAULT_SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
 
 interface FloatingSymbol {
   id: number;
@@ -15,8 +20,8 @@ interface FloatingSymbol {
   rotateEnd: number;
 }
 
-function generateSymbols(isLanding: boolean): FloatingSymbol[] {
-  const count = 9;
+function generateSymbols(isLanding: boolean, symbolSet: string[], count: number): FloatingSymbol[] {
+  if (count <= 0 || symbolSet.length === 0) return [];
   const positions: number[] = [];
 
   const getPosition = (): number => {
