@@ -1089,7 +1089,22 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
       <PracticePlanRunner
         open={showPlanRunner}
         onOpenChange={setShowPlanRunner}
-        onStartRun={(plan) => setRunningPlan(plan)}
+        onStartRun={(plan) => {
+          setRunningPlan(plan);
+          // If no live session is active yet, start one so the inline runner becomes visible
+          if (!activeSession && profile && !startSession.isPending) {
+            if (ftuePreview.isFTUEPreview) {
+              ftuePreview.startPreviewSession();
+            } else {
+              setIsStartingSession(true);
+              startSession.mutate({ userId: profile.id }, {
+                onSettled: () => setIsStartingSession(false),
+              });
+            }
+            setShowSessionChoice(false);
+            setManuallyCollapsed(false);
+          }
+        }}
       />
     </Card>
   );
