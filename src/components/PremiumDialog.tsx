@@ -19,11 +19,6 @@ const BENEFITS = [
     description: 'Unlock detailed stats that measure your progress',
   },
   {
-    icon: ClipboardList,
-    title: "Unlock 'Organize'",
-    description: 'Organize your notes around goals, documents, and gigs; manage all your musical pursuits, on Noteshare',
-  },
-  {
     icon: Palette,
     title: 'Custom Themes',
     description: 'Personalize Noteshare with custom color themes',

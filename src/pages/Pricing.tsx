@@ -17,7 +17,6 @@ const proOnlyFeatures = [
 'Advanced practice stats',
 'Log past / offline sessions',
 'Goal setting & tracking',
-'Organize sessions using documents & gigs',
 'Metronome & practice timer',
 'Custom themes',
 'Backlog practice routines'];

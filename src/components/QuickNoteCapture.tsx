@@ -305,15 +305,6 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                 </PopoverContent>
               </Popover>
 
-              {/* Link to Goal/Project/Gig */}
-              <LinkToPicker
-                projects={projects}
-                gigs={gigs}
-                goals={goals}
-                selectedLink={selectedLink}
-                onLinkChange={setSelectedLink}
-              />
-              
               {/* Metronome */}
               <Metronome />
               
