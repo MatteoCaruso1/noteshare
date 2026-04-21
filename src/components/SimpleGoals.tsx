@@ -124,7 +124,7 @@ export function SimpleGoals({ profileId }: SimpleGoalsProps) {
       <Card className="bg-card border-border p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-foreground" />
+            <Compass className="w-5 h-5 text-primary" />
             <h2 className="font-semibold">Musical Goals</h2>
           </div>
         </div>
