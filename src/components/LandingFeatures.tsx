@@ -7,8 +7,9 @@ import landingFriends from '@/assets/landing-friends.png';
 
 const features = [
   {
+    eyebrow: 'Core Feature',
     title: 'Track Practice Sessions',
-    description: 'Start a timed session, record audio or video of your playing, and attach notes. Each session is saved to your timeline with duration and date. This loop is proven to improve your practice quality.',
+    description: 'Start a timed session, record audio or video of your playing, and attach notes. Each session is saved to your timeline with duration and date. This loop is **proven to improve your practice quality**.',
     image: landingSessions,
     alt: 'Noteshare practice session screen showing a timed session with audio recording controls, attached notes, and a comment thread between musicians',
     cropTop: false,
@@ -16,8 +17,9 @@ const features = [
     height: 631,
   },
   {
+    eyebrow: 'Insight',
     title: 'Reflect With Practice Notes',
-    description: 'Write text notes, tag focus areas, and organize entries by topic. Notes are stored chronologically so you can review what you worked on and when. This helps you learn concepts faster.',
+    description: 'Write text notes, tag focus areas, and organize entries by topic. Notes are stored chronologically so you can **review what you worked on** and **learn faster**.',
     image: landingFocus,
     alt: 'Noteshare daily focus view listing practice topics such as scales, sight-reading, and repertoire pieces with editable text fields',
     cropTop: false,
@@ -25,8 +27,9 @@ const features = [
     height: 464,
   },
   {
+    eyebrow: 'The Payoff',
     title: 'Measure Progress With Analytics',
-    description: 'View total practice minutes, daily streaks, and session frequency over weeks and months. This truly strengthens your motivation to practice and helps maintain accountability.',
+    description: 'View total practice minutes, daily streaks, and session frequency over weeks and months. See your **progress, trends, and improvement** — and stay accountable to your goals.',
     image: landingProgress,
     alt: 'Noteshare analytics dashboard displaying a weekly practice minutes bar chart, current streak count, and a calendar heatmap of practice days',
     cropTop: false,
@@ -34,8 +37,9 @@ const features = [
     height: 488,
   },
   {
+    eyebrow: 'Community',
     title: "Practice with Friends",
-    description: 'Connect with other musicians to see their practice activity and learn from what they are working on. Share notes selectively with your friends and watch how this increases your practice motivation and pushes you to become a better player.',
+    description: 'Connect with other musicians to see their practice activity and learn from what they are working on. Share notes selectively with your friends and watch how this **increases your motivation** to practice.',
     image: landingFriends,
     alt: 'Noteshare friends feed showing practice session summaries from connected musicians with timestamps and session durations',
     cropTop: false,
@@ -43,6 +47,17 @@ const features = [
     height: 649,
   },
 ];
+
+// Render description with **bold** support
+function renderDescription(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="text-foreground/95 font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
 
 // Preload all feature images on mount
 function usePreloadImages() {
@@ -99,20 +114,28 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       <div className={`max-w-[225px] sm:max-w-[320px] lg:max-w-[400px] xl:max-w-[480px] ${
         isRight ? 'text-right' : 'text-left'
       }`}>
+        {feature.eyebrow && (
+          <div className={`mb-3 flex ${isRight ? 'justify-end' : 'justify-start'}`}>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] sm:text-xs font-semibold text-primary uppercase tracking-wider">
+              {feature.eyebrow}
+            </span>
+          </div>
+        )}
         <h2
           id={`feature-heading-${index}`}
-          className="text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground"
+          className="text-base sm:text-xl md:text-2xl lg:text-3xl font-semibold text-foreground tracking-tight"
         >
           {feature.title}
         </h2>
-        <p className="mt-2 text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
-          {displayDescription}
+        <p className="mt-3 text-xs sm:text-sm md:text-base text-muted-foreground/90 leading-relaxed">
+          {renderDescription(displayDescription)}
         </p>
       </div>
-      <div className="relative z-[12]">
-        <div className="absolute -inset-4 bg-primary/10 blur-xl md:blur-2xl rounded-3xl opacity-50" />
+      <div className="relative z-[12] group">
+        {/* Layered glow */}
+        <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl md:blur-3xl rounded-3xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
         <div 
-          className={`relative rounded-lg overflow-hidden shadow-xl shadow-black/25 border border-border/50 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ${
+          className={`relative rounded-xl overflow-hidden shadow-2xl shadow-black/40 border border-border/60 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ring-1 ring-white/5 transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-primary/20 ${
             feature.cropTop ? 'h-[220px]' : ''
           }`}
         >
