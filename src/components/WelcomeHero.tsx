@@ -86,14 +86,7 @@ export function WelcomeHero() {
           ref={heroContentRef}
           className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-32 xl:px-40 w-full pt-12 md:pt-16 relative z-10 will-change-[opacity]"
         >
-          {/* Eyebrow trust badge */}
-          <div className="inline-flex items-center gap-2 self-start mb-6 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-            </span>
-            <span className="text-xs font-medium text-foreground/80 tracking-wide">Purpose-built for musicians</span>
-          </div>
+          {/* Eyebrow trust badge removed per request */}
 
           {/* Headline with subtle gradient glow accent */}
           <div className="relative max-w-4xl lg:max-w-6xl mb-6">
@@ -108,14 +101,14 @@ export function WelcomeHero() {
             </h1>
           </div>
           <p className="text-lg md:text-xl text-muted-foreground/90 max-w-2xl lg:max-w-3xl mb-8 leading-relaxed">
-            Organize, record, and reflect on every session. <span className="text-foreground font-medium">Track progress</span>, <span className="text-foreground font-medium">stay consistent</span>, and become a better player — one session at a time.
+            Organize, record, and reflect on every session. <span className="text-foreground font-medium">Track progress</span>, <span className="text-foreground font-medium">stay consistent</span>, and become a better player, one session at a time.
           </p>
           <MarketingCTA variant="hero" />
           {/* Microcopy + trust signal under CTA */}
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground/80">
             <span className="inline-flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-              Free to start — no credit card
+              Free to start, no credit card
             </span>
             <span className="hidden sm:inline text-border">•</span>
             <span className="inline-flex items-center gap-1.5">
