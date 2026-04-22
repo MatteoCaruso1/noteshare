@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MarketingCTA } from './MarketingCTA';
 import landingFocus from '@/assets/landing-focus.png';
 import landingSessions from '@/assets/landing-sessions.png';
 import landingProgress from '@/assets/landing-progress.png';
@@ -172,6 +173,23 @@ export function LandingFeatures() {
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
         ))}
+
+        {/* Repeated CTA + testimonial after features */}
+        <div className="relative pt-12 md:pt-20 flex flex-col items-center text-center">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+          <blockquote className="max-w-2xl mx-auto text-base md:text-lg text-foreground/85 font-medium leading-relaxed italic">
+            "Noteshare changed how I practice. I finally <span className="not-italic font-semibold text-foreground">see my progress</span> instead of guessing at it."
+          </blockquote>
+          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground/70">
+            — Jazz pianist, Toronto
+          </p>
+          <div className="mt-8">
+            <MarketingCTA variant="hero" />
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground/70">
+            No credit card required · Free to start
+          </p>
+        </div>
       </div>
     </section>
   );
