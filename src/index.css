@@ -862,6 +862,11 @@ body.session-active [data-radix-toast-viewport] * {
   }
 }
 
+@keyframes ctaHaloPulse {
+  0%, 100% { opacity: 0.42; }
+  50% { opacity: 0.55; }
+}
+
 /* ========================================
    SESSION FOCUS MODE
    Dramatic visual state when practicing
