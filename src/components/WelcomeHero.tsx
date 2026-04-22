@@ -117,7 +117,7 @@ export function WelcomeHero() {
             </span>
           </div>
           <p className="mt-5 text-xs uppercase tracking-[0.2em] text-muted-foreground/60">
-            Trusted by musicians improving daily
+            Trusted by 2K+ musicians improving daily
           </p>
         </main>
 
