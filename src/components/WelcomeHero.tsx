@@ -86,11 +86,11 @@ export function WelcomeHero() {
           ref={heroContentRef}
           className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-32 xl:px-40 w-full pt-12 md:pt-16 relative z-10 will-change-[opacity] 2xl:items-center 2xl:text-center 2xl:px-8"
         >
-          <div className="2xl:max-w-5xl 2xl:w-full 2xl:flex 2xl:flex-col 2xl:items-center">
+          <div className="2xl:max-w-7xl 2xl:w-full 2xl:flex 2xl:flex-col 2xl:items-center">
             {/* Eyebrow trust badge removed per request */}
 
             {/* Headline with subtle gradient glow accent */}
-            <div className="relative max-w-4xl lg:max-w-6xl mb-6">
+            <div className="relative max-w-4xl lg:max-w-6xl 2xl:max-w-[1400px] mb-6">
               <div className="absolute -inset-x-8 -inset-y-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent blur-3xl pointer-events-none -z-10 2xl:bg-gradient-to-b 2xl:from-primary/10 2xl:via-primary/5 2xl:to-transparent" />
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1] text-foreground">
                 Noteshare is a purpose-built tool to help musicians{' '}
@@ -101,7 +101,7 @@ export function WelcomeHero() {
                 </span>
               </h1>
             </div>
-            <p className="text-lg md:text-xl text-muted-foreground/90 max-w-2xl lg:max-w-3xl mb-8 leading-relaxed 2xl:mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground/90 max-w-2xl lg:max-w-3xl 2xl:max-w-4xl mb-8 leading-relaxed 2xl:mx-auto">
               Organize, record, and reflect on every session. <span className="text-foreground font-medium">Track progress</span>, <span className="text-foreground font-medium">stay consistent</span>, and become a better player, one session at a time.
             </p>
             <MarketingCTA variant="hero" className="2xl:justify-center" />
