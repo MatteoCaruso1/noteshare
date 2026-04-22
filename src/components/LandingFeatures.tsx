@@ -169,7 +169,7 @@ export function LandingFeatures() {
     >
       {/* Subtle accent glow behind features */}
       <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
-      <div className="relative w-full space-y-8">
+      <div className="relative w-full max-w-7xl mx-auto space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
         ))}
@@ -183,8 +183,8 @@ export function LandingFeatures() {
           <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground/70">
             Jazz pianist, Toronto
           </p>
-          <div className="mt-8">
-            <MarketingCTA variant="hero" />
+          <div className="mt-8 flex justify-center">
+            <MarketingCTA variant="hero" className="justify-center" />
           </div>
           <p className="mt-4 text-xs text-muted-foreground/70">
             No credit card required · Free to start
