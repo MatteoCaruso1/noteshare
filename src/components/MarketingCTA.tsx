@@ -53,7 +53,7 @@ export function MarketingCTA({ variant = 'inline', className = '' }: MarketingCT
       <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 ${className}`}>
         <div className="relative group">
           {/* Slow, soft glow halo */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary via-primary/80 to-primary rounded-lg blur-lg opacity-50 group-hover:opacity-80 transition-opacity duration-500 animate-[pulse_5s_ease-in-out_infinite]" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary via-primary/80 to-primary rounded-lg blur-lg opacity-50 group-hover:opacity-80 transition-opacity duration-500 animate-[pulse_12s_ease-in-out_infinite]" />
           <Button
             size="lg"
             className="relative overflow-hidden bg-primary hover:bg-primary text-primary-foreground font-bold px-10 h-12 text-base shadow-2xl shadow-primary/40 hover:shadow-primary/60 transition-all duration-300 hover:scale-[1.04] group/btn ring-1 ring-primary-foreground/10"
