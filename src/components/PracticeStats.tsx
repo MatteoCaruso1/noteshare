@@ -117,6 +117,15 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
   // State for routine preview (used by custom charts with routine_distribution metric)
   const [previewRoutine, setPreviewRoutine] = useState<{ name: string; routineText: string; count: number; minutes: number } | null>(null);
 
+  // Toggle visibility of lines in Practice Time chart
+  const [visibleLines, setVisibleLines] = useState<{ weekly: boolean; allAvg: boolean; fourWeek: boolean }>({
+    weekly: true,
+    allAvg: true,
+    fourWeek: true,
+  });
+  const toggleLine = (key: 'weekly' | 'allAvg' | 'fourWeek') =>
+    setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
+
   // Compute trend callouts from stats data
   const trends = useMemo(() => {
     if (!stats) return null;
@@ -318,24 +327,42 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
                   </>
                 )}
               </p>
-              {/* Legend */}
-              <div className="flex items-center gap-4 mb-2">
-                <div className="flex items-center gap-1.5">
+              {/* Legend — click to toggle lines */}
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  type="button"
+                  onClick={() => toggleLine('weekly')}
+                  aria-pressed={visibleLines.weekly}
+                  className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-opacity [-webkit-tap-highlight-color:transparent] hover:bg-muted/60 ${visibleLines.weekly ? 'opacity-100' : 'opacity-40'}`}
+                  title="Click to toggle"
+                >
                   <span className="inline-block w-3 h-0.5 rounded-full bg-primary" />
                   <span className="text-[10px] text-muted-foreground">Weekly Total</span>
-                </div>
-                <div className="flex items-center gap-1.5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleLine('allAvg')}
+                  aria-pressed={visibleLines.allAvg}
+                  className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-opacity [-webkit-tap-highlight-color:transparent] hover:bg-muted/60 ${visibleLines.allAvg ? 'opacity-100' : 'opacity-40'}`}
+                  title="Click to toggle"
+                >
                   <svg width="12" height="4" className="inline-block">
                     <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(270 60% 65%)" strokeWidth="1.5" strokeDasharray="3 2" />
                   </svg>
                   <span className="text-[10px] text-muted-foreground">All Time Avg</span>
-                </div>
-                <div className="flex items-center gap-1.5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleLine('fourWeek')}
+                  aria-pressed={visibleLines.fourWeek}
+                  className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-opacity [-webkit-tap-highlight-color:transparent] hover:bg-muted/60 ${visibleLines.fourWeek ? 'opacity-100' : 'opacity-40'}`}
+                  title="Click to toggle"
+                >
                   <svg width="12" height="4" className="inline-block">
                     <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(38 92% 50%)" strokeWidth="1.5" strokeDasharray="4 2" />
                   </svg>
                   <span className="text-[10px] text-muted-foreground">4-Week Avg</span>
-                </div>
+                </button>
               </div>
               <div className="h-40 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -373,32 +400,38 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
                         return [formatFriendlyHours(value), name];
                       }}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="avgHours" 
-                      stroke="hsl(270 60% 65%)" 
-                      strokeWidth={1.5}
-                      strokeDasharray="6 3"
-                      dot={false}
-                      activeDot={{ r: 3 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="fourWeekAvg" 
-                      stroke="hsl(38 92% 50%)" 
-                      strokeWidth={1.5}
-                      strokeDasharray="4 2"
-                      dot={false}
-                      activeDot={{ r: 3 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="hours" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
-                      activeDot={{ r: 5 }}
-                    />
+                    {visibleLines.allAvg && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="avgHours" 
+                        stroke="hsl(270 60% 65%)" 
+                        strokeWidth={1.5}
+                        strokeDasharray="6 3"
+                        dot={false}
+                        activeDot={{ r: 3 }}
+                      />
+                    )}
+                    {visibleLines.fourWeek && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="fourWeekAvg" 
+                        stroke="hsl(38 92% 50%)" 
+                        strokeWidth={1.5}
+                        strokeDasharray="4 2"
+                        dot={false}
+                        activeDot={{ r: 3 }}
+                      />
+                    )}
+                    {visibleLines.weekly && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="hours" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    )}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
