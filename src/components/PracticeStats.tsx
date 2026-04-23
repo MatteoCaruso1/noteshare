@@ -327,24 +327,42 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
                   </>
                 )}
               </p>
-              {/* Legend */}
-              <div className="flex items-center gap-4 mb-2">
-                <div className="flex items-center gap-1.5">
+              {/* Legend — click to toggle lines */}
+              <div className="flex items-center gap-3 mb-2">
+                <button
+                  type="button"
+                  onClick={() => toggleLine('weekly')}
+                  aria-pressed={visibleLines.weekly}
+                  className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-opacity [-webkit-tap-highlight-color:transparent] hover:bg-muted/60 ${visibleLines.weekly ? 'opacity-100' : 'opacity-40'}`}
+                  title="Click to toggle"
+                >
                   <span className="inline-block w-3 h-0.5 rounded-full bg-primary" />
                   <span className="text-[10px] text-muted-foreground">Weekly Total</span>
-                </div>
-                <div className="flex items-center gap-1.5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleLine('allAvg')}
+                  aria-pressed={visibleLines.allAvg}
+                  className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-opacity [-webkit-tap-highlight-color:transparent] hover:bg-muted/60 ${visibleLines.allAvg ? 'opacity-100' : 'opacity-40'}`}
+                  title="Click to toggle"
+                >
                   <svg width="12" height="4" className="inline-block">
                     <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(270 60% 65%)" strokeWidth="1.5" strokeDasharray="3 2" />
                   </svg>
                   <span className="text-[10px] text-muted-foreground">All Time Avg</span>
-                </div>
-                <div className="flex items-center gap-1.5">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleLine('fourWeek')}
+                  aria-pressed={visibleLines.fourWeek}
+                  className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 transition-opacity [-webkit-tap-highlight-color:transparent] hover:bg-muted/60 ${visibleLines.fourWeek ? 'opacity-100' : 'opacity-40'}`}
+                  title="Click to toggle"
+                >
                   <svg width="12" height="4" className="inline-block">
                     <line x1="0" y1="2" x2="12" y2="2" stroke="hsl(38 92% 50%)" strokeWidth="1.5" strokeDasharray="4 2" />
                   </svg>
                   <span className="text-[10px] text-muted-foreground">4-Week Avg</span>
-                </div>
+                </button>
               </div>
               <div className="h-40 mb-2">
                 <ResponsiveContainer width="100%" height="100%">
