@@ -43,8 +43,10 @@ const LifetimeCheckoutDialog = lazy(() =>
 import { AddToHomescreenPrompt } from "@/components/AddToHomescreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Eagerly load the landing/welcome pages for fast FCP
-import Index from "./pages/Index";
+// Eagerly load the landing gate (renders WelcomeHero for logged-out users
+// and lazy-loads the dashboard Index for logged-in users) for fast FCP
+// while keeping the dashboard JS out of the landing page critical path.
+import LandingGate from "./pages/LandingGate";
 import Welcome from "./pages/Welcome";
 
 // Lazy load all other pages to reduce initial bundle
@@ -222,7 +224,7 @@ function AppInner() {
                       <FTUERetryCommit />
                       <UpdateAvailableToast />
                     <Routes>
-                      <Route path="/" element={<Index />} />
+                      <Route path="/" element={<LandingGate />} />
                       <Route path="/welcome" element={<Welcome />} />
                       <Route path="/projects" element={<Suspense fallback={null}><Projects /></Suspense>} />
                       <Route path="/projects/:id" element={<Suspense fallback={null}><ProjectDetail /></Suspense>} />
