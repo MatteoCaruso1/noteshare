@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MarketingCTA } from './MarketingCTA';
-import landingFocus from '@/assets/landing-focus.png';
-import landingSessions from '@/assets/landing-sessions.png';
-import landingProgress from '@/assets/landing-progress.png';
-import landingFriends from '@/assets/landing-friends.png';
+import landingFocus from '@/assets/landing-focus.webp';
+import landingSessions from '@/assets/landing-sessions.webp';
+import landingProgress from '@/assets/landing-progress.webp';
+import landingFriends from '@/assets/landing-friends.webp';
 
 const features = [
   {
