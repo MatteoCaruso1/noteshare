@@ -400,32 +400,38 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
                         return [formatFriendlyHours(value), name];
                       }}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="avgHours" 
-                      stroke="hsl(270 60% 65%)" 
-                      strokeWidth={1.5}
-                      strokeDasharray="6 3"
-                      dot={false}
-                      activeDot={{ r: 3 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="fourWeekAvg" 
-                      stroke="hsl(38 92% 50%)" 
-                      strokeWidth={1.5}
-                      strokeDasharray="4 2"
-                      dot={false}
-                      activeDot={{ r: 3 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="hours" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
-                      activeDot={{ r: 5 }}
-                    />
+                    {visibleLines.allAvg && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="avgHours" 
+                        stroke="hsl(270 60% 65%)" 
+                        strokeWidth={1.5}
+                        strokeDasharray="6 3"
+                        dot={false}
+                        activeDot={{ r: 3 }}
+                      />
+                    )}
+                    {visibleLines.fourWeek && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="fourWeekAvg" 
+                        stroke="hsl(38 92% 50%)" 
+                        strokeWidth={1.5}
+                        strokeDasharray="4 2"
+                        dot={false}
+                        activeDot={{ r: 3 }}
+                      />
+                    )}
+                    {visibleLines.weekly && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="hours" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    )}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
