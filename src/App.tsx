@@ -14,8 +14,6 @@ import { BackgroundCustomizationProvider } from "@/contexts/BackgroundCustomizat
 import { MetronomeProvider } from "@/contexts/MetronomeContext";
 import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
-import { GlobalSessionBanner } from "@/components/GlobalSessionBanner";
-import { SessionFocusOverlay } from "@/components/SessionFocusOverlay";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import UpdateAvailableToast from "@/components/UpdateAvailableToast";
@@ -23,8 +21,23 @@ import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
 import { SyncManager, SyncState } from "@/components/SyncManager";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { BottomNav } from "@/components/BottomNav";
-import { PremiumDialog } from "@/components/PremiumDialog";
-import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
+
+// Lazy-load components that are not needed for initial paint of the
+// landing page (logged-out users) to shrink the main bundle and improve
+// Speed Index / Total Blocking Time. They render only when their data
+// dependencies are met (auth, active session, onboarding state, etc.).
+const GlobalSessionBanner = lazy(() =>
+  import("@/components/GlobalSessionBanner").then(m => ({ default: m.GlobalSessionBanner }))
+);
+const SessionFocusOverlay = lazy(() =>
+  import("@/components/SessionFocusOverlay").then(m => ({ default: m.SessionFocusOverlay }))
+);
+const PremiumDialog = lazy(() =>
+  import("@/components/PremiumDialog").then(m => ({ default: m.PremiumDialog }))
+);
+const OnboardingFlow = lazy(() =>
+  import("@/components/onboarding/OnboardingFlow").then(m => ({ default: m.OnboardingFlow }))
+);
 
 import { useAvatarPrefetch } from "@/hooks/useAvatarPrefetch";
 import { useFriendIds } from "@/hooks/useFriendIds";
