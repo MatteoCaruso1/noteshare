@@ -224,14 +224,14 @@ function AppInner() {
                       <SyncManager onStateChange={handleSyncStateChange} />
                       <OfflineBanner syncState={syncState} />
                       <FloatingInstruments />
-                      <SessionFocusOverlay />
+                      <Suspense fallback={null}><SessionFocusOverlay /></Suspense>
                       <AppHeader />
-                      <GlobalSessionBanner />
+                      <Suspense fallback={null}><GlobalSessionBanner /></Suspense>
                       <AddToHomescreenPrompt />
-                      <PremiumDialog />
+                      <Suspense fallback={null}><PremiumDialog /></Suspense>
                       <CheckoutDialogWrapper />
                       <LifetimeCheckoutDialogWrapper />
-                      <OnboardingFlow />
+                      <Suspense fallback={null}><OnboardingFlow /></Suspense>
                       
                       <AppPrefetcher />
                       <FTUERetryCommit />
