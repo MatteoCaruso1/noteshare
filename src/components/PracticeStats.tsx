@@ -117,6 +117,15 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
   // State for routine preview (used by custom charts with routine_distribution metric)
   const [previewRoutine, setPreviewRoutine] = useState<{ name: string; routineText: string; count: number; minutes: number } | null>(null);
 
+  // Toggle visibility of lines in Practice Time chart
+  const [visibleLines, setVisibleLines] = useState<{ weekly: boolean; allAvg: boolean; fourWeek: boolean }>({
+    weekly: true,
+    allAvg: true,
+    fourWeek: true,
+  });
+  const toggleLine = (key: 'weekly' | 'allAvg' | 'fourWeek') =>
+    setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
+
   // Compute trend callouts from stats data
   const trends = useMemo(() => {
     if (!stats) return null;
