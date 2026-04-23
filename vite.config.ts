@@ -111,12 +111,14 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
+        // Only split foundational vendors that are needed on every page.
+        // Recharts and Tiptap are deliberately omitted so Vite code-splits them
+        // into the lazy-loaded route chunks that actually use them, keeping
+        // them off the critical path for landing page visitors.
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-query': ['@tanstack/react-query'],
-          'vendor-recharts': ['recharts'],
-          'vendor-tiptap': ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-placeholder', '@tiptap/extension-underline'],
         },
       },
     },
