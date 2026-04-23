@@ -117,14 +117,30 @@ export function PracticeStats({ profileId, showRanking }: PracticeStatsProps) {
   // State for routine preview (used by custom charts with routine_distribution metric)
   const [previewRoutine, setPreviewRoutine] = useState<{ name: string; routineText: string; count: number; minutes: number } | null>(null);
 
-  // Toggle visibility of lines in Practice Time chart
-  const [visibleLines, setVisibleLines] = useState<{ weekly: boolean; allAvg: boolean; fourWeek: boolean }>({
-    weekly: true,
-    allAvg: true,
-    fourWeek: true,
+  // Toggle visibility of lines in Practice Time chart - persisted to localStorage
+  const STORAGE_KEY = profile?.id ? `practiceStats_visibleLines_${profile.id}` : 'practiceStats_visibleLines';
+  const [visibleLines, setVisibleLines] = useState<{ weekly: boolean; allAvg: boolean; fourWeek: boolean }>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && 
+            'weekly' in parsed && 'allAvg' in parsed && 'fourWeek' in parsed) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignore parse errors, fall back to defaults
+    }
+    return { weekly: true, allAvg: true, fourWeek: true };
   });
-  const toggleLine = (key: 'weekly' | 'allAvg' | 'fourWeek') =>
-    setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleLine = useCallback((key: 'weekly' | 'allAvg' | 'fourWeek') => {
+    setVisibleLines(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, [STORAGE_KEY]);
 
   // Compute trend callouts from stats data
   const trends = useMemo(() => {
