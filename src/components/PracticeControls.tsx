@@ -43,7 +43,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Play, Square, Clock, X, Lock, Users, Settings, ListTodo, Pause, ChevronDown, ChevronRight, Trash2, LockOpen, Route } from 'lucide-react';
+import { Play, Square, Clock, X, Lock, Users, Settings, ListTodo, Pause, ChevronDown, ChevronRight, Trash2, LockOpen, Route, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -1063,7 +1063,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
               disabled={createNote.isPending || uploading || endSession.isPending || isRecordingAudio}
               title={isRecordingAudio ? 'Stop recording first' : 'End Session'}
             >
-              <Square className="w-4 h-4 fill-current" />
+              <Save className="w-4 h-4" />
             </Button>
             
             {/* End Session Dialog */}
