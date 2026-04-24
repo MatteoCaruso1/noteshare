@@ -187,7 +187,7 @@ export function LandingFeatures() {
             <MarketingCTA variant="hero" className="justify-center" />
           </div>
           <p className="mt-4 text-xs text-muted-foreground/70">
-            No credit card required · Free to start
+            No credit card required · Free to use
           </p>
         </div>
       </div>
