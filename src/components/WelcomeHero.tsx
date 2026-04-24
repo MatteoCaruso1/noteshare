@@ -109,7 +109,7 @@ export function WelcomeHero() {
             <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground/80 2xl:justify-center">
               <span className="inline-flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                Free to use, no credit card
+                Free to use
               </span>
               <span className="hidden sm:inline text-border">•</span>
               <span className="inline-flex items-center gap-1.5">
