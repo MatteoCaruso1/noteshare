@@ -177,8 +177,8 @@ export function LandingFeatures() {
         {/* Repeated CTA + testimonial after features */}
         <div className="relative pt-12 md:pt-20 flex flex-col items-center text-center">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
-          <blockquote className="max-w-2xl mx-auto text-base md:text-lg text-foreground/85 font-medium leading-relaxed italic">
-            "Noteshare changed how I practice. I <span className="not-italic font-semibold text-foreground">wouldn't want to go back</span> to a world without it."
+          <blockquote className="max-w-2xl mx-auto text-base md:text-lg text-foreground/85 font-medium leading-relaxed">
+            "Noteshare changed how I practice. I <span className="font-semibold text-foreground">wouldn't want to go back</span> to a world without it."
           </blockquote>
           <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground/70">
             Jazz pianist, Toronto
