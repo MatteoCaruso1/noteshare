@@ -33,22 +33,72 @@ if (isNativePlatform) {
   }).catch(() => void 0);
 }
 
-// Service worker registration with deferred updates.
-// New versions are detected but NOT force-reloaded; a toast lets the user choose when to update.
-// SKIP on native iOS/Android — WKWebView has inconsistent SW support that can cause
-// stale data, blank screens, and update failures.
+// ----- Service worker: aggressive but session-safe update strategy -----
+// Strategy:
+//   1. On cold launch with NO active practice session → auto-skipWaiting + reload once.
+//   2. If a session IS active → defer via toast (UpdateAvailableToast) to protect the session.
+//   3. Re-check for updates every time the app returns to the foreground.
+//   4. Reload exactly once when a new SW takes control (controllerchange).
+// SKIP on native iOS/Android — WKWebView has inconsistent SW support.
 if ("serviceWorker" in navigator && !isNativePlatform) {
+  const ACTIVE_SESSION_KEY = 'noteshare_active_session';
+
+  const hasActiveSession = (): boolean => {
+    try {
+      const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return !!(parsed && parsed.session);
+    } catch {
+      return false;
+    }
+  };
+
+  // Reload once when the new SW takes control. Guard prevents reload loops.
+  let reloadingForUpdate = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloadingForUpdate) return;
+    reloadingForUpdate = true;
+    window.location.reload();
+  });
+
+  const promoteWaiting = (worker: ServiceWorker | null | undefined) => {
+    if (!worker) return;
+    if (hasActiveSession()) {
+      // Mid-session: defer. Toast will let the user choose.
+      window.dispatchEvent(new CustomEvent("sw-update-available"));
+    } else {
+      // Safe to update silently. controllerchange will reload.
+      worker.postMessage({ type: "SKIP_WAITING" });
+    }
+  };
+
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .then((registration) => {
-        // Proactively check for updates (immediately + periodically).
+        // If a worker is already waiting at registration time, promote immediately.
+        if (registration.waiting) {
+          promoteWaiting(registration.waiting);
+        }
+
+        // Proactively check for updates on load.
         registration.update().catch(() => void 0);
+
+        // Hourly background check (in case the tab is left open for a long time).
         window.setInterval(() => {
           registration.update().catch(() => void 0);
-        }, 60 * 60 * 1000); // hourly
+        }, 60 * 60 * 1000);
 
-        // When a new SW is found and installed, notify the app instead of force-reloading.
+        // Re-check when the app/tab returns to the foreground.
+        // This is critical for installed PWAs that get backgrounded for hours.
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") {
+            registration.update().catch(() => void 0);
+          }
+        });
+
+        // When a new SW is found and installs, promote it (or defer if mid-session).
         registration.addEventListener("updatefound", () => {
           const newWorker = registration.installing;
           if (!newWorker) return;
@@ -57,7 +107,7 @@ if ("serviceWorker" in navigator && !isNativePlatform) {
               newWorker.state === "installed" &&
               navigator.serviceWorker.controller
             ) {
-              window.dispatchEvent(new CustomEvent("sw-update-available"));
+              promoteWaiting(newWorker);
             }
           });
         });
@@ -67,5 +117,3 @@ if ("serviceWorker" in navigator && !isNativePlatform) {
       });
   });
 }
-
-

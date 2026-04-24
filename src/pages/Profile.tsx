@@ -36,6 +36,7 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { getStreakTier, getNextStreakMilestone, STREAK_TIERS, StreakTierInfo } from '@/lib/streakUtils';
 import { AWARD_CATEGORIES } from '@/lib/awardUtils';
 import { ManagePlansSection } from '@/components/ManagePlansSection';
+import { CheckForUpdatesCard } from '@/components/CheckForUpdatesCard';
 import { SimpleGoals } from '@/components/SimpleGoals';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
@@ -543,6 +544,9 @@ const Profile = () => {
 
           {/* Manage Plans Section - only in edit mode */}
           {editing && <ManagePlansSection />}
+
+          {/* App version / force update — only in edit mode */}
+          {editing && <CheckForUpdatesCard />}
 
           {/* Practice Preferences - only in edit mode */}
           {editing && (
