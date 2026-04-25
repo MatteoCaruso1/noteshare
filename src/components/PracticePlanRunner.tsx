@@ -96,7 +96,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
   const startBuilderForNew = () => {
     setEditingId(null);
     setName('My Practice Plan');
-    setItems(STARTER_TEMPLATE.map(i => ({ ...i, id: newId() })));
+    setItems([]);
     setMode('build');
   };
 
