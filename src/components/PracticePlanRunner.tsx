@@ -140,10 +140,12 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
             {mode === 'list' && 'Practice on Rails'}
             {mode === 'build' && (editingId ? 'Edit Plan' : 'New Plan')}
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            {mode === 'list' && 'Run a structured practice with sections, breaks, and per-section timers.'}
-            {mode === 'build' && 'Reorder with arrows. Tap a block to edit. Press Start to run inline.'}
-          </DialogDescription>
+          {mode === 'list' && (
+            <DialogDescription className="text-xs">
+              Run a structured practice with sections, breaks, and per-section timers.
+            </DialogDescription>
+          )}
+          {mode === 'build' && <DialogDescription className="sr-only">Build your practice plan.</DialogDescription>}
         </DialogHeader>
 
         {mode === 'list' && (
