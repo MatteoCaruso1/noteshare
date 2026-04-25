@@ -224,22 +224,20 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
                       aria-label="Move down"
                     >▼</button>
                   </div>
-                  <Select value={item.kind} onValueChange={(v: PlanItemKind) => updateItem(item.id, { kind: v })}>
-                    <SelectTrigger className="w-[110px] h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="section">
-                        <span className="flex items-center gap-1.5"><Music2 className="w-3.5 h-3.5" /> Section</span>
-                      </SelectItem>
-                      <SelectItem value="break">
-                        <span className="flex items-center gap-1.5"><Coffee className="w-3.5 h-3.5" /> Break</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div
+                    className="shrink-0 w-9 h-9 rounded-md border border-input flex items-center justify-center text-muted-foreground"
+                    aria-label={item.kind === 'break' ? 'Break' : 'Section'}
+                    title={item.kind === 'break' ? 'Break' : 'Section'}
+                  >
+                    {item.kind === 'break'
+                      ? <Coffee className="w-4 h-4" />
+                      : <Music2 className="w-4 h-4" />}
+                  </div>
                   <Input
                     value={item.title}
                     onChange={e => updateItem(item.id, { title: e.target.value })}
-                    placeholder={item.kind === 'break' ? 'Break' : 'Title'}
-                    className="flex-1 h-9"
+                    placeholder={item.kind === 'break' ? 'Break description' : 'What to practice'}
+                    className="flex-1 min-w-0 h-9"
                   />
                   <Input
                     type="number"
