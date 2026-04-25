@@ -96,7 +96,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
   const startBuilderForNew = () => {
     setEditingId(null);
     setName('My Practice Plan');
-    setItems(STARTER_TEMPLATE.map(i => ({ ...i, id: newId() })));
+    setItems([]);
     setMode('build');
   };
 
@@ -140,10 +140,12 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
             {mode === 'list' && 'Practice on Rails'}
             {mode === 'build' && (editingId ? 'Edit Plan' : 'New Plan')}
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            {mode === 'list' && 'Run a structured practice with sections, breaks, and per-section timers.'}
-            {mode === 'build' && 'Reorder with arrows. Tap a block to edit. Press Start to run inline.'}
-          </DialogDescription>
+          {mode === 'list' && (
+            <DialogDescription className="text-xs">
+              Run a structured practice with sections, breaks, and per-section timers.
+            </DialogDescription>
+          )}
+          {mode === 'build' && <DialogDescription className="sr-only">Build your practice plan.</DialogDescription>}
         </DialogHeader>
 
         {mode === 'list' && (
@@ -222,22 +224,20 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
                       aria-label="Move down"
                     >▼</button>
                   </div>
-                  <Select value={item.kind} onValueChange={(v: PlanItemKind) => updateItem(item.id, { kind: v })}>
-                    <SelectTrigger className="w-[110px] h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="section">
-                        <span className="flex items-center gap-1.5"><Music2 className="w-3.5 h-3.5" /> Section</span>
-                      </SelectItem>
-                      <SelectItem value="break">
-                        <span className="flex items-center gap-1.5"><Coffee className="w-3.5 h-3.5" /> Break</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div
+                    className="shrink-0 w-9 h-9 rounded-md border border-input flex items-center justify-center text-muted-foreground"
+                    aria-label={item.kind === 'break' ? 'Break' : 'Section'}
+                    title={item.kind === 'break' ? 'Break' : 'Section'}
+                  >
+                    {item.kind === 'break'
+                      ? <Coffee className="w-4 h-4" />
+                      : <Music2 className="w-4 h-4" />}
+                  </div>
                   <Input
                     value={item.title}
                     onChange={e => updateItem(item.id, { title: e.target.value })}
-                    placeholder={item.kind === 'break' ? 'Break' : 'Title'}
-                    className="flex-1 h-9"
+                    placeholder={item.kind === 'break' ? 'Break description' : 'What to practice'}
+                    className="flex-1 min-w-0 h-9"
                   />
                   <Input
                     type="number"
