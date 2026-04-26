@@ -78,6 +78,14 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
     if (!open) setMode('list');
   }, [open]);
 
+  // If the dialog is opened and there are no saved plans, jump straight into building.
+  useEffect(() => {
+    if (open && mode === 'list' && plans && plans.length === 0) {
+      startBuilderForNew();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mode, plans]);
+
   const addSection = () => setItems(p => [...p, { id: newId(), kind: 'section', title: 'New section', minutes: 10 }]);
   const addBreak = () => setItems(p => [...p, { id: newId(), kind: 'break', title: 'Break', minutes: 5 }]);
   const removeItem = (id: string) => setItems(p => p.filter(i => i.id !== id));
