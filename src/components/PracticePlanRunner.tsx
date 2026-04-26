@@ -396,7 +396,7 @@ export function PracticePlanRunnerInline({ plan, onExit }: PracticePlanRunnerInl
           size="icon"
           className="h-7 w-7"
           onClick={() => setCollapsed(c => !c)}
-          aria-label={collapsed ? 'Expand plan' : 'Collapse plan'}
+          aria-label={collapsed ? 'Expand structured session' : 'Collapse structured session'}
         >
           {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </Button>
