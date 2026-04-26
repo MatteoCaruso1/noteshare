@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sparkles, Wand2, BookOpen, Copy, Check, Loader2, ExternalLink } from 'lucide-react';
+import { Asterisk, Wand2, BookOpen, Copy, Check, Loader2, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useAuth } from '@/hooks/useAuth';
@@ -158,7 +158,7 @@ export function GetInspiredSection() {
         <DialogContent className="max-w-[28rem] w-[calc(100vw-2rem)] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Asterisk className="h-5 w-5 text-primary" />
               Get Inspired
             </DialogTitle>
           </DialogHeader>

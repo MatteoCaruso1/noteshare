@@ -15,7 +15,7 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette, Share, Globe } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Asterisk, Music, Target, Palette, Share, Globe } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
@@ -523,15 +523,15 @@ const Profile = () => {
           {!editing && (
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-5 h-5 text-primary" />
+                <Asterisk className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold">Get Inspired</h3>
               </div>
               <PremiumGate
                 featureName="Get Inspired"
                 blur={false}
                 showPreview={false}
-                icon={Sparkles}
-                description="Upgrade to Pro to generate practice routines and find personalized training content"
+                icon={Asterisk}
+                description="Generate custom routines and find personalized content using AI"
               >
                 <GetInspiredSection />
               </PremiumGate>
