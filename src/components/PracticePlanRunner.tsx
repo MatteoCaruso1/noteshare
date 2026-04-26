@@ -78,6 +78,14 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
     if (!open) setMode('list');
   }, [open]);
 
+  // If the dialog is opened and there are no saved plans, jump straight into building.
+  useEffect(() => {
+    if (open && mode === 'list' && plans && plans.length === 0) {
+      startBuilderForNew();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mode, plans]);
+
   const addSection = () => setItems(p => [...p, { id: newId(), kind: 'section', title: 'New section', minutes: 10 }]);
   const addBreak = () => setItems(p => [...p, { id: newId(), kind: 'break', title: 'Break', minutes: 5 }]);
   const removeItem = (id: string) => setItems(p => p.filter(i => i.id !== id));
@@ -137,13 +145,11 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
         <DialogHeader className="px-5 pt-5 pb-3 border-b border-border">
           <DialogTitle className="flex items-center gap-2">
             <Route className="w-5 h-5 text-primary" />
-            {mode === 'list' && 'Practice on Rails'}
+            {mode === 'list' && 'Structured Session'}
             {mode === 'build' && (editingId ? 'Edit Plan' : 'New Plan')}
           </DialogTitle>
           {mode === 'list' && (
-            <DialogDescription className="text-xs">
-              Run a structured practice with sections, breaks, and per-section timers.
-            </DialogDescription>
+            <DialogDescription className="sr-only">Structured Session</DialogDescription>
           )}
           {mode === 'build' && <DialogDescription className="sr-only">Build your practice plan.</DialogDescription>}
         </DialogHeader>
