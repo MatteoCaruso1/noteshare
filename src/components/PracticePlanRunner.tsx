@@ -103,7 +103,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
 
   const startBuilderForNew = () => {
     setEditingId(null);
-    setName('My Practice Plan');
+    setName('My Structured Session');
     setItems([]);
     setMode('build');
   };
