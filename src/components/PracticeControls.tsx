@@ -862,7 +862,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
                     size="icon"
                     className="h-8 w-8 relative"
                     onClick={() => setShowPlanRunner(true)}
-                    aria-label="Practice on Rails"
+                    aria-label="Structured Session"
                   >
                     <Route className="w-4 h-4 text-primary" />
                   </Button>
