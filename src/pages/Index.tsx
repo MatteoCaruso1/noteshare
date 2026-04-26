@@ -395,7 +395,6 @@ const Index = () => {
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
             <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
-            {profile && <GetInspiredSection />}
           </div>
         </div>
       </PageHeader>
