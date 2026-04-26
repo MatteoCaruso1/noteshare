@@ -205,7 +205,7 @@ export function RoutineSwitcherPopover({
                         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0 ml-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setDeleteTarget({ id: entry.id, title: entry.focus_title });
+                          setDeleteTarget({ id: entry.id, title: entry.focus_title || 'Untitled routine' });
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
