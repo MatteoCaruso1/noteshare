@@ -163,7 +163,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
 
             {plans && plans.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Saved plans</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Saved structured sessions</p>
                 {plans.map(plan => {
                   const total = plan.sections.reduce((s, i) => s + (i.minutes || 0), 0);
                   return (
