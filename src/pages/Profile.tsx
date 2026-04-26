@@ -518,6 +518,25 @@ const Profile = () => {
             </PremiumGate>
           )}
 
+          {/* Get Inspired - Pro only */}
+          {!editing && (
+            <Card className="p-4 bg-card border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">Get Inspired</h3>
+              </div>
+              <PremiumGate
+                featureName="Get Inspired"
+                blur={false}
+                showPreview={false}
+                icon={Sparkles}
+                description="Upgrade to Pro to generate practice routines and find personalized training content"
+              >
+                <GetInspiredSection />
+              </PremiumGate>
+            </Card>
+          )}
+
           {/* Themes - separate from Practice Stats so it never gets blurred by the stats gate */}
           {!editing && (
             <Card className="p-4 bg-card border-border">
