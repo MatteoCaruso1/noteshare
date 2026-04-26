@@ -305,12 +305,6 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                 </PopoverContent>
               </Popover>
 
-              {/* Metronome */}
-              <Metronome />
-              
-              {/* Practice Timer */}
-              <PracticeTimer />
-
               {/* Focus toggle - inline, show if focus exists with text */}
               <Tooltip>
                 <TooltipTrigger asChild>
