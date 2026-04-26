@@ -62,7 +62,7 @@ function ProUpgradeButton() {
       onClick={openPremiumDialog}
       className="gap-1 text-xs h-8 px-2 self-start"
     >
-      <Sparkles className="h-3 w-3" />
+      <Asterisk className="h-3 w-3" />
       <span className="hidden sm:inline">Get Noteshare Pro</span>
       <span className="sm:hidden">Get Pro</span>
     </Button>
