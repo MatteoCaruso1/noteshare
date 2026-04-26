@@ -854,21 +854,6 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
               {/* Practice Timer */}
               <PracticeTimer />
 
-              {/* Practice on Rails */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 relative"
-                    onClick={() => setShowPlanRunner(true)}
-                    aria-label="Structured Session"
-                  >
-                    <Route className="w-4 h-4 text-primary" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Structured Session</TooltipContent>
-              </Tooltip>
 
               {/* Wake Lock toggle - mobile-optimized button with inline styles when enabled to prevent iOS sticky hover override */}
               <button
