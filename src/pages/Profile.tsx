@@ -554,9 +554,6 @@ const Profile = () => {
               >
                 <div className="space-y-5">
                   <ThemePicker />
-                  <div className="border-t border-border/60 pt-4">
-                    <BackgroundPackPicker />
-                  </div>
                 </div>
               </PremiumGate>
             </Card>
