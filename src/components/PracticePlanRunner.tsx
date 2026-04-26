@@ -131,9 +131,9 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
   };
 
   const handleStartRun = (plan?: PracticePlan) => {
-    const runName = plan ? plan.name : (name.trim() || 'My Practice Plan');
+    const runName = plan ? plan.name : (name.trim() || 'My Structured Session');
     const runItems = plan ? plan.sections : items;
-    if (!runItems.length) { toast.error('Build a plan first'); return; }
+    if (!runItems.length) { toast.error('Build a session first'); return; }
     if (plan) touchPlan.mutate({ id: plan.id });
     onStartRun({ name: runName, items: runItems, planId: plan?.id ?? editingId ?? undefined });
     onOpenChange(false);
