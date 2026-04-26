@@ -752,7 +752,10 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold text-foreground">Start Structured Session</span>
-...
+                      <span className="rounded-sm bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
+                        New
+                      </span>
+                    </div>
                     <p className="text-[11px] text-muted-foreground leading-tight">
                       Structure into sections and breaks, guided by a timer
                     </p>
