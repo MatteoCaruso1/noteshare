@@ -239,7 +239,17 @@ export function RoutineSwitcherPopover({
               onTouchEnd={(e) => e.currentTarget.blur()}
               onPointerUp={(e) => e.currentTarget.blur()}
               onClick={() => {
-                if (deleteTarget) onDelete(deleteTarget.id);
+                if (deleteTarget) {
+                  // Delete every backlog entry that shares this normalized title,
+                  // so dedup-hidden duplicates (especially untitled ones) don't reappear.
+                  const targetEntry = backlogEntries.find(e => e.id === deleteTarget.id);
+                  const targetTitleNorm = (targetEntry?.focus_title || '').trim().toLowerCase();
+                  const idsToDelete = backlogEntries
+                    .filter(e => (e.focus_title || '').trim().toLowerCase() === targetTitleNorm)
+                    .map(e => e.id);
+                  const ids = idsToDelete.length > 0 ? idsToDelete : [deleteTarget.id];
+                  ids.forEach(id => onDelete(id));
+                }
                 setDeleteTarget(null);
               }}
             >
