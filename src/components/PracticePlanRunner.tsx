@@ -69,7 +69,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
 
   const [mode, setMode] = useState<Mode>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState('My Practice Plan');
+  const [name, setName] = useState('My Structured Session');
   const [items, setItems] = useState<PlanItem[]>(STARTER_TEMPLATE);
 
   const totalMinutes = useMemo(() => items.reduce((s, i) => s + (i.minutes || 0), 0), [items]);
@@ -103,7 +103,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
 
   const startBuilderForNew = () => {
     setEditingId(null);
-    setName('My Practice Plan');
+    setName('My Structured Session');
     setItems([]);
     setMode('build');
   };
@@ -124,16 +124,16 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
     await savePlan.mutateAsync({
       id: editingId || undefined,
       user_id: profile.id,
-      name: name.trim() || 'My Practice Plan',
+      name: name.trim() || 'My Structured Session',
       sections: items,
     });
     setMode('list');
   };
 
   const handleStartRun = (plan?: PracticePlan) => {
-    const runName = plan ? plan.name : (name.trim() || 'My Practice Plan');
+    const runName = plan ? plan.name : (name.trim() || 'My Structured Session');
     const runItems = plan ? plan.sections : items;
-    if (!runItems.length) { toast.error('Build a plan first'); return; }
+    if (!runItems.length) { toast.error('Build a session first'); return; }
     if (plan) touchPlan.mutate({ id: plan.id });
     onStartRun({ name: runName, items: runItems, planId: plan?.id ?? editingId ?? undefined });
     onOpenChange(false);
@@ -146,24 +146,24 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
           <DialogTitle className="flex items-center gap-2">
             <Route className="w-5 h-5 text-primary" />
             {mode === 'list' && 'Structured Session'}
-            {mode === 'build' && (editingId ? 'Edit Plan' : 'New Plan')}
+            {mode === 'build' && (editingId ? 'Edit Structured Session' : 'New Structured Session')}
           </DialogTitle>
           {mode === 'list' && (
             <DialogDescription className="sr-only">Structured Session</DialogDescription>
           )}
-          {mode === 'build' && <DialogDescription className="sr-only">Build your practice plan.</DialogDescription>}
+          {mode === 'build' && <DialogDescription className="sr-only">Build your structured session.</DialogDescription>}
         </DialogHeader>
 
         {mode === 'list' && (
           <div className="p-5 space-y-4">
             <Button onClick={startBuilderForNew} className="w-full bg-gradient-primary text-primary-foreground">
               <Plus className="w-4 h-4 mr-2" />
-              Build a new plan
+              Build a new structured session
             </Button>
 
             {plans && plans.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Saved plans</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Saved structured sessions</p>
                 {plans.map(plan => {
                   const total = plan.sections.reduce((s, i) => s + (i.minutes || 0), 0);
                   return (
@@ -195,7 +195,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
             {(!plans || plans.length === 0) && (
               <div className="text-center py-6 text-sm text-muted-foreground">
                 <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary/60" />
-                No saved plans yet. Build your first to run focused, on-rails sessions.
+                No saved structured sessions yet. Build your first to run focused sessions.
               </div>
             )}
           </div>
@@ -206,7 +206,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
             <Input
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Plan name (e.g. Morning Routine)"
+              placeholder="Structured session name (e.g. Morning Routine)"
               className="font-medium"
             />
 
@@ -370,7 +370,7 @@ export function PracticePlanRunnerInline({ plan, onExit }: PracticePlanRunnerInl
       setCurrentIdx(i => i + 1);
     } else {
       setRunning(false);
-      toast.success('🎉 Plan complete! Great session.');
+      toast.success('🎉 Structured session complete! Great session.');
       onExit();
     }
   };
@@ -396,7 +396,7 @@ export function PracticePlanRunnerInline({ plan, onExit }: PracticePlanRunnerInl
           size="icon"
           className="h-7 w-7"
           onClick={() => setCollapsed(c => !c)}
-          aria-label={collapsed ? 'Expand plan' : 'Collapse plan'}
+          aria-label={collapsed ? 'Expand structured session' : 'Collapse structured session'}
         >
           {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </Button>
@@ -405,7 +405,7 @@ export function PracticePlanRunnerInline({ plan, onExit }: PracticePlanRunnerInl
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
           onClick={onExit}
-          aria-label="Exit plan"
+          aria-label="Exit structured session"
         >
           <X className="w-4 h-4" />
         </Button>
