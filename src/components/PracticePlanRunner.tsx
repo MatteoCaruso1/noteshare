@@ -146,12 +146,12 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
           <DialogTitle className="flex items-center gap-2">
             <Route className="w-5 h-5 text-primary" />
             {mode === 'list' && 'Structured Session'}
-            {mode === 'build' && (editingId ? 'Edit Plan' : 'New Plan')}
+            {mode === 'build' && (editingId ? 'Edit Structured Session' : 'New Structured Session')}
           </DialogTitle>
           {mode === 'list' && (
             <DialogDescription className="sr-only">Structured Session</DialogDescription>
           )}
-          {mode === 'build' && <DialogDescription className="sr-only">Build your practice plan.</DialogDescription>}
+          {mode === 'build' && <DialogDescription className="sr-only">Build your structured session.</DialogDescription>}
         </DialogHeader>
 
         {mode === 'list' && (
