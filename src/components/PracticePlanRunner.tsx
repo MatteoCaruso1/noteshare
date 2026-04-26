@@ -405,7 +405,7 @@ export function PracticePlanRunnerInline({ plan, onExit }: PracticePlanRunnerInl
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
           onClick={onExit}
-          aria-label="Exit plan"
+          aria-label="Exit structured session"
         >
           <X className="w-4 h-4" />
         </Button>
