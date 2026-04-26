@@ -206,7 +206,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
             <Input
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Plan name (e.g. Morning Routine)"
+              placeholder="Structured session name (e.g. Morning Routine)"
               className="font-medium"
             />
 
