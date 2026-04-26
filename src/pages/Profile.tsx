@@ -41,7 +41,7 @@ import { SimpleGoals } from '@/components/SimpleGoals';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
 import { GetInspiredSection } from '@/components/GetInspiredSection';
-import { BackgroundPackPicker } from '@/components/BackgroundPackPicker';
+
 import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
