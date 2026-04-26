@@ -195,7 +195,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
             {(!plans || plans.length === 0) && (
               <div className="text-center py-6 text-sm text-muted-foreground">
                 <Sparkles className="w-6 h-6 mx-auto mb-2 text-primary/60" />
-                No saved plans yet. Build your first to run focused, on-rails sessions.
+                No saved structured sessions yet. Build your first to run focused sessions.
               </div>
             )}
           </div>
