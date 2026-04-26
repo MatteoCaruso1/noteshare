@@ -158,7 +158,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
           <div className="p-5 space-y-4">
             <Button onClick={startBuilderForNew} className="w-full bg-gradient-primary text-primary-foreground">
               <Plus className="w-4 h-4 mr-2" />
-              Build a new plan
+              Build a new structured session
             </Button>
 
             {plans && plans.length > 0 && (
