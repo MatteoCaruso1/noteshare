@@ -69,7 +69,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
 
   const [mode, setMode] = useState<Mode>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState('My Practice Plan');
+  const [name, setName] = useState('My Structured Session');
   const [items, setItems] = useState<PlanItem[]>(STARTER_TEMPLATE);
 
   const totalMinutes = useMemo(() => items.reduce((s, i) => s + (i.minutes || 0), 0), [items]);
