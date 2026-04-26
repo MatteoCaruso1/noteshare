@@ -124,7 +124,7 @@ export function PracticePlanRunner({ open, onOpenChange, onStartRun }: PracticeP
     await savePlan.mutateAsync({
       id: editingId || undefined,
       user_id: profile.id,
-      name: name.trim() || 'My Practice Plan',
+      name: name.trim() || 'My Structured Session',
       sections: items,
     });
     setMode('list');
