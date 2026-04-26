@@ -867,7 +867,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
                     <Route className="w-4 h-4 text-primary" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Practice on Rails</TooltipContent>
+                <TooltipContent>Structured Session</TooltipContent>
               </Tooltip>
 
               {/* Wake Lock toggle - mobile-optimized button with inline styles when enabled to prevent iOS sticky hover override */}
