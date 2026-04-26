@@ -370,7 +370,7 @@ export function PracticePlanRunnerInline({ plan, onExit }: PracticePlanRunnerInl
       setCurrentIdx(i => i + 1);
     } else {
       setRunning(false);
-      toast.success('🎉 Plan complete! Great session.');
+      toast.success('🎉 Structured session complete! Great session.');
       onExit();
     }
   };
