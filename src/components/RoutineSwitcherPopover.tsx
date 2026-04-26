@@ -205,7 +205,7 @@ export function RoutineSwitcherPopover({
                         className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0 ml-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setDeleteTarget({ id: entry.id, title: entry.focus_title });
+                          setDeleteTarget({ id: entry.id, title: entry.focus_title || 'Untitled routine' });
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -239,7 +239,17 @@ export function RoutineSwitcherPopover({
               onTouchEnd={(e) => e.currentTarget.blur()}
               onPointerUp={(e) => e.currentTarget.blur()}
               onClick={() => {
-                if (deleteTarget) onDelete(deleteTarget.id);
+                if (deleteTarget) {
+                  // Delete every backlog entry that shares this normalized title,
+                  // so dedup-hidden duplicates (especially untitled ones) don't reappear.
+                  const targetEntry = backlogEntries.find(e => e.id === deleteTarget.id);
+                  const targetTitleNorm = (targetEntry?.focus_title || '').trim().toLowerCase();
+                  const idsToDelete = backlogEntries
+                    .filter(e => (e.focus_title || '').trim().toLowerCase() === targetTitleNorm)
+                    .map(e => e.id);
+                  const ids = idsToDelete.length > 0 ? idsToDelete : [deleteTarget.id];
+                  ids.forEach(id => onDelete(id));
+                }
                 setDeleteTarget(null);
               }}
             >
