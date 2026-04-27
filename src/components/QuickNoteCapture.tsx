@@ -314,39 +314,41 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
           />
 
           {/* Action Buttons - inline */}
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex-[1]">
-                  <AudioRecorder 
-                    onRecorded={handleAudioRecorded} 
-                    onRecordingChange={setIsRecordingAudio}
-                    onVideoReady={(blob) => { setVideoBlob(blob); }}
-                    onVideoDiscarded={() => { setVideoBlob(null); }}
-                    userId={profile.id}
-                    className="w-full" 
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Record audio</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  className={`h-9 flex-[3] bg-gradient-primary text-primary-foreground transition-opacity ${
-                    isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
-                  }`}
-                  onClick={handleSaveNote}
-                  disabled={createNote.isPending || uploading || !hasContent || isRecordingAudio}
-                  title={isRecordingAudio ? 'Stop recording first' : 'Save note'}
-                >
-                  <Save className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{isRecordingAudio ? 'Stop recording first' : 'Save note'}</TooltipContent>
-            </Tooltip>
-          </div>
+          <TooltipProvider delayDuration={1000}>
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex-[1]">
+                    <AudioRecorder 
+                      onRecorded={handleAudioRecorded} 
+                      onRecordingChange={setIsRecordingAudio}
+                      onVideoReady={(blob) => { setVideoBlob(blob); }}
+                      onVideoDiscarded={() => { setVideoBlob(null); }}
+                      userId={profile.id}
+                      className="w-full" 
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Record audio</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    className={`h-9 flex-[3] bg-gradient-primary text-primary-foreground transition-opacity ${
+                      isRecordingAudio ? 'opacity-40 cursor-not-allowed' : ''
+                    }`}
+                    onClick={handleSaveNote}
+                    disabled={createNote.isPending || uploading || !hasContent || isRecordingAudio}
+                    title={isRecordingAudio ? 'Stop recording first' : 'Save note'}
+                  >
+                    <Save className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{isRecordingAudio ? 'Stop recording first' : 'Save note'}</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
 
           {/* Uploaded Audio Files - with editable names */}
           {audioFiles.length > 0 && (
