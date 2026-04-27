@@ -248,7 +248,7 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
             </button>
           </CollapsibleTrigger>
           <div className="flex items-center gap-3">
-            {isOpen && (
+            {isOpen ? (
               <TooltipProvider delayDuration={1000}>
                 <Popover>
                   <Tooltip>
@@ -269,6 +269,27 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                         onClick={() => setVisibility(visibility === 'private' ? 'friends' : 'private')}
                       >
                         {visibility === 'private' ? (
+                          <>
+                            <Users className="w-4 h-4" /> Make Viewable
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4" /> Make Private
+                          </>
+                        )}
+                      </Button>
+                      <MediaUploadButton
+                        onAudioUpload={handleAudioFileUpload}
+                        onImageUpload={handleImageUpload}
+                        uploading={uploading}
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </TooltipProvider>
+            ) : (
+              <div className="h-8 w-8" aria-hidden="true" />
+            )}
                           <>
                             <Users className="w-4 h-4" /> Make Viewable
                           </>
