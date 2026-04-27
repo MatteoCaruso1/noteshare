@@ -54,15 +54,10 @@ export function BackgroundCustomizationProvider({ children }: { children: ReactN
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (profile) {
-      const savedPack = (profile as any).background_pack as BackgroundPack | undefined;
-      const savedDensity = (profile as any).background_density as BackgroundDensity | undefined;
-      if (savedPack && AVAILABLE_PACKS.some(p => p.id === savedPack)) setPackState(savedPack);
-      if (savedDensity && DENSITY_OPTIONS.some(d => d.id === savedDensity)) setDensityState(savedDensity);
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-    }
+    // Force default music notes + normal density for all users.
+    setPackState('music');
+    setDensityState('normal');
+    setIsLoading(false);
   }, [profile]);
 
   const setPack = useCallback(async (next: BackgroundPack) => {
