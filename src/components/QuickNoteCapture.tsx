@@ -240,34 +240,15 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
   return (
     <Card className="bg-card border-border">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <button 
-            className="w-full px-3 py-4 sm:px-4 flex items-center justify-between transition-colors rounded-lg group touch-manipulation"
-          >
-            <div className="flex items-center gap-2">
+        <div className="w-full px-3 py-4 sm:px-4 flex items-center justify-between rounded-lg group">
+          <CollapsibleTrigger asChild>
+            <button className="flex items-center gap-2 flex-1 min-w-0 touch-manipulation text-left">
               <Music className={`w-5 h-5 transition-colors ${isOpen ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
               <h2 className="font-semibold">Capture Quick Note</h2>
-            </div>
-            {isOpen ? (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            )}
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="px-3 sm:px-4 pb-4 space-y-4">
-          {/* Recovery banner for orphaned recordings */}
-          <RecordingRecoveryBanner />
-          
-          {/* Show daily limit banner if limit reached */}
-          {hasReachedLimit && (
-            <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
-          )}
-          
-          {/* Compact toolbar row: Settings (with upload), Link to Goals, Metronome, Timer */}
-          <TooltipProvider delayDuration={1000}>
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Settings (includes visibility + media upload) */}
+            </button>
+          </CollapsibleTrigger>
+          <div className="flex items-center gap-3">
+            <TooltipProvider delayDuration={1000}>
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -279,7 +260,7 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                   </TooltipTrigger>
                   <TooltipContent>Settings</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-44 p-1.5 bg-popover" align="start">
+                <PopoverContent className="w-44 p-1.5 bg-popover" align="end">
                   <div className="space-y-1">
                     <Button
                       variant="outline"
@@ -304,37 +285,26 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                   </div>
                 </PopoverContent>
               </Popover>
-
-              {/* Focus toggle - inline, show if focus exists with text */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className="flex items-center gap-2 ml-auto cursor-pointer touch-manipulation select-none"
-                    data-no-hover-reset
-                    onTouchEnd={(e) => { e.currentTarget.blur(); }}
-                  >
-                    <ListTodo className={`w-4 h-4 ${attachFocus ? 'text-primary' : 'text-muted-foreground'}`} />
-                    <Switch
-                      id="attach-focus"
-                      checked={attachFocus}
-                      data-no-hover-reset
-                      onCheckedChange={(checked) => {
-                        setAttachFocus(checked);
-                        if (checked) {
-                          toast.success("Your note will be linked to Practice Routine");
-                        } else {
-                          toast.success("Your note will no longer be linked to Practice Routine");
-                        }
-                      }}
-                      className="scale-90"
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>Link to Practice Routine</TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
-
+            </TooltipProvider>
+            <CollapsibleTrigger asChild>
+              <button className="touch-manipulation p-1 -m-1" aria-label={isOpen ? 'Collapse' : 'Expand'}>
+                {isOpen ? (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+          </div>
+        </div>
+        <CollapsibleContent className="px-3 sm:px-4 pb-4 space-y-4">
+          {/* Recovery banner for orphaned recordings */}
+          <RecordingRecoveryBanner />
+          
+          {/* Show daily limit banner if limit reached */}
+          {hasReachedLimit && (
+            <DailyLimitBanner notesPostedToday={notesPostedToday} dailyLimit={dailyLimit} />
+          )}
           {/* Text Content */}
           <RichTextarea
             placeholder="What ideas do you want to save?"
