@@ -664,7 +664,10 @@ export default function FTUE() {
             size="lg"
             className="w-full mt-8 bg-gradient-primary text-primary-foreground font-semibold gap-2"
             disabled={ftue.instruments.length === 0}
-            onClick={() => ftue.nextStep()}
+            onClick={() => {
+              ftue.setReadyForSignup(true);
+              ftue.setStep(SIGNUP_STEP);
+            }}
           >
             Continue
             <ChevronRight className="w-4 h-4" />
@@ -702,7 +705,7 @@ export default function FTUE() {
           </div>
           <h1 className="text-2xl font-semibold text-foreground mb-2">Create your account</h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-            Sign up to get started
+            One last step to start tracking your practice.
           </p>
 
           <div className="w-full space-y-3">
