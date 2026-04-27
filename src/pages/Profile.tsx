@@ -62,7 +62,7 @@ function ProUpgradeButton() {
       onClick={openPremiumDialog}
       className="gap-1 text-xs h-8 px-2 self-start"
     >
-      <Asterisk className="h-3 w-3" />
+      <Sparkles className="h-3 w-3" />
       <span className="hidden sm:inline">Get Noteshare Pro</span>
       <span className="sm:hidden">Get Pro</span>
     </Button>
@@ -523,14 +523,14 @@ const Profile = () => {
           {!editing && (
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
-                <Asterisk className="w-5 h-5 text-primary" />
+                <Sparkles className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold">Get Inspired</h3>
               </div>
               <PremiumGate
                 featureName="Get Inspired"
                 blur={false}
                 showPreview={false}
-                icon={Asterisk}
+                icon={Sparkles}
                 description="Generate custom routines and find personalized content using AI"
               >
                 <GetInspiredSection />
