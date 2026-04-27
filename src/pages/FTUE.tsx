@@ -646,7 +646,7 @@ export default function FTUE() {
                 className={`relative px-3 py-2.5 rounded-lg text-sm font-medium transition-all border touch-manipulation [-webkit-tap-highlight-color:transparent] ${
                   ftue.instruments.includes(inst)
                     ? 'bg-primary text-primary-foreground border-primary active:bg-primary active:text-primary-foreground'
-                    : 'bg-card text-muted-foreground border-border [@media(hover:hover)]:hover:border-primary/40 [@media(hover:hover)]:hover:text-foreground active:bg-card active:text-muted-foreground'
+                    : 'bg-card text-muted-foreground border-border active:bg-card active:text-muted-foreground'
                 }`}
                 style={ftue.instruments.includes(inst) 
                   ? { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' } 
