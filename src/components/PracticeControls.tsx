@@ -735,7 +735,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
                 disabled={startSession.isPending || isStartingSession}
               >
                 <Play className="w-4 h-4 mr-2" />
-                {isStartingSession ? 'Starting…' : 'Start Live Session'}
+                {isStartingSession ? 'Starting…' : 'Start Practice Session'}
               </Button>
 
               {/* Practice on Rails — eye-catching CTA */}
