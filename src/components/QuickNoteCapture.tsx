@@ -290,25 +290,6 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
             ) : (
               <div className="h-8 w-8" aria-hidden="true" />
             )}
-                          <>
-                            <Users className="w-4 h-4" /> Make Viewable
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-4 h-4" /> Make Private
-                          </>
-                        )}
-                      </Button>
-                      <MediaUploadButton
-                        onAudioUpload={handleAudioFileUpload}
-                        onImageUpload={handleImageUpload}
-                        uploading={uploading}
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </TooltipProvider>
-            )}
             <CollapsibleTrigger asChild>
               <button className="touch-manipulation p-1 -m-1" aria-label={isOpen ? 'Collapse' : 'Expand'}>
                 {isOpen ? (
