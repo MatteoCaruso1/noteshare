@@ -720,7 +720,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
           <div className="flex items-center gap-2">
             <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground'}`} />
             <h2 className="font-semibold">
-              {activeSession ? 'Practice Session' : 'Start Practice Session'}
+              {activeSession ? 'Practice Session' : '\u00A0'}
             </h2>
           </div>
         </div>
