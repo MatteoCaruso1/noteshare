@@ -711,19 +711,22 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
   };
 
   return (
-    <Card className="bg-card border-border min-h-[60px]">
+    <Card className={`bg-card border-border ${activeSession ? 'min-h-[60px]' : ''}`}>
       <Collapsible open={true}>
-        <div
-          data-tour="practice-start-btn"
-          className="w-full px-3 py-4 sm:px-4 flex items-center rounded-lg"
-        >
-          <div className="flex items-center gap-2">
-            <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground'}`} />
-            <h2 className="font-semibold">
-              {activeSession ? 'Practice Session' : '\u00A0'}
-            </h2>
+        {activeSession && (
+          <div
+            data-tour="practice-start-btn"
+            className="w-full px-3 py-4 sm:px-4 flex items-center rounded-lg"
+          >
+            <div className="flex items-center gap-2">
+              <Play className="w-5 h-5 text-primary transition-colors" />
+              <h2 className="font-semibold">Practice Session</h2>
+            </div>
           </div>
-        </div>
+        )}
+        {!activeSession && (
+          <div data-tour="practice-start-btn" className="pt-3" />
+        )}
         <CollapsibleContent>
           {/* Session Choice Step - shown when no active session OR while starting */}
           {!activeSession && (showSessionChoice || isStartingSession) && (
