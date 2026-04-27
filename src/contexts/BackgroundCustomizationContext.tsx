@@ -89,6 +89,14 @@ export function BackgroundCustomizationProvider({ children }: { children: ReactN
 
 export function useBackgroundCustomization() {
   const ctx = useContext(BackgroundCustomizationContext);
-  if (!ctx) throw new Error('useBackgroundCustomization must be used within BackgroundCustomizationProvider');
+  if (!ctx) {
+    return {
+      pack: 'music' as BackgroundPack,
+      density: 'normal' as BackgroundDensity,
+      setPack: async () => {},
+      setDensity: async () => {},
+      isLoading: false,
+    };
+  }
   return ctx;
 }

@@ -248,7 +248,7 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
             </button>
           </CollapsibleTrigger>
           <div className="flex items-center gap-3">
-            {isOpen && (
+            {isOpen ? (
               <TooltipProvider delayDuration={1000}>
                 <Popover>
                   <Tooltip>
@@ -287,6 +287,8 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
                   </PopoverContent>
                 </Popover>
               </TooltipProvider>
+            ) : (
+              <div className="h-8 w-8" aria-hidden="true" />
             )}
             <CollapsibleTrigger asChild>
               <button className="touch-manipulation p-1 -m-1" aria-label={isOpen ? 'Collapse' : 'Expand'}>
