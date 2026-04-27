@@ -524,7 +524,7 @@ const Profile = () => {
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold">Get Inspired</h3>
+                <h3 className="font-semibold text-sm sm:text-base">Generate practice routines and find training content using AI</h3>
               </div>
               <PremiumGate
                 featureName="Get Inspired"
