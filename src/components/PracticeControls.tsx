@@ -720,7 +720,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
           <div className="flex items-center gap-2">
             <Play className={`w-5 h-5 transition-colors ${activeSession ? 'text-primary' : 'text-muted-foreground'}`} />
             <h2 className="font-semibold">
-              {activeSession ? 'Practice Session' : 'Start Practice Session'}
+              {activeSession ? 'Practice Session' : '\u00A0'}
             </h2>
           </div>
         </div>
@@ -735,7 +735,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
                 disabled={startSession.isPending || isStartingSession}
               >
                 <Play className="w-4 h-4 mr-2" />
-                {isStartingSession ? 'Starting…' : 'Start Live Session'}
+                {isStartingSession ? 'Starting…' : 'Start Practice Session'}
               </Button>
 
               {/* Practice on Rails — eye-catching CTA */}
