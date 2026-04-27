@@ -725,7 +725,7 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
           </div>
         )}
         {!activeSession && (
-          <div data-tour="practice-start-btn" className="pt-3" />
+          <div data-tour="practice-start-btn" className="pt-4" />
         )}
         <CollapsibleContent>
           {/* Session Choice Step - shown when no active session OR while starting */}
