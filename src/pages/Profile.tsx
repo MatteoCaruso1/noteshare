@@ -515,7 +515,7 @@ const Profile = () => {
               icon={TrendingUp}
               description="Upgrade to Pro to view detailed practice stats"
             >
-              <PracticeStats profileId={profile?.id} showRanking={true} />
+              <PracticeStats profileId={profile?.id} showRanking={isPremium} />
             </PremiumGate>
           )}
 
