@@ -248,44 +248,46 @@ export function QuickNoteCapture({ previewMode = false }: { previewMode?: boolea
             </button>
           </CollapsibleTrigger>
           <div className="flex items-center gap-3">
-            <TooltipProvider delayDuration={1000}>
-              <Popover>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Settings className="w-4 h-4 text-muted-foreground" />
+            {isOpen && (
+              <TooltipProvider delayDuration={1000}>
+                <Popover>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Settings className="w-4 h-4 text-muted-foreground" />
+                        </Button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Settings</TooltipContent>
+                  </Tooltip>
+                  <PopoverContent className="w-44 p-1.5 bg-popover" align="end">
+                    <div className="space-y-1">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 h-8 px-2 text-sm active:bg-accent active:text-accent-foreground"
+                        onClick={() => setVisibility(visibility === 'private' ? 'friends' : 'private')}
+                      >
+                        {visibility === 'private' ? (
+                          <>
+                            <Users className="w-4 h-4" /> Make Viewable
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4" /> Make Private
+                          </>
+                        )}
                       </Button>
-                    </PopoverTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>Settings</TooltipContent>
-                </Tooltip>
-                <PopoverContent className="w-44 p-1.5 bg-popover" align="end">
-                  <div className="space-y-1">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start gap-2 h-8 px-2 text-sm active:bg-accent active:text-accent-foreground"
-                      onClick={() => setVisibility(visibility === 'private' ? 'friends' : 'private')}
-                    >
-                      {visibility === 'private' ? (
-                        <>
-                          <Users className="w-4 h-4" /> Make Viewable
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4" /> Make Private
-                        </>
-                      )}
-                    </Button>
-                    <MediaUploadButton
-                      onAudioUpload={handleAudioFileUpload}
-                      onImageUpload={handleImageUpload}
-                      uploading={uploading}
-                    />
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </TooltipProvider>
+                      <MediaUploadButton
+                        onAudioUpload={handleAudioFileUpload}
+                        onImageUpload={handleImageUpload}
+                        uploading={uploading}
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </TooltipProvider>
+            )}
             <CollapsibleTrigger asChild>
               <button className="touch-manipulation p-1 -m-1" aria-label={isOpen ? 'Collapse' : 'Expand'}>
                 {isOpen ? (
