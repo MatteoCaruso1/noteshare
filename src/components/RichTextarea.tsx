@@ -102,11 +102,18 @@ export function RichTextarea({
     const textarea = textareaRef.current;
     const minHeight = rows * 24; // Approximate line height
 
-    // Save scroll positions before measuring
-    const savedWindowScroll = window.scrollY;
-    const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+    // Only preserve scroll on touch-primary devices. On desktop the user must
+    // remain free to scroll the page while typing or hovering over the textarea,
+    // and the browser does not introduce the scroll-into-view jank we're guarding
+    // against here.
+    const preserveScroll = isTouchPrimary();
+
+    const savedWindowScroll = preserveScroll ? window.scrollY : 0;
+    const scrollParent = preserveScroll
+      ? (textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null)
+      : null;
     const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
-    const savedTextareaScroll = textarea.scrollTop;
+    const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
 
     const prevOverflow = textarea.style.overflow;
     const prevHeight = textarea.style.height;
@@ -127,6 +134,8 @@ export function RichTextarea({
       textarea.style.height = prevHeight;
     }
     textarea.style.overflow = prevOverflow;
+
+    if (!preserveScroll) return;
 
     // Restore scroll positions synchronously to undo any browser scroll-into-view
     if (textarea.scrollTop !== savedTextareaScroll) {
