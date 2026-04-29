@@ -11,12 +11,6 @@ const DEFAULT_SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢
 // Routes where ambient decorations should not render at all.
 const SUPPRESSED_PREFIXES = ['/auth', '/blog', '/ftue', '/qr'];
 
-// A handful of true emoji used to enrich the desktop gutters so the sides feel
-// alive and professional (replaces the "emojis are not showing" complaint).
-// These render with full color via the system emoji font and intentionally
-// only appear on wide viewports.
-const DESKTOP_ACCENT_EMOJI = ['🎼', '🎹', '🎷', '🎸', '🥁', '🎺', '🎻', '🎤'];
-
 interface FloatingSymbol {
   id: number;
   symbol: string;
