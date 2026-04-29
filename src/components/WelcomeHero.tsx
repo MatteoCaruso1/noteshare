@@ -49,14 +49,14 @@ export function WelcomeHero() {
     >
       {/* Hero Section */}
       <div className="min-h-[85dvh] flex flex-col overflow-hidden relative w-full">
-        {/* Ambient glow effects */}
-        <div className="absolute inset-0 pointer-events-none">
+        {/* Ambient glow effects (lighter on mobile, full on md+) */}
+        <div className="absolute inset-0 pointer-events-none" style={{ contain: 'strict' }}>
           {/* Large primary glow - upper left */}
-          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-[80px] md:blur-[140px]" />
+          <div className="absolute top-[10%] -left-20 w-[500px] h-[500px] md:w-[700px] md:h-[700px] bg-primary/10 rounded-full blur-3xl md:blur-[140px]" />
           {/* Accent orb - right side */}
-          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-[70px] md:blur-[120px]" />
+          <div className="absolute top-[30%] right-[-10%] w-[350px] h-[350px] md:w-[500px] md:h-[500px] bg-primary/6 rounded-full blur-3xl md:blur-[120px]" />
           {/* Warm bottom glow */}
-          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-[60px] md:blur-[100px]" />
+          <div className="absolute bottom-[5%] left-[20%] w-[600px] h-[300px] bg-primary/4 rounded-full blur-2xl md:blur-[100px]" />
           {/* Subtle grid overlay for depth */}
           <div 
             className="absolute inset-0 opacity-[0.03]"
@@ -74,8 +74,8 @@ export function WelcomeHero() {
           />
         </div>
 
-        {/* Floating musical decorative elements - left side */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Floating musical decorative elements - left side (md+ only to keep mobile fast) */}
+        <div className="hidden md:block absolute inset-0 pointer-events-none overflow-hidden">
           {/* Left cluster - staggered musical notes/symbols */}
           <div className="absolute top-[18%] -left-4 md:left-4 opacity-[0.07] text-primary text-5xl md:text-6xl rotate-[-15deg] select-none emoji-text" aria-hidden="true">♪</div>
           <div className="absolute top-[35%] -left-2 md:left-8 opacity-[0.05] text-primary text-3xl md:text-4xl rotate-[10deg] select-none emoji-text" aria-hidden="true">♫</div>
