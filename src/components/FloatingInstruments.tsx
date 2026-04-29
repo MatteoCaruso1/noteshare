@@ -117,17 +117,17 @@ function generateOrbs(): GutterOrb[] {
   const sides: Array<'left' | 'right'> = ['left', 'right'];
   let id = 0;
   for (const side of sides) {
-    const count = 3;
+    const count = 4;
     for (let i = 0; i < count; i++) {
       orbs.push({
         id: id++,
         side,
-        topPct: 8 + i * 30 + Math.random() * 8,
-        size: 280 + Math.random() * 220,
+        topPct: 5 + i * 24 + Math.random() * 6,
+        size: 350 + Math.random() * 275,
         // Use the project primary hue range with gentle variation
         hue: 200 + Math.random() * 40,
-        blur: 90 + Math.random() * 40,
-        opacity: 0.10 + Math.random() * 0.06,
+        blur: 110 + Math.random() * 50,
+        opacity: 0.13 + Math.random() * 0.07,
       });
     }
   }
