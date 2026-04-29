@@ -8,19 +8,45 @@ import {
 
 const DEFAULT_SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
 
+// Routes where ambient decorations should not render at all.
+const SUPPRESSED_PREFIXES = ['/auth', '/blog', '/ftue', '/qr'];
+
+// A handful of true emoji used to enrich the desktop gutters so the sides feel
+// alive and professional (replaces the "emojis are not showing" complaint).
+// These render with full color via the system emoji font and intentionally
+// only appear on wide viewports.
+const DESKTOP_ACCENT_EMOJI = ['🎼', '🎹', '🎷', '🎸', '🥁', '🎺', '🎻', '🎤'];
+
 interface FloatingSymbol {
   id: number;
   symbol: string;
+  isEmoji: boolean;
   left: number;
   delay: number;
   duration: number;
   size: number;
+  opacity: number;
   rotateStart: number;
   rotateMid: number;
   rotateEnd: number;
 }
 
-function generateSymbols(isLanding: boolean, symbolSet: string[], count: number): FloatingSymbol[] {
+interface GutterOrb {
+  id: number;
+  side: 'left' | 'right';
+  topPct: number;
+  size: number;
+  hue: number;
+  blur: number;
+  opacity: number;
+}
+
+function generateSymbols(
+  isLanding: boolean,
+  isDesktop: boolean,
+  symbolSet: string[],
+  count: number,
+): FloatingSymbol[] {
   if (count <= 0 || symbolSet.length === 0) return [];
   const positions: number[] = [];
 
@@ -30,6 +56,11 @@ function generateSymbols(isLanding: boolean, symbolSet: string[], count: number)
     do {
       if (isLanding) {
         pos = 15 + Math.random() * 70;
+      } else if (isDesktop) {
+        // On desktop the side gutters are wide — spread symbols across them
+        // with a comfortable inset from the page edge.
+        const isRight = Math.random() > 0.5;
+        pos = isRight ? 70 + Math.random() * 26 : 4 + Math.random() * 26;
       } else {
         const isRight = Math.random() > 0.5;
         pos = isRight ? 72 + Math.random() * 23 : 5 + Math.random() * 23;
@@ -37,7 +68,7 @@ function generateSymbols(isLanding: boolean, symbolSet: string[], count: number)
       attempts++;
     } while (
       attempts < 20 &&
-      positions.some(p => Math.abs(p - pos) < 6)
+      positions.some(p => Math.abs(p - pos) < (isDesktop ? 5 : 6))
     );
     positions.push(pos);
     return pos;
@@ -58,13 +89,31 @@ function generateSymbols(isLanding: boolean, symbolSet: string[], count: number)
 
   return Array.from({ length: count }, (_, i) => {
     const rot = getRotation();
+    // On desktop, mix in real color emoji ~30% of the time so the gutters
+    // visibly contain emoji glyphs (not just dim unicode music characters).
+    const useEmoji = isDesktop && !isLanding && Math.random() < 0.3;
+    const pool = useEmoji ? DESKTOP_ACCENT_EMOJI : symbolSet;
+    const symbol = pool[Math.floor(Math.random() * pool.length)];
+
+    // Desktop sizes are noticeably larger and a touch more opaque so the
+    // sides of Practice/Social/Profile feel intentional and rich.
+    const size = isDesktop
+      ? (useEmoji ? 36 + Math.random() * 22 : 32 + Math.random() * 28)
+      : 18 + Math.random() * 14;
+
+    const opacity = isDesktop
+      ? (useEmoji ? 0.32 + Math.random() * 0.18 : 0.13 + Math.random() * 0.07)
+      : 0.08;
+
     return {
       id: i,
-      symbol: symbolSet[Math.floor(Math.random() * symbolSet.length)],
+      symbol,
+      isEmoji: useEmoji,
       left: getPosition(),
-      delay: (i * 5) + Math.random() * 12,
-      duration: 120 + Math.random() * 60,
-      size: 18 + Math.random() * 14,
+      delay: (i * 4) + Math.random() * 12,
+      duration: 130 + Math.random() * 70,
+      size,
+      opacity,
       rotateStart: rot.start,
       rotateMid: rot.mid,
       rotateEnd: rot.end,
@@ -72,19 +121,65 @@ function generateSymbols(isLanding: boolean, symbolSet: string[], count: number)
   });
 }
 
+function generateOrbs(): GutterOrb[] {
+  // A small set of soft gradient orbs anchored in the desktop gutters that
+  // add depth without competing with content. They are static (no animation)
+  // to stay performant.
+  const orbs: GutterOrb[] = [];
+  const sides: Array<'left' | 'right'> = ['left', 'right'];
+  let id = 0;
+  for (const side of sides) {
+    const count = 3;
+    for (let i = 0; i < count; i++) {
+      orbs.push({
+        id: id++,
+        side,
+        topPct: 8 + i * 30 + Math.random() * 8,
+        size: 280 + Math.random() * 220,
+        // Use the project primary hue range with gentle variation
+        hue: 200 + Math.random() * 40,
+        blur: 90 + Math.random() * 40,
+        opacity: 0.10 + Math.random() * 0.06,
+      });
+    }
+  }
+  return orbs;
+}
+
 export function FloatingInstruments() {
   const [symbols, setSymbols] = useState<FloatingSymbol[]>([]);
+  const [orbs, setOrbs] = useState<GutterOrb[]>([]);
+  const [isDesktop, setIsDesktop] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : false,
+  );
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isLanding = location.pathname === '/welcome';
+  const isSuppressed = SUPPRESSED_PREFIXES.some(p => location.pathname.startsWith(p));
   const { pack, density } = useBackgroundCustomization();
 
+  // Track desktop vs mobile so we can render a richer layer on wide screens
+  // without affecting the tuned mobile experience.
   useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    if (isSuppressed) {
+      setSymbols([]);
+      setOrbs([]);
+      return;
+    }
     // Landing page always shows the default music symbols at full density
     const symbolSet = isLanding ? DEFAULT_SYMBOLS : getPackSymbols(pack);
-    const count = isLanding ? 9 : getDensityCount(density);
-    setSymbols(generateSymbols(isLanding, symbolSet, count));
-  }, [isLanding, pack, density]);
+    const baseCount = isLanding ? 9 : getDensityCount(density);
+    // Boost count on desktop so the wide gutters don't feel empty
+    const count = !isLanding && isDesktop ? Math.round(baseCount * 1.8) : baseCount;
+    setSymbols(generateSymbols(isLanding, isDesktop, symbolSet, count));
+    setOrbs(!isLanding && isDesktop ? generateOrbs() : []);
+  }, [isLanding, isSuppressed, pack, density, isDesktop]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -122,32 +217,63 @@ export function FloatingInstruments() {
     };
   }, [isLanding]);
 
+  if (isSuppressed) return null;
+
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5]"
-    >
-      {symbols.map((item) => (
+    <>
+      {/* Desktop-only soft gradient orbs anchored in the side gutters.
+          They add depth and a sense of polish without competing with content. */}
+      {orbs.length > 0 && (
         <div
-          key={item.id}
-          className="absolute opacity-[0.08] animate-float-down text-primary select-none emoji-text"
-          style={{
-            left: `${item.left}%`,
-            top: 0,
-            fontSize: `${item.size}px`,
-            animationDelay: `${item.delay}s`,
-            animationDuration: `${item.duration}s`,
-            animationFillMode: 'both',
-            '--float-rotate-start': `${item.rotateStart}deg`,
-            '--float-rotate-mid': `${item.rotateMid}deg`,
-            '--float-rotate-end': `${item.rotateEnd}deg`,
-          } as React.CSSProperties}
+          className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-[10.4]"
           aria-hidden="true"
         >
-          {item.symbol}
+          {orbs.map(orb => (
+            <div
+              key={orb.id}
+              className="absolute rounded-full"
+              style={{
+                top: `${orb.topPct}%`,
+                [orb.side]: `-${Math.round(orb.size * 0.35)}px`,
+                width: `${orb.size}px`,
+                height: `${orb.size}px`,
+                background: `radial-gradient(circle at center, hsl(${orb.hue} 80% 60% / ${orb.opacity}) 0%, hsl(${orb.hue} 80% 60% / 0) 70%)`,
+                filter: `blur(${orb.blur}px)`,
+              } as React.CSSProperties}
+            />
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+
+      <div
+        ref={containerRef}
+        className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5]"
+      >
+        {symbols.map((item) => (
+          <div
+            key={item.id}
+            className={
+              'absolute animate-float-down select-none ' +
+              (item.isEmoji ? 'emoji-text' : 'text-primary emoji-text')
+            }
+            style={{
+              left: `${item.left}%`,
+              top: 0,
+              fontSize: `${item.size}px`,
+              opacity: item.opacity,
+              animationDelay: `${item.delay}s`,
+              animationDuration: `${item.duration}s`,
+              animationFillMode: 'both',
+              '--float-rotate-start': `${item.rotateStart}deg`,
+              '--float-rotate-mid': `${item.rotateMid}deg`,
+              '--float-rotate-end': `${item.rotateEnd}deg`,
+            } as React.CSSProperties}
+            aria-hidden="true"
+          >
+            {item.symbol}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
-
