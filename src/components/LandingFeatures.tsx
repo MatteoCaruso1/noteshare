@@ -153,11 +153,13 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             alt={feature.alt}
             width={feature.width}
             height={feature.height}
-            className={`w-full transition-opacity duration-500 ease-out ${
+            loading={index === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={index === 0 ? 'high' : 'low'}
+            className={`w-full ${
               feature.cropTop ? 'object-cover object-[center_58%]' : 'h-auto'
-            } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            }`}
             style={feature.cropTop ? { height: '420px', maxWidth: 'none', width: '100%' } : undefined}
-            onLoad={() => setImageLoaded(true)}
           />
         </div>
       </div>
