@@ -160,9 +160,6 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 }
 
 export function LandingFeatures() {
-  // Preload images when component mounts
-  usePreloadImages();
-
   return (
     <section data-landing-divider className="relative py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-40 w-full mt-0 md:mt-2"
       style={{
