@@ -7,18 +7,36 @@ export function WelcomeHero() {
   const [isExiting, setIsExiting] = useState(false);
   const heroContentRef = useRef<HTMLElement>(null);
 
-  // Scroll-linked opacity via direct DOM manipulation (no re-renders)
+  // Scroll-linked opacity via rAF + direct DOM manipulation (no re-renders, throttled)
   useEffect(() => {
-    const handleScroll = () => {
+    let rafId: number | null = null;
+    let lastOpacity = 1;
+
+    const update = () => {
+      rafId = null;
       const scrollY = window.scrollY;
+      // Skip work entirely once hero is fully faded (covers the rest of the scroll)
+      if (scrollY > 400 && lastOpacity === 0) return;
       const opacity = Math.max(0, 1 - scrollY / 400);
+      if (opacity === lastOpacity) return;
+      lastOpacity = opacity;
       if (heroContentRef.current) {
         heroContentRef.current.style.opacity = String(opacity);
+        // Hide entirely when invisible so it doesn't take part in paint
+        heroContentRef.current.style.visibility = opacity === 0 ? 'hidden' : 'visible';
       }
     };
 
+    const handleScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(update);
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (
