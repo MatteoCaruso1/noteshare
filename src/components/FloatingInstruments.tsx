@@ -88,10 +88,10 @@ function generateSymbols(
     // Desktop sizes are noticeably larger and a touch more opaque so the
     // sides of Practice/Social/Profile feel intentional and rich.
     const size = isDesktop
-      ? 32 + Math.random() * 28
+      ? 40 + Math.random() * 35
       : 18 + Math.random() * 14;
 
-    const opacity = isDesktop ? 0.13 + Math.random() * 0.07 : 0.08;
+    const opacity = isDesktop ? 0.16 + Math.random() * 0.09 : 0.08;
 
     return {
       id: i,
@@ -117,17 +117,17 @@ function generateOrbs(): GutterOrb[] {
   const sides: Array<'left' | 'right'> = ['left', 'right'];
   let id = 0;
   for (const side of sides) {
-    const count = 3;
+    const count = 4;
     for (let i = 0; i < count; i++) {
       orbs.push({
         id: id++,
         side,
-        topPct: 8 + i * 30 + Math.random() * 8,
-        size: 280 + Math.random() * 220,
+        topPct: 5 + i * 24 + Math.random() * 6,
+        size: 350 + Math.random() * 275,
         // Use the project primary hue range with gentle variation
         hue: 200 + Math.random() * 40,
-        blur: 90 + Math.random() * 40,
-        opacity: 0.10 + Math.random() * 0.06,
+        blur: 110 + Math.random() * 50,
+        opacity: 0.13 + Math.random() * 0.07,
       });
     }
   }
@@ -164,7 +164,7 @@ export function FloatingInstruments() {
     const symbolSet = isLanding ? DEFAULT_SYMBOLS : getPackSymbols(pack);
     const baseCount = isLanding ? 9 : getDensityCount(density);
     // Boost count on desktop so the wide gutters don't feel empty
-    const count = !isLanding && isDesktop ? Math.round(baseCount * 1.8) : baseCount;
+    const count = !isLanding && isDesktop ? Math.round(baseCount * 2.25) : baseCount;
     setSymbols(generateSymbols(isLanding, isDesktop, symbolSet, count));
     setOrbs(!isLanding && isDesktop ? generateOrbs() : []);
   }, [isLanding, isSuppressed, pack, density, isDesktop]);
