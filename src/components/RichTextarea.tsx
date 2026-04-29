@@ -75,38 +75,53 @@ export function RichTextarea({
     return placeholder;
   }, [placeholder, showTips]);
 
-  // Auto-expand textarea as content grows (without causing scroll jumps)
+  // Auto-expand textarea as content grows (without causing scroll jumps).
+  // On mobile (especially iOS Safari), the previous "shrink to 0px then re-measure"
+  // approach caused visible jank when pressing Enter inside long bulleted lists,
+  // because the momentary collapse forced the browser to recalculate caret/scroll.
+  // We now measure scrollHeight without shrinking by temporarily clearing only the
+  // height (letting it grow naturally) and we skip the write entirely if the height
+  // would not actually change.
   useEffect(() => {
-    if (autoExpand && textareaRef.current) {
-      const textarea = textareaRef.current;
-      const minHeight = rows * 24; // Approximate line height
-      
-      // Save scroll positions before measuring
-      const savedWindowScroll = window.scrollY;
-      const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
-      const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
-      
-      // Temporarily hide overflow and collapse to 0 to measure true scrollHeight.
-      // Using '0px' instead of 'auto' avoids iOS Safari's scroll-to-caret behavior
-      // that fires when the textarea momentarily resizes to its natural height.
-      const prevOverflow = textarea.style.overflow;
-      textarea.style.overflow = 'hidden';
-      textarea.style.height = '0px';
-      
-      // Measure and apply final height synchronously (single layout pass)
-      const newHeight = Math.max(minHeight, textarea.scrollHeight);
+    if (!autoExpand || !textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const minHeight = rows * 24; // Approximate line height
+
+    // Save scroll positions before measuring
+    const savedWindowScroll = window.scrollY;
+    const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+    const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
+    const savedTextareaScroll = textarea.scrollTop;
+
+    const prevOverflow = textarea.style.overflow;
+    const prevHeight = textarea.style.height;
+    textarea.style.overflow = 'hidden';
+
+    // Clear the inline height so the browser can report the natural scrollHeight.
+    // This grows the element at most to its content height — it does NOT shrink it
+    // to 0, which is the behavior that caused iOS to jump the caret on Enter.
+    textarea.style.height = 'auto';
+    const measured = textarea.scrollHeight;
+    const newHeight = Math.max(minHeight, measured);
+
+    // Only write the height if it actually changed — avoids needless layout work
+    // and any associated scroll side effects.
+    if (`${newHeight}px` !== prevHeight) {
       textarea.style.height = `${newHeight}px`;
-      
-      // Restore overflow
-      textarea.style.overflow = prevOverflow;
-      
-      // Immediately restore scroll positions (synchronously, no rAF delay)
-      if (window.scrollY !== savedWindowScroll) {
-        window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
-      }
-      if (scrollParent && scrollParent.scrollTop !== savedParentScroll) {
-        scrollParent.scrollTop = savedParentScroll;
-      }
+    } else {
+      textarea.style.height = prevHeight;
+    }
+    textarea.style.overflow = prevOverflow;
+
+    // Restore scroll positions synchronously to undo any browser scroll-into-view
+    if (textarea.scrollTop !== savedTextareaScroll) {
+      textarea.scrollTop = savedTextareaScroll;
+    }
+    if (scrollParent && scrollParent.scrollTop !== savedParentScroll) {
+      scrollParent.scrollTop = savedParentScroll;
+    }
+    if (window.scrollY !== savedWindowScroll) {
+      window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
     }
   }, [value, autoExpand, rows]);
 
