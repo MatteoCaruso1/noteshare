@@ -4,6 +4,21 @@ import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
+// Detect touch-primary devices. The scroll-preservation logic in this file
+// exists to fight iOS Safari's scroll-into-view side effects on selection /
+// resize. On desktop those side effects don't happen, but pinning the scroll
+// position on every keystroke prevents the user from scrolling the page while
+// hovered over (or focused on) the textarea — so we only preserve scroll on
+// touch devices.
+const isTouchPrimary = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  } catch {
+    return false;
+  }
+};
+
 // Bullet hierarchy for nested indentation levels (like OneNote)
 const BULLET_LEVELS = ['•', '◦', '▪'] as const;
 const ALL_BULLETS = new Set<string>(BULLET_LEVELS);
@@ -87,11 +102,18 @@ export function RichTextarea({
     const textarea = textareaRef.current;
     const minHeight = rows * 24; // Approximate line height
 
-    // Save scroll positions before measuring
-    const savedWindowScroll = window.scrollY;
-    const scrollParent = textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+    // Only preserve scroll on touch-primary devices. On desktop the user must
+    // remain free to scroll the page while typing or hovering over the textarea,
+    // and the browser does not introduce the scroll-into-view jank we're guarding
+    // against here.
+    const preserveScroll = isTouchPrimary();
+
+    const savedWindowScroll = preserveScroll ? window.scrollY : 0;
+    const scrollParent = preserveScroll
+      ? (textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null)
+      : null;
     const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
-    const savedTextareaScroll = textarea.scrollTop;
+    const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
 
     const prevOverflow = textarea.style.overflow;
     const prevHeight = textarea.style.height;
@@ -112,6 +134,8 @@ export function RichTextarea({
       textarea.style.height = prevHeight;
     }
     textarea.style.overflow = prevOverflow;
+
+    if (!preserveScroll) return;
 
     // Restore scroll positions synchronously to undo any browser scroll-into-view
     if (textarea.scrollTop !== savedTextareaScroll) {
@@ -510,12 +534,15 @@ export function RichTextarea({
         // Snapshot scroll positions BEFORE we mutate value/selection so we can
         // undo any scroll-into-view side effects that iOS Safari triggers when
         // the textarea selection changes inside a long content area.
-        const scrollContainer = getScrollContainerFor(textarea);
-        const savedScrollTop = getScrollTop(scrollContainer);
-        const savedTextareaScroll = textarea.scrollTop;
-        const savedWindowScroll = window.scrollY;
+        // Desktop is opted out — see isTouchPrimary() for rationale.
+        const preserveScroll = isTouchPrimary();
+        const scrollContainer = preserveScroll ? getScrollContainerFor(textarea) : null;
+        const savedScrollTop = scrollContainer ? getScrollTop(scrollContainer) : 0;
+        const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
+        const savedWindowScroll = preserveScroll ? window.scrollY : 0;
 
         const restoreScroll = () => {
+          if (!preserveScroll || !scrollContainer) return;
           if (textarea.scrollTop !== savedTextareaScroll) {
             textarea.scrollTop = savedTextareaScroll;
           }
