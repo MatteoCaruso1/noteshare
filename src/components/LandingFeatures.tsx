@@ -84,6 +84,14 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   }, [isMobile, feature.description]);
 
   useEffect(() => {
+    // On mobile, skip the fade-in animation entirely — show content immediately.
+    // The IntersectionObserver + transform/opacity animations were causing
+    // jank during fast scrolls combined with the heavy blurs and large images.
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
