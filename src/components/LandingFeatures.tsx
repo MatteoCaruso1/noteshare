@@ -142,7 +142,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       </div>
       <div className="relative z-[12] group">
         {/* Layered glow */}
-        <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl md:blur-3xl rounded-3xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+        <div className="hidden md:block absolute -inset-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl md:blur-3xl rounded-3xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
         <div 
           className={`relative rounded-xl overflow-hidden shadow-2xl shadow-black/40 border border-border/60 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ring-1 ring-white/5 transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-primary/20 ${
             feature.cropTop ? 'h-[220px]' : ''
