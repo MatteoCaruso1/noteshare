@@ -60,19 +60,10 @@ function renderDescription(text: string) {
   });
 }
 
-// Preload all feature images on mount
-function usePreloadImages() {
-  useEffect(() => {
-    features.forEach((feature) => {
-      const img = new Image();
-      img.src = feature.image;
-    });
-  }, []);
-}
+// Native lazy-loading on the <img> tags handles below-the-fold images.
 
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const [isVisible, setIsVisible] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -84,6 +75,14 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   }, [isMobile, feature.description]);
 
   useEffect(() => {
+    // On mobile, skip the fade-in animation entirely — show content immediately.
+    // The IntersectionObserver + transform/opacity animations were causing
+    // jank during fast scrolls combined with the heavy blurs and large images.
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -134,7 +133,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       </div>
       <div className="relative z-[12] group">
         {/* Layered glow */}
-        <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl md:blur-3xl rounded-3xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+        <div className="hidden md:block absolute -inset-6 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl md:blur-3xl rounded-3xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
         <div 
           className={`relative rounded-xl overflow-hidden shadow-2xl shadow-black/40 border border-border/60 w-full max-w-xl lg:max-w-2xl xl:max-w-3xl ring-1 ring-white/5 transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-primary/20 ${
             feature.cropTop ? 'h-[220px]' : ''
@@ -145,11 +144,13 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             alt={feature.alt}
             width={feature.width}
             height={feature.height}
-            className={`w-full transition-opacity duration-500 ease-out ${
+            loading={index === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={index === 0 ? 'high' : 'low'}
+            className={`w-full ${
               feature.cropTop ? 'object-cover object-[center_58%]' : 'h-auto'
-            } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            }`}
             style={feature.cropTop ? { height: '420px', maxWidth: 'none', width: '100%' } : undefined}
-            onLoad={() => setImageLoaded(true)}
           />
         </div>
       </div>
@@ -158,9 +159,6 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 }
 
 export function LandingFeatures() {
-  // Preload images when component mounts
-  usePreloadImages();
-
   return (
     <section data-landing-divider className="relative py-8 md:py-12 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-40 w-full mt-0 md:mt-2"
       style={{
@@ -168,7 +166,7 @@ export function LandingFeatures() {
       }}
     >
       {/* Subtle accent glow behind features */}
-      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
+      <div className="hidden md:block absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
       <div className="relative w-full max-w-7xl mx-auto space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
