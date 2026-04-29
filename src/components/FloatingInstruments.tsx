@@ -164,7 +164,7 @@ export function FloatingInstruments() {
     const symbolSet = isLanding ? DEFAULT_SYMBOLS : getPackSymbols(pack);
     const baseCount = isLanding ? 9 : getDensityCount(density);
     // Boost count on desktop so the wide gutters don't feel empty
-    const count = !isLanding && isDesktop ? Math.round(baseCount * 1.8) : baseCount;
+    const count = !isLanding && isDesktop ? Math.round(baseCount * 2.25) : baseCount;
     setSymbols(generateSymbols(isLanding, isDesktop, symbolSet, count));
     setOrbs(!isLanding && isDesktop ? generateOrbs() : []);
   }, [isLanding, isSuppressed, pack, density, isDesktop]);
