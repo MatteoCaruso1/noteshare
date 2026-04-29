@@ -60,15 +60,7 @@ function renderDescription(text: string) {
   });
 }
 
-// Preload all feature images on mount
-function usePreloadImages() {
-  useEffect(() => {
-    features.forEach((feature) => {
-      const img = new Image();
-      img.src = feature.image;
-    });
-  }, []);
-}
+// Native lazy-loading on the <img> tags handles below-the-fold images.
 
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const [isVisible, setIsVisible] = useState(false);
