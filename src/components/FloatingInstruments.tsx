@@ -83,26 +83,20 @@ function generateSymbols(
 
   return Array.from({ length: count }, (_, i) => {
     const rot = getRotation();
-    // On desktop, mix in real color emoji ~30% of the time so the gutters
-    // visibly contain emoji glyphs (not just dim unicode music characters).
-    const useEmoji = isDesktop && !isLanding && Math.random() < 0.3;
-    const pool = useEmoji ? DESKTOP_ACCENT_EMOJI : symbolSet;
-    const symbol = pool[Math.floor(Math.random() * pool.length)];
+    const symbol = symbolSet[Math.floor(Math.random() * symbolSet.length)];
 
     // Desktop sizes are noticeably larger and a touch more opaque so the
     // sides of Practice/Social/Profile feel intentional and rich.
     const size = isDesktop
-      ? (useEmoji ? 36 + Math.random() * 22 : 32 + Math.random() * 28)
+      ? 32 + Math.random() * 28
       : 18 + Math.random() * 14;
 
-    const opacity = isDesktop
-      ? (useEmoji ? 0.32 + Math.random() * 0.18 : 0.13 + Math.random() * 0.07)
-      : 0.08;
+    const opacity = isDesktop ? 0.13 + Math.random() * 0.07 : 0.08;
 
     return {
       id: i,
       symbol,
-      isEmoji: useEmoji,
+      isEmoji: false,
       left: getPosition(),
       delay: (i * 4) + Math.random() * 12,
       duration: 130 + Math.random() * 70,
