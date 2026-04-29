@@ -4,6 +4,21 @@ import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
+// Detect touch-primary devices. The scroll-preservation logic in this file
+// exists to fight iOS Safari's scroll-into-view side effects on selection /
+// resize. On desktop those side effects don't happen, but pinning the scroll
+// position on every keystroke prevents the user from scrolling the page while
+// hovered over (or focused on) the textarea — so we only preserve scroll on
+// touch devices.
+const isTouchPrimary = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  } catch {
+    return false;
+  }
+};
+
 // Bullet hierarchy for nested indentation levels (like OneNote)
 const BULLET_LEVELS = ['•', '◦', '▪'] as const;
 const ALL_BULLETS = new Set<string>(BULLET_LEVELS);
