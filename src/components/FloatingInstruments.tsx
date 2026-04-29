@@ -88,10 +88,10 @@ function generateSymbols(
     // Desktop sizes are noticeably larger and a touch more opaque so the
     // sides of Practice/Social/Profile feel intentional and rich.
     const size = isDesktop
-      ? 32 + Math.random() * 28
+      ? 40 + Math.random() * 35
       : 18 + Math.random() * 14;
 
-    const opacity = isDesktop ? 0.13 + Math.random() * 0.07 : 0.08;
+    const opacity = isDesktop ? 0.16 + Math.random() * 0.09 : 0.08;
 
     return {
       id: i,
