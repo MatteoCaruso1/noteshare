@@ -176,7 +176,7 @@ export function LandingFeatures() {
       }}
     >
       {/* Subtle accent glow behind features */}
-      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
+      <div className="hidden md:block absolute top-[30%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[80px] md:blur-[160px] pointer-events-none" />
       <div className="relative w-full max-w-7xl mx-auto space-y-8">
         {features.map((feature, index) => (
           <FeatureCard key={index} feature={feature} index={index} />
