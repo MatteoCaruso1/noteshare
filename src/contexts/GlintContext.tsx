@@ -56,10 +56,16 @@ export function GlintProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const NOOP_GLINT: GlintContextType = {
+  isPaused: false,
+  glintStyle: {},
+  setPracticeExpanded: () => {},
+  setQuickNoteExpanded: () => {},
+  setFocusFocused: () => {},
+  hasActiveSession: false,
+  setHasActiveSession: () => {},
+};
+
 export function useGlint() {
-  const context = useContext(GlintContext);
-  if (!context) {
-    throw new Error('useGlint must be used within a GlintProvider');
-  }
-  return context;
+  return useContext(GlintContext) ?? NOOP_GLINT;
 }
