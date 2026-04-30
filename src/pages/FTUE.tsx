@@ -16,7 +16,7 @@ import { PracticeControls } from '@/components/PracticeControls';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
 import { Timeline } from '@/components/Timeline';
-import { GlintProvider } from '@/contexts/GlintContext';
+
 import { FTUEPreviewProvider, useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 
 // Step 0: Welcome
