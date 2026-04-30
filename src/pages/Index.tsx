@@ -436,7 +436,7 @@ const Index = () => {
                 </>
               )}
             </section>
-          </GlintProvider>
+          </>
 
           {/* Memory Reminder */}
           <MemoryReminder />
