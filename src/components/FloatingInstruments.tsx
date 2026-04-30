@@ -146,6 +146,7 @@ export function FloatingInstruments() {
   const isLanding = location.pathname === '/welcome';
   const isSuppressed = SUPPRESSED_PREFIXES.some(p => location.pathname.startsWith(p));
   const { pack, density } = useBackgroundCustomization();
+  const { hasActiveSession } = useGlint();
 
   // Track desktop vs mobile so we can render a richer layer on wide screens
   // without affecting the tuned mobile experience.
