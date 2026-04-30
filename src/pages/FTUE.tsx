@@ -207,7 +207,7 @@ function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void;
         <div className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
           <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
 
-          <GlintProvider>
+          <>
             <section className="space-y-4">
               {/* Real Practice Controls */}
               <div data-tour="practice-capture" className="relative">
