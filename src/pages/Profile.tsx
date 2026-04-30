@@ -543,7 +543,7 @@ const Profile = () => {
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-primary/60" />
-                <h3 className="font-semibold">Themes & Vibes</h3>
+                <h3 className="font-semibold">Themes</h3>
               </div>
               <PremiumGate
                 featureName="Themes"
