@@ -25,7 +25,7 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
-import { GlintProvider } from '@/contexts/GlintContext';
+
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
@@ -402,8 +402,8 @@ const Index = () => {
       {/* Main Content */}
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
-          {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
-          <GlintProvider>
+          {/* Practice Controls and Quick Note Capture */}
+          <>
             {/* Session Focus Overlay - darkens page during active sessions */}
             <SessionFocusOverlay />
             
@@ -436,7 +436,7 @@ const Index = () => {
                 </>
               )}
             </section>
-          </GlintProvider>
+          </>
 
           {/* Memory Reminder */}
           <MemoryReminder />

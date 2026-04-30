@@ -14,6 +14,7 @@ import { BackgroundCustomizationProvider } from "@/contexts/BackgroundCustomizat
 import { MetronomeProvider } from "@/contexts/MetronomeContext";
 import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
+import { GlintProvider } from "@/contexts/GlintContext";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import UpdateAvailableToast from "@/components/UpdateAvailableToast";
@@ -219,6 +220,7 @@ function AppInner() {
                     <PracticeTimerProvider>
                       <TooltipProvider>
                     <BrowserRouter>
+                      <GlintProvider>
                       <ScrollToTop />
                       <ScrollLockDebugger />
                       <SyncManager onStateChange={handleSyncStateChange} />
@@ -276,6 +278,7 @@ function AppInner() {
                     {/* Toasts render AFTER all page content to ensure they paint above all stacking contexts */}
                     <Toaster />
                     <Sonner />
+                    </GlintProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                 </PracticeTimerProvider>

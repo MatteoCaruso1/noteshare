@@ -16,7 +16,7 @@ import { PracticeControls } from '@/components/PracticeControls';
 import { QuickNoteCapture } from '@/components/QuickNoteCapture';
 import { TodaysFocus } from '@/components/TodaysFocus';
 import { Timeline } from '@/components/Timeline';
-import { GlintProvider } from '@/contexts/GlintContext';
+
 import { FTUEPreviewProvider, useFTUEPreview } from '@/contexts/FTUEPreviewContext';
 
 // Step 0: Welcome
@@ -207,7 +207,7 @@ function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void;
         <div className="container max-w-2xl mx-auto px-4 py-4 space-y-4">
           <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
 
-          <GlintProvider>
+          <>
             <section className="space-y-4">
               {/* Real Practice Controls */}
               <div data-tour="practice-capture" className="relative">
@@ -228,7 +228,7 @@ function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void;
                 </div>
               )}
             </section>
-          </GlintProvider>
+          </>
 
           {/* Timeline */}
           <section data-tour="timeline">
