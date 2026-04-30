@@ -5,6 +5,7 @@ import {
   getPackSymbols,
   getDensityCount,
 } from '@/contexts/BackgroundCustomizationContext';
+import { useGlint } from '@/contexts/GlintContext';
 
 const DEFAULT_SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
 
@@ -145,6 +146,7 @@ export function FloatingInstruments() {
   const isLanding = location.pathname === '/welcome';
   const isSuppressed = SUPPRESSED_PREFIXES.some(p => location.pathname.startsWith(p));
   const { pack, density } = useBackgroundCustomization();
+  const { hasActiveSession } = useGlint();
 
   // Track desktop vs mobile so we can render a richer layer on wide screens
   // without affecting the tuned mobile experience.
@@ -213,7 +215,8 @@ export function FloatingInstruments() {
           They add depth and a sense of polish without competing with content. */}
       {orbs.length > 0 && (
         <div
-          className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-[10.4]"
+          className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-[10.4] transition-opacity duration-500"
+          style={{ opacity: hasActiveSession ? 0.35 : 1 }}
           aria-hidden="true"
         >
           {orbs.map(orb => (
@@ -235,7 +238,8 @@ export function FloatingInstruments() {
 
       <div
         ref={containerRef}
-        className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5]"
+        className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5] transition-opacity duration-500"
+        style={{ opacity: hasActiveSession ? 0.3 : 1 }}
       >
         {symbols.map((item) => (
           <div
