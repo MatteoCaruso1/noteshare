@@ -25,7 +25,7 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { PracticeControls } from '@/components/PracticeControls';
 import { TimelineSearch } from '@/components/TimelineSearch';
 import { SessionFocusOverlay } from '@/components/SessionFocusOverlay';
-import { GlintProvider } from '@/contexts/GlintContext';
+
 import { WeeklyGoalModal } from '@/components/WeeklyGoalModal';
 import { ThreeDayStreakDialog } from '@/components/ThreeDayStreakDialog';
 import { SevenDayStreakDialog } from '@/components/SevenDayStreakDialog';
