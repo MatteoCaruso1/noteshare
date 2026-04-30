@@ -14,6 +14,7 @@ import { BackgroundCustomizationProvider } from "@/contexts/BackgroundCustomizat
 import { MetronomeProvider } from "@/contexts/MetronomeContext";
 import { PracticeTimerProvider } from "@/contexts/PracticeTimerContext";
 import { FloatingInstruments } from "@/components/FloatingInstruments";
+import { GlintProvider } from "@/contexts/GlintContext";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import UpdateAvailableToast from "@/components/UpdateAvailableToast";
