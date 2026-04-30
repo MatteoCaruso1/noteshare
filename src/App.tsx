@@ -278,6 +278,7 @@ function AppInner() {
                     {/* Toasts render AFTER all page content to ensure they paint above all stacking contexts */}
                     <Toaster />
                     <Sonner />
+                    </GlintProvider>
                     </BrowserRouter>
                   </TooltipProvider>
                 </PracticeTimerProvider>
