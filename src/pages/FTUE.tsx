@@ -228,7 +228,7 @@ function FTUETourContent({ onComplete, onTrackPhase }: { onComplete: () => void;
                 </div>
               )}
             </section>
-          </GlintProvider>
+          </>
 
           {/* Timeline */}
           <section data-tour="timeline">
