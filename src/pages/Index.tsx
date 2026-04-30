@@ -402,8 +402,8 @@ const Index = () => {
       {/* Main Content */}
       <PageBody>
         <main className="container max-w-2xl mx-auto px-4 py-2 space-y-4">
-          {/* Practice Controls and Quick Note Capture wrapped in GlintProvider */}
-          <GlintProvider>
+          {/* Practice Controls and Quick Note Capture */}
+          <>
             {/* Session Focus Overlay - darkens page during active sessions */}
             <SessionFocusOverlay />
             
