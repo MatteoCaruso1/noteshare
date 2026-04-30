@@ -5,6 +5,7 @@ import {
   getPackSymbols,
   getDensityCount,
 } from '@/contexts/BackgroundCustomizationContext';
+import { useGlint } from '@/contexts/GlintContext';
 
 const DEFAULT_SYMBOLS = ['♪', '♫', '♬', '♩', '𝄞', '♭', '♯', '𝄢'];
 
