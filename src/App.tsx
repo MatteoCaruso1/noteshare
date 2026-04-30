@@ -220,6 +220,7 @@ function AppInner() {
                     <PracticeTimerProvider>
                       <TooltipProvider>
                     <BrowserRouter>
+                      <GlintProvider>
                       <ScrollToTop />
                       <ScrollLockDebugger />
                       <SyncManager onStateChange={handleSyncStateChange} />
