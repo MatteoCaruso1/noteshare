@@ -281,22 +281,22 @@
   }
   .dark.theme-green,
   .theme-green.dark {
-    --background: 150 16% 7%;
+    --background: 150 16% 10%;
     --foreground: 145 8% 97%;
-    --card: 148 20% 12%;
+    --card: 148 38% 17%;
     --card-foreground: 145 8% 97%;
-    --popover: 148 20% 14%;
+    --popover: 148 38% 19%;
     --popover-foreground: 145 8% 97%;
-    --muted: 148 16% 18%;
-    --muted-foreground: 145 10% 82%;
-    --border: 148 28% 24%;
-    --input: 148 20% 16%;
+    --muted: 148 26% 22%;
+    --muted-foreground: 145 12% 84%;
+    --border: 148 48% 30%;
+    --input: 148 30% 20%;
     --primary: 145 70% 55%;
     --primary-foreground: 145 60% 8%;
     --ring: 145 70% 55%;
-    --note: 148 20% 14%;
+    --note: 148 38% 19%;
     --note-foreground: 145 8% 97%;
-    --note-border: 148 32% 28%;
+    --note-border: 148 48% 32%;
     --gradient-primary: linear-gradient(135deg, hsl(145 70% 55%) 0%, hsl(160 72% 60%) 100%);
   }
 
