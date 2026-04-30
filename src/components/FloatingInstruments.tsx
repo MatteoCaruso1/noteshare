@@ -238,7 +238,8 @@ export function FloatingInstruments() {
 
       <div
         ref={containerRef}
-        className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5]"
+        className="fixed inset-0 pointer-events-none overflow-hidden z-[10.5] transition-opacity duration-500"
+        style={{ opacity: hasActiveSession ? 0.3 : 1 }}
       >
         {symbols.map((item) => (
           <div
