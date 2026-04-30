@@ -146,10 +146,9 @@ export function GetInspiredSection() {
   return (
     <>
       <button
-        className="get-inspired-button cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-2 sm:px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 shrink-0"
+        className="get-inspired-button cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 w-full"
         onClick={() => setShowMenu(true)}
       >
-        <Sparkles className="h-4 w-4 text-primary hidden sm:block" />
         <span className="text-sm font-medium text-primary">Get Inspired</span>
       </button>
 
