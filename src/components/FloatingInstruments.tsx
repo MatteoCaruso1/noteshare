@@ -215,7 +215,8 @@ export function FloatingInstruments() {
           They add depth and a sense of polish without competing with content. */}
       {orbs.length > 0 && (
         <div
-          className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-[10.4]"
+          className="hidden lg:block fixed inset-0 pointer-events-none overflow-hidden z-[10.4] transition-opacity duration-500"
+          style={{ opacity: hasActiveSession ? 0.35 : 1 }}
           aria-hidden="true"
         >
           {orbs.map(orb => (
