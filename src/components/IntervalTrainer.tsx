@@ -155,7 +155,7 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
   const [includeChromatic, setIncludeChromatic] = useState(false);
   const [round, setRound] = useState<CurrentRound | null>(null);
   const [answer, setAnswer] = useState<{ id: string; correct: boolean } | null>(null);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
+  
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
