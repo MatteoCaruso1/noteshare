@@ -100,6 +100,7 @@ const Profile = () => {
 
   // Streak milestone dialog state
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
+  const [intervalTrainerOpen, setIntervalTrainerOpen] = useState(false);
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
   const [celebratingAchievementCount, setCelebratingAchievementCount] = useState(1);
   const [celebratingMilestoneDays, setCelebratingMilestoneDays] = useState<number | undefined>();
