@@ -740,6 +740,9 @@ const Profile = () => {
           milestoneDays={celebratingMilestoneDays}
         />
       )}
+
+      {/* Interval Ear Trainer Dialog */}
+      <IntervalTrainer open={intervalTrainerOpen} onOpenChange={setIntervalTrainerOpen} />
     </PageLayout>
   );
 };
