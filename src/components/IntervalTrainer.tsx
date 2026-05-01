@@ -58,7 +58,7 @@ const INTERVALS: IntervalDef[] = [
     shortLabel: 'M3',
     fullName: 'Major 3rd',
     ascendingSong: 'When the Saints Go Marching In',
-    descendingSong: "Beethoven's 5th — "ba-ba-ba-BAAA"",
+    descendingSong: "Beethoven's 5th — ba-ba-ba-BAAA",
     chromatic: false,
   },
   {
