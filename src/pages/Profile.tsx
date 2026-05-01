@@ -540,6 +540,31 @@ const Profile = () => {
             </Card>
           )}
 
+          {/* Interval Ear Trainer - Pro feature */}
+          {!editing && (
+            <Card className="p-4 bg-card border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Ear className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold text-sm sm:text-base">Train your ear with interval recognition</h3>
+              </div>
+              <PremiumGate
+                featureName="Interval Trainer"
+                blur={false}
+                showPreview={false}
+                icon={Ear}
+                description="Hear an interval, identify it using famous song hooks, and sharpen your ear over time"
+              >
+                <button
+                  onClick={() => setIntervalTrainerOpen(true)}
+                  className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 w-full"
+                >
+                  <Ear className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Start Interval Training</span>
+                </button>
+              </PremiumGate>
+            </Card>
+          )}
+
           {/* Themes - separate from Practice Stats so it never gets blurred by the stats gate */}
           {!editing && (
             <Card className="p-4 bg-card border-border">
