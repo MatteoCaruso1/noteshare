@@ -67,7 +67,7 @@ const INTERVALS: IntervalDef[] = [
     shortLabel: 'P4',
     fullName: 'Perfect 4th',
     ascendingSong: 'Here Comes the Bride',
-    descendingSong: 'Eine kleine Nachtmusik (Mozart)',
+    descendingSong: 'Born Free (theme)',
     chromatic: false,
   },
   {
@@ -102,8 +102,8 @@ const INTERVALS: IntervalDef[] = [
     semitones: 9,
     shortLabel: 'M6',
     fullName: 'Major 6th',
-    ascendingSong: 'My Bonnie Lies Over the Ocean / NBC chimes',
-    descendingSong: "Nobody Knows the Trouble I've Seen",
+    ascendingSong: 'Dashing Through the Snow (Jingle Bells verse)',
+    descendingSong: 'Over There (G.M. Cohan) — "OH-ver"',
     chromatic: true,
   },
   {
