@@ -15,7 +15,7 @@ import { TapTooltip } from '@/components/shared/TapTooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INSTRUMENTS, GENRES } from '@/types';
-import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette, Share, Globe } from 'lucide-react';
+import { LogOut, User, Settings, Camera, BookOpen, TrendingUp, Sparkles, Music, Target, Palette, Share, Globe, Ear } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HelpTipsDialog } from '@/components/HelpTipsDialog';
 import { usePremium } from '@/contexts/PremiumContext';
@@ -41,6 +41,7 @@ import { SimpleGoals } from '@/components/SimpleGoals';
 import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccessCelebration';
 import { ThemePicker } from '@/components/ThemePicker';
 import { GetInspiredSection } from '@/components/GetInspiredSection';
+import { IntervalTrainer } from '@/components/IntervalTrainer';
 
 import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
