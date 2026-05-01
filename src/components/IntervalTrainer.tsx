@@ -67,7 +67,7 @@ const INTERVALS: IntervalDef[] = [
     shortLabel: 'P4',
     fullName: 'Perfect 4th',
     ascendingSong: 'Here Comes the Bride',
-    descendingSong: 'Eine kleine Nachtmusik (Mozart)',
+    descendingSong: 'Born Free (theme)',
     chromatic: false,
   },
   {
@@ -102,8 +102,8 @@ const INTERVALS: IntervalDef[] = [
     semitones: 9,
     shortLabel: 'M6',
     fullName: 'Major 6th',
-    ascendingSong: 'My Bonnie Lies Over the Ocean / NBC chimes',
-    descendingSong: "Nobody Knows the Trouble I've Seen",
+    ascendingSong: 'Dashing Through the Snow (Jingle Bells verse)',
+    descendingSong: 'Over There (G.M. Cohan) — "OH-ver"',
     chromatic: true,
   },
   {
@@ -155,7 +155,7 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
   const [includeChromatic, setIncludeChromatic] = useState(false);
   const [round, setRound] = useState<CurrentRound | null>(null);
   const [answer, setAnswer] = useState<{ id: string; correct: boolean } | null>(null);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
+  
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
@@ -262,7 +262,6 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
     if (!round || answer) return;
     const correct = intervalId === round.interval.id;
     setAnswer({ id: intervalId, correct });
-    setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
   };
 
   const handleReplay = () => {
@@ -275,61 +274,52 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto p-4 gap-3">
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="flex items-center gap-2 text-base">
             <Ear className="w-5 h-5 text-primary" />
             Interval Ear Trainer
           </DialogTitle>
-          <DialogDescription>
-            Listen and choose the correct interval. Each one has a famous song to help you recognize it.
+          <DialogDescription className="text-xs">
+            Listen and pick the interval. Songs hint at each one.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Controls row */}
-        <div className="flex items-center justify-between gap-3 py-2 border-b border-border">
-          <div className="flex items-center gap-2">
+        {/* Controls + direction + replay in one compact row */}
+        <div className="flex items-center justify-between gap-2 pb-2 border-b border-border">
+          <div className="flex items-center gap-2 min-w-0">
             <Switch
               id="chromatic-toggle"
               checked={includeChromatic}
               onCheckedChange={setIncludeChromatic}
             />
-            <Label htmlFor="chromatic-toggle" className="text-sm cursor-pointer">
-              Include chromatic intervals
+            <Label htmlFor="chromatic-toggle" className="text-xs cursor-pointer truncate">
+              Chromatic
             </Label>
           </div>
-          <div className="text-xs text-muted-foreground tabular-nums">
-            {score.correct}/{score.total}
-          </div>
+          {round && (
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                {round.direction === 'asc' ? (
+                  <><ArrowUp className="w-3.5 h-3.5" />Asc</>
+                ) : (
+                  <><ArrowDown className="w-3.5 h-3.5" />Desc</>
+                )}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleReplay} className="h-7 px-2 gap-1">
+                <Play className="w-3 h-3" />
+                <span className="text-xs">Replay</span>
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Direction + replay */}
-        {round && (
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              {round.direction === 'asc' ? (
-                <>
-                  <ArrowUp className="w-4 h-4" /> Ascending
-                </>
-              ) : (
-                <>
-                  <ArrowDown className="w-4 h-4" /> Descending
-                </>
-              )}
-            </div>
-            <Button variant="outline" size="sm" onClick={handleReplay} className="gap-1.5">
-              <Play className="w-3.5 h-3.5" />
-              Replay
-            </Button>
-          </div>
-        )}
-
         {/* Answer grid */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {activeIntervals.map((iv) => {
             const isPicked = answer?.id === iv.id;
             const isCorrectAnswer = !!answer && iv.id === round?.interval.id;
-            const showHint = !!answer; // reveal song after answering
+            const showHint = !!answer;
             const songText =
               round?.direction === 'asc' ? iv.ascendingSong : iv.descendingSong;
 
@@ -339,7 +329,7 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
                 onClick={() => handleGuess(iv.id)}
                 disabled={!round || !!answer}
                 className={cn(
-                  'text-left rounded-lg border p-3 transition-colors',
+                  'text-left rounded-md border p-2 transition-colors',
                   'bg-card hover:bg-accent/40',
                   'disabled:cursor-default',
                   !answer && 'border-border',
@@ -347,27 +337,24 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
                   isPicked && !answer?.correct && 'border-destructive bg-destructive/15'
                 )}
               >
-                <div className="flex items-start gap-2">
-                  <div
-                    className={cn(
-                      'flex items-center justify-center w-9 h-9 rounded-md text-xs font-semibold shrink-0',
-                      'bg-muted text-foreground'
-                    )}
-                  >
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center w-7 h-7 rounded text-[10px] font-semibold shrink-0 bg-muted text-foreground">
                     {iv.shortLabel}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium leading-tight">{iv.fullName}</div>
+                    <div className="text-xs font-medium leading-tight flex items-center gap-1">
+                      <span className="truncate">{iv.fullName}</span>
+                      {isCorrectAnswer && <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />}
+                      {isPicked && !answer?.correct && (
+                        <X className="w-3.5 h-3.5 text-destructive shrink-0" />
+                      )}
+                    </div>
                     {showHint && (
-                      <div className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
                         {songText}
                       </div>
                     )}
                   </div>
-                  {isCorrectAnswer && <Check className="w-4 h-4 text-green-500 shrink-0" />}
-                  {isPicked && !answer?.correct && (
-                    <X className="w-4 h-4 text-destructive shrink-0" />
-                  )}
                 </div>
               </button>
             );
