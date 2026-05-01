@@ -262,7 +262,6 @@ export function IntervalTrainer({ open, onOpenChange }: IntervalTrainerProps) {
     if (!round || answer) return;
     const correct = intervalId === round.interval.id;
     setAnswer({ id: intervalId, correct });
-    setScore((s) => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
   };
 
   const handleReplay = () => {
