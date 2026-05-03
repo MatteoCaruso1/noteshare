@@ -42,6 +42,7 @@ import { SubscriptionSuccessCelebration } from '@/components/SubscriptionSuccess
 import { ThemePicker } from '@/components/ThemePicker';
 import { GetInspiredSection } from '@/components/GetInspiredSection';
 import { IntervalTrainer } from '@/components/IntervalTrainer';
+import { ChordProgressionGame } from '@/components/ChordProgressionGame';
 
 import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
@@ -101,6 +102,7 @@ const Profile = () => {
   // Streak milestone dialog state
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
   const [intervalTrainerOpen, setIntervalTrainerOpen] = useState(false);
+  const [chordGameOpen, setChordGameOpen] = useState(false);
   const [celebratingTier, setCelebratingTier] = useState<StreakTierInfo | null>(null);
   const [celebratingAchievementCount, setCelebratingAchievementCount] = useState(1);
   const [celebratingMilestoneDays, setCelebratingMilestoneDays] = useState<number | undefined>();
@@ -540,27 +542,35 @@ const Profile = () => {
             </Card>
           )}
 
-          {/* Interval Ear Trainer - Pro feature */}
+          {/* Musical Training - Pro features */}
           {!editing && (
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Ear className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-sm sm:text-base">Train your ear with interval recognition</h3>
+                <h3 className="font-semibold text-sm sm:text-base">Musical Training</h3>
               </div>
               <PremiumGate
-                featureName="Interval Trainer"
+                featureName="Musical Training"
                 blur={false}
                 showPreview={false}
                 icon={Ear}
-                description="Hear an interval, identify it using famous song hooks, and sharpen your ear over time"
+                description="Train your ear with intervals and chord progressions from real songs"
               >
-                <button
-                  onClick={() => setIntervalTrainerOpen(true)}
-                  className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-9 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 w-full"
-                >
-                  <Ear className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">Start Interval Training</span>
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setIntervalTrainerOpen(true)}
+                    className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-10 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 w-full"
+                  >
+                    <Ear className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">Interval Ear Trainer</span>
+                  </button>
+                  <button
+                    onClick={() => setChordGameOpen(true)}
+                    className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-10 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 w-full"
+                  >
+                    <span className="text-sm font-medium text-primary">Guess the Chord Progression</span>
+                  </button>
+                </div>
               </PremiumGate>
             </Card>
           )}
@@ -741,8 +751,9 @@ const Profile = () => {
         />
       )}
 
-      {/* Interval Ear Trainer Dialog */}
+      {/* Musical Training dialogs */}
       <IntervalTrainer open={intervalTrainerOpen} onOpenChange={setIntervalTrainerOpen} />
+      <ChordProgressionGame open={chordGameOpen} onOpenChange={setChordGameOpen} />
     </PageLayout>
   );
 };
