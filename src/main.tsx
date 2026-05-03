@@ -33,43 +33,73 @@ if (isNativePlatform) {
   }).catch(() => void 0);
 }
 
-// ----- Service worker: aggressive but session-safe update strategy -----
-// Strategy:
-//   1. On cold launch with NO active practice session → auto-skipWaiting + reload once.
-//   2. If a session IS active → defer via toast (UpdateAvailableToast) to protect the session.
-//   3. Re-check for updates every time the app returns to the foreground.
-//   4. Reload exactly once when a new SW takes control (controllerchange).
-// SKIP on native iOS/Android — WKWebView has inconsistent SW support.
+// ----- Service worker: robust production update strategy -----
+// Prefer latest code over stale multi-day caches. Native iOS/Android builds skip SW.
 if ("serviceWorker" in navigator && !isNativePlatform) {
   const ACTIVE_SESSION_KEY = 'noteshare_active_session';
+  const UPDATE_RELOAD_KEY = 'noteshare_sw_reload_at';
+  const UPDATE_TIMEOUT_MS = 2_500;
+  const RELOAD_LOOP_WINDOW_MS = 15_000;
 
   const hasActiveSession = (): boolean => {
     try {
       const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
-      return !!(parsed && parsed.session);
+      return !!(parsed?.session?.is_active);
     } catch {
       return false;
     }
   };
 
-  // Reload once when the new SW takes control. Guard prevents reload loops.
+  const safelyReloadForUpdate = () => {
+    try {
+      const lastReload = Number(sessionStorage.getItem(UPDATE_RELOAD_KEY) || 0);
+      const now = Date.now();
+      if (now - lastReload < RELOAD_LOOP_WINDOW_MS) return;
+      sessionStorage.setItem(UPDATE_RELOAD_KEY, String(now));
+    } catch {
+      // sessionStorage can fail in strict privacy modes; still prefer updating.
+    }
+    window.location.reload();
+  };
+
+  // Reload when the new SW takes control. Session storage guard prevents loops.
   let reloadingForUpdate = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (reloadingForUpdate) return;
     reloadingForUpdate = true;
-    window.location.reload();
+    safelyReloadForUpdate();
   });
 
-  const promoteWaiting = (worker: ServiceWorker | null | undefined) => {
+  const promoteWaiting = (worker: ServiceWorker | null | undefined, force = false) => {
     if (!worker) return;
-    if (hasActiveSession()) {
+    if (!force && hasActiveSession()) {
       // Mid-session: defer. Toast will let the user choose.
       window.dispatchEvent(new CustomEvent("sw-update-available"));
     } else {
-      // Safe to update silently. controllerchange will reload.
+      // Activate immediately; controllerchange reloads. Fallback handles browsers
+      // that don't emit controllerchange reliably for waiting workers.
       worker.postMessage({ type: "SKIP_WAITING" });
+      window.setTimeout(() => {
+        if (!reloadingForUpdate) {
+          reloadingForUpdate = true;
+          safelyReloadForUpdate();
+        }
+      }, UPDATE_TIMEOUT_MS);
+    }
+  };
+
+  const checkForFreshShell = async () => {
+    try {
+      const response = await fetch(`${window.location.origin}/?__ns_update=${Date.now()}`, {
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: { "Cache-Control": "no-cache" },
+      });
+      await response.text();
+    } catch {
+      // Best-effort request: forces HTTP cache revalidation without affecting UX.
     }
   };
 
@@ -82,20 +112,27 @@ if ("serviceWorker" in navigator && !isNativePlatform) {
           promoteWaiting(registration.waiting);
         }
 
-        // Proactively check for updates on load.
-        registration.update().catch(() => void 0);
+        // Proactively check for updates and revalidate the HTML shell on load.
+        checkForFreshShell();
+        registration.update().then(() => promoteWaiting(registration.waiting)).catch(() => void 0);
 
         // Hourly background check (in case the tab is left open for a long time).
         window.setInterval(() => {
-          registration.update().catch(() => void 0);
+          registration.update().then(() => promoteWaiting(registration.waiting)).catch(() => void 0);
         }, 60 * 60 * 1000);
 
         // Re-check when the app/tab returns to the foreground.
         // This is critical for installed PWAs that get backgrounded for hours.
         document.addEventListener("visibilitychange", () => {
           if (document.visibilityState === "visible") {
-            registration.update().catch(() => void 0);
+            checkForFreshShell();
+            registration.update().then(() => promoteWaiting(registration.waiting)).catch(() => void 0);
           }
+        });
+
+        window.addEventListener("online", () => {
+          checkForFreshShell();
+          registration.update().then(() => promoteWaiting(registration.waiting)).catch(() => void 0);
         });
 
         // When a new SW is found and installs, promote it (or defer if mid-session).
