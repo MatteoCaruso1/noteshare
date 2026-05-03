@@ -53,10 +53,28 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
+        // Do not precache the HTML shell. Always try network first for page
+        // navigations so published UI changes are not pinned behind stale SW HTML.
+        navigateFallback: null,
         // Exclude OAuth routes from service worker navigation handling
         navigateFallbackDenylist: [/^\/~oauth/, /^\/auth.*#access_token/],
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "noteshare-navigation-cache",
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24,
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
