@@ -355,6 +355,37 @@ function GameBody({
         })}
       </div>
 
+      {/* Progression so far */}
+      {!revealed && (
+        <div className="flex flex-wrap gap-1.5 justify-center">
+          {level.chords.map((c, i) => {
+            const pick = picks[i];
+            const answered = pick != null;
+            const wasRight = pick === c.name;
+            const isActive = i === chordIdx;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  'rounded-md border px-2 py-1 text-xs min-w-[3rem] text-center',
+                  !answered && !isActive && 'border-dashed border-border bg-muted/30 text-muted-foreground',
+                  isActive && !answered && 'border-primary bg-primary/10 text-foreground',
+                  answered && wasRight && 'border-green-500/50 bg-green-500/10',
+                  answered && !wasRight && 'border-destructive/50 bg-destructive/10',
+                )}
+              >
+                <div className="font-semibold">
+                  {answered ? c.name : isActive ? '?' : '·'}
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  {answered ? c.roman : `${i + 1}`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Replay */}
       <div className="flex justify-center">
         <Button variant="outline" size="sm" onClick={onReplay} className="gap-1.5 h-8">
