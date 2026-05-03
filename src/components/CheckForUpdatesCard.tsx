@@ -24,6 +24,11 @@ export function CheckForUpdatesCard() {
         toast("You're on the latest version");
         return;
       }
+      await fetch(`${window.location.origin}/?__ns_manual_update=${Date.now()}`, {
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: { "Cache-Control": "no-cache" },
+      }).catch(() => void 0);
       await registration.update();
 
       // If something is already waiting, activate it now.
@@ -32,8 +37,8 @@ export function CheckForUpdatesCard() {
         toast("Updating to the latest version…");
         waiting.postMessage({ type: "SKIP_WAITING" });
         // controllerchange listener in main.tsx will reload.
-        // Fallback reload after 1.5s in case controllerchange doesn't fire.
-        setTimeout(() => window.location.reload(), 1500);
+        // Fallback reload in case controllerchange doesn't fire.
+        setTimeout(() => window.location.reload(), 2500);
         return;
       }
 
@@ -43,7 +48,7 @@ export function CheckForUpdatesCard() {
       if (stillWaiting) {
         toast("Updating to the latest version…");
         stillWaiting.postMessage({ type: "SKIP_WAITING" });
-        setTimeout(() => window.location.reload(), 1500);
+        setTimeout(() => window.location.reload(), 2500);
       } else {
         toast("You're on the latest version", {
           icon: <CheckCircle2 className="w-4 h-4 text-primary" />,
