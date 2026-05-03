@@ -35,6 +35,7 @@ import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/comp
 import { ProTipsDialog } from '@/components/ProTipsDialog';
 import { useProTips } from '@/hooks/useProTips';
 import { ShareCalendarSheet } from '@/components/ShareCalendarSheet';
+import { MusicalTrainingShortcut } from '@/components/MusicalTrainingShortcut';
 
 
 const LOAD_MORE_COUNT = 10;
@@ -394,7 +395,10 @@ const Index = () => {
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
-            <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
+            <div className="flex items-center gap-2">
+              <MusicalTrainingShortcut />
+              <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
+            </div>
           </div>
         </div>
       </PageHeader>
