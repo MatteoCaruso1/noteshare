@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
         // Do not precache the HTML shell. Always try network first for page
         // navigations so published UI changes are not pinned behind stale SW HTML.
-        navigateFallback: null,
+        navigateFallback: undefined,
         // Exclude OAuth routes from service worker navigation handling
         navigateFallbackDenylist: [/^\/~oauth/, /^\/auth.*#access_token/],
         runtimeCaching: [
