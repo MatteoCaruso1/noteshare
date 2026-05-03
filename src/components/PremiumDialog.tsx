@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Timer, BarChart3, ClipboardList, Heart, Sparkles, ChevronDown, ChevronUp, Palette, RotateCcw, Loader2 } from 'lucide-react';
+import { Timer, BarChart3, ClipboardList, Heart, Sparkles, ChevronDown, ChevronUp, Palette, RotateCcw, Loader2, Music2 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { usePremium } from '@/contexts/PremiumContext';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -22,6 +22,11 @@ const BENEFITS = [
     icon: Palette,
     title: 'Custom Themes',
     description: 'Personalize Noteshare with custom color themes',
+  },
+  {
+    icon: Music2,
+    title: 'Musical Training Games',
+    description: 'Train your ear with the Interval Trainer and Guess the Chord Progression game',
   },
   {
     icon: Heart,
