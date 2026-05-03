@@ -25,16 +25,16 @@ interface Level {
   options: RealizedChord[][];
 }
 
-const LEVELS_PER_GAME = 10;
+const LEVELS_PER_GAME = 5;
 const POINTS_PER_CORRECT = 10;
 const PERFECT_BONUS = 25;
 
-const DIFFICULTY_META: Record<Difficulty, { label: string; sub: string }> = {
-  easy:     { label: 'Easy',     sub: '2 chords · diatonic triads' },
-  medium:   { label: 'Medium',   sub: '3 chords · pop & jazz basics' },
-  hard:     { label: 'Hard',     sub: '4–8 chords · secondary dominants' },
-  advanced: { label: 'Advanced', sub: '4–8 chords · jazz vocabulary' },
+const DIFFICULTY_META: Partial<Record<Difficulty, { label: string; sub: string }>> = {
+  medium:   { label: 'Starter',      sub: '3 chords · pop & jazz basics' },
+  hard:     { label: 'Intermediate', sub: '4–8 chords · secondary dominants' },
+  advanced: { label: 'Advanced',     sub: '4–8 chords · jazz vocabulary' },
 };
+const DIFFICULTY_ORDER: Difficulty[] = ['medium', 'hard', 'advanced'];
 
 // Build a full game of 10 levels up front (no per-level fetching)
 function buildGame(difficulty: Difficulty): Level[] {
@@ -232,23 +232,23 @@ export function ChordProgressionGame({ open, onOpenChange }: Props) {
           </DialogTitle>
           <DialogDescription className="text-xs">
             {!difficulty
-              ? 'Pick a difficulty. 10 progressions from real songs, transposed to a random key.'
-              : `Level ${Math.min(levelIdx + 1, LEVELS_PER_GAME)} of ${LEVELS_PER_GAME} · ${DIFFICULTY_META[difficulty].label}`}
+              ? 'Pick a difficulty. 5 progressions from real songs, transposed to a random key.'
+              : `Level ${Math.min(levelIdx + 1, LEVELS_PER_GAME)} of ${LEVELS_PER_GAME} · ${DIFFICULTY_META[difficulty]!.label}`}
           </DialogDescription>
         </DialogHeader>
 
         {/* MENU */}
         {!difficulty && (
           <div className="space-y-2">
-            {(Object.keys(DIFFICULTY_META) as Difficulty[]).map((d) => (
+            {DIFFICULTY_ORDER.map((d) => (
               <button
                 key={d}
                 onClick={() => startGame(d)}
                 className="w-full text-left rounded-lg border border-border bg-card hover:bg-accent/40 transition-colors p-3 flex items-center gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold">{DIFFICULTY_META[d].label}</div>
-                  <div className="text-xs text-muted-foreground">{DIFFICULTY_META[d].sub}</div>
+                  <div className="text-sm font-semibold">{DIFFICULTY_META[d]!.label}</div>
+                  <div className="text-xs text-muted-foreground">{DIFFICULTY_META[d]!.sub}</div>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Trophy className="w-3.5 h-3.5" />
@@ -354,6 +354,37 @@ function GameBody({
           );
         })}
       </div>
+
+      {/* Progression so far */}
+      {!revealed && (
+        <div className="flex flex-wrap gap-1.5 justify-center">
+          {level.chords.map((c, i) => {
+            const pick = picks[i];
+            const answered = pick != null;
+            const wasRight = pick === c.name;
+            const isActive = i === chordIdx;
+            return (
+              <div
+                key={i}
+                className={cn(
+                  'rounded-md border px-2 py-1 text-xs min-w-[3rem] text-center',
+                  !answered && !isActive && 'border-dashed border-border bg-muted/30 text-muted-foreground',
+                  isActive && !answered && 'border-primary bg-primary/10 text-foreground',
+                  answered && wasRight && 'border-green-500/50 bg-green-500/10',
+                  answered && !wasRight && 'border-destructive/50 bg-destructive/10',
+                )}
+              >
+                <div className="font-semibold">
+                  {answered ? c.name : isActive ? '?' : '·'}
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  {answered ? c.roman : `${i + 1}`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Replay */}
       <div className="flex justify-center">
