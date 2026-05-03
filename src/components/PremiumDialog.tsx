@@ -24,6 +24,11 @@ const BENEFITS = [
     description: 'Personalize Noteshare with custom color themes',
   },
   {
+    icon: Music2,
+    title: 'Musical Training Games',
+    description: 'Train your ear with the Interval Trainer and Guess the Chord Progression game',
+  },
+  {
     icon: Heart,
     title: 'Support Noteshare Development',
     description: 'I created Noteshare to improve the way my friends and I practice and connect. I really appreciate your support!',
