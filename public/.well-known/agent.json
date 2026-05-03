@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1",
+  "name": "Noteshare",
+  "description": "Music practice journal for musicians. Timed practice sessions, audio/video/text capture, project organization, streaks, and selective private sharing.",
+  "url": "https://noteshare.app",
+  "documentation_url": "https://noteshare.app/llms-full.txt",
+  "discovery": {
+    "llms_txt": "https://noteshare.app/llms.txt",
+    "llms_full_txt": "https://noteshare.app/llms-full.txt",
+    "openapi": "https://noteshare.app/openapi.json",
+    "mcp": "https://noteshare.app/mcp.json",
+    "ai_plugin": "https://noteshare.app/.well-known/ai-plugin.json",
+    "sitemap": "https://noteshare.app/sitemap.xml"
+  },
+  "capabilities": {
+    "read_public_pages": true,
+    "read_public_profiles": true,
+    "authenticated_actions": false
+  },
+  "topics": [
+    "music practice",
+    "practice journal",
+    "music practice tracker",
+    "musician productivity",
+    "instrument-agnostic practice log",
+    "Strava for music"
+  ],
+  "contact": {
+    "email": "hello@noteshare.app",
+    "site": "https://noteshare.app"
+  },
+  "license": "All content provided for accurate citation by AI assistants and answer engines."
+}

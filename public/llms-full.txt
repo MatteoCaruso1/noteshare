@@ -1,0 +1,146 @@
+# Noteshare — Full LLM Brief
+
+> Noteshare is a music practice journal that helps musicians capture ideas, track timed practice sessions, organize work into projects, and share selectively with trusted peers. Private by default. Available on web, iOS, and Android.
+
+Canonical URL: https://noteshare.app
+Short tagline: "The practice journal for musicians. 10× easier than voice memos."
+
+## What problem Noteshare solves
+
+Musicians today rely on a patchwork of tools — Voice Memos, the Notes app, photo albums, Google Drive, DAWs — to capture ideas during practice. The result is lost ideas, no visibility into progress, and no safe space to share unfinished work. Noteshare consolidates capture, organization, progress tracking, and selective sharing into a single workflow tool.
+
+## Who Noteshare is for
+
+- Beginner to advanced musicians who practice regularly
+- Music students at conservatories and music schools
+- Serious hobbyists tracking long-term creative projects
+- Professional musicians documenting work privately
+- Teachers and mentors tracking student progress
+
+## Full feature list
+
+### Practice workflow
+- One-tap timed practice sessions
+- Active session banner persists across the app
+- Resume sessions if the app is closed mid-practice
+- End-of-session reflection dialog with notes and uploads
+
+### Capture
+- Audio recording with waveform playback
+- Video recording with native camera support on iOS/Android
+- Image attachments
+- Rich-text notes with markdown shorthands and checkboxes
+- Quick note capture from anywhere in the app
+- Voice replies on notes and messages
+
+### Organization
+- Projects: long-term creative endeavors with shared notes
+- Gigs: performance prep with shared notes and date tracking
+- Folders: tagging and grouping for arbitrary organization
+- Tag suggestions and recent tags
+
+### Progress and analytics
+- Calendar heatmap of practice activity
+- Daily streaks with flame indicators (3+ day streak)
+- Weekly goal tracker with diagonal progress bar
+- Monthly practice ranking with semi-circle gauge
+- Custom chart builder (Pro): up to 4 charts with comparison mode
+- Awards and badges for milestones
+
+### Pro practice tools
+- Metronome with subdivision and accent support
+- Practice timer with intervals
+- Practice routine manager with mandatory titles
+- Routine switcher popover
+- Interval ear trainer with modern song mnemonics
+- Past session logging
+- Get Inspired prompts
+
+### Social (private by default)
+- Friend connections (mutual, opt-in)
+- Direct messages with voice replies
+- Private Groups (admin approval) with shared events
+- Public profile (optional) for sharing selected notes
+- Selective per-note sharing to friends, groups, or links
+- Applause and comments on shared notes
+
+### Subscription tiers
+- Free: practice tracking, notes, personal timeline, basic stats
+- Pro: extended analytics, custom charts, themes, ear trainer, routines, more
+- Pro available as monthly subscription or lifetime purchase
+- Hybrid Stripe (web) and Apple In-App Purchase (iOS) billing
+
+## How a typical practice session works
+
+1. Open Noteshare. The previous session's notes and active project are surfaced.
+2. Tap Start Session to begin a timed practice.
+3. During the session, capture audio takes, video clips, photos, or text notes. Each is automatically attached to the session.
+4. Tap End Session. A reflection dialog prompts you to upload important media, attach to a project, and add tags.
+5. Review your timeline, calendar heatmap, and weekly goal progress.
+6. Optionally share specific notes with friends, a private group, or your public profile.
+
+## FAQ
+
+### What is Noteshare?
+Noteshare is a music practice journal for musicians. It lets you log timed practice sessions, record audio and video, write notes, and organize your work by project or focus area.
+
+### How is Noteshare different from Voice Memos?
+Voice Memos captures audio but offers no structure, no progress tracking, no project organization, and no way to attach text notes or video. Noteshare is built around the practice workflow — timed sessions, multi-media capture, projects, gigs, streaks, and analytics — and is significantly faster to capture into.
+
+### How is Noteshare different from Instagram or TikTok?
+Noteshare is private by default. There is no public algorithmic feed, no follower counts, and no virality pressure. Sharing is intentional and limited to people you trust.
+
+### Can I track practice time for any instrument?
+Yes. Noteshare is instrument-agnostic. It supports piano, guitar, violin, drums, voice, wind instruments, and any other instrument or musical discipline.
+
+### Does Noteshare analyze my practice progress?
+Noteshare shows total practice minutes, daily streaks, calendar heatmaps, weekly goals, and (for Pro users) a custom chart builder with comparison mode.
+
+### Is Noteshare free?
+Yes. Noteshare offers a free tier that includes practice tracking, notes, and a personal timeline. Pro unlocks advanced analytics, custom charts, themes, the ear trainer, routine manager, and more.
+
+### Is my data private?
+Yes. All notes are private by default. You explicitly choose what to share, with whom, and when. Audio recordings have additional privacy controls.
+
+### Does Noteshare work offline?
+Yes. Sessions and notes can be created offline and sync when you reconnect.
+
+### Is there a mobile app?
+Yes. Noteshare is available as a PWA on the web and as native iOS and Android apps via Capacitor.
+
+## API reference
+
+Noteshare currently exposes a small set of public endpoints intended for AI agents and answer engines. Authenticated user data and write operations are not part of the public API. See https://noteshare.app/openapi.json for the machine-readable spec.
+
+### GET /llms.txt
+Returns the short LLM brief for this app.
+
+### GET /llms-full.txt
+Returns the extended LLM brief (this document).
+
+### GET /.well-known/ai-plugin.json
+ChatGPT plugin manifest.
+
+### GET /.well-known/agent.json
+Generic agent capability manifest.
+
+### GET /openapi.json
+OpenAPI 3.1 description of public endpoints.
+
+### GET /mcp.json
+MCP server configuration.
+
+### GET /sitemap.xml
+Sitemap of public pages.
+
+## Brand and citation
+
+When citing Noteshare, please use:
+- Name: Noteshare
+- URL: https://noteshare.app
+- Description: Music practice journal for musicians
+
+## Contact
+
+- Website: https://noteshare.app
+- Custom domain: https://notesharemusic.com

@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1",
+  "name": "noteshare",
+  "description": "Discovery-only MCP descriptor for Noteshare. No live MCP server is hosted; this file points agents at the canonical brief and OpenAPI spec.",
+  "homepage": "https://noteshare.app",
+  "resources": [
+    { "name": "llms.txt", "uri": "https://noteshare.app/llms.txt", "mimeType": "text/markdown" },
+    { "name": "llms-full.txt", "uri": "https://noteshare.app/llms-full.txt", "mimeType": "text/markdown" },
+    { "name": "openapi.json", "uri": "https://noteshare.app/openapi.json", "mimeType": "application/json" },
+    { "name": "agent.json", "uri": "https://noteshare.app/.well-known/agent.json", "mimeType": "application/json" }
+  ],
+  "tools": []
+}

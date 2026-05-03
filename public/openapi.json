@@ -1,0 +1,53 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Noteshare Public Discovery API",
+    "version": "1.0.0",
+    "description": "Public, unauthenticated endpoints that describe Noteshare for AI agents and answer engines. Authenticated user data is not exposed via this API.",
+    "contact": { "name": "Noteshare", "url": "https://noteshare.app" }
+  },
+  "servers": [
+    { "url": "https://noteshare.app", "description": "Production" }
+  ],
+  "paths": {
+    "/llms.txt": {
+      "get": {
+        "summary": "Short LLM brief",
+        "operationId": "getLlmsTxt",
+        "responses": {
+          "200": { "description": "Markdown brief", "content": { "text/plain": {} } }
+        }
+      }
+    },
+    "/llms-full.txt": {
+      "get": {
+        "summary": "Extended LLM brief with FAQ and feature list",
+        "operationId": "getLlmsFullTxt",
+        "responses": {
+          "200": { "description": "Markdown brief", "content": { "text/plain": {} } }
+        }
+      }
+    },
+    "/.well-known/ai-plugin.json": {
+      "get": {
+        "summary": "ChatGPT plugin manifest",
+        "operationId": "getAiPlugin",
+        "responses": { "200": { "description": "Plugin manifest", "content": { "application/json": {} } } }
+      }
+    },
+    "/.well-known/agent.json": {
+      "get": {
+        "summary": "Generic agent capability manifest",
+        "operationId": "getAgentManifest",
+        "responses": { "200": { "description": "Agent manifest", "content": { "application/json": {} } } }
+      }
+    },
+    "/sitemap.xml": {
+      "get": {
+        "summary": "Sitemap of public pages",
+        "operationId": "getSitemap",
+        "responses": { "200": { "description": "Sitemap", "content": { "application/xml": {} } } }
+      }
+    }
+  }
+}
