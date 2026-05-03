@@ -5,6 +5,7 @@ import landingFocus from '@/assets/landing-focus.webp';
 import landingSessions from '@/assets/landing-sessions.webp';
 import landingProgress from '@/assets/landing-progress.webp';
 import landingFriends from '@/assets/landing-friends.webp';
+import landingMusicalTraining from '@/assets/landing-musical-training.webp';
 
 const features = [
   {
