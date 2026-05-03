@@ -247,8 +247,8 @@ export function ChordProgressionGame({ open, onOpenChange }: Props) {
                 className="w-full text-left rounded-lg border border-border bg-card hover:bg-accent/40 transition-colors p-3 flex items-center gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold">{DIFFICULTY_META[d].label}</div>
-                  <div className="text-xs text-muted-foreground">{DIFFICULTY_META[d].sub}</div>
+                  <div className="text-sm font-semibold">{DIFFICULTY_META[d]!.label}</div>
+                  <div className="text-xs text-muted-foreground">{DIFFICULTY_META[d]!.sub}</div>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Trophy className="w-3.5 h-3.5" />
