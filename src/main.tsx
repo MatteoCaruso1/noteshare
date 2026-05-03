@@ -108,7 +108,7 @@ if ("serviceWorker" in navigator && !isNativePlatform) {
 
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/sw.js", { scope: "/" })
+      .register("/sw.js", { scope: "/", updateViaCache: "none" })
       .then((registration) => {
         // If a worker is already waiting at registration time, promote immediately.
         if (registration.waiting) {
