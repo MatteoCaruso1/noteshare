@@ -240,7 +240,7 @@ export function ChordProgressionGame({ open, onOpenChange }: Props) {
         {/* MENU */}
         {!difficulty && (
           <div className="space-y-2">
-            {(Object.keys(DIFFICULTY_META) as Difficulty[]).map((d) => (
+            {DIFFICULTY_ORDER.map((d) => (
               <button
                 key={d}
                 onClick={() => startGame(d)}
