@@ -48,6 +48,16 @@ const features = [
     width: 895,
     height: 649,
   },
+  {
+    eyebrow: 'Train Your Ear',
+    title: 'Musical Training Games',
+    description: 'Sharpen your ear with the **Interval Trainer** and **Guess the Chord Progression** game. Real songs, transposed to random keys, with instant feedback so you can grow musicianship between practice sessions.',
+    image: landingMusicalTraining,
+    alt: 'Noteshare Interval Ear Trainer and Guess the Chord Progression dialogs showing multiple-choice ear training questions with song hints',
+    cropTop: false,
+    width: 1296,
+    height: 621,
+  },
 ];
 
 // Render description with **bold** support
