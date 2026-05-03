@@ -119,8 +119,8 @@ export function WelcomeHero() {
                 </span>
               </h1>
             </div>
-            <p className="text-lg md:text-xl text-muted-foreground/90 max-w-2xl lg:max-w-3xl 2xl:max-w-4xl mb-8 leading-relaxed 2xl:mx-auto">
-              Organize, record, and reflect on every session. <span className="text-foreground font-medium">Track progress</span>, <span className="text-foreground font-medium">stay consistent</span>, and become a better player, one session at a time.
+            <p className="text-lg md:text-xl font-normal text-muted-foreground/90 max-w-2xl lg:max-w-3xl 2xl:max-w-4xl mb-8 leading-relaxed 2xl:mx-auto">
+              Organize, record, and reflect on every session. <span className="text-foreground">Track progress</span>, <span className="text-foreground">stay consistent</span>, and become a better player, one session at a time.
             </p>
             <MarketingCTA variant="hero" className="2xl:justify-center" />
             {/* Microcopy + trust signal under CTA */}
