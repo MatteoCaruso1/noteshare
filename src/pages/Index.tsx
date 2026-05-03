@@ -35,6 +35,7 @@ import { FeedItemCard, projectToFeedItem, gigToFeedItem, FeedItem } from '@/comp
 import { ProTipsDialog } from '@/components/ProTipsDialog';
 import { useProTips } from '@/hooks/useProTips';
 import { ShareCalendarSheet } from '@/components/ShareCalendarSheet';
+import { MusicalTrainingShortcut } from '@/components/MusicalTrainingShortcut';
 
 
 const LOAD_MORE_COUNT = 10;
