@@ -395,10 +395,8 @@ const Index = () => {
       <PageHeader>
         <div className="container max-w-2xl mx-auto px-4 pt-4 pb-2">
           <div className="flex items-center justify-between h-9">
-            <div className="flex items-center gap-2">
-              <MusicalTrainingShortcut />
-              <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
-            </div>
+            <h1 className="text-lg sm:text-xl font-semibold">My Practice</h1>
+            <MusicalTrainingShortcut />
           </div>
         </div>
       </PageHeader>

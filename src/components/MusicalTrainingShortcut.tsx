@@ -33,7 +33,7 @@ export function MusicalTrainingShortcut() {
           <button
             type="button"
             aria-label="Musical training"
-            className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors touch-manipulation"
+            className="h-9 w-9 rounded-lg flex items-center justify-center bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 active:bg-primary/25 transition-colors touch-manipulation"
           >
             <Ear className="w-[18px] h-[18px]" />
           </button>
