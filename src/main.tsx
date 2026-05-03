@@ -38,6 +38,7 @@ if (isNativePlatform) {
 if ("serviceWorker" in navigator && !isNativePlatform) {
   const ACTIVE_SESSION_KEY = 'noteshare_active_session';
   const UPDATE_RELOAD_KEY = 'noteshare_sw_reload_at';
+  const ACTIVE_SESSION_PROTECTION_MS = 6 * 60 * 60 * 1000;
   const UPDATE_TIMEOUT_MS = 2_500;
   const RELOAD_LOOP_WINDOW_MS = 15_000;
 
@@ -46,7 +47,9 @@ if ("serviceWorker" in navigator && !isNativePlatform) {
       const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
-      return !!(parsed?.session?.is_active);
+      if (!parsed?.session?.is_active) return false;
+      const startedAt = new Date(parsed.session.started_at || parsed.session.created_at || 0).getTime();
+      return Number.isFinite(startedAt) && Date.now() - startedAt < ACTIVE_SESSION_PROTECTION_MS;
     } catch {
       return false;
     }
