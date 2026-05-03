@@ -5,6 +5,7 @@ import landingFocus from '@/assets/landing-focus.webp';
 import landingSessions from '@/assets/landing-sessions.webp';
 import landingProgress from '@/assets/landing-progress.webp';
 import landingFriends from '@/assets/landing-friends.webp';
+import landingMusicalTraining from '@/assets/landing-musical-training.webp';
 
 const features = [
   {
@@ -46,6 +47,16 @@ const features = [
     cropTop: false,
     width: 895,
     height: 649,
+  },
+  {
+    eyebrow: 'Train Your Ear',
+    title: 'Musical Training Games',
+    description: 'Sharpen your ear with the **Interval Trainer** and **Guess the Chord Progression** game. Real songs, transposed to random keys, with instant feedback so you can grow musicianship between practice sessions.',
+    image: landingMusicalTraining,
+    alt: 'Noteshare Interval Ear Trainer and Guess the Chord Progression dialogs showing multiple-choice ear training questions with song hints',
+    cropTop: false,
+    width: 1296,
+    height: 621,
   },
 ];
 
