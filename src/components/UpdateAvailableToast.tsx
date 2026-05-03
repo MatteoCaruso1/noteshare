@@ -18,10 +18,9 @@ export default function UpdateAvailableToast() {
               .getRegistration()
               .then((reg) => {
                 reg?.waiting?.postMessage({ type: "SKIP_WAITING" });
+                setTimeout(() => window.location.reload(), 2500);
               })
-              .finally(() => {
-                window.location.reload();
-              });
+              .catch(() => window.location.reload());
           },
         },
       });
