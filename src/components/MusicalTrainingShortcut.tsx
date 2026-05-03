@@ -4,8 +4,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { IntervalTrainer } from '@/components/IntervalTrainer';
@@ -38,22 +36,14 @@ export function MusicalTrainingShortcut() {
             <Ear className="w-[18px] h-[18px]" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-60">
-          <DropdownMenuLabel className="text-xs">Musical Training</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+        <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuItem onClick={() => launch('interval')} className="gap-2 cursor-pointer">
             <Music4 className="w-4 h-4 text-primary" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium">Interval Trainer</div>
-              <div className="text-[11px] text-muted-foreground">Train your ear on intervals</div>
-            </div>
+            <span className="text-sm font-medium">Interval Trainer</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => launch('chord')} className="gap-2 cursor-pointer">
             <Music2 className="w-4 h-4 text-primary" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium">Guess the Chord Progression</div>
-              <div className="text-[11px] text-muted-foreground">Real songs, transposed</div>
-            </div>
+            <span className="text-sm font-medium">Guess the Chord Progression</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
