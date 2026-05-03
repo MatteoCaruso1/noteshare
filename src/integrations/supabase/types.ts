@@ -65,6 +65,30 @@ export type Database = {
           },
         ]
       }
+      chord_game_scores: {
+        Row: {
+          difficulty: string
+          high_score: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          difficulty: string
+          high_score?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          difficulty?: string
+          high_score?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custom_chart_views: {
         Row: {
           chart_type: string
