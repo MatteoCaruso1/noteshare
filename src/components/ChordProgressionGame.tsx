@@ -25,16 +25,16 @@ interface Level {
   options: RealizedChord[][];
 }
 
-const LEVELS_PER_GAME = 10;
+const LEVELS_PER_GAME = 5;
 const POINTS_PER_CORRECT = 10;
 const PERFECT_BONUS = 25;
 
-const DIFFICULTY_META: Record<Difficulty, { label: string; sub: string }> = {
-  easy:     { label: 'Easy',     sub: '2 chords · diatonic triads' },
-  medium:   { label: 'Medium',   sub: '3 chords · pop & jazz basics' },
-  hard:     { label: 'Hard',     sub: '4–8 chords · secondary dominants' },
-  advanced: { label: 'Advanced', sub: '4–8 chords · jazz vocabulary' },
+const DIFFICULTY_META: Partial<Record<Difficulty, { label: string; sub: string }>> = {
+  medium:   { label: 'Starter',      sub: '3 chords · pop & jazz basics' },
+  hard:     { label: 'Intermediate', sub: '4–8 chords · secondary dominants' },
+  advanced: { label: 'Advanced',     sub: '4–8 chords · jazz vocabulary' },
 };
+const DIFFICULTY_ORDER: Difficulty[] = ['medium', 'hard', 'advanced'];
 
 // Build a full game of 10 levels up front (no per-level fetching)
 function buildGame(difficulty: Difficulty): Level[] {
