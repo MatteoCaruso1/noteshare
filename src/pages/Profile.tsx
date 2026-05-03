@@ -561,7 +561,6 @@ const Profile = () => {
                     onClick={() => setIntervalTrainerOpen(true)}
                     className="cursor-pointer transition-colors flex items-center justify-center gap-1.5 px-3 h-10 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 w-full"
                   >
-                    <Ear className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium text-primary">Interval Ear Trainer</span>
                   </button>
                   <button
