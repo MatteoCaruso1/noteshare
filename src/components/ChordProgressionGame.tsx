@@ -232,8 +232,8 @@ export function ChordProgressionGame({ open, onOpenChange }: Props) {
           </DialogTitle>
           <DialogDescription className="text-xs">
             {!difficulty
-              ? 'Pick a difficulty. 10 progressions from real songs, transposed to a random key.'
-              : `Level ${Math.min(levelIdx + 1, LEVELS_PER_GAME)} of ${LEVELS_PER_GAME} · ${DIFFICULTY_META[difficulty].label}`}
+              ? 'Pick a difficulty. 5 progressions from real songs, transposed to a random key.'
+              : `Level ${Math.min(levelIdx + 1, LEVELS_PER_GAME)} of ${LEVELS_PER_GAME} · ${DIFFICULTY_META[difficulty]!.label}`}
           </DialogDescription>
         </DialogHeader>
 
