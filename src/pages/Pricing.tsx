@@ -37,7 +37,16 @@ export default function Pricing() {
         <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-2xl mx-auto leading-relaxed">
           Start for free. Upgrade for advanced practice tools and deeper progress insights.
         </p>
+        <div className="mt-5 max-w-xl mx-auto rounded-lg border border-primary/40 bg-primary/10 px-4 py-3">
+          <p className="text-sm text-foreground font-medium">
+            🎉 Noteshare Pro is currently <span className="text-primary font-semibold">free for everyone</span>.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            All Pro features are unlocked automatically — no payment required.
+          </p>
+        </div>
       </section>
+
 
       {/* Cards */}
       <section className="flex-1 px-6 md:px-12 pb-20 pt-4">
