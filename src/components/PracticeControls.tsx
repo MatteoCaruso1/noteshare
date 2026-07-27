@@ -741,30 +741,8 @@ export function PracticeControls({ previewMode = false }: { previewMode?: boolea
                 {isStartingSession ? 'Starting…' : 'Start Practice Session'}
               </Button>
 
-              {/* Practice on Rails — eye-catching CTA */}
-              <button
-                type="button"
-                onClick={() => setShowPlanRunner(true)}
-                className="group relative w-full overflow-hidden rounded-lg border-2 border-primary/40 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 px-4 py-3 text-left transition-all hover:border-primary/70 hover:shadow-[0_0_20px_-4px_hsl(var(--primary)/0.5)] active:scale-[0.99]"
-              >
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <div className="relative flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                    <Route className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-semibold text-foreground">Start Structured Session</span>
-                      <span className="rounded-sm bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
-                        New
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-tight">
-                      Structure into sections and breaks, guided by a timer
-                    </p>
-                  </div>
-                </div>
-              </button>
+              {/* Structured Session CTA hidden per product decision */}
+
 
               {!isStartingSession && <OfflineSessionInput />}
             </div>
