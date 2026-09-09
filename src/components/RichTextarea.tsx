@@ -4,20 +4,9 @@ import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
-// Detect touch-primary devices. The scroll-preservation logic in this file
-// exists to fight iOS Safari's scroll-into-view side effects on selection /
-// resize. On desktop those side effects don't happen, but pinning the scroll
-// position on every keystroke prevents the user from scrolling the page while
-// hovered over (or focused on) the textarea — so we only preserve scroll on
-// touch devices.
-const isTouchPrimary = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  } catch {
-    return false;
-  }
-};
+// Scroll preservation now runs on all devices, but only around edits we make
+// ourselves (list continuation, indent, auto-format, textarea shrink) — never
+// on every keystroke — so normal page scrolling stays free.
 
 /* ------------------------------------------------------------------
  * Scroll-stable editing helpers
