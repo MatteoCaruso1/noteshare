@@ -179,44 +179,42 @@ export function RichTextarea({
     return placeholder;
   }, [placeholder, showTips]);
 
-  // Auto-expand textarea as content grows (without causing scroll jumps).
-  // On mobile (especially iOS Safari), the previous "shrink to 0px then re-measure"
-  // approach caused visible jank when pressing Enter inside long bulleted lists,
-  // because the momentary collapse forced the browser to recalculate caret/scroll.
-  // We now measure scrollHeight without shrinking by temporarily clearing only the
-  // height (letting it grow naturally) and we skip the write entirely if the height
-  // would not actually change.
-  useEffect(() => {
+  // Auto-expand the textarea as content grows.
+  //
+  // Key detail: growing does NOT require collapsing the element. With
+  // overflow:hidden, scrollHeight already reports the full content height, so
+  // we can grow straight to it. We only fall back to the `height:auto`
+  // measurement when the box may need to SHRINK, and in that case we pin every
+  // scroll container (window included, on every device) because the momentary
+  // collapse shortens the document and makes the browser re-clamp the scroll
+  // position — the "screen flies to the bottom" symptom.
+  //
+  // Runs in a layout effect so no intermediate size is ever painted.
+  useLayoutEffect(() => {
     if (!autoExpand || !textareaRef.current) return;
     const textarea = textareaRef.current;
     const minHeight = rows * 24; // Approximate line height
 
-    // Only preserve scroll on touch-primary devices. On desktop the user must
-    // remain free to scroll the page while typing or hovering over the textarea,
-    // and the browser does not introduce the scroll-into-view jank we're guarding
-    // against here.
-    const preserveScroll = isTouchPrimary();
-
-    const savedWindowScroll = preserveScroll ? window.scrollY : 0;
-    const scrollParent = preserveScroll
-      ? (textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null)
-      : null;
-    const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
-    const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
-
     const prevOverflow = textarea.style.overflow;
-    const prevHeight = textarea.style.height;
     textarea.style.overflow = 'hidden';
 
-    // Clear the inline height so the browser can report the natural scrollHeight.
-    // This grows the element at most to its content height — it does NOT shrink it
-    // to 0, which is the behavior that caused iOS to jump the caret on Enter.
-    textarea.style.height = 'auto';
-    const measured = textarea.scrollHeight;
-    const newHeight = Math.max(minHeight, measured);
+    const currentHeight = textarea.getBoundingClientRect().height;
 
-    // Only write the height if it actually changed — avoids needless layout work
-    // and any associated scroll side effects.
+    // Fast path: content overflows -> grow. No collapse, no scroll side effects.
+    if (textarea.scrollHeight > Math.ceil(currentHeight)) {
+      const grown = Math.max(minHeight, textarea.scrollHeight);
+      textarea.style.height = `${grown}px`;
+      textarea.style.overflow = prevOverflow;
+      return;
+    }
+
+    // Slow path: might need to shrink. Measure with the viewport pinned.
+    const saved = saveScroll(textarea);
+    const prevHeight = textarea.style.height;
+
+    textarea.style.height = 'auto';
+    const newHeight = Math.max(minHeight, textarea.scrollHeight);
+
     if (`${newHeight}px` !== prevHeight) {
       textarea.style.height = `${newHeight}px`;
     } else {
@@ -224,19 +222,9 @@ export function RichTextarea({
     }
     textarea.style.overflow = prevOverflow;
 
-    if (!preserveScroll) return;
-
-    // Restore scroll positions synchronously to undo any browser scroll-into-view
-    if (textarea.scrollTop !== savedTextareaScroll) {
-      textarea.scrollTop = savedTextareaScroll;
-    }
-    if (scrollParent && scrollParent.scrollTop !== savedParentScroll) {
-      scrollParent.scrollTop = savedParentScroll;
-    }
-    if (window.scrollY !== savedWindowScroll) {
-      window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
-    }
+    restoreScroll(textarea, saved);
   }, [value, autoExpand, rows]);
+
 
   const getLineInfo = useCallback(() => {
     const textarea = textareaRef.current;
