@@ -564,27 +564,6 @@ export function RichTextarea({
           contentAfterPrefix = line.replace(/^(\s*)[☐☑]\s/, '');
         }
 
-        // Snapshot scroll positions BEFORE we mutate value/selection so we can
-        // undo any scroll-into-view side effects that iOS Safari triggers when
-        // the textarea selection changes inside a long content area.
-        // Desktop is opted out — see isTouchPrimary() for rationale.
-        const preserveScroll = isTouchPrimary();
-        const scrollContainer = preserveScroll ? getScrollContainerFor(textarea) : null;
-        const savedScrollTop = scrollContainer ? getScrollTop(scrollContainer) : 0;
-        const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
-        const savedWindowScroll = preserveScroll ? window.scrollY : 0;
-
-        const restoreScroll = () => {
-          if (!preserveScroll || !scrollContainer) return;
-          if (textarea.scrollTop !== savedTextareaScroll) {
-            textarea.scrollTop = savedTextareaScroll;
-          }
-          restoreScrollNextFrame(scrollContainer, savedScrollTop);
-          if (window.scrollY !== savedWindowScroll) {
-            window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
-          }
-        };
-
         if (contentAfterPrefix.trim() === '') {
           // Empty list item - end the list (or unindent if nested)
           e.preventDefault();
@@ -594,20 +573,10 @@ export function RichTextarea({
             const newBullet = bulletForLevel(newIndent.length);
             const newLine = newIndent + newBullet + ' ';
             const newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(lineEnd);
-            onChange(newValue);
-            setTimeout(() => {
-              focusWithoutScroll(textarea);
-              textarea.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
-              restoreScroll();
-            }, 0);
+            commitEdit(textarea, newValue, lineStart + newLine.length, onChange);
           } else {
             const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
-            onChange(newValue);
-            setTimeout(() => {
-              focusWithoutScroll(textarea);
-              textarea.setSelectionRange(lineStart + 1, lineStart + 1);
-              restoreScroll();
-            }, 0);
+            commitEdit(textarea, newValue, lineStart + 1, onChange);
           }
           return;
         }
@@ -638,14 +607,8 @@ export function RichTextarea({
         if (numberMatch) {
           newValue = renumberList(newValue);
         }
-        onChange(newValue);
 
-        setTimeout(() => {
-          focusWithoutScroll(textarea);
-          const newCursor = start + 1 + prefix.length;
-          textarea.setSelectionRange(newCursor, newCursor);
-          restoreScroll();
-        }, 0);
+        commitEdit(textarea, newValue, start + 1 + prefix.length, onChange);
       }
     }
   }, [onChange, getLineInfo, insertListPrefix, renumberList]);
