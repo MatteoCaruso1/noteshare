@@ -528,10 +528,7 @@ export function RichTextarea({
           newLine = normalizeBullet(newLine);
           let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
           newValue = renumberList(newValue);
-          onChange(newValue);
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - removeCount);
-          }, 0);
+          commitEdit(textarea, newValue, Math.max(lineStart, start - removeCount), onChange);
         }
       } else {
         // Indent: add spaces at line start
