@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useMemo } from 'react';
+import { useRef, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
@@ -18,6 +18,95 @@ const isTouchPrimary = (): boolean => {
     return false;
   }
 };
+
+/* ------------------------------------------------------------------
+ * Scroll-stable editing helpers
+ *
+ * The old approach was: call onChange() (React re-render) and then fix the
+ * caret in a setTimeout. Between those two steps the browser sees a textarea
+ * whose value changed but whose caret is stale, and it scrolls the caret into
+ * view — which is what made the page "fly" while typing bullets. We now apply
+ * the text + caret change to the DOM synchronously, restore scroll in the same
+ * frame, and only then notify React (which sees an identical value and is a
+ * no-op for the DOM).
+ * ------------------------------------------------------------------ */
+
+interface SavedScroll {
+  win: number;
+  parent: HTMLElement | null;
+  parentTop: number;
+  taTop: number;
+}
+
+function saveScroll(ta: HTMLTextAreaElement): SavedScroll {
+  const parent = ta.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+  return {
+    win: window.scrollY,
+    parent,
+    parentTop: parent ? parent.scrollTop : 0,
+    taTop: ta.scrollTop,
+  };
+}
+
+function restoreScroll(ta: HTMLTextAreaElement, s: SavedScroll): void {
+  if (ta.scrollTop !== s.taTop) ta.scrollTop = s.taTop;
+  if (s.parent && s.parent.scrollTop !== s.parentTop) s.parent.scrollTop = s.parentTop;
+  if (window.scrollY !== s.win) window.scrollTo({ top: s.win, behavior: 'auto' });
+}
+
+/**
+ * Write `newValue` into the textarea using the smallest possible diff.
+ * Uses execCommand('insertText') when available so native undo history survives.
+ */
+function applyValueToDom(ta: HTMLTextAreaElement, newValue: string, cursor?: number): void {
+  const old = ta.value;
+
+  if (old !== newValue) {
+    const maxCommon = Math.min(old.length, newValue.length);
+    let s = 0;
+    while (s < maxCommon && old[s] === newValue[s]) s++;
+    let e = 0;
+    while (e < maxCommon - s && old[old.length - 1 - e] === newValue[newValue.length - 1 - e]) e++;
+
+    const start = s;
+    const end = old.length - e;
+    const inserted = newValue.slice(s, newValue.length - e);
+
+    let ok = false;
+    if (inserted.length > 0) {
+      try {
+        focusWithoutScroll(ta);
+        ta.setSelectionRange(start, end);
+        ok = document.execCommand('insertText', false, inserted);
+      } catch {
+        ok = false;
+      }
+    }
+    if (!ok || ta.value !== newValue) {
+      ta.value = newValue;
+    }
+  }
+
+  if (cursor != null) {
+    const pos = Math.max(0, Math.min(cursor, ta.value.length));
+    ta.setSelectionRange(pos, pos);
+  }
+}
+
+/** Apply an edit synchronously with the viewport pinned, then notify React. */
+function commitEdit(
+  ta: HTMLTextAreaElement,
+  newValue: string,
+  cursor: number | undefined,
+  onChange: (v: string) => void,
+): void {
+  const saved = saveScroll(ta);
+  applyValueToDom(ta, newValue, cursor);
+  restoreScroll(ta, saved);
+  onChange(newValue);
+  // One more pass after the render/layout settles (iOS fires its scroll-into-view late).
+  requestAnimationFrame(() => restoreScroll(ta, saved));
+}
 
 // Bullet hierarchy for nested indentation levels (like OneNote)
 const BULLET_LEVELS = ['•', '◦', '▪'] as const;
