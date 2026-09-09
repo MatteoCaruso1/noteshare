@@ -447,19 +447,19 @@ export function RichTextarea({
     if (before === marker && after === marker) {
       // Unwrap: remove markers around selection
       const newValue = text.substring(0, start - markerLen) + selected + text.substring(end + markerLen);
+      const saved = saveScroll(textarea);
+      applyValueToDom(textarea, newValue);
+      textarea.setSelectionRange(start - markerLen, end - markerLen);
+      restoreScroll(textarea, saved);
       onChange(newValue);
-      setTimeout(() => {
-        textarea.selectionStart = start - markerLen;
-        textarea.selectionEnd = end - markerLen;
-      }, 0);
     } else {
       // Wrap: add markers around selection
       const newValue = text.substring(0, start) + marker + selected + marker + text.substring(end);
+      const saved = saveScroll(textarea);
+      applyValueToDom(textarea, newValue);
+      textarea.setSelectionRange(start + markerLen, end + markerLen);
+      restoreScroll(textarea, saved);
       onChange(newValue);
-      setTimeout(() => {
-        textarea.selectionStart = start + markerLen;
-        textarea.selectionEnd = end + markerLen;
-      }, 0);
     }
   }, [onChange]);
 
