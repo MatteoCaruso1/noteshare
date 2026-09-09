@@ -339,14 +339,9 @@ export function RichTextarea({
       newValue = renumberList(newValue);
     }
 
-    onChange(newValue);
-
-    // Position cursor at the end of the line (after the content)
-    setTimeout(() => {
-      const newCursorPos = lineStart + newLine.length;
-      textarea.selectionStart = textarea.selectionEnd = newCursorPos;
-      textarea.focus();
-    }, 0);
+    // Apply synchronously (value + caret together) so the browser never sees a
+    // stale caret and never scrolls it into view.
+    commitEdit(textarea, newValue, lineStart + newLine.length, onChange);
   }, [onChange, getLineInfo, renumberList]);
 
   // Auto-capitalize the first letter after a list prefix (bullet, number, or checkbox)
