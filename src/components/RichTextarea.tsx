@@ -537,10 +537,7 @@ export function RichTextarea({
         newLine = normalizeBullet(newLine);
         let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
         newValue = renumberList(newValue);
-        onChange(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + INDENT_SIZE;
-        }, 0);
+        commitEdit(textarea, newValue, start + INDENT_SIZE, onChange);
       }
       return;
     }
