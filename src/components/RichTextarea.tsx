@@ -1,23 +1,101 @@
-import { useRef, useCallback, useEffect, useMemo } from 'react';
+import { useRef, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useCheckboxToggle } from '@/hooks/useCheckboxToggle';
 import { focusWithoutScroll, getScrollContainerFor, getScrollTop, restoreScrollNextFrame } from '@/lib/preserveScroll';
 
-// Detect touch-primary devices. The scroll-preservation logic in this file
-// exists to fight iOS Safari's scroll-into-view side effects on selection /
-// resize. On desktop those side effects don't happen, but pinning the scroll
-// position on every keystroke prevents the user from scrolling the page while
-// hovered over (or focused on) the textarea — so we only preserve scroll on
-// touch devices.
-const isTouchPrimary = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  } catch {
-    return false;
+// Scroll preservation now runs on all devices, but only around edits we make
+// ourselves (list continuation, indent, auto-format, textarea shrink) — never
+// on every keystroke — so normal page scrolling stays free.
+
+/* ------------------------------------------------------------------
+ * Scroll-stable editing helpers
+ *
+ * The old approach was: call onChange() (React re-render) and then fix the
+ * caret in a setTimeout. Between those two steps the browser sees a textarea
+ * whose value changed but whose caret is stale, and it scrolls the caret into
+ * view — which is what made the page "fly" while typing bullets. We now apply
+ * the text + caret change to the DOM synchronously, restore scroll in the same
+ * frame, and only then notify React (which sees an identical value and is a
+ * no-op for the DOM).
+ * ------------------------------------------------------------------ */
+
+interface SavedScroll {
+  win: number;
+  parent: HTMLElement | null;
+  parentTop: number;
+  taTop: number;
+}
+
+function saveScroll(ta: HTMLTextAreaElement): SavedScroll {
+  const parent = ta.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+  return {
+    win: window.scrollY,
+    parent,
+    parentTop: parent ? parent.scrollTop : 0,
+    taTop: ta.scrollTop,
+  };
+}
+
+function restoreScroll(ta: HTMLTextAreaElement, s: SavedScroll): void {
+  if (ta.scrollTop !== s.taTop) ta.scrollTop = s.taTop;
+  if (s.parent && s.parent.scrollTop !== s.parentTop) s.parent.scrollTop = s.parentTop;
+  if (window.scrollY !== s.win) window.scrollTo({ top: s.win, behavior: 'auto' });
+}
+
+/**
+ * Write `newValue` into the textarea using the smallest possible diff.
+ * Uses execCommand('insertText') when available so native undo history survives.
+ */
+function applyValueToDom(ta: HTMLTextAreaElement, newValue: string, cursor?: number): void {
+  const old = ta.value;
+
+  if (old !== newValue) {
+    const maxCommon = Math.min(old.length, newValue.length);
+    let s = 0;
+    while (s < maxCommon && old[s] === newValue[s]) s++;
+    let e = 0;
+    while (e < maxCommon - s && old[old.length - 1 - e] === newValue[newValue.length - 1 - e]) e++;
+
+    const start = s;
+    const end = old.length - e;
+    const inserted = newValue.slice(s, newValue.length - e);
+
+    let ok = false;
+    if (inserted.length > 0) {
+      try {
+        focusWithoutScroll(ta);
+        ta.setSelectionRange(start, end);
+        ok = document.execCommand('insertText', false, inserted);
+      } catch {
+        ok = false;
+      }
+    }
+    if (!ok || ta.value !== newValue) {
+      ta.value = newValue;
+    }
   }
-};
+
+  if (cursor != null) {
+    const pos = Math.max(0, Math.min(cursor, ta.value.length));
+    ta.setSelectionRange(pos, pos);
+  }
+}
+
+/** Apply an edit synchronously with the viewport pinned, then notify React. */
+function commitEdit(
+  ta: HTMLTextAreaElement,
+  newValue: string,
+  cursor: number | undefined,
+  onChange: (v: string) => void,
+): void {
+  const saved = saveScroll(ta);
+  applyValueToDom(ta, newValue, cursor);
+  restoreScroll(ta, saved);
+  onChange(newValue);
+  // One more pass after the render/layout settles (iOS fires its scroll-into-view late).
+  requestAnimationFrame(() => restoreScroll(ta, saved));
+}
 
 // Bullet hierarchy for nested indentation levels (like OneNote)
 const BULLET_LEVELS = ['•', '◦', '▪'] as const;
@@ -90,44 +168,42 @@ export function RichTextarea({
     return placeholder;
   }, [placeholder, showTips]);
 
-  // Auto-expand textarea as content grows (without causing scroll jumps).
-  // On mobile (especially iOS Safari), the previous "shrink to 0px then re-measure"
-  // approach caused visible jank when pressing Enter inside long bulleted lists,
-  // because the momentary collapse forced the browser to recalculate caret/scroll.
-  // We now measure scrollHeight without shrinking by temporarily clearing only the
-  // height (letting it grow naturally) and we skip the write entirely if the height
-  // would not actually change.
-  useEffect(() => {
+  // Auto-expand the textarea as content grows.
+  //
+  // Key detail: growing does NOT require collapsing the element. With
+  // overflow:hidden, scrollHeight already reports the full content height, so
+  // we can grow straight to it. We only fall back to the `height:auto`
+  // measurement when the box may need to SHRINK, and in that case we pin every
+  // scroll container (window included, on every device) because the momentary
+  // collapse shortens the document and makes the browser re-clamp the scroll
+  // position — the "screen flies to the bottom" symptom.
+  //
+  // Runs in a layout effect so no intermediate size is ever painted.
+  useLayoutEffect(() => {
     if (!autoExpand || !textareaRef.current) return;
     const textarea = textareaRef.current;
     const minHeight = rows * 24; // Approximate line height
 
-    // Only preserve scroll on touch-primary devices. On desktop the user must
-    // remain free to scroll the page while typing or hovering over the textarea,
-    // and the browser does not introduce the scroll-into-view jank we're guarding
-    // against here.
-    const preserveScroll = isTouchPrimary();
-
-    const savedWindowScroll = preserveScroll ? window.scrollY : 0;
-    const scrollParent = preserveScroll
-      ? (textarea.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null)
-      : null;
-    const savedParentScroll = scrollParent ? scrollParent.scrollTop : 0;
-    const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
-
     const prevOverflow = textarea.style.overflow;
-    const prevHeight = textarea.style.height;
     textarea.style.overflow = 'hidden';
 
-    // Clear the inline height so the browser can report the natural scrollHeight.
-    // This grows the element at most to its content height — it does NOT shrink it
-    // to 0, which is the behavior that caused iOS to jump the caret on Enter.
-    textarea.style.height = 'auto';
-    const measured = textarea.scrollHeight;
-    const newHeight = Math.max(minHeight, measured);
+    const currentHeight = textarea.getBoundingClientRect().height;
 
-    // Only write the height if it actually changed — avoids needless layout work
-    // and any associated scroll side effects.
+    // Fast path: content overflows -> grow. No collapse, no scroll side effects.
+    if (textarea.scrollHeight > Math.ceil(currentHeight)) {
+      const grown = Math.max(minHeight, textarea.scrollHeight);
+      textarea.style.height = `${grown}px`;
+      textarea.style.overflow = prevOverflow;
+      return;
+    }
+
+    // Slow path: might need to shrink. Measure with the viewport pinned.
+    const saved = saveScroll(textarea);
+    const prevHeight = textarea.style.height;
+
+    textarea.style.height = 'auto';
+    const newHeight = Math.max(minHeight, textarea.scrollHeight);
+
     if (`${newHeight}px` !== prevHeight) {
       textarea.style.height = `${newHeight}px`;
     } else {
@@ -135,19 +211,9 @@ export function RichTextarea({
     }
     textarea.style.overflow = prevOverflow;
 
-    if (!preserveScroll) return;
-
-    // Restore scroll positions synchronously to undo any browser scroll-into-view
-    if (textarea.scrollTop !== savedTextareaScroll) {
-      textarea.scrollTop = savedTextareaScroll;
-    }
-    if (scrollParent && scrollParent.scrollTop !== savedParentScroll) {
-      scrollParent.scrollTop = savedParentScroll;
-    }
-    if (window.scrollY !== savedWindowScroll) {
-      window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
-    }
+    restoreScroll(textarea, saved);
   }, [value, autoExpand, rows]);
+
 
   const getLineInfo = useCallback(() => {
     const textarea = textareaRef.current;
@@ -262,14 +328,9 @@ export function RichTextarea({
       newValue = renumberList(newValue);
     }
 
-    onChange(newValue);
-
-    // Position cursor at the end of the line (after the content)
-    setTimeout(() => {
-      const newCursorPos = lineStart + newLine.length;
-      textarea.selectionStart = textarea.selectionEnd = newCursorPos;
-      textarea.focus();
-    }, 0);
+    // Apply synchronously (value + caret together) so the browser never sees a
+    // stale caret and never scrolls it into view.
+    commitEdit(textarea, newValue, lineStart + newLine.length, onChange);
   }, [onChange, getLineInfo, renumberList]);
 
   // Auto-capitalize the first letter after a list prefix (bullet, number, or checkbox)
@@ -325,56 +386,25 @@ export function RichTextarea({
     
     // Auto-convert "[]" or "[ ]" at line start to checkbox (no trailing space required)
     if (lineBeforeCursor === '[]' || lineBeforeCursor === '[ ]' || lineBeforeCursor.match(/^\s+\[\s?\]$/)) {
-      const scrollContainer = getScrollContainerFor(textarea);
-      const savedScrollTop = getScrollTop(scrollContainer);
-
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const transformed = newValue.substring(0, lineStart) + indent + '☐ ' + newValue.substring(cursorPos);
-      const newCursor = lineStart + indent.length + 2;
-      
-      onChange(transformed);
-      setTimeout(() => {
-        // Keep selection stable and prevent the browser from auto-scrolling to the caret
-        focusWithoutScroll(textarea);
-        textarea.setSelectionRange(newCursor, newCursor);
-        restoreScrollNextFrame(scrollContainer, savedScrollTop);
-      }, 0);
+      commitEdit(textarea, transformed, lineStart + indent.length + 2, onChange);
       return;
     }
     
     // Auto-convert "-" at line start to bullet
     if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
-      const scrollContainer = getScrollContainerFor(textarea);
-      const savedScrollTop = getScrollTop(scrollContainer);
-
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const bullet = bulletForLevel(indent.length);
       const transformed = newValue.substring(0, lineStart) + indent + bullet + ' ' + newValue.substring(cursorPos);
-      const newCursor = lineStart + indent.length + 2;
-      
-      onChange(transformed);
-      setTimeout(() => {
-        focusWithoutScroll(textarea);
-        textarea.setSelectionRange(newCursor, newCursor);
-        restoreScrollNextFrame(scrollContainer, savedScrollTop);
-      }, 0);
+      commitEdit(textarea, transformed, lineStart + indent.length + 2, onChange);
       return;
     }
     
     // Mobile shortcut: ".- " creates a bullet
     if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
-      const scrollContainer = getScrollContainerFor(textarea);
-      const savedScrollTop = getScrollTop(scrollContainer);
-
       const transformed = newValue.substring(0, lineStart) + '• ' + newValue.substring(cursorPos);
-      const newCursor = lineStart + 2;
-      
-      onChange(transformed);
-      setTimeout(() => {
-        focusWithoutScroll(textarea);
-        textarea.setSelectionRange(newCursor, newCursor);
-        restoreScrollNextFrame(scrollContainer, savedScrollTop);
-      }, 0);
+      commitEdit(textarea, transformed, lineStart + 2, onChange);
       return;
     }
     
@@ -382,12 +412,10 @@ export function RichTextarea({
     const { text: capitalizedText, newCursorPos } = autoCapitalizeAfterPrefix(newValue, cursorPos);
     
     if (capitalizedText !== newValue) {
-      onChange(capitalizedText);
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
-      }, 0);
+      commitEdit(textarea, capitalizedText, newCursorPos, onChange);
       return;
     }
+
     
     // Otherwise, just pass through the value unchanged (preserves undo history)
     onChange(newValue);
@@ -408,19 +436,19 @@ export function RichTextarea({
     if (before === marker && after === marker) {
       // Unwrap: remove markers around selection
       const newValue = text.substring(0, start - markerLen) + selected + text.substring(end + markerLen);
+      const saved = saveScroll(textarea);
+      applyValueToDom(textarea, newValue);
+      textarea.setSelectionRange(start - markerLen, end - markerLen);
+      restoreScroll(textarea, saved);
       onChange(newValue);
-      setTimeout(() => {
-        textarea.selectionStart = start - markerLen;
-        textarea.selectionEnd = end - markerLen;
-      }, 0);
     } else {
       // Wrap: add markers around selection
       const newValue = text.substring(0, start) + marker + selected + marker + text.substring(end);
+      const saved = saveScroll(textarea);
+      applyValueToDom(textarea, newValue);
+      textarea.setSelectionRange(start + markerLen, end + markerLen);
+      restoreScroll(textarea, saved);
       onChange(newValue);
-      setTimeout(() => {
-        textarea.selectionStart = start + markerLen;
-        textarea.selectionEnd = end + markerLen;
-      }, 0);
     }
   }, [onChange]);
 
@@ -489,10 +517,7 @@ export function RichTextarea({
           newLine = normalizeBullet(newLine);
           let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
           newValue = renumberList(newValue);
-          onChange(newValue);
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - removeCount);
-          }, 0);
+          commitEdit(textarea, newValue, Math.max(lineStart, start - removeCount), onChange);
         }
       } else {
         // Indent: add spaces at line start
@@ -501,10 +526,7 @@ export function RichTextarea({
         newLine = normalizeBullet(newLine);
         let newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(info.lineEnd);
         newValue = renumberList(newValue);
-        onChange(newValue);
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + INDENT_SIZE;
-        }, 0);
+        commitEdit(textarea, newValue, start + INDENT_SIZE, onChange);
       }
       return;
     }
@@ -531,27 +553,6 @@ export function RichTextarea({
           contentAfterPrefix = line.replace(/^(\s*)[☐☑]\s/, '');
         }
 
-        // Snapshot scroll positions BEFORE we mutate value/selection so we can
-        // undo any scroll-into-view side effects that iOS Safari triggers when
-        // the textarea selection changes inside a long content area.
-        // Desktop is opted out — see isTouchPrimary() for rationale.
-        const preserveScroll = isTouchPrimary();
-        const scrollContainer = preserveScroll ? getScrollContainerFor(textarea) : null;
-        const savedScrollTop = scrollContainer ? getScrollTop(scrollContainer) : 0;
-        const savedTextareaScroll = preserveScroll ? textarea.scrollTop : 0;
-        const savedWindowScroll = preserveScroll ? window.scrollY : 0;
-
-        const restoreScroll = () => {
-          if (!preserveScroll || !scrollContainer) return;
-          if (textarea.scrollTop !== savedTextareaScroll) {
-            textarea.scrollTop = savedTextareaScroll;
-          }
-          restoreScrollNextFrame(scrollContainer, savedScrollTop);
-          if (window.scrollY !== savedWindowScroll) {
-            window.scrollTo({ top: savedWindowScroll, behavior: 'auto' });
-          }
-        };
-
         if (contentAfterPrefix.trim() === '') {
           // Empty list item - end the list (or unindent if nested)
           e.preventDefault();
@@ -561,20 +562,10 @@ export function RichTextarea({
             const newBullet = bulletForLevel(newIndent.length);
             const newLine = newIndent + newBullet + ' ';
             const newValue = currentValue.substring(0, lineStart) + newLine + currentValue.substring(lineEnd);
-            onChange(newValue);
-            setTimeout(() => {
-              focusWithoutScroll(textarea);
-              textarea.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
-              restoreScroll();
-            }, 0);
+            commitEdit(textarea, newValue, lineStart + newLine.length, onChange);
           } else {
             const newValue = currentValue.substring(0, lineStart) + '\n' + currentValue.substring(lineEnd);
-            onChange(newValue);
-            setTimeout(() => {
-              focusWithoutScroll(textarea);
-              textarea.setSelectionRange(lineStart + 1, lineStart + 1);
-              restoreScroll();
-            }, 0);
+            commitEdit(textarea, newValue, lineStart + 1, onChange);
           }
           return;
         }
@@ -605,14 +596,8 @@ export function RichTextarea({
         if (numberMatch) {
           newValue = renumberList(newValue);
         }
-        onChange(newValue);
 
-        setTimeout(() => {
-          focusWithoutScroll(textarea);
-          const newCursor = start + 1 + prefix.length;
-          textarea.setSelectionRange(newCursor, newCursor);
-          restoreScroll();
-        }, 0);
+        commitEdit(textarea, newValue, start + 1 + prefix.length, onChange);
       }
     }
   }, [onChange, getLineInfo, insertListPrefix, renumberList]);
