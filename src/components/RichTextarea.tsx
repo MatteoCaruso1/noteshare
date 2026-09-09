@@ -397,56 +397,25 @@ export function RichTextarea({
     
     // Auto-convert "[]" or "[ ]" at line start to checkbox (no trailing space required)
     if (lineBeforeCursor === '[]' || lineBeforeCursor === '[ ]' || lineBeforeCursor.match(/^\s+\[\s?\]$/)) {
-      const scrollContainer = getScrollContainerFor(textarea);
-      const savedScrollTop = getScrollTop(scrollContainer);
-
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const transformed = newValue.substring(0, lineStart) + indent + '☐ ' + newValue.substring(cursorPos);
-      const newCursor = lineStart + indent.length + 2;
-      
-      onChange(transformed);
-      setTimeout(() => {
-        // Keep selection stable and prevent the browser from auto-scrolling to the caret
-        focusWithoutScroll(textarea);
-        textarea.setSelectionRange(newCursor, newCursor);
-        restoreScrollNextFrame(scrollContainer, savedScrollTop);
-      }, 0);
+      commitEdit(textarea, transformed, lineStart + indent.length + 2, onChange);
       return;
     }
     
     // Auto-convert "-" at line start to bullet
     if (lineBeforeCursor === '-' || lineBeforeCursor.match(/^\s+-$/)) {
-      const scrollContainer = getScrollContainerFor(textarea);
-      const savedScrollTop = getScrollTop(scrollContainer);
-
       const indent = lineBeforeCursor.match(/^(\s*)/)?.[1] || '';
       const bullet = bulletForLevel(indent.length);
       const transformed = newValue.substring(0, lineStart) + indent + bullet + ' ' + newValue.substring(cursorPos);
-      const newCursor = lineStart + indent.length + 2;
-      
-      onChange(transformed);
-      setTimeout(() => {
-        focusWithoutScroll(textarea);
-        textarea.setSelectionRange(newCursor, newCursor);
-        restoreScrollNextFrame(scrollContainer, savedScrollTop);
-      }, 0);
+      commitEdit(textarea, transformed, lineStart + indent.length + 2, onChange);
       return;
     }
     
     // Mobile shortcut: ".- " creates a bullet
     if (lineBeforeCursor === '.- ' || lineBeforeCursor === '. - ') {
-      const scrollContainer = getScrollContainerFor(textarea);
-      const savedScrollTop = getScrollTop(scrollContainer);
-
       const transformed = newValue.substring(0, lineStart) + '• ' + newValue.substring(cursorPos);
-      const newCursor = lineStart + 2;
-      
-      onChange(transformed);
-      setTimeout(() => {
-        focusWithoutScroll(textarea);
-        textarea.setSelectionRange(newCursor, newCursor);
-        restoreScrollNextFrame(scrollContainer, savedScrollTop);
-      }, 0);
+      commitEdit(textarea, transformed, lineStart + 2, onChange);
       return;
     }
     
@@ -454,12 +423,10 @@ export function RichTextarea({
     const { text: capitalizedText, newCursorPos } = autoCapitalizeAfterPrefix(newValue, cursorPos);
     
     if (capitalizedText !== newValue) {
-      onChange(capitalizedText);
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
-      }, 0);
+      commitEdit(textarea, capitalizedText, newCursorPos, onChange);
       return;
     }
+
     
     // Otherwise, just pass through the value unchanged (preserves undo history)
     onChange(newValue);
