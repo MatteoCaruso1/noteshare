@@ -1,76 +1,52 @@
-# Why your changes aren't reaching the PWA
+# Site-wide audit: fixes and speed-ups
 
-This is almost certainly **not** a Lovable publishing problem. Frontend publishes typically propagate within 1–2 minutes after you click "Update" in the publish dialog. The symptoms you're describing — "none hit my mobile PWA, only some hit web" — match a **service worker caching** issue, which is local to each device/browser.
+I ran a full pass over the app: type checking, code linting, a database security check, a dependency vulnerability scan, a production build size measurement, and an automated browser sweep of the public pages (home, pricing, blog, science of practice, sign in, AI page, and a bad URL) watching for errors and wasted network calls.
 
-## What's actually happening
+Good news first: the app builds cleanly, there are no type errors, no crashes on any page tested, and no known-vulnerable packages.
 
-Your app registers a service worker (`/sw.js`) configured in `vite.config.ts`:
+Below is what I found and what I'd fix.
 
-- `registerType: "autoUpdate"` + `clientsClaim: true`
-- `skipWaiting` is intentionally **disabled** (per `mem://architecture/pwa-implementation`) to protect active practice sessions
-- A new SW version becomes "waiting" and only activates when the user taps **"Update now"** in the toast (`UpdateAvailableToast.tsx`) or fully closes/reopens the app
+## Real bugs found
 
-**Two things compound on the installed PWA:**
+1. **Every visitor to the public pages quietly fires a request for notifications, even when nobody is signed in.** It fails and is thrown away, but it costs a round trip on first load of every page. The same request also isn't tied to the signed-in person, so in theory one account's badge count could be served from another's cached copy after switching accounts. Fix: only run it when someone is signed in, and tie it to that person.
 
-1. **The "Update now" toast only appears if the tab is open when the SW detects the update.** If you open the installed PWA after a deploy, the new SW installs in the background but the previous controller keeps serving cached HTML/JS. You need a second cold launch (or the toast tap) for the new version to actually take effect.
-2. **iOS PWAs (Add to Home Screen) are even worse** — WKWebView aggressively suspends and caches. It can take multiple full closes (swipe up from app switcher) before the new SW activates. Pull-to-refresh inside the PWA does **not** clear the SW.
-3. **Web (regular browser tabs):** if you had the tab already open during multiple deploys, you're seeing whichever cached version your SW happens to have promoted. New incognito tabs would show the latest.
+2. **The priority hint on the first landing-page picture is being silently dropped** because of a casing mistake, so the browser doesn't know to load the main image first. Fix the casing so the big image loads sooner.
 
-## What to check first (no code changes)
+3. **Most pages share one generic browser tab title and description.** Pricing, sign in, and the "page not found" screen all show the site-wide default. Fix: give the main public pages their own title and description, and mark the "not found" page as not-for-search-engines.
 
-1. On your phone PWA: fully **close it from the app switcher**, wait a few seconds, reopen. Do this **twice**. The "Update now" toast should appear on the second open — tap it.
-2. On web: open `https://notesharemusic.com` in a **fresh incognito window**. If that shows the latest changes, publishing worked fine — it's purely SW cache lag on your other devices.
-3. Check the Lovable publish dialog history to confirm each publish actually completed (vs. you closed the dialog before "Update" finished).
+4. **A stray leftover escape character in the text renderer's link pattern.** Harmless today but flagged as a mistake; I'll clean it up.
 
-If incognito shows the latest changes → publishing is fine, the rest of this plan addresses making updates reach users faster.
+Two other flagged spots (`false &&` blocks in the note card and the pursuits page) are intentional "hidden for now" switches — I'll leave them, just noted so they don't look like bugs later.
 
-# Proposed code changes
+## Speed improvements
 
-The current "deferred update" strategy was designed to protect users mid-practice-session, but it makes updates feel broken because:
-- Most opens of the PWA aren't mid-session
-- The toast requires the tab to be open during the update-found event, which is rare on a PWA that's launched fresh
-- iOS especially needs more aggressive SW lifecycle handling
+1. **App icons are wildly oversized — the biggest win.** The 192-pixel app icon is 747 KB, the Apple touch icon 780 KB, and the 512 icon 685 KB. Worse, these get pre-downloaded and stored by the offline cache, so nearly 3 MB is pulled down on a visitor's first load for images that should total well under 100 KB. Fix: re-compress them at their true sizes.
 
-## 1. Auto-activate updates on cold launch (when no session is active)
+2. **A 1.2 MB blog photo** on the practice-science article. Fix: convert and compress it (target under 150 KB) with no visible quality loss.
 
-In `src/main.tsx`, when a new SW is detected via `updatefound`:
-- If the app was **just launched** (no `sessionStorage` flag indicating an active practice session), call `newWorker.postMessage({ type: 'SKIP_WAITING' })` immediately and reload once activated.
-- If a practice session **is** active, fall back to the current toast behavior.
+3. **Roughly 740 KB of unused leftover images** sitting in the project. Remove them.
 
-Detect "active session" by checking the existing `PracticeTimerContext` persistence key (e.g. `noteshare_active_session` in localStorage). This preserves the session-protection guarantee while making cold launches always show the latest version.
+4. **Stop the offline cache from hoarding large images**, so future oversized files can't silently bloat first load.
 
-## 2. Listen for `controllerchange` and reload once
+5. **Fonts:** five font families in twenty weights are loaded at startup. I'll check which are actually used by the themes and drop the unused weights from the startup path.
 
-Add a `navigator.serviceWorker.addEventListener('controllerchange', ...)` handler in `main.tsx` that reloads the page **once** (guarded by a flag to prevent reload loops). This ensures that when the new SW takes control, the user actually sees the new assets.
+6. **Trim the startup bundle.** The always-loaded chunk is about 373 KB. I'll look for pieces that only matter after sign-in and move them behind the same lazy loading the rest of the app already uses, without changing behaviour.
 
-## 3. Check for updates on `visibilitychange`
+## Backend security notes (no change unless you want it)
 
-Currently `registration.update()` runs on load and hourly. Add a `document.addEventListener('visibilitychange', ...)` call that re-runs `registration.update()` when the PWA returns to the foreground. This catches the common case where users leave the PWA backgrounded for hours/days.
+The database check flagged one thing worth acting on: **leaked-password protection is turned off** at sign-up, so people can pick passwords that are known to be compromised. I'd turn it on. The other 38 flags are the standard warnings about privileged helper functions, which this app uses deliberately for speed — those are expected and I'd leave them.
 
-## 4. Surface a "Force update" affordance
+## Verification
 
-Add a small "Check for updates" button somewhere in Profile/Settings that:
-- Calls `registration.update()`
-- If a `waiting` worker exists, posts `SKIP_WAITING` and reloads
-- Otherwise toasts "You're on the latest version"
+After the changes: rebuild, re-measure the bundle and image sizes, re-run the browser sweep over the same pages to confirm zero console errors and no stray requests when logged out, and spot-check the landing page, pricing, and a signed-in dashboard render.
 
-Gives you (and any stuck user) an explicit escape hatch without needing to clear browser data.
+## Technical details
 
-## 5. Bump cache busting on the SW itself
-
-The current Workbox config uses content-hashed precache, which is correct. No change needed here — but I'll verify nothing is being served `Cache-Control: immutable` for `index.html` or `sw.js`. If you have any custom headers, those need `no-cache` for the SW + HTML shell.
-
-# Files to edit
-
-- `src/main.tsx` — smarter update flow (skipWaiting on cold launch, controllerchange reload, visibilitychange refresh)
-- `src/components/UpdateAvailableToast.tsx` — keep as fallback for active-session case
-- `src/pages/Profile.tsx` (or a small new component) — "Check for updates" button
-
-# What this won't fix
-
-- The **first** time after this change ships, your existing installed PWA still has the old SW and old logic, so it'll need one more manual update (toast tap or 2x cold launch) to pick up the new behavior. After that, future updates land automatically on cold launch.
-- iOS PWA SW activation is still ultimately at WKWebView's mercy — but with `controllerchange` + `visibilitychange` checks, it'll be dramatically more reliable.
-
-# Recommended next step
-
-Approve this plan and I'll implement changes 1–4. Before I do, can you confirm in a fresh **incognito browser window** at `https://notesharemusic.com` that your latest changes **are** live? That confirms publishing itself is working and the issue is purely client-side SW caching, which is what the plan addresses.
+- `src/hooks/useNotifications.ts`: add `enabled: !!profile?.id` and user-scoped query keys (`['notifications', profile.id]`, `['notifications-unread-count', profile.id]`) to `useNotifications` and `useUnreadNotificationCount`; update invalidations at call sites. Same `enabled` gate for `useConversations` in `useMessages.ts`.
+- `src/components/LandingFeatures.tsx:160`: `fetchPriority` → `fetchpriority` (React 18 does not map the camelCase form).
+- `src/components/RichTextContent.tsx:256`: remove the unnecessary `\-` escape.
+- SEO: apply the existing `usePageMeta` hook to `Pricing`, `Auth`, `Blog`, `Welcome`, `NotFound` (plus `noindex` on `NotFound`).
+- Images: recompress `public/pwa-icon-192.png`, `public/pwa-icon-512.png`, `public/apple-touch-icon.png`, `public/app-icon-1024.png` and convert `src/assets/blog-science-practice.jpg`; delete `src/assets/ignore*.png` (no importers).
+- `vite.config.ts`: drop `png` from the Workbox `globPatterns` precache list (icons still resolve at runtime); review `manualChunks` and route-level lazy boundaries for the 373 KB entry chunk.
+- `src/main.tsx`: prune unused `@fontsource` weight imports after auditing `tailwind.config.ts` and theme usage.
+- Auth: enable leaked-password protection via the auth configuration tool.
