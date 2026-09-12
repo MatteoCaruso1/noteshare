@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Check, X } from 'lucide-react';
 import { MarketingCTA } from '@/components/MarketingCTA';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const freeIncludedFeatures = [
 'Practice session logging',
@@ -26,6 +27,12 @@ const allFeatures = [...freeIncludedFeatures, ...proOnlyFeatures];
 
 export default function Pricing() {
   const navigate = useNavigate();
+
+  usePageMeta({
+    title: 'Pricing — Noteshare Practice Journal',
+    description: 'See what Noteshare Free and Noteshare Pro include. Pro features are currently free for everyone — practice stats, goals, metronome and more.',
+    canonical: '/pricing',
+  });
 
   return (
     <div className="bg-transparent flex flex-col min-h-screen relative z-10">
