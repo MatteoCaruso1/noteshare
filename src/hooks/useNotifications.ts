@@ -114,8 +114,11 @@ export function useNotifications() {
 }
 
 export function useUnreadNotificationCount() {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: ['notifications-unread-count'],
+    queryKey: ['notifications-unread-count', profile?.id],
+    enabled: !!profile?.id,
     queryFn: async () => {
       // Only count notifications that should be visible now (not future scheduled ones)
       const now = new Date().toISOString();

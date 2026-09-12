@@ -27,6 +27,7 @@ export function useConversations() {
 
   return useQuery({
     queryKey: ['conversations', profile?.id],
+    enabled: !!profile?.id,
     queryFn: async () => {
       if (!profile?.id) return [];
 
