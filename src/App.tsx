@@ -230,8 +230,8 @@ function AppInner() {
                     <BrowserRouter>
                       <GlintProvider>
                       <ScrollToTop />
-                      <ScrollLockDebugger />
-                      <SyncManager onStateChange={handleSyncStateChange} />
+                      <Suspense fallback={null}><ScrollLockDebugger /></Suspense>
+                      <Suspense fallback={null}><SyncManager onStateChange={handleSyncStateChange} /></Suspense>
                       <OfflineBanner syncState={syncState} />
                       <FloatingInstruments />
                       <Suspense fallback={null}><SessionFocusOverlay /></Suspense>
@@ -245,7 +245,7 @@ function AppInner() {
                       
                       <AppPrefetcher />
                       <FTUERetryCommit />
-                      <UpdateAvailableToast />
+                      <Suspense fallback={null}><UpdateAvailableToast /></Suspense>
                     <Routes>
                       <Route path="/" element={<LandingGate />} />
                       <Route path="/welcome" element={<Welcome />} />
