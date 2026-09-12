@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
 import { getFTUEState, clearFTUEState } from '@/hooks/useFTUEState';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 // Google icon component
 const GoogleIcon = () => (
@@ -45,6 +46,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
+
+  usePageMeta({
+    title: 'Sign in — Noteshare',
+    description: 'Sign in to Noteshare to log practice sessions, capture ideas and track your progress over time.',
+    noIndex: true,
+  });
 
   // Handle OAuth callback and password recovery tokens
   useEffect(() => {

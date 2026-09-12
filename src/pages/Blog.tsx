@@ -6,17 +6,19 @@ import blogScienceImage from '@/assets/blog-science-practice.jpg';
 import blogRoutineImage from '@/assets/blog-daily-routine.jpg';
 import blogJournalImage from '@/assets/blog-practice-journal.jpg';
 import blogPianoImage from '@/assets/blog-piano-tracker.jpg';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const Blog = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  usePageMeta({
+    title: 'Blog — Music Practice Insights | Noteshare',
+    description: 'Insights on music practice, creativity, and building better habits. From the Noteshare team.',
+    canonical: '/blog',
+  });
+
   useEffect(() => {
-    document.title = 'Blog | Noteshare';
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) {
-      meta.setAttribute('content', 'Insights on music practice, creativity, and building better habits. From the Noteshare team.');
-    }
     window.scrollTo(0, 0);
   }, []);
 
