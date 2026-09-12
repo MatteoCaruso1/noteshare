@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from './useAuth';
 
 export interface Notification {
   id: string;
@@ -28,8 +29,12 @@ export interface Notification {
 }
 
 export function useNotifications() {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: ['notifications'],
+    // Scoped to the signed-in profile so one account never reads another's cache.
+    queryKey: ['notifications', profile?.id],
+    enabled: !!profile?.id,
     queryFn: async () => {
       // Only show notifications where created_at is in the past (for scheduled reminders)
       const now = new Date().toISOString();
@@ -109,8 +114,11 @@ export function useNotifications() {
 }
 
 export function useUnreadNotificationCount() {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: ['notifications-unread-count'],
+    queryKey: ['notifications-unread-count', profile?.id],
+    enabled: !!profile?.id,
     queryFn: async () => {
       // Only count notifications that should be visible now (not future scheduled ones)
       const now = new Date().toISOString();

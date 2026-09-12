@@ -1,20 +1,13 @@
 import { createRoot } from "react-dom/client";
 
-// Self-hosted fonts — no CDN dependency, no FOUT
+// Self-hosted fonts — no CDN dependency, no FOUT.
+// Only the families the design tokens actually reference are loaded:
+// Inter (--font-sans) and Space Mono (--font-mono). DM Sans, JetBrains Mono
+// and Lora were unreferenced and kept ~10 extra files on the startup path.
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
-import "@fontsource/dm-sans/400.css";
-import "@fontsource/dm-sans/500.css";
-import "@fontsource/dm-sans/600.css";
-import "@fontsource/dm-sans/700.css";
-import "@fontsource/jetbrains-mono/400.css";
-import "@fontsource/jetbrains-mono/500.css";
-import "@fontsource/lora/400.css";
-import "@fontsource/lora/500.css";
-import "@fontsource/lora/600.css";
-import "@fontsource/lora/700.css";
 import "@fontsource/space-mono/400.css";
 import "@fontsource/space-mono/700.css";
 

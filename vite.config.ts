@@ -53,7 +53,9 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
+        // PNGs are deliberately excluded: app/marketing images should be fetched
+        // on demand rather than bulk-downloaded into the precache on first visit.
+        globPatterns: ["**/*.{js,css,ico,svg,woff2}"],
         // Do not precache the HTML shell. Always try network first for page
         // navigations so published UI changes are not pinned behind stale SW HTML.
         navigateFallback: undefined,

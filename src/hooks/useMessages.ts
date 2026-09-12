@@ -27,6 +27,7 @@ export function useConversations() {
 
   return useQuery({
     queryKey: ['conversations', profile?.id],
+    enabled: !!profile?.id,
     queryFn: async () => {
       if (!profile?.id) return [];
 
@@ -83,7 +84,6 @@ export function useConversations() {
         new Date(b.lastMessage.created_at).getTime() - new Date(a.lastMessage.created_at).getTime()
       );
     },
-    enabled: !!profile?.id,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000,
   });

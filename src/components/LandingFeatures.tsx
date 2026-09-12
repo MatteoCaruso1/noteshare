@@ -157,7 +157,8 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             height={feature.height}
             loading={index === 0 ? 'eager' : 'lazy'}
             decoding="async"
-            fetchPriority={index === 0 ? 'high' : 'low'}
+            // React 18 does not map the camelCase form onto the DOM attribute.
+            {...{ fetchpriority: index === 0 ? 'high' : 'low' }}
             className={`w-full ${
               feature.cropTop ? 'object-cover object-[center_58%]' : 'h-auto'
             }`}
