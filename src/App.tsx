@@ -17,11 +17,18 @@ import { FloatingInstruments } from "@/components/FloatingInstruments";
 import { GlintProvider } from "@/contexts/GlintContext";
 import { AppHeader } from "@/components/AppHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import UpdateAvailableToast from "@/components/UpdateAvailableToast";
-import { ScrollLockDebugger } from "@/components/ScrollLockDebugger";
-import { SyncManager, SyncState } from "@/components/SyncManager";
+import type { SyncState } from "@/components/SyncManager";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { BottomNav } from "@/components/BottomNav";
+
+// Non-critical shells: keep them out of the startup bundle.
+const UpdateAvailableToast = lazy(() => import("@/components/UpdateAvailableToast"));
+const ScrollLockDebugger = lazy(() =>
+  import("@/components/ScrollLockDebugger").then(m => ({ default: m.ScrollLockDebugger }))
+);
+const SyncManager = lazy(() =>
+  import("@/components/SyncManager").then(m => ({ default: m.SyncManager }))
+);
 
 // Lazy-load components that are not needed for initial paint of the
 // landing page (logged-out users) to shrink the main bundle and improve
