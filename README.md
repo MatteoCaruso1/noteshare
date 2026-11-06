@@ -1,73 +1,35 @@
-# Welcome to your Lovable project
+# Noteshare
 
-## Project info
+**A music practice journal for musicians.** Capture ideas, track your practice, and share progress with people you trust: about ten times easier than a folder of voice memos.
 
-**URL**: https://lovable.dev/projects/b0e3704a-3b8b-44b8-b082-0d726401d97a
+Live at **[notesharemusic.com](https://notesharemusic.com)**. Noteshare is the first version; its sequel is [NoteshAIre](https://github.com/MatteoCaruso1/noteshaire), a desktop app that listens to your keyboard and fills your practice goals by itself.
 
-## How can I edit this code?
+## What it does
 
-There are several ways of editing your application.
+- **Practice notes**: quick text and audio notes on what you played, what clicked and what to work on next, organised by project and by what you're working toward.
+- **Streaks and routines**: daily practice streaks, generated practice routines, and a monthly recap.
+- **Share with trusted peers**: friends' journals, groups, comments and reactions, public profiles, and gigs.
+- **Plans**: free tier plus Pro subscriptions and a lifetime option, sold through Stripe on the web and Apple in-app purchase on iOS.
 
-**Use Lovable**
+## How it's built
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b0e3704a-3b8b-44b8-b082-0d726401d97a) and start prompting.
+| Part | Tech |
+|---|---|
+| Web app | React, TypeScript, Vite, Tailwind CSS, shadcn/ui |
+| Mobile | Capacitor wrapper for iOS and Android |
+| Backend | Supabase: Postgres with row-level security on every table, auth, storage, and ~20 Edge Functions |
+| Payments | Stripe (checkout, customer portal, webhooks, entitlement reconciliation) and Apple purchase verification |
+| Engagement | Scheduled functions for streak warnings, inactive-user nudges and email notifications |
 
-Changes made via Lovable will be committed automatically to this repo.
+Code tour: [`src/pages`](src/pages) holds the screens, [`src/components`](src/components) the UI, [`supabase/functions`](supabase/functions) the server-side logic, and [`supabase/migrations`](supabase/migrations) the full database history.
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Running it locally
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app talks to its own Supabase project. To run against your own, create a Supabase project, apply `supabase/migrations`, deploy `supabase/functions`, and put your project's URL and anon key in `.env` (the keys in this repo are public, browser-side keys; server secrets live in Supabase, not here).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b0e3704a-3b8b-44b8-b082-0d726401d97a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Built with [Lovable](https://lovable.dev).
