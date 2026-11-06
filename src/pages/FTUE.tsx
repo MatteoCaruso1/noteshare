@@ -18,6 +18,7 @@ import { TodaysFocus } from '@/components/TodaysFocus';
 import { Timeline } from '@/components/Timeline';
 
 import { FTUEPreviewProvider, useFTUEPreview } from '@/contexts/FTUEPreviewContext';
+import { GOOGLE_SIGNIN_ENABLED } from '@/lib/features';
 
 // Step 0: Welcome
 // Step 1: Name (intro)
@@ -709,6 +710,7 @@ export default function FTUE() {
           </p>
 
           <div className="w-full space-y-3">
+            {GOOGLE_SIGNIN_ENABLED && (<>
             <Button
               type="button"
               variant="outline"
@@ -726,6 +728,7 @@ export default function FTUE() {
               <span className="text-xs text-muted-foreground">or</span>
               <div className="flex-1 h-px bg-border" />
             </div>
+            </>)}
 
             <form onSubmit={handleEmailSignup} noValidate className="space-y-3">
               <Input

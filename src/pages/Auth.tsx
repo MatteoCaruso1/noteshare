@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { startGoogleOAuth, parseOAuthCallback, clearOAuthHash } from '@/lib/oauth';
 import { getFTUEState, clearFTUEState } from '@/hooks/useFTUEState';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { GOOGLE_SIGNIN_ENABLED } from '@/lib/features';
 
 // Google icon component
 const GoogleIcon = () => (
@@ -435,6 +436,7 @@ const Auth = () => {
           <div className="mt-4 space-y-3">
             {mode === 'signin' && (
               <>
+                {GOOGLE_SIGNIN_ENABLED && (<>
                 {/* Google Sign In */}
                 <Button
                   type="button"
@@ -447,6 +449,7 @@ const Auth = () => {
                   <GoogleIcon />
                   Log in with Google
                 </Button>
+                </>)}
                 
                 {/* Get Started link */}
                 <button
