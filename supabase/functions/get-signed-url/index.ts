@@ -79,6 +79,9 @@ const q = (v: string) => `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 // tables' own row-level security decides what counts as visible.
 // deno-lint-ignore no-explicit-any
 async function referencedInVisibleRow(db: any, supabaseUrl: string, ref: StorageRef): Promise<boolean> {
+  // Stored names are generated (ids, timestamps), so anything else is refused rather
+  // than placed inside a filter string.
+  if (!/^[A-Za-z0-9._\/-]+$/.test(ref.path)) return false;
   const variants = [
     ref.path,
     `${ref.bucket}/${ref.path}`,

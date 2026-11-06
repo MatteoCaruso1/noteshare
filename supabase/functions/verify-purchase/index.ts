@@ -101,7 +101,7 @@ serve(async (req) => {
     });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items', 'payment_intent.latest_charge'],
+      expand: ['line_items', 'payment_intent.latest_charge', 'customer'],
     });
 
     if (session.mode === 'payment' && paymentWasReversed(session)) {
@@ -137,9 +137,14 @@ serve(async (req) => {
     // account whose email paid for them.
     const sessionUserId = session.metadata?.user_id;
     const sessionEmail = (session.customer_details?.email || session.customer_email || '').toLowerCase();
+    // deno-lint-ignore no-explicit-any
+    const customer = session.customer as any;
+    const customerUserId = customer && typeof customer === 'object' && !customer.deleted
+      ? customer.metadata?.supabase_user_id : undefined;
     const ownsSession = sessionUserId
       ? sessionUserId === user.id
-      : Boolean(sessionEmail && user.email && sessionEmail === user.email.toLowerCase());
+      : customerUserId === user.id ||
+        Boolean(sessionEmail && user.email && sessionEmail === user.email.toLowerCase());
     if (!ownsSession) {
       logStep("User ID mismatch", { sessionUserId, currentUserId: user.id });
       return new Response(JSON.stringify({ verified: false, reason: "Session does not belong to this user" }), {
@@ -159,7 +164,7 @@ serve(async (req) => {
       }
     }
 
-    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : null;
+    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : (customer?.id ?? null);
     const subscriptionId = typeof session.subscription === 'string' ? session.subscription : null;
 
     // Grant entitlement
