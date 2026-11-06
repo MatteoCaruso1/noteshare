@@ -11,7 +11,21 @@ no longer resolves, so sign-in and all data are down. Matteo will not pay Lovabl
   72d4f978-... (does not exist here). Result: 39 tables, RLS on all 39, buckets practice-media and notes-media private.
 - Branch `move-off-lovable`: AI features hidden on Profile (`AI_FEATURES_ENABLED = false`).
 
-## Next, in order
+## Done 2026-11-06 evening
+- `.env` on this branch points at the new project (anon key). Built and uploaded with
+  `wrangler pages deploy dist --project-name noteshare --branch main` → **https://noteshare-7ww.pages.dev** (classic Pages
+  project, created with `--force` because Vite 5 can't use the Workers delegation).
+- Edge functions deployed via the dashboard editor: get-signed-url, check-subscription, commit-ftue.
+- Auth: Site URL = https://noteshare-7ww.pages.dev; redirect URLs: pages.dev/**, notesharemusic.com/**, www.notesharemusic.com/**.
+  "Confirm email" is still ON (turning it off was blocked by the safety check; Matteo's call).
+- Cloudflare zone notesharemusic.com added (Free plan), scanned records kept (A → Lovable, 3 CNAME, 2 IONOS MX, SPF TXT).
+  Cloudflare nameservers: chip.ns.cloudflare.com, dell.ns.cloudflare.com. Matteo changes them at IONOS.
+
+## After the nameservers are active
+- Pages → noteshare → Custom domains → add notesharemusic.com and www.notesharemusic.com (Cloudflare replaces the
+  old A record pointing at Lovable). Then set Supabase Site URL to https://notesharemusic.com.
+
+## Original plan, in order
 1. `.env` on this branch: set `VITE_SUPABASE_URL=https://gdubmgehkwvdgwqvoldu.supabase.co`,
    `VITE_SUPABASE_PROJECT_ID=gdubmgehkwvdgwqvoldu`, and the **anon** key from
    Supabase → Settings → API Keys → Legacy (public browser key; Matteo copies it, the browser tool blocks reading JWTs).
