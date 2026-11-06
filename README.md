@@ -9,16 +9,15 @@ Live at **[notesharemusic.com](https://notesharemusic.com)**. Noteshare is the f
 - **Practice notes**: quick text and audio notes on what you played, what clicked and what to work on next, organised by project and by what you're working toward.
 - **Streaks and routines**: daily practice streaks, generated practice routines, and a monthly recap.
 - **Share with trusted peers**: friends' journals, groups, comments and reactions, public profiles, and gigs.
-- **Plans**: free tier plus Pro subscriptions and a lifetime option, sold through Stripe on the web and Apple in-app purchase on iOS.
+- **Plans**: free tier plus Pro subscriptions and a lifetime option, sold through Stripe.
 
 ## How it's built
 
 | Part | Tech |
 |---|---|
 | Web app | React, TypeScript, Vite, Tailwind CSS, shadcn/ui |
-| Mobile | Capacitor wrapper for iOS and Android |
 | Backend | Supabase: Postgres with row-level security on every table, auth, storage, and ~20 Edge Functions |
-| Payments | Stripe (checkout, customer portal, webhooks, entitlement reconciliation) and Apple purchase verification |
+| Payments | Stripe (checkout, customer portal, webhooks, entitlement reconciliation) |
 | Engagement | Scheduled functions for streak warnings, inactive-user nudges and email notifications |
 
 Code tour: [`src/pages`](src/pages) holds the screens, [`src/components`](src/components) the UI, [`supabase/functions`](supabase/functions) the server-side logic, and [`supabase/migrations`](supabase/migrations) the full database history.
