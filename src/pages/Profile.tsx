@@ -46,6 +46,9 @@ import { ChordProgressionGame } from '@/components/ChordProgressionGame';
 
 import { isTipsDisabled, setTipsDisabled } from '@/hooks/useProTips';
 
+// The AI features (routine generator, Get inspired) used Lovable's paid AI service. Off until we pick another.
+const AI_FEATURES_ENABLED = false;
+
 const WEEKLY_GOAL_DISABLED_KEY = 'noteshare_weekly_goal_disabled';
 
 // Noteshare Team profile ID (Matteo)
@@ -524,7 +527,7 @@ const Profile = () => {
           )}
 
           {/* Get Inspired - Pro only */}
-          {!editing && (
+          {AI_FEATURES_ENABLED && !editing && (
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-primary" />
