@@ -215,8 +215,7 @@ function isHtmlContent(content: string): boolean {
 
 // Extract plain text from HTML for URL detection
 function extractTextFromHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
+  const div = new DOMParser().parseFromString(html, 'text/html').body;
   return div.textContent || div.innerText || '';
 }
 

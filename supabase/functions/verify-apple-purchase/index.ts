@@ -124,6 +124,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Noteshare has no iOS app, so there are no Apple purchases to verify. The old
+  // check could grant lifetime Pro without a real receipt; keep it switched off
+  // until an app ships and the check is rebuilt (receipt bundle id + product bound).
+  return new Response(JSON.stringify({ valid: false, error: "Apple purchases are not available" }), {
+    status: 410,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",

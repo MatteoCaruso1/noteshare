@@ -60,6 +60,52 @@ function isExternalUrl(url: string): boolean {
   }
 }
 
+const MAX_URLS = 100;
+const ALLOWED_BUCKETS = new Set(["practice-media", "notes-media"]);
+
+function passThroughAll(toSign: string[]) {
+  const results: Record<string, string> = {};
+  for (const url of toSign) if (url) results[url] = url;
+  return new Response(JSON.stringify({ results }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+// Quote a value for a PostgREST filter.
+const q = (v: string) => `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+
+// Is this file referenced by a row the caller is allowed to read?
+// `db` runs as the caller (their JWT, or anon for logged-out viewers), so the
+// tables' own row-level security decides what counts as visible.
+// deno-lint-ignore no-explicit-any
+async function referencedInVisibleRow(db: any, supabaseUrl: string, ref: StorageRef): Promise<boolean> {
+  const variants = [
+    ref.path,
+    `${ref.bucket}/${ref.path}`,
+    `${supabaseUrl}/storage/v1/object/public/${ref.bucket}/${ref.path}`,
+  ];
+  const arr = (col: string) => variants.map((v) => `${col}.cs.{${q(v)}}`);
+  const txt = (col: string) => variants.map((v) => `${col}.eq.${q(v)}`);
+  const checks: Array<[string, string[]]> = [
+    ["notes", [...arr("audio_files"), ...arr("image_files"), ...arr("video_files"), ...txt("video_path"), ...txt("video_thumbnail_path")]],
+    ["group_posts", arr("audio_files")],
+    ["note_comments", txt("audio_url")],
+    ["profiles", txt("avatar")],
+    ["groups", [...txt("cover_image"), ...txt("profile_image")]],
+    ["projects", txt("cover_image")],
+    ["promo_posts", txt("image")],
+  ];
+  for (const [table, filters] of checks) {
+    const { data, error } = await db.from(table).select("id").or(filters.join(",")).limit(1);
+    if (error) {
+      console.log("[get-signed-url] reference check failed:", table, error.message);
+      continue;
+    }
+    if (data && data.length > 0) return true;
+  }
+  return false;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -67,65 +113,59 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body = (await req.json()) as Body;
-    const toSign: string[] = "urls" in body ? body.urls : [body.url];
-    const expiresInSeconds =
-      ("expiresInSeconds" in body && body.expiresInSeconds) || 60 * 60 * 24; // 24h
-    const isPublicRequest = !!body.public;
-
-    const authHeader = req.headers.get("Authorization");
-    
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-
-    // If no auth and not a public request, return original URLs so the app doesn't break
-    if (!authHeader && !isPublicRequest) {
-      console.log("[get-signed-url] No auth header, returning original URLs");
-      const results: Record<string, string> = {};
-      for (const url of toSign) {
-        if (url) results[url] = url;
-      }
-      return new Response(JSON.stringify({ results }), {
+    const rawList: string[] = "urls" in body ? body.urls : [body.url];
+    if (!Array.isArray(rawList)) {
+      return new Response(JSON.stringify({ error: "Bad request" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const toSign = rawList.filter((u) => typeof u === "string").slice(0, MAX_URLS);
+    const requested = Number(("expiresInSeconds" in body && body.expiresInSeconds) || 0);
+    const expiresInSeconds = Math.min(Math.max(requested || 60 * 60 * 24, 60), 60 * 60 * 24);
 
-    // If auth header present, verify JWT locally (no server round-trip)
-    if (authHeader && !isPublicRequest) {
-      const token = getBearerToken(authHeader);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const admin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-      if (!token) {
-        console.log("[get-signed-url] Auth failed: Missing bearer token");
-        const results: Record<string, string> = {};
-        for (const url of toSign) {
-          if (url) results[url] = url;
-        }
-        return new Response(JSON.stringify({ results }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const { data, error: userError } = await admin.auth.getUser(token);
-
-      if (userError || !data?.user?.id) {
-        console.log("[get-signed-url] Auth failed:", userError?.message || "No user");
-        const results: Record<string, string> = {};
-        for (const url of toSign) {
-          if (url) results[url] = url;
-        }
-        return new Response(JSON.stringify({ results }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+    // Who is asking? A signed-in user, or a logged-out viewer.
+    const token = getBearerToken(req.headers.get("Authorization"));
+    let userId: string | null = null;
+    if (token) {
+      const { data } = await admin.auth.getUser(token);
+      userId = data?.user?.id ?? null;
     }
+    if (!userId && !body.public) return passThroughAll(toSign);
 
-    if (isPublicRequest) {
-      console.log("[get-signed-url] Public request for", toSign.length, "URLs");
+    // Runs queries as the caller, so row-level security applies.
+    const callerDb = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: userId ? { headers: { Authorization: `Bearer ${token}` } } : {},
+    });
+
+    // The caller's own folder names (auth id and profile id) and accepted friends.
+    const own = new Set<string>();
+    let friendFolders = new Set<string>();
+    if (userId) {
+      own.add(userId);
+      const { data: myProfiles } = await admin.from("profiles").select("id").eq("user_id", userId);
+      const myIds = (myProfiles ?? []).map((p: { id: string }) => p.id);
+      myIds.forEach((id: string) => own.add(id));
+      if (myIds.length > 0) {
+        const list = myIds.join(",");
+        const { data: friends } = await admin
+          .from("friendships")
+          .select("requester_id, addressee_id")
+          .eq("status", "accepted")
+          .or(`requester_id.in.(${list}),addressee_id.in.(${list})`);
+        friendFolders = new Set(
+          (friends ?? []).flatMap((f: { requester_id: string; addressee_id: string }) => [f.requester_id, f.addressee_id]),
+        );
+        myIds.forEach((id: string) => friendFolders.delete(id));
+      }
     }
 
     const results: Record<string, string> = {};
@@ -134,41 +174,35 @@ const handler = async (req: Request): Promise<Response> => {
       toSign.map(async (input) => {
         if (!input) return;
 
-        if (input.startsWith("blob:")) {
+        if (input.startsWith("blob:") || isExternalUrl(input)) {
           results[input] = input;
           return;
         }
-
-        if (isExternalUrl(input)) {
-          results[input] = input;
-          return;
-        }
-
-        // Previously: skip re-signing if URL has token
-        // Now: always re-sign to handle expired tokens
-        // The parseStorageRef will extract the path from signed URLs
 
         const ref = parseStorageRef(input);
-        if (!ref) {
+        if (!ref || !ALLOWED_BUCKETS.has(ref.bucket) || ref.path.split("/").includes("..")) {
           results[input] = input;
           return;
         }
 
-        console.log("[get-signed-url] Creating signed URL for:", ref.bucket, ref.path);
-        
+        // Only sign files the caller may see: their own, an accepted friend's
+        // practice media (same rule as the storage policy), or a file that a
+        // row they can read points to.
+        const folder = ref.path.split("/")[0];
+        const allowed =
+          own.has(folder) ||
+          (ref.bucket === "practice-media" && friendFolders.has(folder)) ||
+          (await referencedInVisibleRow(callerDb, supabaseUrl, ref));
+        if (!allowed) {
+          results[input] = input;
+          return;
+        }
+
         const { data, error } = await admin.storage
           .from(ref.bucket)
           .createSignedUrl(ref.path, expiresInSeconds);
 
-        if (error || !data?.signedUrl) {
-          console.log("[get-signed-url] Failed to sign:", ref.path, error?.message);
-          // Keep the original so the client can still try to render something.
-          results[input] = input;
-          return;
-        }
-
-        console.log("[get-signed-url] Successfully signed:", ref.path);
-        results[input] = data.signedUrl;
+        results[input] = error || !data?.signedUrl ? input : data.signedUrl;
       })
     );
 

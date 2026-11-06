@@ -19,6 +19,15 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[VERIFY-PURCHASE] ${step}${detailsStr}`);
 };
 
+// A one-off payment that was refunded or disputed must not (re)grant Pro.
+// deno-lint-ignore no-explicit-any
+function paymentWasReversed(session: any): boolean {
+  const pi = session.payment_intent;
+  const charge = pi && typeof pi === 'object' ? pi.latest_charge : null;
+  if (!charge || typeof charge !== 'object') return false;
+  return Boolean(charge.refunded || (charge.amount_refunded ?? 0) > 0 || charge.disputed);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -92,8 +101,15 @@ serve(async (req) => {
     });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items'],
+      expand: ['line_items', 'payment_intent.latest_charge'],
     });
+
+    if (session.mode === 'payment' && paymentWasReversed(session)) {
+      return new Response(JSON.stringify({ verified: false, reason: "Payment was refunded or disputed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     logStep("Stripe session fetched", {
       sessionId: session.id,
@@ -117,8 +133,14 @@ serve(async (req) => {
     }
 
     // Verify this session belongs to this user via metadata
+    // Sessions without metadata (older checkouts) can only be claimed by the
+    // account whose email paid for them.
     const sessionUserId = session.metadata?.user_id;
-    if (sessionUserId && sessionUserId !== user.id) {
+    const sessionEmail = (session.customer_details?.email || session.customer_email || '').toLowerCase();
+    const ownsSession = sessionUserId
+      ? sessionUserId === user.id
+      : Boolean(sessionEmail && user.email && sessionEmail === user.email.toLowerCase());
+    if (!ownsSession) {
       logStep("User ID mismatch", { sessionUserId, currentUserId: user.id });
       return new Response(JSON.stringify({ verified: false, reason: "Session does not belong to this user" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

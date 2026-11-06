@@ -46,7 +46,10 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Get the site URL from the request origin or use a default
-    const origin = req.headers.get('origin') || 'https://notesharemusic.com';
+    // The reset link only ever points at our own site, whatever Origin the caller sends.
+    const ALLOWED_ORIGINS = ['https://notesharemusic.com', 'https://www.notesharemusic.com'];
+    const requestOrigin = req.headers.get('origin') || '';
+    const origin = ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : 'https://notesharemusic.com';
     const redirectTo = `${origin}/auth`;
 
     console.log('[SEND-PASSWORD-RESET] Generating recovery link for:', email);
@@ -191,14 +194,13 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("[SEND-PASSWORD-RESET] Email sent successfully:", emailResult);
 
     return new Response(
-      JSON.stringify({ success: true, message: "Password reset email sent" }),
+      JSON.stringify({ success: true, message: "If an account exists, a reset email has been sent" }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: unknown) {
     console.error("[SEND-PASSWORD-RESET] Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "Could not send the reset email. Please try again." }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

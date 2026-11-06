@@ -30,6 +30,7 @@ import { formatLocalDateTime } from '@/lib/utils';
 import { NoteWithAuthor, PromoPostWithAuthor } from '@/types';
 import { useBottomNavOverride } from '@/contexts/BottomNavContext';
 import { toast } from 'sonner';
+import { safeHref } from '@/lib/safeHref';
 
 function useGig(gigId: string | undefined) {
   return useQuery({
@@ -491,7 +492,7 @@ const GigDetail = () => {
 
               {gig.links && gig.links.length > 0 && (
                 <a
-                  href={gig.links[0]}
+                  href={safeHref(gig.links[0])}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-3"

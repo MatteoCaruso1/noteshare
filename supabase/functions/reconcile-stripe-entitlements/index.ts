@@ -28,6 +28,15 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[RECONCILE] ${step}${detailsStr}`);
 };
 
+// A one-off payment that was refunded or disputed must not (re)grant Pro.
+// deno-lint-ignore no-explicit-any
+function paymentWasReversed(session: any): boolean {
+  const pi = session.payment_intent;
+  const charge = pi && typeof pi === 'object' ? pi.latest_charge : null;
+  if (!charge || typeof charge !== 'object') return false;
+  return Boolean(charge.refunded || (charge.amount_refunded ?? 0) > 0 || charge.disputed);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -78,8 +87,9 @@ serve(async (req) => {
         if (session.mode === 'payment') {
           // Check line items for lifetime price
           const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-            expand: ['line_items'],
+            expand: ['line_items', 'payment_intent.latest_charge'],
           });
+          if (paymentWasReversed(fullSession)) continue;
           const hasLifetimePrice = fullSession.line_items?.data?.some(
             (item: Stripe.LineItem) => LIFETIME_PRICE_IDS.includes(item.price?.id ?? '')
           );

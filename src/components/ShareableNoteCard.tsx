@@ -94,8 +94,7 @@ export const ShareableNoteCard = memo(function ShareableNoteCard({
   // Strip HTML for plain text display
   const plainTextContent = useMemo(() => {
     if (!note.text_content) return '';
-    const tmp = document.createElement('div');
-    tmp.innerHTML = note.text_content;
+    const tmp = new DOMParser().parseFromString(note.text_content, 'text/html').body;
     return tmp.textContent || tmp.innerText || '';
   }, [note.text_content]);
 

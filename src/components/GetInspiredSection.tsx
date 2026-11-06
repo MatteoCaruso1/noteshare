@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTodaysFocus } from '@/hooks/useDailyFocus';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { safeHref } from '@/lib/safeHref';
 
 const DAILY_LIMIT = 4;
 
@@ -368,7 +369,7 @@ export function GetInspiredSection() {
                 {videos.map((video, i) => (
                   <div key={i} className="rounded-lg border bg-muted/50 p-4 space-y-2">
                     <a
-                      href={video.url}
+                      href={safeHref(video.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-primary hover:underline flex items-start gap-1.5"

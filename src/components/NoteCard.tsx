@@ -517,8 +517,7 @@ export const NoteCard = memo(function NoteCard({ note, expanded, fromFriends, fr
   // Edit mode handlers
   const handleStartEdit = useCallback(() => {
     const stripHtml = (html: string) => {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
+      const tmp = new DOMParser().parseFromString(html, 'text/html').body;
       return tmp.textContent || tmp.innerText || '';
     };
     setEditedTextContent(stripHtml(note.text_content || ''));

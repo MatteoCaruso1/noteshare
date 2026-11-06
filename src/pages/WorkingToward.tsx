@@ -43,6 +43,7 @@ import { cn, formatLocalDateTime } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { safeHref } from '@/lib/safeHref';
 
 // Storage keys for persisting UI state (not scroll - that's handled by useScrollRestoration)
 const WORKING_TOWARD_UI_STATE_KEY = 'noteshare_working_toward_ui_state';
@@ -295,7 +296,7 @@ const WorkingToward = () => {
           
           {post.links?.length > 0 && (
             <a
-              href={post.links[0]}
+              href={safeHref(post.links[0])}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"

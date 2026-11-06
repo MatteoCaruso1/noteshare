@@ -34,6 +34,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn, formatLocalDateTime } from '@/lib/utils';
+import { safeHref } from '@/lib/safeHref';
 
 // GigCard extracted outside to prevent recreation on parent re-renders
 const GigCard = ({ 
@@ -135,7 +136,7 @@ const GigCard = ({
         
         {post.links?.length > 0 && (
           <a
-            href={post.links[0]}
+            href={safeHref(post.links[0])}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
